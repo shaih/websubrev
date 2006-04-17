@@ -10,7 +10,7 @@ $prot = (defined('HTTPS_ON') || isset($_SERVER['HTTPS']))? 'https' : 'http';
 $logo = $prot.'://'.BASE_URL."ibm-research-logo.jpg";
 $footer = <<<EndMark
 <br />
-This is a version 0.5 (beta) of the Web-Submission-and-Review software,
+This is a version 0.51 (beta) of the Web-Submission-and-Review software,
 written by <a href="http://alum.mit.edu/www/shaih">Shai Halevi</a> from <a
 href="http://www.research.ibm.com"><img src="$logo" alt="IBM Research">
 </a>.<br/>

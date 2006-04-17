@@ -16,8 +16,8 @@ if (empty($subId) || empty($subPwd))
 
 // If user pressed "Load submission details", redirect back to revision form
 if (isset($_POST['loadDetails'])) {
-  $ref = trim($_SERVER['HTTP_REFERER']);
-  if (empty($ref)) $ref = trim($_POST['referer']);
+  $ref = trim($_POST['referer']);
+  if (empty($ref)) $ref = trim($_SERVER['HTTP_REFERER']);
   if (empty($ref)) $ref = 'revise.php';
   header("Location: $ref?subId={$subId}&subPwd={$subPwd}");
   exit();
