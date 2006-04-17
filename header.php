@@ -17,10 +17,12 @@ $confShortName = CONF_SHORT.' '.CONF_YEAR;
 
 if (defined('SHUTDOWN')) exit("<h1>Site is Closed</h1>");
 
-if (REVIEW_PERIOD===true) {
+if (defined('REVIEW_PERIOD') && REVIEW_PERIOD===true) {
   // only the chair is allowed access to submissions pages after the deadline
-  $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
-			  $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
+  $chair = false;
+  if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
+    $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
+			    $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
   if ($chair === false) {
     header("WWW-Authenticate: Basic realm=\"$confShortName\"");
     header("HTTP/1.0 401 Unauthorized");

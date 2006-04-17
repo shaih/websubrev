@@ -20,8 +20,10 @@ require_once('./includes/confUtils.php');
  */
 if ($needsAuthentication !== false) {
   // returns either an array (id, name, email) or false 
-  $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
-			  $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
+  $chair = false;
+  if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
+    $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
+			    $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
   if ($chair === false) {
     $confShortName = CONF_SHORT.' '.CONF_YEAR;
     header("WWW-Authenticate: Basic realm=\"$confShortName\"");

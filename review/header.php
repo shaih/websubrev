@@ -25,8 +25,10 @@ if (empty($errorMsg)) {
 //$pcMember = array(2, "Shai Halevi", "shaih@watson.ibm.com", 1, 1);
 if ($needsAuthentication !== false) { 
   // returns an array (id, name, email, caDiscuss, threaded) or false 
-  $pcMember = auth_PC_member($_SERVER['PHP_AUTH_USER'],
-			     $_SERVER['PHP_AUTH_PW']);
+  $pcMember = false;
+  if (isset($_SERVER['PHP_AUTH_USER']) &&  isset($_SERVER['PHP_AUTH_PW']))
+    $pcMember = auth_PC_member($_SERVER['PHP_AUTH_USER'],
+			       $_SERVER['PHP_AUTH_PW']);
   if ($pcMember === false) {
     $confShortName = CONF_SHORT.' '.CONF_YEAR;
     header("WWW-Authenticate: Basic realm=\"$confShortName\"");

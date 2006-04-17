@@ -8,14 +8,16 @@
  
 require 'header.php'; // brings in the contacts file and utils file
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
-$subId = trim($_GET['subId']);
-$subPwd = trim($_GET['subPwd']);
+$subId = isset($_GET['subId']) ? trim($_GET['subId']) : '';
+$subPwd = isset($_GET['subPwd']) ? trim($_GET['subPwd']) : '';
 
 if (defined('CAMERA_PERIOD')) {
-  $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
-			  $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
+  $chair = false;
+  if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
+    $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
+			    $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
   if ($chair === false) {
-    header("WWW-Authenticate: Basic realm=\"$confShortName\"");
+    header("WWW-Authenticate: Basic realm=\"$confName\"");
     header("HTTP/1.0 401 Unauthorized");
     exit("<h1>Contact the chair to withdraw the submission</h1>");
   }

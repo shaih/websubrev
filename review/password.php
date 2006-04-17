@@ -13,7 +13,7 @@ $revName= htmlspecialchars($pcMember[1]);
 
 if (!isset($_POST['pwdChange'])) {  // display the form
 
-  $errNo = $_GET['error'];
+  $errNo = isset($_GET['error']) ? intval($_GET['error']) : NULL;
   $errMsg = '';
   if (isset($errNo)) {
     $errs = array("You must specify a User-name",

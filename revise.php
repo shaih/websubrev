@@ -14,8 +14,10 @@ if (defined('CAMERA_PERIOD')) exit("<h1>Submission Deadline Expired</h1>");
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 $h1text = "<h1>Revise a Submission to $confName</h1>";
 
-$subId = trim($_GET['subId']);
-$subPwd = trim($_GET['subPwd']);
+$subId = isset($_GET['subId']) ? trim($_GET['subId']) : '';
+$subPwd = isset($_GET['subPwd']) ? trim($_GET['subPwd']) : '';
+$title = $authors  = $affiliations  
+  = $contact = $abstract= $category = $keywords = $comment = '';
 
 if ($subId > 0 && !empty($subPwd)) {
   $cnnct = db_connect();

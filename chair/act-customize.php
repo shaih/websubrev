@@ -6,12 +6,20 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
  
+chdir('..'); // This script is placed in a sub-directory
+$constFile = './includes/confConstants.php';
 if (file_exists($constFile)) { // Already customized
   exit("<h1>This installation is already cusomized</h1>");
 }
 
-chdir('..'); // This script is placed in a sub-directory
-$constFile = './includes/confConstants.php';
+// Some things in confUtils need the BASE_URL constant
+$webServer = trim($_POST['webServer']);
+if (empty($webServer)) $webServer = $_SERVER['HTTP_HOST'];
+$baseURL = $webServer . $_SERVER['PHP_SELF'];             // this file
+$baseURL = substr($baseURL, 0, strrpos($baseURL, '/'));   // the directory
+$baseURL = substr($baseURL, 0, strrpos($baseURL, '/')+1); // parent directory
+define('BASE_URL', $baseURL);
+
 require './includes/confUtils.php'; 
 
 // If 'magic quotes' are on, get rid of them
@@ -46,7 +54,6 @@ $emlCrlf   = trim($_POST['emlCrlf']);
 if ($emlCrlf != "\\n") $emlCrlf = "\\r\\n";
 $emlExtraPrm = trim($_POST['emlExtraPrm']);
 if (empty($emlExtraPrm)) $emlExtraPrm = '-f '. $chairEmail;
-$webServer = trim($_POST['webServer']);
 
 $nCmmtee = isset($_POST['nCmmtee']) ? (int) $_POST['nCmmtee'] : 0;
 if ($nCmmtee > 500) { die("Cannot handle committees larger than 500"); }
@@ -226,12 +233,7 @@ if (isset($committee)) foreach ($committee as $m) {
  */
 
 
-if (empty($webServer)) $webServer = $_SERVER['HTTP_HOST'];
-$baseURL = $webServer . $_SERVER['PHP_SELF'];             // this file
-$baseURL = substr($baseURL, 0, strrpos($baseURL, '/'));   // the directory
-$baseURL = substr($baseURL, 0, strrpos($baseURL, '/')+1); // parent directory
-
-if (empty($confURL)) $confURL = $baseURL;
+if (empty($confURL)) $confURL = '.';
 
 $constString = "<?php
 /* Web Submission and Review Software, version 0.51

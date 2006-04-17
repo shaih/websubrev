@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-  $needsAuthentication=true;
+$needsAuthentication=true;
 require 'printSubList.php';
 require 'header.php'; // defines $pcMember=array(id, name, ...)
 $revId  = (int) $pcMember[0];
@@ -16,6 +16,7 @@ $links = show_rev_links(2);
 $message = show_message();
 $phase = $disFlag ? 'Discussion Phase' : 'Individual Review Phase';
 if (defined('CAMERA_PERIOD')) $phase = 'Read Only';
+$legend = '';
 
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
@@ -110,7 +111,7 @@ EndMark;
 
 function show_message()
 {
-  if ($_GET['newPwd']=='ok') {
+  if (isset($_GET['newPwd']) && $_GET['newPwd']=='ok') {
     return '<div style="text-align: center; color: red;">Password successfully changed</div>';
   }
 

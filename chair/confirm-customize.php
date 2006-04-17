@@ -5,11 +5,18 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- chdir('..'); // This script is placed in a sub-directory
+chdir('..'); // This script is placed in a sub-directory
 
 if (file_exists('./includes/confConstants.php')) { // Already customized
   exit("<h1>This installation is already cusomized</h1>");
 }
+
+// Some things in confUtils need the BASE_URL constant
+$baseURL = $_SERVER['HTTP_HOST']; . $_SERVER['PHP_SELF'];             // this file
+$baseURL = substr($baseURL, 0, strrpos($baseURL, '/'));   // the directory
+$baseURL = substr($baseURL, 0, strrpos($baseURL, '/')+1); // parent directory
+define('BASE_URL', $baseURL);
+
 require './includes/confUtils.php'; 
 
 // If 'magic quotes' are on, get rid of them
