@@ -35,7 +35,7 @@ $emlExtraPrm = EML_EXTRA_PRM;
 // Read all the fields, stripping spurious white-spaces
 
 $x  = isset($_POST['longName'])  ? trim($_POST['longName'])  : NULL;
-if (!empty($x) && $x!=$confName) { $changeConstFile = true; $longName = $x; }
+if (!empty($x) && $x!=$longName) { $changeConstFile = true; $longName = $x; }
 
 $x  = isset($_POST['shortName']) ? trim($_POST['shortName']) : NULL;
 if (!empty($x) && $x!=$shortName) { $changeConstFile = true; $shortName = $x; }
@@ -71,6 +71,7 @@ if (is_array($x)) {
   $categories = array();
   foreach ($x as $cat)
     $categories[] = trim($cat);
+  $changeConstFile = true;
 }
 else $categories = NULL;
 
@@ -210,7 +211,7 @@ if (isset($_POST['finalVersionInstructions'])) {
   send_camera_instructions($cnnct, $cameraInstructions);
 }
 
-if ($_POST['shutdown']=="yes") {
+if (isset($_POST['shutdown']) && $_POST['shutdown']=="yes") {
   define('SHUTDOWN', true);
   $changeConstFile = true;
 }
