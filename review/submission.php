@@ -66,7 +66,7 @@ if (isset($submission['revId'])) {// PC member already reviewed this submission
   $revStyle = "Revise";
   $revText = $reviseIcon;
 } else {
-  $revColor = "Review";
+  $revStyle = "Review";
   $revText = $reviewIcon;
 }
 $subFile = '../'.SUBMIT_DIR."/$subId.$format";

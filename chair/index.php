@@ -160,9 +160,11 @@ function manage_final_version($period)
   if (defined('SHUTDOWN')) {
     $hdr = '<h3>Final Submission Site is Closed</h3>';
     $mkTOC = '<li><a href="makeTOC.php">Generate a LeTeX file with TOC and author index</a></li>';
+    $closeIt = '';
   }
   else {
     $hdr = '<h3><span style="background-color: red;">Final Submission Site is Active</span></h3>' . "\nDeadline is <big>$cmrDdline</big>";
+    $mkTOC = '';
     $closeIt = '<a href="close-site.php">Close Final Submission Site</a> (<b>deadline is not enforced automatically</b>)';
   }
 

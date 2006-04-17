@@ -20,7 +20,7 @@ if (isset($_POST['makeTOC'])) {
   $papers = array();
   foreach ($_POST['pOrder'] as $subId => $ord) {
     $subId = (int) $subId;
-    if (!is_array($papers[$subId])) // check that this subId has a record
+    if (isset($papers[$subId]) && !is_array($papers[$subId])) // check that this subId has a record
       $papers[$subId] = array();
     $papers[$subId]['pOrder'] = (int) trim($ord);
   }

@@ -20,14 +20,14 @@ if (defined('REVIEW_PERIOD')) {
 
 // Read all the fields, stripping spurious white-spaces 
 
-$title   = trim($_POST['title']);
-$author  = trim($_POST['authors']);
-$affiliations  = trim($_POST['affiliations']);
-$contact = trim($_POST['contact']);
-$abstract= trim($_POST['abstract']);
-$category= trim($_POST['category']);
-$keywords= trim($_POST['keywords']);
-$comment = trim($_POST['comment']);
+$title   = isset($_POST['title']) ? trim($_POST['title']) : NULL;
+$author  = isset($_POST['authors']) ? trim($_POST['authors']) : NULL;
+$affiliations  = isset($_POST['affiliations']) ? trim($_POST['affiliations']) : NULL;
+$contact = isset($_POST['contact']) ? trim($_POST['contact']) : NULL;
+$abstract= isset($_POST['abstract']) ? trim($_POST['abstract']) : NULL;
+$category= isset($_POST['category']) ? trim($_POST['category']) : NULL;
+$keywords= isset($_POST['keywords']) ? trim($_POST['keywords']) : NULL;
+$comment = isset($_POST['comment']) ? trim($_POST['comment']) : NULL;
 
 if (isset($_FILES['sub_file'])) {
   $sbFileName = trim($_FILES['sub_file']['name']);

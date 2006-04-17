@@ -92,7 +92,7 @@ if (isset($submission['lastSaw'])) {
 db_query($qry, $cnnct);
 
 // Now we can display the results to the user
-$pageWidth = 720;
+$pageWidth = 725;
 $links = show_rev_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -100,6 +100,7 @@ print <<<EndMark
 <html>
 <head>
 <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<link rel="stylesheet" type="text/css" href="review.css" />
 
 <script type="text/javascript" language="javascript">
 <!--

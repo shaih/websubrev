@@ -66,7 +66,8 @@ foreach($subArray as $sb) {
        $downld = SUBMIT_DIR."/final/$subId.$format";
   else $downld = SUBMIT_DIR."/$subId.$format";
 
-  if ((REVIEW_PERIOD!==true) && file_exists($downld))
+  $reviewTime = defined('REVIEW_PERIOD') ? REVIEW_PERIOD : false;
+  if ($reviewTime && file_exists($downld))
        $downld = '[<a href="../'.$downld.'">Download</a>]';
   else $downld = '';
 
@@ -74,7 +75,7 @@ foreach($subArray as $sb) {
   <td style=\"width: 20px;\"><big><strong>{$subId}.</strong></big></td>
   <td><big><strong>$title</strong></big><td>$downld</td>\n";
 
-  if (REVIEW_PERIOD===true) { // let the chair revise/withdraw submisstins
+  if ($reviewTime) { // let the chair revise/withdraw submisstins
     print <<<EndMark
   <td style="width: 50px;"><span style="background: lightgrey;">
     [<a href="../revise.php?subId={$subId}&amp;subPwd={$subPwd}">Revise</a>]

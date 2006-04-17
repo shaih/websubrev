@@ -44,8 +44,8 @@ else if (file_exists("./review/voteParams.bak.php")) {
   }
 }
 
-$voteInstructions = htmlspecialchars($voteInstructions);
-$voteDeadline = htmlspecialchars($voteDeadline);
+$voteInstructions = isset($voteInstructions) ? htmlspecialchars($voteInstructions) : '';
+$voteDeadline = isset($voteDeadline) ? htmlspecialchars($voteDeadline) : '';
 
 print <<<EndMark
 <h2>Vote Parameters</h2>
@@ -78,8 +78,10 @@ Vote deadline:
 
 EndMark;
 
-$chooseVote = ($voteType=='Choose') ? 'checked="checked"' : '';
-$gradeVote = ($voteType=='Grade') ? 'checked="checked"' : '';
+$chooseVote = (isset($voteType) && $voteType=='Choose') ? 'checked="checked"' : '';
+$gradeVote = (isset($voteType) && $voteType=='Grade') ? 'checked="checked"' : '';
+if (!isset($voteMaxGrade)) $voteMaxGrade='';
+if (!isset($voteBudget)) $voteBudget='';
 
 print <<<EndMark
 <h3>Vote type</h3>
@@ -99,22 +101,27 @@ is the sum of all grades that this PC member can assign.
 
 EndMark;
 
-$vZero = ($voteOnSubmissions===0) ? 'checked="checked"' : '';
-$vOne = ($voteOnSubmissions==1) ? 'checked="checked"' : '';
-$vTwo = (!isset($voteOnSubmissions) || $voteOnSubmissions==2) ? 'checked="checked"' : '';
-
-if (is_array($voteTitles)) {
+if (isset($voteOnSubmissions)) {
+  $vZero = ($voteOnSubmissions===0) ? 'checked="checked"' : '';
+  $vOne = ($voteOnSubmissions==1) ? 'checked="checked"' : '';
+  $vTwo = (!isset($voteOnSubmissions) || $voteOnSubmissions==2) ? 'checked="checked"' : '';
+} else { 
+  $vZero = $vOne = $vTwo = '';
+}
+if (isset($voteTitles) && is_array($voteTitles)) {
   $smiecolon = $voteItemsString = "";
   foreach ($voteTitles as $item) {
     $voteItemsString .= $smiecolon . $item; $smiecolon = "; ";
   }
 }
-$chkAC = $voteOnAC ? 'checked="checked"' : '';
-$chkMA = $voteOnMA ? 'checked="checked"' : '';
-$chkDI = $voteOnDI ? 'checked="checked"' : '';
-$chkNO = $voteOnNO ? 'checked="checked"' : '';
-$chkMR = $voteOnMR ? 'checked="checked"' : '';
-$chkRE = $voteOnRE ? 'checked="checked"' : '';
+else $voteItemsString = '';
+
+$chkAC = isset($voteOnAC) ? 'checked="checked"' : '';
+$chkMA = isset($voteOnMA) ? 'checked="checked"' : '';
+$chkDI = isset($voteOnDI) ? 'checked="checked"' : '';
+$chkNO = isset($voteOnNO) ? 'checked="checked"' : '';
+$chkMR = isset($voteOnMR) ? 'checked="checked"' : '';
+$chkRE = isset($voteOnRE) ? 'checked="checked"' : '';
 
 print <<<EndMark
 <h3>What is included in this vote?</h3>

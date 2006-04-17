@@ -14,8 +14,9 @@ if (CAMERA_PERIOD!==true)
 
 $h1text = "<h1>Camera-Ready Revision for $confName</h1>";
 
-$subId = trim($_GET['subId']);
-$subPwd = trim($_GET['subPwd']);
+$subId = isset($_GET['subId']) ? trim($_GET['subId']) : '';
+$subPwd = isset($_GET['subPwd']) ? trim($_GET['subPwd']) : '';
+$title = $authors = $affiliations = $contact = $abstract= $nPages = '';
 
 if ($subId > 0 && !empty($subPwd)) {
   $cnnct = db_connect();
@@ -139,9 +140,9 @@ print <<<EndMark
   </tr>
   <tr>
     <td style="text-align: right;">Number&nbsp;of&nbsp;Pages:</td>
-    <td><input name="nPages" size="3" type="text" value="$nPages">How many
-     pages in the final version. <br/>(Will be used by the chair to
-     automatically generate the table-of-contents and author index.)
+    <td><input name="nPages" size="3" type="text" value="$nPages">
+     Will be used by the chair to
+     automatically generate the table-of-contents and author index.
     </td>
   </tr>
   <tr>

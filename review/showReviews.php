@@ -16,7 +16,7 @@ function subDetailedHeader(&$sub, $revId=0, $showDiscussButton=true)
   $avg   = isset($sub['avg']) ? round($sub['avg'],1) : '*';
   $wAvg  = isset($sub['wAvg']) ? round($sub['wAvg'],1) : '*';
   $delta = isset($sub['delta']) ? ((int) $sub['delta']) : '*';
-  $disText = $sub['hasNew'] ? $discussIcon2 : $discussIcon1;
+  $disText = (isset($sub['hasNew'])&&$sub['hasNew']) ? $discussIcon2 : $discussIcon1;
 
   $lastModif = isset($sub['lastModif']) ? 
                date('M-j H:i', ((int)$sub['lastModif'])) : '';
@@ -113,9 +113,9 @@ function show_reviews_with_comments(&$reviews, $revId)
   for ($j=0; $j<$nReviews; $j++) {
     $rev =& $reviews[$j];
 
-    $cmnt2athr = htmlspecialchars($rev['cmnts2athr']);
-    $cmnt2PC   = htmlspecialchars($rev['cmnts2PC']) ;
-    $cmnt2chr  = htmlspecialchars($rev['cmnts2chr']);
+    $cmnt2athr = isset($rev['cmnts2athr'])?htmlspecialchars($rev['cmnts2athr']):'';
+    $cmnt2PC   = isset($rev['cmnts2PC']) ? htmlspecialchars($rev['cmnts2PC']):'';
+    $cmnt2chr  = isset($rev['cmnts2chr'])? htmlspecialchars($rev['cmnts2chr']):'';
     $confHtml= "<td>Confidence<br />".(int) $rev['conf']."</td>\n";
 
     $PCmember = htmlspecialchars($rev['PCmember']);
@@ -205,7 +205,7 @@ function show_posts(&$postsArray, $subId, $threaded=true,
       $class = "hidden";
       $reply = "";
     }
-    else if ($_GET['rply2post']==$pid) { // show the reply box
+    else if (isset($_GET['rply2post']) && $_GET['rply2post']==$pid) { // show the reply box
       $class = "shown";
       $reply = "[<a target=\"_blank\" href=\"discuss.php?subId=$subId#p$pid\""
 	. " onclick=\"return expandcollapse('r$pid');\">Reply</a>]";

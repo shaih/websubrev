@@ -10,7 +10,7 @@ require 'header.php';
 
 $cmrDdline = CAMERA_DEADLINE;
 $now= date('r (T)');
-
+$links= show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>

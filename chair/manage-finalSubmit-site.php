@@ -81,7 +81,7 @@ will still be able to view the reviews and discussions but not to modify
 them or insert new ones.)
 
 <h3>Instructions for camera-ready verision</h3>
-<form name="committee" action="act-recustomize.php"
+<form name="cameraInstructions" action="act-recustomize.php"
       enctype="multipart/form-data" method="post">
 
 Use the text area below to customize the instructions for authors of

@@ -133,7 +133,7 @@ if (USE_AFFILIATIONS) {
       <td>'.$affl."</td>
     </tr>\n";
 }
-if (REVIEW_PERIOD===true) {
+if (defined('REVIEW_PERIOD') && REVIEW_PERIOD===true) {
   $cntct .= ' (BUT WITHDRAWAL EMAIL WAS SENT ONLY TO CHAIR)';
 }
 print <<<EndMark

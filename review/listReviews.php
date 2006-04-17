@@ -13,7 +13,7 @@ require 'header.php';  // defines $pcMember=array(id, name, email, ...)
 $bigNumber = 1000000;  // some stupid upper bound on the number of posts
 
 
-if ($_GET['format']=='ascii') {
+if (isset($_GET['format']) && $_GET['format']=='ascii') {
   $subHeader_fnc = 'ascii_subHeader';
   $showReviews_fnc = 'ascii_showReviews';
   $showPosts_fnc = 'ascii_showPosts';
@@ -201,7 +201,8 @@ if (count($others)>0) {
   foreach ($others as $sub) {
     $subHeader_fnc($sub, $revId);
     $showReviews_fnc($sub['reviews'], $revId);
-    if (isset($_GET['withDiscussion']) && is_array($sub['posts'])) {
+    if (isset($_GET['withDiscussion']) 
+	&& isset($sub['posts']) && is_array($sub['posts'])) {
       $showPosts_fnc($sub['posts'], $sub['subId'], false, $bigNumber);
     }
   }

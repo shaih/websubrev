@@ -63,7 +63,8 @@ else if (isset($_POST["saveAssign"])) { // input from matrix interface
     $assgn = isset($_POST["a_{$subId}_{$revId}"]) ? 1 : 0;
 
     // do not override a conflict
-    if ($prefs[$subId][$revId][2] == -1) $assgn=-1;
+    if (isset($prefs[$subId][$revId][2])
+	&& $prefs[$subId][$revId][2] == -1) $assgn=-1;
 
     if (isset($prefs[$subId][$revId])                 // modify existing entry
 	&& $prefs[$subId][$revId][2]!=$assgn) {

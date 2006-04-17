@@ -70,7 +70,7 @@ function order_clause()
     $comma = ', ';
   }
 
-  $ord = trim($_GET['sortOrder']);
+  $ord = isset($_GET['sortOrder']) ? trim($_GET['sortOrder']) : NULL;
   if (isset($ord)) {
     if ($ord=='num') {
       $order .= $comma . 's.subId';

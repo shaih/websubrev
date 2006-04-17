@@ -22,8 +22,8 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
     if (strlen($title)>82) $title = substr($title, 0, 80).'...';
     $title = htmlspecialchars($title);
 
-    $authors = htmlspecialchars($sb['authors']); 
-    $abstract = htmlspecialchars($sb['abstract']); 
+    $authors = isset($sb['authors']) ? htmlspecialchars($sb['authors']) : ''; 
+    $abstract = isset($sb['abstract'])? htmlspecialchars($sb['abstract']):''; 
     $fmt = htmlspecialchars($sb['format']); 
     $status = show_status($sb['status']); // show_status in confUtils.php
     $lastMod = (int) $sb['lastModif']; 

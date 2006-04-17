@@ -77,7 +77,7 @@ if (!empty($cmnts)) {
 
 $cmnts = trim($_POST['comments2chair']);
 if (!empty($cmnts)) {
-  $qry .= "    comments2chair='" .my_addslashes($cmnts, $cnncts) ."',\n";
+  $qry .= "    comments2chair='" .my_addslashes($cmnts, $cnnct) ."',\n";
 } else {
   $qry .= "    comments2chair=NULL,\n";
 }

@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true; 
+$needsAuthentication = true; 
 require 'header.php';
 
 $cName = CONF_SHORT.' '.CONF_YEAR;
@@ -21,6 +21,7 @@ $res = db_query($qry, $cnnct);
 $papers = array();
 while ($row = mysql_fetch_assoc($res)) { $papers[] = $row; }
 
+$links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -83,7 +84,7 @@ print <<<EndMark
 <input type="hidden" name="makeTOC" value="on">
 <input type="submit" value="Generate Table-of-Contents and Author-Index">
 </form>
-<hr/>
+<hr />
 $links
 </body>
 </html>

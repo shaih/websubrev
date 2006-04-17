@@ -15,13 +15,13 @@ $cnnct = db_connect();
 
 if ($voteOnSubmissions) {
   $where = $or = "";
-  if ($voteOnAC) { $where .= "$or status='Accept'"; $or = " OR"; }
-  if ($voteOnMA) { $where .= "$or status='Maybe Accept'"; $or = " OR"; }
-  if ($voteOnDI) { $where .= "$or status='Needs Discussion'"; $or = " OR"; }
-  if ($voteOnNO) { $where .= "$or status='None'"; $or = " OR"; }
-  if ($voteOnMR) { $where .= "$or status='Perhaps Reject'"; $or = " OR"; }
-  if ($voteOnRE) { $where .= "$or status='Reject'"; $or = " OR"; }
-  if (!empty($voteOnThese)) { $where .= "$or s.subId IN ($voteOnThese)"; }
+  if (isset($voteOnAC)) { $where .= "$or status='Accept'"; $or = " OR"; }
+  if (isset($voteOnMA)) { $where .= "$or status='Maybe Accept'"; $or = " OR"; }
+  if (isset($voteOnDI)) { $where .= "$or status='Needs Discussion'"; $or = " OR"; }
+  if (isset($voteOnNO)) { $where .= "$or status='None'"; $or = " OR"; }
+  if (isset($voteOnMR)) { $where .= "$or status='Perhaps Reject'"; $or = " OR"; }
+  if (isset($voteOnRE)) { $where .= "$or status='Reject'"; $or = " OR"; }
+  if (isset($voteOnThese)) { $where .= "$or s.subId IN ($voteOnThese)"; }
   if (empty($where)) { $where = "s.status!='Withdrawn'"; }
 
   $qry = "SELECT s.subId, title, vote FROM submissions s
@@ -51,9 +51,9 @@ else {
 }
 
 // If user has cast a vote - record it
-if (is_array($_POST["votes"])) {
+if (isset($_POST["votes"]) && is_array($_POST["votes"])) {
   $voteSum = array_sum($_POST["votes"]);
-  if ($voteBudget > 0 && $voteSum > $voteBudget) {
+  if (isset($voteBudget) && $voteBudget > 0 && $voteSum > $voteBudget) {
     if ($voteType=='Grade')
       exit ("<h1>Sum of all gardes cannot exceed $voteBudget</h1>");
     else
@@ -80,6 +80,8 @@ if (is_array($_POST["votes"])) {
   }
   $voteRecorded = "Your vote was recorded.";
 }
+else $voteRecorded = "";
+
 
 if ($voteType=='Grade') {  // reviewrs grade the submissions
   $voteTitle = "";

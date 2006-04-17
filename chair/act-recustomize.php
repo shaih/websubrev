@@ -51,16 +51,15 @@ if (!empty($x) && strtolower($x)!=strtolower($adminEml)) {
   $changeConstFile = true; $adminEml = $x;
 }
 
-$x = trim($_POST['emlCrlf']);
+$x = isset($_POST['emlCrlf'])  ? trim($_POST['emlCrlf']) : NULL;
 if ($x != "\\n") $x = "\\r\\n";
 if (isset($_POST['emlCrlf']) || !defined(EML_CRLF)) $emlCrlf = $x;
 
-$x  = trim($_POST['emlExtraPrm']);
+$x  = isset($_POST['emlExtraPrm']) ? trim($_POST['emlExtraPrm']) : NULL;
 if (isset($_POST['emlExtraPrm']) || !defined(EML_EXTRA_PRM))
   $emlExtraPrm = $x;
 
 $x = isset($_POST['subDeadline']) ?  trim($_POST['subDeadline']) : NULL;
-
 if (!empty($x) && $x!=$subDeadline) {$changeConstFile=true; $subDeadline=$x;}
 
 $x = isset($_POST['cameraDeadline']) ? trim($_POST['cameraDeadline']) : NULL;
@@ -157,7 +156,7 @@ if (!defined('REVIEW_PERIOD') && isset($_POST['closeSubmissions'])) {
 
 // Manage access to the review cite
 if (isset($_POST['reviewSite'])) {
-  $mmbrs2remove = $_POST['mmbrs2remove'];
+  $mmbrs2remove = isset($_POST['mmbrs2remove'])? $_POST['mmbrs2remove']: NULL;
   if (is_array($mmbrs2remove)) foreach ($mmbrs2remove as $revId => $x) {
     if ($revId==CHAIR_ID) continue;    // Cannot remove the chair
     $qry = "DELETE from committee WHERE revId='"

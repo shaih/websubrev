@@ -47,7 +47,7 @@ db_query($qry, $cnnct);
 
 // Tell the client that the submission is withdrawn
 
-if (REVIEW_PERIOD===true) { // send email only to chair
+if (defined('REVIEW_PERIOD') && REVIEW_PERIOD===true) { // send email only to chair
   email_submission_details(CHAIR_EMAIL, 3, $subId, $subPwd, $ttl, $athr);
 } else {                    // send email to contact author
   email_submission_details($cntct, 3, $subId, $subPwd, $ttl, $athr);

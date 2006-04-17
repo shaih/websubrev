@@ -25,15 +25,15 @@ if (isset($_POST['loadDetails'])) {
 
 // Read all the fields, stripping spurious white-spaces
 
-$title   = trim($_POST['title']);
-$author  = trim($_POST['authors']);
-$affiliations  = trim($_POST['affiliations']);
-$contact = trim($_POST['contact']);
-$abstract= trim($_POST['abstract']);
-$category= trim($_POST['category']);
-$keywords= trim($_POST['keywords']);
-$comment = trim($_POST['comment']);
-$nPages = (int) trim($_POST['nPages']);
+$title   = isset($_POST['title'])    ? trim($_POST['title'])    : NULL;
+$author  = isset($_POST['authors'])  ? trim($_POST['authors'])  : NULL;
+$affiliations  = isset($_POST['affiliations']) ? trim($_POST['affiliations']) : NULL;
+$contact = isset($_POST['contact'])  ? trim($_POST['contact'])  : NULL;
+$abstract= isset($_POST['abstract']) ? trim($_POST['abstract']) : NULL;
+$category= isset($_POST['category']) ? trim($_POST['category']) : NULL;
+$keywords= isset($_POST['keywords']) ? trim($_POST['keywords']) : NULL;
+$comment = isset($_POST['comment'])  ? trim($_POST['comment'])  : NULL;
+$nPages  = isset($_POST['nPages'])   ? ((int) trim($_POST['nPages'])) : 0;
 
 if (isset($_FILES['sub_file'])) {
   $sbFileName = trim($_FILES['sub_file']['name']);
@@ -119,6 +119,7 @@ else $comment = $row['comments2chair'];
 
 // If a new file is specified, try to determine its format and then
 // store the uploaded file under a temporary name
+$fileFormat = NULL;
 if (!empty($sbFileName)) {
   $fileFormat = determine_format($_FILES['sub_file']['type'], $sbFileName, $tmpFile);
   $updts .= "  format='" . my_addslashes($fileFormat, $cnnct)."',\n";
@@ -134,7 +135,8 @@ if (!empty($sbFileName)) {
      
 // If anything changed, insert changes into the database
 if (!empty($updts) || isset($_POST['reinstate'])) {
-  if (!defined('REVIEW_PERIOD')) { $updts .= "status='None', "; }
+  if (!defined('REVIEW_PERIOD') || isset($_POST['reinstate']))
+    $updts .= "status='None', "; 
   $qry = "UPDATE submissions SET $updts lastModified=NOW()\n"
     . "WHERE subId='{$subId}' AND subPwd='{$subPwd}'";
   db_query($qry, $cnnct, 'Cannot insert submission details to database: ');

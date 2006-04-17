@@ -94,8 +94,10 @@ EndMark;
   // Move the old guidelines file to backup
   $gdFile = SUBMIT_DIR."/guidelines.html";
   $bkFile = SUBMIT_DIR."/guidelines.bak.html";
-  if (file_exists($bkFile)) unlink($bkFile);
-  rename($gdFile, $bkFile);
+  if (file_exists($gdFile)) {
+    if (file_exists($bkFile)) unlink($bkFile);
+    rename($gdFile, $bkFile);
+  }
 
   // Write the new file
   if (!($fd = fopen($gdFile, 'w'))) { // open for write
@@ -336,8 +338,8 @@ function showSemantics($title, $semantics, $max, $acceptInput, $name="X")
 
   for ($i=1; $i<=$max; $i++) {
     $html .= "<dd>$i: ";
-    if ($acceptInput) $html .= "<input type=\"text\" name=\"{$name}[$i]\" size=80 value=\"".$semantics[$i]."\">\n";
-    else $html .= $semantics[$i]."\n";
+    if ($acceptInput) $html .= "<input type=text name=\"{$name}[$i]\" size=80 value=\"".(isset($semantics[$i]) ? $semantics[$i] : '')."\">\n";
+    else $html .= (isset($semantics[$i]) ? $semantics[$i] : '')."\n";
   }
   $html .= "</dl>\n";
   return $html;

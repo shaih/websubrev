@@ -13,7 +13,7 @@ $footer = <<<EndMark
 This is a version 0.51 (beta) of the Web-Submission-and-Review software,
 written by <a href="http://alum.mit.edu/www/shaih">Shai Halevi</a> from <a
 href="http://www.research.ibm.com"><img src="$logo" alt="IBM Research">
-</a>.<br/>
+</a><br/>
 Shai would love to hear your comments and suggestions regarding this software.
 EndMark;
 
@@ -37,7 +37,7 @@ function show_legend()
   $legend = <<<EndMark
 <hr/>
 <table><tbody>
-<tr><td>Legend:</td><td>$NOicon, $REicon, $MRicon, $DIicon, $MAicon, $ACicon: Status marks (None, Reject, Maybe-reject, Discuss, Maybe-accept, Accept)</td>
+<tr><td>Legend:</td><td>$NOicon, $REicon, $MRicon, $DIicon, $MAicon, $ACicon: Status marks (None, [Maybe-]Reject, Discuss, [Maybe-]Accept)</td>
 <tr><td></td><td>$reviewIcon, $reviseIcon: Submit a new/revised report about a submissoin</td></tr>
 <tr><td></td><td>$discussIcon1, $discussIcon2: See reports and discussion boards (all read / some unread)</td></tr>
 </tbody></table>
@@ -163,7 +163,7 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
   }
 
   $msg = "The submissions details are as follows:\n";
-  if (!empty($fileFormat) && substr($row['format'], -12)=='.unsupported') {
+  if (!empty($fileFormat) && substr($fileFormat, -12)=='.unsupported') {
     $msg .= "UNSUPPORTED FORMAT: \t{$fileFormat}\n";
   }
   if ($sid != 0)     { $msg .= "Submission number:  \t{$sid}\n"; }
