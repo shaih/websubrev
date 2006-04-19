@@ -172,53 +172,49 @@ td { font: bold 16px ariel; text-align: center; }
 </script>
 <script type="text/javascript" src="autosuggest.js"></script>
 
-<title>Reviewing Assignments</title>
+<title>Manual Assignments of Submissions to Reviewers</title>
 </head>
 
 <body>
 $links
 <hr />
-<h1>Reviewing Assignments</h1>
+<h1>Manual Assignments of Submissions to Reviewers</h1>
 
 <form action="assignments.php" enctype="multipart/form-data" method="post">
 To manually assign submissions to reviewers, you can use either the <a
 href="#matrix">matrix interface</a> or the <a href="#sublist">submission-list
-interface</a> below. You can always start from scratch by using the clear-all
+interface</a> below. When you hit the "Save Assignments" button at the
+bottom of each interface the reviewers will be able to see what submissions
+were assigned to them (and the sums at the right column and the bottom row
+will be updated). You can always start from scratch by using the clear-all
 button: 
 <input type="submit" value="Clear All Assignments"> (Note: <big><strong>there
 is no way to "undo" the clear-all button</strong></big>.)
 <input type="hidden" name="clearAllAssignments" value="on">
 </form>
 
-
 EndMark;
 
-if (REVPREFS) {
+if (defined('REVPREFS') && REVPREFS) {
   print <<<EndMark
-You may also want to let reviewers specify their preferences and then have the
-software automatically generate an initial assignment (using a stable-marriage
+You can have the software automatically computes an assignment of
+submissions to reviewers (using the reviewer preferences and a stable-marriage
 algorithm) by going to <a href="auto-assign.php">the Auto-Assignment page</a>.
-In that case you may want to first use the <a
-href="auto-assign.php#chairPrefs">chair-preferences form</a> on that page
-to specify your own preferences as to who should be assigned what submission.
-These preferences will be used together with the reviewers preferences in
-the algorithm. (Also, the check-boxes in the <a href="#matrix">matrix
-interface</a> below will be colored <span style="color: green;">green</span>
-when you indicate that the PC-member should review the submission or <span
-style="color: red;">red</span> when you indicate that the PC-member should
-not review the submission.)
-
+(The Auto-Assignment page includes also a form for specifying the <a
+href="auto-assign.php#chairPrefs">chair-preferences</a>, and these
+preferences are used in the automatic assignment algorithm. Also, the
+check-boxes in the <a href="#matrix">matrix interface</a> below will
+be colored <span style="color: green;">green</span> when you indicate
+a preference for the PC-member to review the submission or <span
+style="color: red;">red</span> when you indicate a preference that the
+PC-member do not review the submission.)<br/>
+<br/>
 
 EndMark;
 }
 
 print <<<EndMark
-<a name="matrix"></a><h2>Martix Interface</h2>
-When you hit the "Save Assignments" button <a href="#saveMatrix">at the
-bottom of the matrix</a>, the reviewers will be able to see what submissions
-were assigned to them (and the sums at the right column and the bottom row
-will be updated).<br/>
-<br/>
+<a name="matrix"></a><h2>Matrix Interface</h2>
 <form action="assignments.php" enctype="multipart/form-data" method="post">
 <table cellspacing=0 cellpadding=0 border=1><tbody>
 
@@ -294,12 +290,12 @@ you should provide the name of the PC member as recorded in the database. You
 can specify only a prefix of the name, as long as it is sufficient to uniquely
 identify a single member (e.g., if you have a committee member named Wawrzyniec
 C. Antroponimiczna, it may be enough to write "Waw"). For example, to assign
-Attila T. Hun and George W. Bush to review submission number 132, you may use
+Attila T. Hun and John Doe to review submission number 132, you may use
 the following line:
 
 <ol>
 <li value="132"> The title of submission number 132<br/>
-  <input size=85 value="Attila; George W. B" readonly="on"/><br/></li>
+  <input size=85 value="Attila; John D" readonly="on"/><br/></li>
 </ol>
 
 <h3>Current PC members:</h3>
@@ -386,7 +382,8 @@ function checkbox($subId, $revId, $name, $cmpt, $isChecked)
   $ttl = "{$subId}/{$name}";
   switch ($isChecked) {
   case -1:
-    $chk = ' disabled="disabled"'; $ttl .= ' (conflict)'; break;
+      return '<span class="'.$cls.'"><img src=xmark.gif title="'.$ttl.' (conflict)" alt="x"></span>';
+      // $chk = ' disabled="disabled"'; $ttl .= ' (conflict)'; break;
   case 1:
     $chk = ' checked="checked"'; $ttl .= ' (assigned)'; break;
   default:

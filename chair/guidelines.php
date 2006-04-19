@@ -260,7 +260,7 @@ h1 {text-align: center;}
 $links
 <hr />
 <h1>Set Review Guideline for $cName</h1>
-You can either upload your own guidelines HTML file or use the HTML text in form below. <br/>
+You can either upload your own guidelines HTML file or use the HTML text in the form below. <br/>
 
 <form action="guidelines.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
@@ -322,6 +322,8 @@ print <<<EndMark
 
 <input type="submit" name="setGuidelines" value="Store These Review Guidelines">
 </form>
+<hr/>
+$links
 </body>
 </html>
 

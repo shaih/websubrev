@@ -137,24 +137,26 @@ print <<<EndMark
 $links
 <hr />
 <h1>Auto-Assignment of Submissions to Reviewers</h1>
-Use this page to automatically generate an initial assignment of submissions
+Use this page to automatically generate an assignment of submissions
 to reviewers. Each reviewer can specify his/her reviewing preferences, and
 you can use the <a href="#chairPrefs">chair-preferences form</a> to specify
 your own preferences as to who should (or should not) review what submission.
-These preferences can then be used is a stable-marriage algorithm by going
-to the <a href="#autoAssign">auto-assign form</a>.<br/>
-<br/>
-Also, the chair preferences are used to color the check-boxes in the <a
+Then go to the <a href="#autoAssign">auto-assign form</a> to have these
+preferences used in a stable-marriage algorithm to compute the assignments.
+(Also, the chair preferences are used to color the check-boxes in the <a
 href="assignments.php#matrix">matrix interface</a> on the manual assignment
 page. Specifically, the check-box is colored <span style="color: green;">
 green</span> when you indicate that the PC-member should review the submission
 or <span style="color: red;">red</span> when you indicate that the PC-member
-should not review the submission.
+should not review the submission.)<br/>
+<br/>
+The assignments that are computed here can be modified from the 
+<a href="assignments.php">Manual Assignment page</a>. 
 
 <a name="chairPrefs"></a><h2>Chair Preferences</h2>
-For each submission you may provide a <b>semi-colon-separated</b> list of PC
-members that you would like to review that submission, and another list of
-members that you prefer will <i>not</i> review that submission
+For each submission you may provide a <b>semi-colon-separated</b> list
+of PC members that you would like to review that submission, and another
+list of members that you prefer will <i>not</i> review that submission
 (<a href="../documentation/chair.html#chairPrefs">more info</a>).
 
 <br/>
@@ -236,18 +238,18 @@ print <<<EndMark
 </form>
 
 <hr /><hr />
-<h2><a name="autoAssign">Compute Initial Assignments</a></h2>
+<h2><a name="autoAssign">Compute Assignments</a></h2>
 <form action="stableMarriage.php" enctype="multipart/form-data" method="post" autocomplete="off">
 When you hit the "Compute Assignments" button below, the reviewer
 preferences and your own preferences from <a href="#chairPrefs">the form
-above</a> will be used to compute an initial assignment of reviewers to
+above</a> will be used to compute an assignment of reviewers to
 submissions, using a stable-marriage algorithm. You can use this form to
 modify a few parameters of this algorithm:
 <ul>
 <li><a href="../documentation/chair.html#exRevs"
      title="Click for more information">Excluded reviewers</a>:
      <input type="text" size=85 name="cListExclude"><br/>
-(a <b>semi-colon-separated</b> list of reviewer names). Some reviewers can be excluded from consideration by the algorithm (e.g., the chair). They will not be assigned any submissions (and their assignments will not be cleared even if the "keep existing assignments" checkbox below is cleared).<br/>
+(a <b>semi-colon-separated</b> list of reviewer names). Reviewers to be excluded from consideration by the algorithm (e.g., the chair). They will not be assigned any submissions (and their assignments will not be cleared even if the "keep existing assignments" checkbox below is cleared).<br/>
 <br />
 </li>
 <li>The number of reviewers that are assigned to each submission is: <input type="text" value="3" size=1 name="subCoverage">.<br /><br />

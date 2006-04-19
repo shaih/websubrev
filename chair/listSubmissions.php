@@ -67,7 +67,7 @@ foreach($subArray as $sb) {
   else $downld = SUBMIT_DIR."/$subId.$format";
 
   $reviewTime = defined('REVIEW_PERIOD') ? REVIEW_PERIOD : false;
-  if ($reviewTime && file_exists($downld))
+  if (!$reviewTime && file_exists($downld))
        $downld = '[<a href="../'.$downld.'">Download</a>]';
   else $downld = '';
 

@@ -235,6 +235,41 @@ if (isset($committee)) foreach ($committee as $m) {
 
 if (empty($confURL)) $confURL = '.';
 
+// escape things before storing them in the constant file
+$longName = str_replace("\\", "\\\\", $longName);
+$longName = str_replace("'", "\\'", $longName);
+
+$shortName = str_replace("\\", "\\\\", $shortName);
+$shortName = str_replace("'", "\\'", $shortName);
+
+$confURL = str_replace("\\", "\\\\", $confURL);
+$confURL= str_replace("'", "\\'", $confURL);
+
+$chrEml= str_replace("\\", "\\\\", $chrEml);
+$chrEml= str_replace("'", "\\'", $chrEml);
+
+$adminEmail= str_replace("\\", "\\\\", $adminEmail);
+$adminEmail= str_replace("'", "\\'", $adminEmail);
+
+$subDeadline = str_replace("\\", "\\\\", $subDeadline);
+$subDeadline = str_replace("'", "\\'", $subDeadline);
+
+$cameraDeadline= str_replace("\\", "\\\\", $cameraDeadline);
+$cameraDeadline= str_replace("'", "\\'", $cameraDeadline);
+
+$sqlHost= str_replace("\\", "\\\\", $sqlHost);
+$sqlHost= str_replace("'", "\\'", $sqlHost);
+
+$sqlDB = str_replace("\\", "\\\\", $sqlDB);
+$sqlDB = str_replace("'", "\\'", $sqlDB);
+
+$sqlUsr = str_replace("\\", "\\\\", $sqlUsr);
+$sqlUsr = str_replace("'", "\\'", $sqlUsr);
+
+$sqlPwd = str_replace("\\", "\\\\", $sqlPwd);
+$sqlPwd = str_replace("'", "\\'", $sqlPwd);
+
+
 $constString = "<?php
 /* Web Submission and Review Software, version 0.51
  * Written by Shai Halevi
@@ -296,6 +331,8 @@ else {
   $comma = '';
   $constString .= "\$categories = array(";
   foreach ($categories as $c) {
+    $c = str_replace("\\", "\\\\", $c);
+    $c = str_replace("'", "\\'", $c);
     $constString .= "{$comma}\n  '$c'";
     $comma = ',';
   }
@@ -307,6 +344,8 @@ else {
   $comma = '';
   $constString .= "\$criteria = array(";
   foreach($criteria as $c) {
+    $c[0] = str_replace("\\", "\\\\", $c[0]);
+    $c[0] = str_replace("'", "\\'", $c[0]);
     $constString .= "{$comma}\n  array('$c[0]', $c[1])";
     $comma = ',';
   }
@@ -337,9 +376,18 @@ if (!rename($tFile, $constFile)) {
 chmod($constFile, 0664); // Just make debugging a bit easier
 
 // Create the submission directory
-if (!rename('submissions', SUBMIT_DIR)) { 
-  exit ("<h1>Cannot rename submission directory to ".SUBMIT_DIR."</h1>\n");
+if (!mkdir(SUBMIT_DIR, 0775)) { 
+  exit ("<h1>Cannot create submission directory ".SUBMIT_DIR."</h1>\n");
 }
+if (!mkdir(SUBMIT_DIR.'/backup', 0775)) { 
+  exit ("<h1>Cannot create submission nackup directory ".SUBMIT_DIR."/backup</h1>\n");
+}
+if (!mkdir(SUBMIT_DIR.'/final', 0775)) { 
+  exit ("<h1>Cannot create camera-ready submission directory ".SUBMIT_DIR."/final</h1>\n");
+}
+copy('log/index.html', SUBMIT_DIR.'/index.html');
+copy('log/index.html', SUBMIT_DIR.'/backup/index.html');
+copy('log/index.html', SUBMIT_DIR.'/final/index.html');
 
 // All went well, send email to chair and go to confirmation page
 $emlCrlf = ($emlCrlf=="\\n") ? "\n" : "\r\n";

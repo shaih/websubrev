@@ -28,7 +28,6 @@ $chair = $row;
 $cmmtee = array();
 while ($row = mysql_fetch_row($res)) { array_push($cmmtee, $row); }
 
-
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -61,11 +60,14 @@ EndMark;
 /******************** END HEADER, CONTENT STARTS HERE ***************/
 /********************************************************************/
 
+$links = show_chr_links();
 print <<<EndMark
-<title>Review Site Access</title>
+<title>Manage PC Membership</title>
 </head>
 <body>
-<h1>Review Site Access</h1>
+$links
+<hr/>
+<h1>Manage PC Membership</h1>
 
 Below is the list of program-committee members that have access to the
 review area of this site. To login to the site, a member must provide
@@ -174,6 +176,8 @@ print <<<EndMark
 </tr>
 </tbody></table>
 </form>
+<hr/>
+$links
 </body>
 </html>
 

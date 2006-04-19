@@ -200,7 +200,8 @@ box, PC members will see a link on the review page asking them to specify
 their reviewing preferences. The chair will then be able to see all these
 preferences and can take them into account in assigning submissions to
 reviewers. Moreover, the chair will be given the option to let the software
-automatically compute an initial assignment based on these preferences.
+automatically compute an assignment or submissions to reviewers based on
+these preferences.
 UNchecking this box will turn off reviewer preferences, and also disable
 the automatic assignment option.
 </dt>
@@ -250,13 +251,16 @@ that lets you revise or withdraw submissions if need be.
 <a name="revSetUp"></a><h3>5a. Initial set-up</h3>
 One of the first things that you would want to do after the deadline is
 letting the PC members access the review site. This is done from the
-review-site access page. On that page you can add or remove PC members,
+"Manage PC membership" page. On that page you can add or remove PC members,
 reset the password of a PC member and modify the email address or the name 
 that is recorded in the database for each member.
 The PC members can login to the site using their email address and 
 password. When you reset the password of a PC member, an email message is
 sent to that member with the new password. (Also, changing the email address
-of a PC member automatically resets his/her password.)<br/>
+of a PC member automatically resets his/her password.) Note that it is
+possible for several people to use the same email address as long as
+they use different passwords (but all the passwords will be sent to that
+one email address).<br/>
 <br/>
 Other things that you can do from the administration page is to create
 an archive file with all the submissions (so that reviewers do not need
@@ -290,16 +294,15 @@ the review process, should you need to modify these decisions.)<br/><br/></li>
 <li>
 For the task of assigning submissions to reviewers, you are given the choice
 to either assign everything manually, or to let the software compute an
-initial assignment (using the reviewer's preferences) that you can later
-adjust.
+assignment (using the reviewer's preferences) that you can later adjust.
 </li>
 </ul>
-<h4>Computing an Initial Assignment</h4>
+<h4>Automatically Computing Paper Assignments</h4>
 If you did not disable that option, you will find a link off the 
-Paper-Assignment page that points to the Auto-Assignment page,
-where you can have the software compute an initial assignment of submissions
-to reviewers. The software uses a Stable-Marriage-like algorithm to generate
-this initial assignment, as described next.<br/>
+administration page that points to the auto-assignment page, where you can
+have the software compute an assignment of submissions to reviewers. The
+software uses a Stable-Marriage-like algorithm to generate this assignment,
+as described next.<br/>
 <br/>
 <a name="chairPrefs"></a>
 Recall that in a (generalized) stable-marriage problem, you have a bipartite
@@ -357,8 +360,8 @@ Other parameters that you need to specify are how many reviewers are
 assigned for each submission and whether or not you want to keep existing
 assignments (if any) or start from scratch.
 Once you specify all the parameters, the software automatically computes
-an initial assignment, and you are taken back to the manual-assignment page
-where you can review and modify this initial assignment.
+an assignment of submissions to reviewers, and you are taken to the
+manual-assignment page where you can review and modify this assignment.
 
 <h4>Manually Assigning Submissions to Reviewers</h4>
 The manual-assignment page provides you with two different interfaces that

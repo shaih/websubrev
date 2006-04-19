@@ -56,11 +56,14 @@ EndMark;
 /******************** END HEADER, CONTENT STARTS HERE ***************/
 /********************************************************************/
 
+$links = show_chr_links();
 print <<<EndMark
 
 <title>Closing Submissions and Activating the Review Site</title>
 </head>
 <body>
+$links
+<hr/>
 <h1>Closing Submissions and Activating the Review Site</h1>
 
 <center>
@@ -122,6 +125,8 @@ review site is activated.<br/>
 </tr>
 </tbody></table>
 </form>
+<hr/>
+$links
 </body>
 </html>
 

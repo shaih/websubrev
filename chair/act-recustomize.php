@@ -216,6 +216,29 @@ if (isset($_POST['shutdown']) && $_POST['shutdown']=="yes") {
 }
 
 if ($changeConstFile) {
+
+  // escape things before storing them in the constant file
+  $longName = str_replace("\\", "\\\\", $longName);
+  $longName = str_replace("'", "\\'", $longName);
+
+  $shortName = str_replace("\\", "\\\\", $shortName);
+  $shortName = str_replace("'", "\\'", $shortName);
+
+  $confURL = str_replace("\\", "\\\\", $confURL);
+  $confURL = str_replace("'", "\\'", $confURL);
+
+  $chairEml = str_replace("\\", "\\\\", $chairEml);
+  $chairEml = str_replace("'", "\\'", $chairEml);
+
+  $adminEml = str_replace("\\", "\\\\", $adminEml);
+  $adminEml = str_replace("'", "\\'", $adminEml);
+
+  $subDeadline = str_replace("\\", "\\\\", $subDeadline);
+  $subDeadline = str_replace("'", "\\'", $subDeadline);
+
+  $cmrDeadline= str_replace("\\", "\\\\", $cmrDeadline);
+  $cmrDeadline= str_replace("'", "\\'", $cmrDeadline);
+
   $constString = "<?php
 /* Web Submission and Review Software, version 0.51
  * Written by Shai Halevi
@@ -287,6 +310,8 @@ if ($changeConstFile) {
     $comma = '';
     $constString .= "\$categories = array(";
     foreach ($categories as $c) {
+      $c = str_replace("\\", "\\\\", $c);
+      $c = str_replace("'", "\\'", $c);
       $constString .= "{$comma}\n  '$c'";
       $comma = ',';
     }
@@ -298,6 +323,8 @@ if ($changeConstFile) {
     $comma = '';
     $constString .= "\$criteria = array(";
     foreach($criteria as $cr) {
+      $cr[0] = str_replace("\\", "\\\\", $cr[0]);
+      $cr[0] = str_replace("'", "\\'", $cr[0]);
       $constString .= "{$comma}\n  array('$cr[0]', $cr[1])";
       $comma = ',';
     }

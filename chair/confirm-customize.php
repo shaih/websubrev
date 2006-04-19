@@ -12,7 +12,7 @@ if (file_exists('./includes/confConstants.php')) { // Already customized
 }
 
 // Some things in confUtils need the BASE_URL constant
-$baseURL = $_SERVER['HTTP_HOST']; . $_SERVER['PHP_SELF'];             // this file
+$baseURL = $_SERVER['HTTP_HOST']. $_SERVER['PHP_SELF'];   // this file
 $baseURL = substr($baseURL, 0, strrpos($baseURL, '/'));   // the directory
 $baseURL = substr($baseURL, 0, strrpos($baseURL, '/')+1); // parent directory
 define('BASE_URL', $baseURL);
@@ -420,7 +420,7 @@ if (isset($sqlUsr))
 if (isset($sqlPwd))
   print '<input name="pwd" type="hidden" value="'. $sqlPwd. "\">\n";
 
-print "<input name=\"nCmmtee\" type=\"hidden\" value=\"$nCmmtee\"\">\n";
+print "<input name=\"nCmmtee\" type=\"hidden\" value=\"$nCmmtee\">\n";
 if ($nCmmtee > 0) {
   $i = 0;
   foreach ($committee as $m) {

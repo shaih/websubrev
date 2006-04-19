@@ -14,7 +14,7 @@ if (defined('CAMERA_PERIOD')) exit("<h1>Review Site is Closed</h1>");
 if (isset($_GET['removeTGZ'])) {
   if (file_exists(SUBMIT_DIR."/all_in_one.tgz")) {
     unlink(SUBMIT_DIR."/all_in_one.tgz");
-    exit("<h1>Archive file all_in_one.tgz removed</h1>");
+    exit("<h1>Archive file all_in_one.tgz removed</h1>\n<a href=\".\">Back to main page</a>");
   }
   else exit("<h1>Archive file all_in_one.tgz does not exist</h1>\n<a href=\".\">Back to main page</a>");
 }

@@ -168,7 +168,7 @@ function discussion_phase($revId)
 
   if (file_exists('./review/voteParams.php')) {
     include './review/voteParams.php';
-    print "You have until $voteDeadline to <a target=\"blank\" href=\"vote.php\">participate
+    print "You have until $voteDeadline to <a target=\"_blank\" href=\"vote.php\">participate
 in the current vote</a>. ";
   }
 

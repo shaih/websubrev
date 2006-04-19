@@ -34,9 +34,12 @@ function ascii_showReviews(&$reviews, $revId)
   for ($j=0; $j<$nReviews; $j++) {
     $rev =& $reviews[$j];
 
-    $cmnt2athr = htmlspecialchars(wordwrap($rev['cmnts2athr']));
-    $cmnt2PC   = htmlspecialchars(wordwrap($rev['cmnts2PC'])) ;
-    $cmnt2chr  = htmlspecialchars(wordwrap($rev['cmnts2chr']));
+    $cmnt2athr = isset($rev['cmnts2athr'])? $rev['cmnts2athr']: '';
+    $cmnt2PC   = isset($rev['cmnts2PC']) ?  $rev['cmnts2PC'] :  '';
+    $cmnt2chr  = isset($rev['cmnts2chr'])?  $rev['cmnts2chr'] : '';
+    $cmnt2athr = htmlspecialchars(wordwrap($cmnt2athr));
+    $cmnt2PC   = htmlspecialchars(wordwrap($cmnt2PC));
+    $cmnt2chr  = htmlspecialchars(wordwrap($cmnt2chr));
     $conf = (int) $rev['conf'];
 
     $PCmember = $rev['PCmember'];

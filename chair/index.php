@@ -94,19 +94,33 @@ EndMark;
 function manage_reviews($period)
 {
   if ($period < 2) return;
-  if ($period == 2) print <<<EndMark
+  if ($period == 2) { 
+
+    if (defined('REVPREFS') && REVPREFS) { $assignHTML = <<<EndMark
+Assign submissions to reviewers:
+<ul>
+<li><a href="auto-assign.php">Automatic assignments</a> (Compute assignments automatically from the reviewers preferences.)</li>
+<li><a href="assignments.php">Manual assignments</a> (Use matrix and list interfaces for manual assignment or adjusting the automatic assignment.)</li>
+</ul>
+The assignments can always be revised and recomputed.
+EndMark;
+    } else {
+      $assignHTML = '<a href="assignments.php">Assign submissions to reviewers</a>';
+    }
+print <<<EndMark
 <h3><span style="background-color: red;">Review Site is Active</span></h3>
 <dl>
 <dt><strong>Initial set-up</strong>
-<dd><a href="manage-review-site.php">Manage access to review site</a>
 <dd><a href="archive.php">Create a tar file with all the submission files</a>
 <dd><a href="guidelines.php">Edit the review guidelines page</a>
+<dd><a href="manage-review-site.php">Manage PC membership</a>
 <br /><br />
 
 <dt><strong>Paper assignments</strong>
-<dd><a href="conflicts.php">Block access to submissions (due to conflict-of-interests, etc.)</a>
-<dd><a href="assignments.php">Assign submissions to reviewers</a>
-<br /><br />
+<dd><a href="conflicts.php">Edit conflicts</a> (Use to block access to
+  submissions due to conflict-of-interests, etc.)
+<dd>$assignHTML
+<br/><br/>
 
 <dt><strong>Reviews and decisions</strong>
 <dd><a href="overview.php">Overview of all submissions and reviews</a>
@@ -122,8 +136,8 @@ function manage_reviews($period)
 </dl>
 
 EndMark;
-
-  else { print <<<EndMark
+  } else { // $period > 2
+print <<<EndMark
 <b><big>&nbsp;Review Site is Closed</big></b><br />
 &nbsp;&nbsp;o&nbsp;&nbsp;<a href="../review/listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on&amp;format=ascii">List all reviews/discussions (text)</a>&nbsp;&nbsp;<br />
 
@@ -135,7 +149,7 @@ EndMark;
 &nbsp;&nbsp;o&nbsp;&nbsp;<a href="sendComments.php">Send comments...</a>&nbsp;&nbsp;<br />
 
 EndMark;
-  } 
+  }
 }
 
 function manage_final_version($period)

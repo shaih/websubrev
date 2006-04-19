@@ -32,6 +32,7 @@ EndMark;
 clearstatcache();
 if (file_exists("./review/voteParams.php")) { 
   include "./review/voteParams.php";
+  if (!isset($voteTitles)) $voteTitles=NULL;
   print_vote_results(true, $voteOnSubmissions, $voteTitles);
 }
 else if (file_exists("./review/voteParams.bak.php")) {

@@ -21,6 +21,7 @@ $cmrDeadline = CAMERA_DEADLINE;
 $emlCrlf = addcslashes(EML_CRLF, "\r\n");
 $emlExtraPrm =  EML_EXTRA_PRM;
 
+$links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html><head>
@@ -32,7 +33,8 @@ tr { vertical-align: top; }
 <title>Managing Submissions Site</title></head>
 
 <body>
-
+$links
+<hr/>
 <h1>Managing Submissions Site</h1>
 <form name="manage-subs" action="act-recustomize.php"
       enctype="multipart/form-data" method="post">
@@ -168,6 +170,8 @@ print <<<EndMark
     </tbody>
   </table>
 </form>
+<hr/>
+$links
 </body></html>
 EndMark;
 ?>

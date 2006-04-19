@@ -205,7 +205,8 @@ while (!$done) {
 
 // The algorithm is done, all that is left is to record the results
 foreach ($revs as $revId => $x) foreach ($subs as $subId => $y) {
-  $aOld = $curAssign[$revId][$subId];        // -1, 0, 1 or NULL
+  // $aOld is -1, 0, 1 or NULL
+  $aOld = isset($curAssign[$revId][$subId])? $curAssign[$revId][$subId]: NULL;
   $aNew = isset($revMatches[$revId][$subId]) ? 1 : 0;
 
   // do not overwrite conflict-of-interest, and (depending on $_POST)
