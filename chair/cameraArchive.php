@@ -40,7 +40,7 @@ function SYSmkTar()
 {
   $return_var = 0;
   $output_lines = array();
-  $ret = exec("tar -cf all_in_one.tmp.tar final/*.* --exclude=index.html --no-recursion", $output_lines, $return_var); // execute the command
+  $ret = exec("tar -cf all_in_one.tmp.tar *.* --exclude=index.html --no-recursion", $output_lines, $return_var); // execute the command
 
   if ($ret!==false && $return_var == 0) // success
     return 'tar';

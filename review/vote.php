@@ -62,7 +62,7 @@ if (isset($_POST["votes"]) && is_array($_POST["votes"])) {
   
   foreach($voteItems as $itemId => $vItem) {
     $itemId = (int) $itemId;
-    $theVote = (int)$_POST["votes"][$itemId];
+    $theVote = isset($_POST["votes"][$itemId]) ? intval($_POST["votes"][$itemId]) : 0;
     if ($theVote<0) $theVote = 0;
     else if ($theVote>$voteMaxGrade) $theVote = $voteMaxGrade;
 

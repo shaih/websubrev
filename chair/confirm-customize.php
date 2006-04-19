@@ -50,8 +50,8 @@ $emlExtraPrm = isset($_POST['emlExtraPrm'])? trim($_POST['emlExtraPrm']): NULL;
 if (empty($emlExtraPrm)) $emlExtraPrm = '-f ' . $chair[1];
 else if (strtolower($emlExtraPrm)=="none") $emlExtraPrm = '';
 
-$subDeadline = trim($_POST['subDeadline']);
-$cameraDeadline= trim($_POST['cameraDeadline']);
+$subDeadline = isset($_POST['cameraDeadline']) ? trim($_POST['subDeadline']) : NULL;
+$cameraDeadline= isset($_POST['cameraDeadline'])? trim($_POST['cameraDeadline']) : NULL;
 
 $categories  = isset($_POST['categories']) ?
                     explode(';', $_POST['categories']) : NULL;
@@ -109,14 +109,14 @@ if ((empty($sqlRoot) || empty($sqlRtPw))
 
 // Try to parse the deadlines as some recognized date format
 // The error code from strtotime is -1 for PHP 4 and FALSE for PHP 5
-$tsb = strtotime($subDeadline);
+$tsb = empty($subDeadline) ? false : strtotime($subDeadline);
 if ($tsb !== false && $tsb !== -1) { 
   $subDeadline = date('r (T)', $tsb); 
   $tsb = '';
 }
 else { $tsb = '(warning: unregocnized time format)'; }
 
-$tcr = strtotime($cameraDeadline);
+$tcr = empty($cameraDeadline) ? false : strtotime($cameraDeadline) ;
 if ($tcr !== false && $tcr !== -1) { 
   $cameraDeadline = date('r (T)', $tcr);
   $tcr = '';
