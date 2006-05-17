@@ -7,6 +7,7 @@
  */
 require 'header.php'; // brings in the contacts file and utils file
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
+$now= date('r (T)');
 
 $links = show_sub_links(2);
 print <<<EndMark
@@ -35,7 +36,7 @@ if (defined('CAMERA_PERIOD')) {
 
   print <<<EndMark
 <h1>Final-Version Submission Instructions</h1>
-<h3>Deadline is $deadline</h3>
+<h3>Deadline is $deadline<br/>Time now is $now</h3>
 
 Use the <a href="cameraready.php">camera-ready revision form</a> (with
 the password that you got when you submitted the paper) to submit the
@@ -59,7 +60,7 @@ $deadline = SUBMIT_DEADLINE;
 
 print <<<EndMark
 <h1>Submission/Revision Instructions</h1>
-<h3>Deadline is $deadline</h3>
+<h3>Deadline is $deadline<br/>Time now is $now</h3>
 
 The following forms are available:
 <ul>

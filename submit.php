@@ -12,10 +12,6 @@ if (defined('CAMERA_PERIOD')) exit("<h1>Submission Deadline Expired</h1>");
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 
-if (defined('REVIEW_PERIOD')) {
-    exit("<h1>Submission Deadline Expired</h1>");
-}
-
 if (is_array($confFormats) && count($confFormats)>0) {
   $supportedFormats = '';
   foreach ($confFormats as $ext => $f) {

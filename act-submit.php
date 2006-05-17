@@ -14,9 +14,6 @@
  * not (i.e., you must put the spaces or else it does not work). 
  */
 require 'header.php'; // brings in the contacts file and utils file
-if (defined('REVIEW_PERIOD')) {
-    exit("<h1>Submission Deadline Expired</h1>");
-}
 
 // Read all the fields, stripping spurious white-spaces 
 

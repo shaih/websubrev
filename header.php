@@ -26,7 +26,7 @@ if (defined('REVIEW_PERIOD') && REVIEW_PERIOD===true) {
   if ($chair === false) {
     header("WWW-Authenticate: Basic realm=\"$confShortName\"");
     header("HTTP/1.0 401 Unauthorized");
-    exit("<h1>Submission Deadline Expired</h1>");
+    exit("<h1>Submission Deadline Expired</h1>Please contact the chair.");
   }
 }
 
