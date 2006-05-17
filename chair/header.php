@@ -63,13 +63,17 @@ function status_summary($statuses)
 
 function show_chr_links($current = 0) 
 {
-  $html = "<div style=\"text-align: center;\">\n";
+  if (file_exists(CONST_FILE.'.bak.php') || file_exists(CONST_FILE.'.fwd.php'))
+       $undoLink = make_link('undoLast.php', 'Undo/Redo', ($current==4));
+  else $undoLink = '';
 
+  $html = "<div style=\"text-align: center;\">\n";
   $html .= make_link('index.php', 'Administer', ($current==1))
     . make_link('../review/', 'Review', ($current==3))
     . make_link('view-log.php', 'Log file', ($current==2))
     . make_link('../review/password.php', 'Change password')
     . make_link('../documentation/chair.html', 'Documentation')
+    . $undoLink
     . "</div>";
 
   return $html;
