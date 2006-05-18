@@ -10,38 +10,35 @@ require 'header.php';
 
 // Check if bak or fwd files exist
 $bkFile = CONST_FILE . '.bak.php';
-if (!file_exists($bkFile)) $bkFile = NULL;
-
 $fwFile = CONST_FILE . '.fwd.php';
-if (!file_exists($fwFile)) $fwFile = NULL;
 
-if (isset($_GET['undoLast']) && isset($bkFile)) { // undo last change
-  if (isset($fwFile)) unlink($fwFile);
+if (isset($_GET['undoLast']) && file_exists($bkFile)) { // undo last change
+  if (file_exists($fwFile)) unlink($fwFile);
   rename(CONST_FILE, $fwFile);
   rename($bkFile, CONST_FILE);
   header("Location: index.php");
   exit();
 }
 
-if (isset($_GET['redoLast']) && isset($fwFile)) { // redo last change
-  if (isset($bkFile)) unlink($bkFile);
+if (isset($_GET['redoLast']) && file_exists($fwFile)) { // redo last change
+  if (file_exists($bkFile)) unlink($bkFile);
   rename(CONST_FILE, $bkFile);
   rename($fwFile, CONST_FILE);
   header("Location: index.php");
   exit();
 }
 
-if (!isset($bkFile) && !isset($fwFile)) {
+if (!file_exists($bkFile) && !file_exists($fwFile)) {
   exit("<h1>No Undo/Redo Information Available</h1>");
 }
 
 $links= show_chr_links(4);
 
-if (isset($bkFile))
+if (file_exists($bkFile))
      $bkButton = '<input type=submit name=undoLast value="Undo Last Change">';
 else $bkButton = '';
 
-if (isset($fwFile))
+if (file_exists($fwFile))
      $fwButton = '<input type=submit name=redoLast value="Redo Last Change">';
 else $fwButton = '';
 
@@ -59,6 +56,10 @@ h2 {text-align: center;}
 $links
 <hr/>
 <h1>Undo/Redo Last Change</h1>
+Use this form to Undo the last change that you did from the administration
+page (or redo the last change that you un-did from this page). Currently,
+only one version of Undo/Redo information is kept, so you cannot undo/redo
+multiple changes.<br/>
 <form action="undoLast.php" method=get>
 $bkButton
 $fwButton
