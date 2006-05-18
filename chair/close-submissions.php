@@ -114,6 +114,8 @@ review site is activated.<br/>
       A <i><b>semi-colon-separated</b></i> list of criteria, each in the format
       "Name (max-val)" (the min-val is always&nbsp;1). For example "<tt>Clear
       Presentation (3); Bribe Amount (9); ...</tt>"
+      (<b>Do not add</b> <tt>Confidence (X)</tt> here, a <tt>Confidence (3)
+      </tt> field is hard-wired in the software.)
       <input type="hidden" name="setCriteria" value="on">
   </td>
 </tr>

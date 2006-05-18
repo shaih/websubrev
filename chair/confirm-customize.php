@@ -367,6 +367,9 @@ print <<<EndMark
   <tr><td style="text-align: right;">Overall Grades:</td>
       <td><b>From 1 to $maxGrade</b></td>
   </tr>
+  <tr><td style="text-align: right;">Confidence&nbsp;Level:</td>
+      <td><b>From 1 to 3</b></td>
+  </tr>
 
 EndMark;
 
