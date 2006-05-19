@@ -143,12 +143,50 @@ function create_tabels($cnnct, $nCrits=0)
   )";
   db_query($createDiscussTbl, $cnnct, "Cannot CREATE lastPost table: ");
 
-  // The votes table lets the chair set up votes on submissions
+  // The vote tables lets the chair set up votes on submissions
+
+  /* voteFlags is a bit-flag field, currently supporting the following fields
+   *     1 - vote on submissions (otherwise vote on "other things")
+   *     2 - vote on all submission
+   *     4 - vote on submission with status RE
+   *     8 - vote on submission with status MR
+   *    16 - vote on submission with status NO
+   *    32 - vote on submission with status DI
+   *    64 - vote on submission with status MA
+   *   128 - vote on submission with status AC
+   *
+   * If the vote-on-submissions flag is set, then the submissions included
+   * in the vote are determined by the following procedure: 
+   *  - If the vote-on-all flag is set then all the submissions are included
+   *  - Otherwise, the vote-on-XX flags are consulted to add all the
+   *    submissions of a certain status. In addition, if the voteOnThese
+   *    field includes a comma-separated list of submission-IDs then these
+   *    submissions will be also added to the vote. 
+   * If the vote-on-submissions flag is not set Otherwise then the voteOnThese
+   * field MUST include a description of things to vote on, in the form of a
+   * semi-colon-separated list.
+   */
+  $createVotePrms = "CREATE TABLE IF NOT EXISTS votePrms (
+    voteId smallint(3) NOT NULL auto_increment,
+    voteActive tinyint(1) NOT NULL default 0,
+    voteType enum ('Choose','Grade') NOT NULL default 'Choose',
+    voteFlags integer NOT NULL default 0,
+    voteBudget smallint NOT NULL default 0,
+    voteMaxGrade tinyint NOT NULL default 1,
+    voteOnThese text,
+    voteTitle text,
+    instructions text,
+    deadline text,
+    PRIMARY KEY (voteId)
+  )";
+  db_query($createVotePrms, $cnnct, "Cannot CREATE vote-params table: ");
+
   $createVoteTbl = "CREATE TABLE IF NOT EXISTS votes (
-    subId smallint(5) NOT NULL,
+    voteId smallint(3) NOT NULL default 1, 
     revId smallint(3) NOT NULL, 
+    subId smallint(5) NOT NULL,
     vote tinyint,
-    PRIMARY KEY (revId, subId)
+    PRIMARY KEY (voteId, revId, subId)
   )";
   db_query($createVoteTbl, $cnnct, "Cannot CREATE votes table: ");
 }

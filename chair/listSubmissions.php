@@ -68,12 +68,12 @@ foreach($subArray as $sb) {
 
   $reviewTime = defined('REVIEW_PERIOD') ? REVIEW_PERIOD : false;
   if (!$reviewTime && file_exists($downld))
-       $downld = '[<a href="../'.$downld.'">Download</a>]';
+       $downld = '<a href="../'.$downld.'" title="download"><img src="../review/download.gif" alt="download" border=0></a>';
   else $downld = '';
 
-  print "<table style=\"width: 100%;\"><tbody><tr>
+  print "<table><tbody><tr><td>$downld</td>
   <td style=\"width: 20px;\"><big><strong>{$subId}.</strong></big></td>
-  <td><big><strong>$title</strong></big><td>$downld</td>\n";
+  <td><big><strong>$title</strong></big>\n";
 
   if ($reviewTime) { // let the chair revise/withdraw submisstins
     print <<<EndMark

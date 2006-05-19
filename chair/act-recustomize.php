@@ -361,6 +361,8 @@ if ($changeConstFile) {
     exit ("<h1>Cannot rename customization file $tFile</h1>\n");
   }
   chmod(CONST_FILE, 0664); // makes debugging a bit easier
+  $fwFile = CONST_FILE . '.fwd.php';
+  if (file_exists($fwFile)) unlink($fwFile);
 }
 
 // All went well, go to confirmation page (or directly to administration page)

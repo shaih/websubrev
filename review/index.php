@@ -164,13 +164,9 @@ function individual_review($revId)
 function discussion_phase($revId)
 {
   global $discussIcon1, $discussIcon2;
-  $cnnct = db_connect();
 
-  if (file_exists('./review/voteParams.php')) {
-    include './review/voteParams.php';
-    print "You have until $voteDeadline to <a target=\"_blank\" href=\"vote.php\">participate
-in the current vote</a>. ";
-  }
+  $cnnct = db_connect();
+  print votingText($cnnct);
 
   // Get a list of submissions for which this reviewer already saw all
   // the discussions/reviews. Everything else is considered "new"
@@ -223,5 +219,25 @@ in the current vote</a>. ";
   }
   else print '<br/>';
   return false;
+}
+
+function votingText($cnnct)
+{
+  $res = db_query("SELECT voteId, voteTitle, deadline FROM votePrms WHERE voteActive=1", $cnnct);
+  if (mysql_num_rows($res)<= 0) return '';
+
+  $html = "You can participate in the current active ballots:\n";
+  $html .= "<blockquote><table border=1><tbody>\n"
+    . "<tr align=left><th>Title</th><th>Deadline</th>\n";
+  
+  while ($row=mysql_fetch_row($res)) {
+    $voteId = intval($row[0]);
+    $voteTitle = trim($row[1]);
+    if (empty($voteTitle)) $voteTitle = 'Ballot #'.$voteId;
+    else                   $voteTitle = htmlspecialchars($voteTitle);
+    $html .= '<tr><td><a href="vote.php?voteId='.$voteId.'" target="_blank">'
+      .$voteTitle.'</a> </td><td>'.htmlspecialchars($row[2])."</td></tr>\n";
+  }
+  return ($html . "</tbody></table></blockquote>\n\n");
 }
 ?>

@@ -10,10 +10,11 @@ $prot = (defined('HTTPS_ON') || isset($_SERVER['HTTPS']))? 'https' : 'http';
 $logo = $prot.'://'.BASE_URL."ibm-research-logo.jpg";
 $footer = <<<EndMark
 <br />
-This is a version 0.52 (beta) of the Web-Submission-and-Review software,
-written by <a href="http://alum.mit.edu/www/shaih">Shai Halevi</a> from <a
-href="http://www.research.ibm.com"><img src="$logo" alt="IBM Research">
-</a><br/>
+This is a version 0.52 (beta) of the
+<a href="http://alum.mit.edu/www/shaih/websubrev">Web-Submission-and-Review
+software</a>, written by Shai Halevi from
+<a href="http://www.research.ibm.com"><img src="$logo" alt="IBM Research"></a>
+<br/>
 Shai would love to hear your comments and suggestions regarding this software.
 EndMark;
 
@@ -28,6 +29,15 @@ $MRicon = '<img alt="[MR]" title="Status: maybe reject" src="'.$prot.'://'.BASE_
 $REicon = '<img alt="[RE]" title="Status: reject" src="'.$prot.'://'.BASE_URL.'review/RE.gif" border=0>';
 $NOicon = '<img alt="[NO]" title="Status: none" src="'.$prot.'://'.BASE_URL.'review/NO.gif" border=0>';
 $WDicon = '<img alt="[WD]" title="Status: Withdrawn" src="'.$prot.'://'.BASE_URL.'review/WD.gif" border=0>';
+
+define('VOTE_ON_SUBS', 1);
+define('VOTE_ON_ALL',  2);
+define('VOTE_ON_RE',   4);
+define('VOTE_ON_MR',   8);
+define('VOTE_ON_NO',  16);
+define('VOTE_ON_DI',  32);
+define('VOTE_ON_MA',  64);
+define('VOTE_ON_AC', 128);
 
 function show_legend()
 {
@@ -435,5 +445,18 @@ function match_PCM_by_name($name, &$PCMs)
   }
 
   return -1;
+}
+
+function numberlist($lst)
+{
+  $a = explode(',', $lst);
+  $s = $comma = '';
+  foreach ($a as $n) {
+    if (is_numeric($n)) {
+      $s .= $comma.$n;
+      $comma = ',';
+    }
+  }
+  return $s;
 }
 ?>

@@ -76,9 +76,8 @@ $links
 <h2>Are you sure you want to close the submission site?</h2>
 Click on "Close Submissions and Activate Review Site" at the bottom of the
 page to move into the review period. Once the review site is activated, you
-can give PC members access to it by following the link "manage access to
-review site" on the administration page.
-<br/>
+can give PC members access to it by following the link "Manage PC membership"
+on the administration page.<br/>
 <br/>
 On this page you can also modify some of the review parameters such as
 the range of grades, etc. These parameters cannot be modified after the
@@ -112,10 +111,10 @@ review site is activated.<br/>
   <td style="text-align: center">Other Evaluation Criteria:</td>
   <td><textarea name="criteria" style="width: 100%">$crList</textarea>
       A <i><b>semi-colon-separated</b></i> list of criteria, each in the format
-      "Name (max-val)" (the min-val is always&nbsp;1). For example "<tt>Clear
-      Presentation (3); Bribe Amount (9); ...</tt>"
-      (<b>Do not add</b> <tt>Confidence (X)</tt> here, a <tt>Confidence (3)
-      </tt> field is hard-wired in the software.)
+      "Name (max-val)" (the min-val is always&nbsp;1). <br/>For example
+      "<tt>Clear Presentation (3); Bribe Amount (9); ...</tt>"<br/> (<b>Do
+      not add "<tt>Confidence(X)</tt>" here</b>, a "<tt>Confidence(3)</tt>"
+      field is hard-wired in the software.)
       <input type="hidden" name="setCriteria" value="on">
   </td>
 </tr>

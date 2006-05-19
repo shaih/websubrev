@@ -223,7 +223,14 @@ the different phases of the process. You have one set of links during
 the submission phase, another during the review phase, and yet others
 during and after the final-version submission phase. You also have some
 "general purpose" links there for changing your password, looking at the
-error-log file, reading the documentation etc.
+error-log file, reading the documentation etc.<br/>
+<br/> 
+You also have an "Undo/Redo" link that lets you either undo the last
+change that you did from the administration page, or redo the last
+change that you undid. For example, if you closed the submission site
+and the decided to reopen it, you can use the Undo link to do that.
+Note, however, that only the last change that you made is kept, so 
+you cannot undo multiple operations.
 
 <a name="manageSubmissions"></a><h2>4. Managing the submission site</h2>
 The administration page for the submission site is fairly simple. There are
@@ -416,16 +423,18 @@ can participate in the review and discussions just like any other PC member.
 
 <a name="votes"></a><h3>5d. Program-committee votes</h3>
 The software includes support for setting up and managing program-committee
-votes. You can use this support to have the committee vote on things such
-as "what papers to move from 'Discuss' to 'Maybe Accept'", or "which of
-the accepted papers should receive the best paper award", or even "who
-will give the invited talk at the conference".
+votes. You can have the committee vote on things such as "what papers to
+move from 'Discuss' to 'Maybe Accept'", or "which of the accepted papers
+should receive the best paper award", or even "who will give the invited
+talk at the conference".
 Managing the votes is done from the Voting page. On that page you can
-see the tally of the current vote (if any) and you can set the parameters
-for a new vote. You can choose to vote either on submissions or on "other
-things" (that you need to specify explicitly).<br/>
+set the parameters for a new ballot, edit the paremeters of the ballots
+that are currently in progress, and see a list of all the ballots (in
+progrress and otherwise) with a link to the result page for each one.<br/>
 <br/>
-If you vote on submissions, you can either include all the submissions
+You can det up a ballot to vote either on submissions or on "other
+things" (that you need to specify explicitly).
+When voting on submissions, you can either include all the submissions
 in the vote, include only submissions from specific categories (e.g., only
 submissions in the "Discuss" category), or explicitly list the submissions
 that you want to include in the vote.
@@ -434,13 +443,11 @@ in the "Discuss" category, then the submissions that the PC members see
 when they vote are the ones in the "Discuss" category <i>at the time that
 they are voting</i>. Put in other words: adding or removing submissions
 to the "Discuss" category in mid-vote will add or remove these submissions
-to the vote.<br/>
+from the ballot.<br/>
 <br/>
-When you set up a vote, the PC members will see a link from their review
-page that lets them participate in the current vote, and you will be able
-to track the voting results off the Voting page. Note that <i>the
-software currently only supports one vote at a time</i> (so for now
-you cannot hold several concurrent votes on different topics).
+When you set up ballots, the PC members will see a link from their review
+page that lets them participate in the current ballots, and you will be
+able to track the voting results off the Voting page. 
 
 <a name="wrap"></a><h3>5e. Wrapping up the PC work</h3>
 After all the decisions are made, the software lets you send to the authors

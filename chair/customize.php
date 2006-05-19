@@ -389,9 +389,9 @@ Jordan, Michael &lt;Air-Jordan@nike.com&gt;</textarea><br />
 	<textarea name="criteria" cols="70">Technical(3); Editorial(3); Suitability(3)</textarea><br />
 	A <i><b>semi-colon-separated</b></i> list of criteria. Each criterion
 	should be in the format "Name (max-val)". <br />For example "Clear
-	Presentation (3); Bribe Amount (9); ..."
-	(<b>Do not add</b> <tt>Confidence (X)</tt> here, a <tt>Confidence (3)
-         </tt> field is hard-wired in the software.)
+	Presentation (3); Bribe Amount (9); ..." (<b>Do not add 
+        "<tt>Confidence(X)</tt>" here</b>, a "<tt>Confidence(3)</tt>"
+        field is hard-wired in the software.)
         </td>
       </tr>
       <tr><td colspan="2" style="text-align: right;"><hr /></td></tr>

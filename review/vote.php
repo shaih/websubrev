@@ -5,27 +5,64 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication=true;
-require 'voteParams.php';
+$needsAuthentication=true;
+
 require 'header.php'; // defines $pcMember=array(id, name, ...)
 $revId = (int) $pcMember[0];
 $links = show_rev_links();
 
-$cnnct = db_connect();
+// Get the parameters of the current active vote.
 
-if ($voteOnSubmissions) {
-  $where = $or = "";
-  if (isset($voteOnAC)) { $where .= "$or status='Accept'"; $or = " OR"; }
-  if (isset($voteOnMA)) { $where .= "$or status='Maybe Accept'"; $or = " OR"; }
-  if (isset($voteOnDI)) { $where .= "$or status='Needs Discussion'"; $or = " OR"; }
-  if (isset($voteOnNO)) { $where .= "$or status='None'"; $or = " OR"; }
-  if (isset($voteOnMR)) { $where .= "$or status='Perhaps Reject'"; $or = " OR"; }
-  if (isset($voteOnRE)) { $where .= "$or status='Reject'"; $or = " OR"; }
-  if (isset($voteOnThese)) { $where .= "$or s.subId IN ($voteOnThese)"; }
-  if (empty($where)) { $where = "s.status!='Withdrawn'"; }
+$voteId = intval($_GET['voteId']);
+if ($voteId <= 0) die("<h1>Vote-ID must be specified</h1>");
+
+$cnnct = db_connect();
+$qry = "SELECT * from votePrms WHERE voteId=$voteId AND voteActive=1";
+$res = db_query($qry,$cnnct);
+$row = mysql_fetch_array($res)
+     or die("<h1>No Active vote with Vote-ID $voteId</h1>");
+
+$voteType  = isset($row['voteType'])
+     ? htmlspecialchars($row['voteType']) : 'Choose';
+$voteTtl = isset($row['voteTitle']) ? htmlspecialchars($row['voteTitle'])
+                                    : 'Ballot #'.$voteId;
+$voteFlags = isset($row['voteFlags']) ? intval($row['voteFlags']) : 0;
+$voteBudget= isset($row['voteBudget'])? intval($row['voteBudget']): 0;
+$voteOnThese = isset($row['voteOnThese'])? $row['voteOnThese'] : '';
+$voteMaxGrade= isset($row['voteMaxGrade'])? intval($row['voteMaxGrade']): 1;
+$vInstructions = isset($row['instructions']) ? htmlspecialchars($row['instructions']) : '';
+if (!empty($vInstructions)) {
+  $vInstructions = "<b>Instructions:</b> ".nl2br($vInstructions);
+}
+$vDeadline = isset($row['deadline']) ? htmlspecialchars($row['deadline']) : '';
+if (!empty($vDeadline)) {
+  $vDeadline = "You need to submit your vote by <b>".$vDeadline."</b>.";
+}
+
+// Get the items to vote on (with the current votes of this reviewer if any)
+if ($voteFlags & VOTE_ON_SUBS) { // voting on submissions
+  if ($voteFlags & VOTE_ON_ALL)
+    $where = "s.status!='Withdrawn'";
+  else 
+    $where = "false";
+
+  if ($voteFlags & VOTE_ON_RE) {
+    $where .= " OR status='Reject'"; }
+  if ($voteFlags & VOTE_ON_MR) {
+    $where .= " OR status='Perhaps Reject'"; }
+  if ($voteFlags & VOTE_ON_NO) {
+    $where .= " OR status='None'"; }
+  if ($voteFlags & VOTE_ON_DI) {
+    $where .= " OR status='Needs Discussion'"; }
+  if ($voteFlags & VOTE_ON_MA) {
+    $where .= " OR status='Maybe Accept'"; }
+  if ($voteFlags & VOTE_ON_AC) {
+    $where .= " OR status='Accept'"; }
+  if (!empty($voteOnThese)) {
+    $where .= " OR s.subId IN (".numberlist($voteOnThese).")"; }
 
   $qry = "SELECT s.subId, title, vote FROM submissions s
-  LEFT JOIN votes v ON v.subId=s.subId AND v.revId=$revId
+  LEFT JOIN votes v ON v.voteId=$voteId AND v.revId=$revId AND v.subId=s.subId
   WHERE $where
   ORDER by s.subId";
 
@@ -37,23 +74,27 @@ if ($voteOnSubmissions) {
     $voteItems[$subId] = array($row[1], $row[2]);
   }
 }
-else {
+else {                           // voting on "other things"
   $voteItems = array();
-  foreach ($voteTitles as $vId => $title)
-    $voteItems[$vId] = array($title, NULL);
+  $voteTitles = explode(';', $voteOnThese);
+  foreach ($voteTitles as $title) {
+    $title = trim($title);
+    if (!empty($title)) 
+    $voteItems[] = array($title, NULL);
+  }
 
-  $qry = "SELECT subId, vote FROM votes WHERE revId=$revId ORDER by subId";
+  $qry = "SELECT subId, vote FROM votes WHERE voteId=$voteId AND revId=$revId ORDER by subId";
   $res = db_query($qry, $cnnct);
   while ($row=mysql_fetch_row($res)) {
-    $vId = (int) $row[0];
-    $voteItems[$vId][1] = (int) $row[1];
+    $itemId = (int) $row[0];
+    $voteItems[$itemId][1] = (int) $row[1];
   }
 }
 
 // If user has cast a vote - record it
 if (isset($_POST["votes"]) && is_array($_POST["votes"])) {
   $voteSum = array_sum($_POST["votes"]);
-  if (isset($voteBudget) && $voteBudget > 0 && $voteSum > $voteBudget) {
+  if ($voteBudget > 0 && $voteSum > $voteBudget) {
     if ($voteType=='Grade')
       exit ("<h1>Sum of all gardes cannot exceed $voteBudget</h1>");
     else
@@ -68,11 +109,9 @@ if (isset($_POST["votes"]) && is_array($_POST["votes"])) {
 
     if ($theVote!=$vItem[1]) {
       if (!isset($vItem[1])) { // insert a new entry
-	$qry = "INSERT INTO votes SET subId={$itemId}, revId={$revId}, "
-	  . "vote=$theVote";
+	$qry = "INSERT INTO votes SET voteId=$voteId, revId=$revId, subId=$itemId, vote=$theVote";
       } else {                // modify existing entry
-	$qry = "UPDATE votes SET vote=$theVote" 
-	  . " WHERE subId={$itemId} AND revId={$revId}";
+	$qry = "UPDATE votes SET vote=$theVote WHERE voteId=$voteId AND revId=$revId AND subId=$itemId";
       }
       db_query($qry, $cnnct);
       $voteItems[$itemId][1] = $theVote;
@@ -84,21 +123,12 @@ else $voteRecorded = "";
 
 
 if ($voteType=='Grade') {  // reviewrs grade the submissions
-  $voteTitle = "";
-  for ($i=0; $i<=$voteMaxGrade; $i++) { $voteTitle .= "<th>$i</th>"; }
+  $voteHdr = "";
+  for ($i=0; $i<=$voteMaxGrade; $i++) { $voteHdr .= "<th>$i</th>"; }
 } else {                  // reviewrs just choose submissions
-  $voteTitle = "<th>Choose</th>";
+  $voteHdr = "<th>Choose</th>";
 }
-$voteTitle .= "<th>Num</th><th style=\"text-align: left;\"> &nbsp;Title</th>";
-
-if (!empty($voteDeadline)) {
-  $voteDeadline = "You need to submit your vote by "
-    . htmlspecialchars($voteDeadline) . ".<br /><br />";
-}
-if (!empty($voteInstructions)) {
-  $voteInstructions = "<b>Instructions:</b><pre>"
-    . htmlspecialchars(wordwrap($voteInstructions)) . "</pre>";
-}
+$voteHdr .= "<th>Num</th><th style=\"text-align: left;\"> &nbsp;Title</th>";
 
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
@@ -110,28 +140,29 @@ print <<<EndMark
 h1, td { text-align: center; }
 tr { vertical-align: top; }
 </style>
-<title>Voting Page</title>
+<title>Voting Page: $voteTtl</title>
 </head>
 <body>
 $links
 <hr />
 $voteRecorded
 
-<h1>Voting Page</h1> 
-$voteDeadline
-$voteInstructions
-
-<form action="vote.php"  enctype="multipart/form-data" method=post>
+<h1>Voting Page: $voteTtl</h1> 
+$vInstructions<br/>
+<br/>
+$vDeadline<br/>
+<br/>
+<form action="vote.php?voteId=$voteId" enctype="multipart/form-data" method=post>
 <table><tbody>
 <tr>
-  $voteTitle
+  $voteHdr
 </tr>
 
 EndMark;
 
 foreach ($voteItems as $itemId => $vItem) {
   $title = htmlspecialchars($vItem[0]);
-  if ($voteOnSubmissions)
+  if ($voteFlags & VOTE_ON_SUBS)
     $title = '<a href="submission.php?subId='.$itemId.'">'.$title.'</a>';
 
   print "<tr>\n";
@@ -142,7 +173,7 @@ foreach ($voteItems as $itemId => $vItem) {
 	. " $chk title=\"$i\"></td>\n";
     }
   } else {                  // reviewr just chooses submissions
-    $chk = $vItem[1] ? 'checked="checked"' : '';
+    $chk = (isset($vItem[1]) && $vItem[1]>0) ? 'checked="checked"' : '';
     print "  <td><input type=\"checkbox\" name=\"votes[$itemId]\" value=1 $chk>"
       . "</td>\n";
   }

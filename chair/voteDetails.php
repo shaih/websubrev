@@ -5,39 +5,50 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true; 
+$needsAuthentication = true; 
 require 'header.php';
 
-// Is there a vote in progress or a previous vote?
-clearstatcache();
-if (file_exists("./review/voteParams.php")) {
-  include "./review/voteParams.php";
-  $whatVote = 'Current';
-} else if (file_exists("./review/voteParams.bak.php")) {
-  include "./review/voteParams.bak.php";
-  $whatVote = 'Last';
-}
+$voteId = intval($_GET['voteId']);
+if ($voteId <= 0) die("<h1>Vote-ID must be specified</h1>");
+
+$cnnct = db_connect();
+$res = db_query("SELECT * FROM votePrms WHERE voteId=$voteId", $cnnct);
+$row = mysql_fetch_array($res)
+     or die("<h1>No vote with Vote-ID $voteId</h1>");
+
+$active = (isset($row['voteActive'])&& $row['voteActive']>0) ? 'in progress' : 'closed';
+$voteType  = isset($row['voteType'])  ? htmlspecialchars($row['voteType']) : 'Choose';
+$voteTitle = isset($row['voteTitle']) ? htmlspecialchars($row['voteTitle']):'';
+$voteFlags = isset($row['voteFlags']) ? intval($row['voteFlags']) : 0;
+$voteBudget= isset($row['voteBudget'])? intval($row['voteBudget']): 0;
+$voteOnThese = isset($row['voteOnThese'])? $row['voteOnThese'] : '';
+$voteMaxGrade= isset($row['voteMaxGrade'])? intval($row['voteMaxGrade']): 1;
+if (empty($voteTitle)) $voteTitle = "Ballot #$voteId";
+if ($voteFlags & VOTE_ON_SUBS)
+     $voteTitles = NULL;
+else $voteTitles = explode(';', $voteOnThese);
+
 // Get the vote results
 $voters = array();
 $vItems = array();
 $voteResults = array();
-$cnnct = db_connect();
-if ($voteOnSubmissions) {
-  $qry = "SELECT v.subId vId, v.revId revId, v.vote vote, s.title title, c.name name
-    FROM votes v INNER JOIN submissions s ON s.subId=v.subId
-                 INNER JOIN committee c ON c.revId=v.revId
-    WHERE vote>0 ORDER BY v.subId, v.revId";
+if ($voteFlags & VOTE_ON_SUBS) {
+  $qry = "SELECT v.subId vId, v.revId revId, v.vote vote, c.name name,
+                 s.title title
+  FROM votes v INNER JOIN submissions s ON v.voteId=$voteId AND s.subId=v.subId
+               INNER JOIN committee c ON c.revId=v.revId
+  WHERE vote>0 ORDER BY v.subId, v.revId";
 } else {
   $qry = "SELECT v.subId vId, v.revId revId, v.vote vote, c.name name
-    FROM votes v INNER JOIN committee c USING(revId)
-    WHERE vote>0 ORDER BY v.subId, v.revId";
+  FROM votes v INNER JOIN committee c ON v.voteId=$voteId AND c.revId=v.revId
+  WHERE vote>0 ORDER BY v.subId, v.revId";
 }
 $res = db_query($qry, $cnnct);
 while ($row=mysql_fetch_assoc($res)) {
   $vId   = (int)$row['vId'];
   $revId = (int)$row['revId'];
 
-  $title = $voteOnSubmissions ? $row['title'] : $voteTitles[$vId];
+  $title = ($voteFlags & VOTE_ON_SUBS) ? $row['title'] : $voteTitles[$vId];
   $vItems[$vId] = htmlspecialchars($title);
 
   $name = explode(' ', $row['name']);
@@ -50,6 +61,8 @@ while ($row=mysql_fetch_assoc($res)) {
   if (!isset($voteResults[$vId])) { $voteResults[$vId] = array(); }
   $voteResults[$vId][$revId] = (int)$row['vote'];
 }
+if (isset($voters) && is_array($voters))
+  ksort($voters);
 
 /* Show a matrix with all the votes in it 
  *******************************************************************/
@@ -61,19 +74,21 @@ print <<<EndMark
 <style type="text/css">
 h1 { text-align: center;}
 th { font: bold 10px ariel; text-align: center; }
-td { text-align: center; }
 </style>
-<title>$whatVote Vote: Detailed Results</title>
+<title>Results: $voteTitle ($active)</title>
 </head>
 <body>
 $links
-<hr />
-<h1>$whatVote Vote: Detailed Results</h1>
-
-<center>
-<table cellspacing=0 cellpadding=0 border=1><tbody>
+<hr/>
+<h1>Results: $voteTitle ($active)</h1>
 
 EndMark;
+
+// Print the voting tally for this vote
+summaryResults($cnnct, $voteId,($voteFlags & VOTE_ON_SUBS), $voteTitles);
+
+print "<h2>Detailed Results</h2>\n";
+print "<table cellspacing=0 cellpadding=0 border=1><tbody>\n";
 
 $header = "<tr>";
 foreach ($voters as $name) { $header .= "  <th>".$name."</th>\n"; }
@@ -88,10 +103,10 @@ foreach ($vItems as $vId => $title) {
 
   print "<tr>";
   foreach ($voters as $revId => $name) {
-    if ($voteResults[$vId][$revId]>0) {
+    if (isset($voteResults[$vId][$revId]) && $voteResults[$vId][$revId]>0) {
       if ($voteType=='Grade')
-	   print "  <td>" . $voteResults[$vId][$revId] . "</td>\n";
-      else print "  <td>X</td>\n";
+	   print "  <td align=center>".$voteResults[$vId][$revId]."</td>\n";
+      else print "  <td align=center>X</td>\n";
     }
     else print "  <td>&nbsp;</td>\n";
   }
@@ -101,11 +116,70 @@ foreach ($vItems as $vId => $title) {
 
 print <<<EndMark
 </tbody></table>
-</center>
 <hr />
 $links
 </body>
 </html>
 
 EndMark;
+
+
+function summaryResults($cnnct, $voteId, $voteOnSubmissions, $voteTitles)
+{
+  $cnnct = db_connect();
+  $noVotes = true;
+
+  if ($voteOnSubmissions) {
+    $qry = "SELECT s.subId, SUM(v.vote) sum, title
+  FROM submissions s INNER JOIN votes v ON v.voteId=$voteId AND s.subId=v.subId
+  GROUP BY s.subId ORDER BY sum DESC, s.subId ASC";
+    $res = db_query($qry, $cnnct);
+
+    $voteItems = array();
+    while ($row=mysql_fetch_row($res)) {
+      if ($row[1] == 0) continue;
+      else $noVotes = false;
+      $voteItems[] = $row;
+    }
+  } else {
+    $qry = "SELECT subId, SUM(vote) sum FROM votes
+    WHERE voteId=$voteId GROUP BY subId ORDER BY sum DESC, subId ASC";
+    $res = db_query($qry, $cnnct);
+
+    $voteItems = array();
+    while ($row=mysql_fetch_row($res)) {
+      if ($row[1] == 0) continue;
+      else $noVotes = false;
+
+      $vId = (int) $row[0];
+      $voteItems[] = array($vId, $row[1], $voteTitles[$vId]);
+    }
+  }
+
+  if ($noVotes) {
+    die("<h2>No Results Recorded</h2></body></html>\n");
+  }
+  else {
+    print "<h2>Tally</h2>\n";
+
+    print "<table><tbody>\n<tr>\n  <th>Tally</th><th>Num</th>"
+      ."<th style=\"text-align: left;\">&nbsp; Title</th>\n</tr>\n";
+
+    foreach ($voteItems as $vItem) {
+      $itemId = (int) $vItem[0];
+      $tally  = (int) $vItem[1];
+      $title  = isset($vItem[2]) ? htmlspecialchars($vItem[2]) : '';
+      if ($tally==0) continue;
+      if ($voteOnSubmissions)
+	$title = '<a href="../review/submission.php?subId='.$itemId.'">'
+	  . $title . '</a>';
+
+      print "<tr><td align=center>". $tally ."</td>";
+      print "<td>$itemId.</td><td>$title</td>\n";
+      print "</tr>\n";
+    }
+    print "</tbody></table>\n";
+    print "All other items (if any) got zero votes.<br/><br/>\n";
+  }
+}
 ?>
