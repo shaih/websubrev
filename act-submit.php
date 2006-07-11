@@ -5,15 +5,9 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- 
-/* act-submit.php - processing a new submission
- *
- * The code below is written to get around some bugs in the PHP
- * implementation that I was working with. For example, the function
- * substr($str, $start, $len) works, but substr($str,$start,$len) does
- * not (i.e., you must put the spaces or else it does not work). 
- */
 require 'header.php'; // brings in the contacts file and utils file
+
+if (defined('CAMERA_PERIOD')) exit("<h1>Submission Deadline Expired</h1>");
 
 // Read all the fields, stripping spurious white-spaces 
 

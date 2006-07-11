@@ -166,6 +166,16 @@ function PEARmkTar()
 
 function SYSmkTar()
 {
+  $cnnct = db_connect();
+  $qry = "SELECT subId, format from submissions WHERE status!='Withdrawn'
+  ORDER by subId";
+  $res = db_query($qry, $cnnct);
+
+  $submissions = '';
+  while ($row=mysql_fetch_row($res)) {
+    $submissions .= $row[0].'.'.$row[1].' ';
+  }
+
   chdir(SUBMIT_DIR);
   if (isset($_GET['noZip'])) {
     $tarCmd = 'tar -cf';
@@ -178,14 +188,14 @@ function SYSmkTar()
   // Try to create a tar file
   $return_var = 0;
   $output_lines = array();
-  $ret=exec("$tarCmd $fileName *.* --exclude=index.html --no-recursion", 
+  $ret=exec("$tarCmd $fileName $submissions", 
        $output_lines, $return_var); // execute the command
 
   // If failed, try to create a zip file instead
   if ($ret===false || $return_var != 0) {
     $fileName = "all_in_one.zip";
     $return_var = 0;
-    $ret=exec("zip $fileName *.* -x index.html", $output_lines, $return_var);
+    $ret=exec("zip $fileName $submissions", $output_lines, $return_var);
   }
 
   return ($ret!==false && $return_var==0) ? $fileName : NULL;

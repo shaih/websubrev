@@ -27,25 +27,46 @@ div.indented {position: relative; left: 25px;}
 <body>
 $links
 <hr />
-<h1>$cName $title</h1>
 
 EndMark;
 
 // Prepare an array of submissions
 $cnnct = db_connect();
+
+$subOrder = isset($_GET['subOrder']) ? trim($_GET['subOrder']) : 'subId';
+$subOrder = my_addslashes($subOrder, $cnnct);
+
 $condition = defined('CAMERA_PERIOD') ? "status='Accept'"
                                       : "status!='Withdrawn'";
+
 $qry = "SELECT subId, title, authors, affiliations, contact, abstract, 
      category, keyWords, comments2chair, format, subPwd, status
   FROM submissions
   WHERE {$condition}
-  ORDER BY subId";
+  ORDER BY $subOrder";
 $res = db_query($qry, $cnnct);
 $subArray = array();
 while ($row = mysql_fetch_assoc($res)) {
   $subArray[] = $row;
 }
 
+// in some cases, provide a count per category
+$countByCat = ($subOrder=='status'
+	       || $subOrder=='category' || $subOrder=='format');
+if ($countByCat) {
+  $qry = "SELECT $subOrder, COUNT(*) FROM submissions WHERE {$condition} GROUP BY $subOrder";
+  $res = db_query($qry, $cnnct);
+  $countArray = array();
+  while ($row = mysql_fetch_row($res)) {
+    $cat = $row[0];
+    if (!isset($cat) || empty($cat)) $cat = "No $subOrder specified";
+    $countArray[$cat] = $row[1];
+  }
+  print "<h1>$cName $title (ordered by $subOrder)</h1>\n";
+}
+else print "<h1>$cName $title</h1>\n";
+
+$lastCat = 'zzz@zzz';
 foreach($subArray as $sb) {
   $subId = (int) $sb['subId'];
   $title = htmlspecialchars($sb['title']);
@@ -71,6 +92,13 @@ foreach($subArray as $sb) {
        $downld = '<a href="../'.$downld.'" title="download"><img src="../review/download.gif" alt="download" border=0></a>';
   else $downld = '';
 
+  if ($countByCat) {
+    $cat = empty($sb[$subOrder]) ? "No $subOrder specified" : $sb[$subOrder];
+    if ($lastCat != $cat) {
+      $lastCat = $cat;
+      print "<h2 style=\"color: green;\">$cat: ".$countArray[$cat]." submissions</h2>\n";
+    }
+  }
   print "<table><tbody><tr><td>$downld</td>
   <td style=\"width: 20px;\"><big><strong>{$subId}.</strong></big></td>
   <td><big><strong>$title</strong></big>\n";
@@ -111,3 +139,4 @@ EndMark;
 
 print "<hr />\n{$links}\n</body></html>\n";
 ?>
+

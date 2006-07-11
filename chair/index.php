@@ -62,9 +62,10 @@ function manage_submissions($period)
   $subDdline = SUBMIT_DEADLINE;
   if ($period==2) {
     print <<<EndMark
-<b><big>&nbsp;Submission Site is Closed</big></b><br />
-&nbsp;&nbsp;o&nbsp;&nbsp;<a href="listSubmissions.php">Withdraw/revise
-submissions</a>&nbsp;&nbsp;
+<b><big>&nbsp;Submission Site is Closed</big></b><br/>
+&nbsp;&nbsp;o&nbsp;&nbsp;<a href="listSubmissions.php">Submission list by number</a>,<br/>
+&nbsp;&nbsp;o&nbsp;&nbsp;by&nbsp;<a href="listSubmissions.php?subOrder=category">category</a>, <a href="listSubmissions.php?subOrder=status">status</a>, <a href="listSubmissions.php?subOrder=format">format</a>&nbsp;<br/>
+&nbsp;(use to withdraw/revise submissions)&nbsp;
 
 EndMark;
   }
@@ -79,8 +80,10 @@ EndMark;
 <h3><span style="background-color: red;">Submission Site is Active:</span></h3>
 Deadline is <big>$subDdline</big>
 <ul>
-<li><a href="listSubmissions.php">List Submissions</a>
-    ($nSubs so far)</li>
+<li>List submissions by <a href="listSubmissions.php">number</a>, 
+    <a href="listSubmissions.php?subOrder=category">category</a>,
+    or <a href="listSubmissions.php?subOrder=format">format</a>
+    ($nSubs submissions so far)</li>
 <li><a href="manage-submission-site.php">Manage Parameters</a>
     (deadlines, supported formats, categories, etc.)</li>
 <li><a href="close-submissions.php">Close Submissions and Activate Review
