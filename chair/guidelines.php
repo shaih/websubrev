@@ -130,8 +130,7 @@ else if (isset($_POST["uploadGuidelines"])
 }
 
 // The default text for the various sections
-$schedule = "&lt;dl&gt;
-&lt;dt&gt;XXX to YYY: Individual review. 
+$schedule = "&lt;dl&gt;&lt;dt&gt;XXX to YYY: Individual review. 
 &lt;dd&gt;Reviewers do not communicate with each other about the submissions. Please enter all the assigned reviews by the deadline. 
 
 &lt;dt&gt;XXX to YYY: Discussion phase.
@@ -149,7 +148,7 @@ $assignments =
 
 
 $externalRevs =
-"You are encouraged to ask others outside the committee to help evaluate the papers. External readers should apply the usual confidentiality rules for conference submissions, in particular, not to distribute the paper to other people. It may be necessary to adjust an outside referee's score to make it compatible with your own system. You should understand the paper and external readers' comments well enough that you can discuss them in the public discussions phase. Please mark the names of the external reviewers in the subreferee box on the review form. After the final decision, the chair(s) will send out a list of all the sub-reviewers so you should check that none of your sub-reviewers were forgotten.
+"You are encouraged to ask others outside the committee to help evaluate the papers. External readers should apply the usual confidentiality rules for conference submissions, in particular, not to distribute the paper to other people. It may be necessary to adjust an outside referee's score to make it compatible with your own system. You should understand the paper and external readers' comments well enough that you can discuss them in the public discussions phase. Please mark the names of the external reviewers in the subreferee box on the review form. After the final decision, the chair(s) will send out a list of all the sub-reviewers so you can check that none of your sub-reviewers were forgotten.
 
 &lt;i&gt;Do not forward your account name and password to a subreferee&lt;/i&gt;. The review site contains very sensitive information. The program committee discussions should remain confidential within the program committee.";
 
@@ -215,19 +214,17 @@ if (is_array($criteria)) {
 $reportContent = "Reports will consist of grades, a weight, and comments. The comments should help the authors as well as other committee members understand your opinions. Please don't write one-line reviews and don't over-use committee-only comments. There is no need to copy the comments to authors in the committee-only field. The bulk of the report should be visible to the authors (including summary of contributions, general evaluation, and specific comments). Authors of rejected papers deserve to know why their papers were rejected, and we want accepted papers to be improved based on our comments.
 
 There is no additional structure to the reports that you have to follow. Here are a few points that you may want to refer to when organizing and writing your report.
-&lt;ul&gt;
-&lt;li&gt; Summary of the problem and paper contribution. 
+&lt;ul&gt;&lt;li&gt; Summary of the problem and paper contribution. 
 
-&lt;li&gt; What is best about the paper: new ideas, proofs, simplifications, formalizations, implementation, performance improvement, new insight, etc.&lt;/li&gt;
+&lt;/li&gt;&lt;li&gt; What is best about the paper: new ideas, proofs, simplifications, formalizations, implementation, performance improvement, new insight, etc.
 
-&lt;li&gt; What are the paper weaknesses: lack of originality, small increment over previous work, unsubstantiated claims, bad presentation, insufficient discussion of relation with prior work etc.&lt;/li&gt;
+&lt;/li&gt;&lt;li&gt; What are the paper weaknesses: lack of originality, small increment over previous work, unsubstantiated claims, bad presentation, insufficient discussion of relation with prior work etc.
 
-&lt;li&gt; Target audience: who will be interested in the results, who will be benefited from its publication in the proceedings, who will want to hear the talk at the conference.&lt;/li&gt;
+&lt;/li&gt;&lt;li&gt; Target audience: who will be interested in the results, who will be benefited from its publication in the proceedings, who will want to hear the talk at the conference.
 
-&lt;li&gt; Summary of recommendation: Accept/Reject, main reason.&lt;/li&gt;
+&lt;/li&gt;&lt;li&gt; Summary of recommendation: Accept/Reject, main reason.
 
-&lt;li&gt; Detailed technical comments.&lt;/li&gt;
-&lt;/ul&gt;";
+&lt;/li&gt;&lt;li&gt; Detailed technical comments.&lt;/li&gt;&lt;/ul&gt;";
 
 
 if (ANONYMOUS) $contactAuthors=
