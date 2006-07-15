@@ -170,7 +170,7 @@ function discussion_phase($revId)
 
   // Get a list of submissions for which this reviewer already saw all
   // the discussions/reviews. Everything else is considered "new"
-  $qry = "SELECT s.subId FROM submissions s JOIN lastPost lp ON lp.revId=$revId AND s.subId=lp.subId WHERE s.lastModified<=lp.lastVisited";
+  $qry = "SELECT s.subId FROM submissions s, lastPost lp WHERE lp.revId=$revId AND s.subId=lp.subId AND s.lastModified<=lp.lastVisited";
   $res = db_query($qry, $cnnct);
   $seenSubs = array();
   while ($row = mysql_fetch_row($res)) { $seenSubs[$row[0]] = true; }

@@ -36,7 +36,7 @@ if ($disFlag != 1) exit("<h1>$revName cannot discuss submissions yet</h1>");
 
 $cnnct = db_connect();
 $seenSubs = array();
-$qry = "SELECT s.subId FROM submissions s JOIN lastPost lp ON lp.revId=$revId AND s.subId=lp.subId WHERE s.lastModified<=lp.lastVisited";
+$qry = "SELECT s.subId FROM submissions s, lastPost lp WHERE lp.revId=$revId AND s.subId=lp.subId AND s.lastModified<=lp.lastVisited";
 $res = db_query($qry, $cnnct);
 while ($row = mysql_fetch_row($res)) { $seenSubs[$row[0]] = true; }
 
@@ -71,7 +71,7 @@ if (isset($_GET['withReviews'])) { // get also the comments
 // Next comes the JOIN conditions (not for the faint of heart)
 $qry .= "\n  FROM submissions s
        LEFT JOIN reports r ON r.subId=s.subId
-       LEFT JOIN committee c on c.revId=r.revId
+       LEFT JOIN committee c ON c.revId=r.revId
        LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId\n";
 
 // Finally the WHERE and ORDER clauses

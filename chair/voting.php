@@ -214,7 +214,7 @@ function print_vote_results($inProgress, $voteOnSubmissions, $voteTitles)
 
   if ($voteOnSubmissions) {
     $qry = "SELECT s.subId, SUM(v.vote) sum, title
-    FROM submissions s INNER JOIN votes v USING(subId)
+    FROM submissions s, votes v WHERE s.subId=v.subId
     GROUP BY s.subId ORDER BY sum DESC, s.subId ASC";
     $res = db_query($qry, $cnnct);
 

@@ -54,8 +54,8 @@ $qry = "SELECT c.name PCmember, r.subReviewer subReviewer,
        r.comments2authors cmnts2athr,
        r.comments2committee cmnts2PC, $chrCmnts
        UNIX_TIMESTAMP(r.lastModified) modified
-    FROM reports r INNER JOIN committee c USING(revId)
-    WHERE r.subId='$subId'
+    FROM reports r, committee c
+    WHERE  r.revId=c.revId AND r.subId='$subId'
     ORDER BY modified";
 $res = db_query($qry, $cnnct);
 $reports = array();

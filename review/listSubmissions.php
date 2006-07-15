@@ -25,7 +25,7 @@ while ($row = mysql_fetch_row($res)) { $reviewed[$row[0]] = true; }
 // the discussions/reviews. Everything else is considered "new"
 $seenSubs = array();
 if ($disFlag) {
-  $qry = "SELECT s.subId FROM submissions s JOIN lastPost lp ON lp.revId=$revId AND s.subId=lp.subId WHERE s.lastModified<=lp.lastVisited";
+  $qry = "SELECT s.subId FROM submissions s, lastPost lp WHERE lp.revId=$revId AND s.subId=lp.subId AND s.lastModified<=lp.lastVisited";
   $res = db_query($qry, $cnnct);
   while ($row = mysql_fetch_row($res)) { $seenSubs[$row[0]] = true; }
 }

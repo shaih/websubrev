@@ -35,13 +35,14 @@ $voteResults = array();
 if ($voteFlags & VOTE_ON_SUBS) {
   $qry = "SELECT v.subId vId, v.revId revId, v.vote vote, c.name name,
                  s.title title
-  FROM votes v INNER JOIN submissions s ON v.voteId=$voteId AND s.subId=v.subId
-               INNER JOIN committee c ON c.revId=v.revId
-  WHERE vote>0 ORDER BY v.subId, v.revId";
+  FROM votes v, submissions s, committee c 
+  WHERE v.voteId=$voteId AND s.subId=v.subId AND c.revId=v.revId AND vote>0
+  ORDER BY v.subId, v.revId";
 } else {
   $qry = "SELECT v.subId vId, v.revId revId, v.vote vote, c.name name
-  FROM votes v INNER JOIN committee c ON v.voteId=$voteId AND c.revId=v.revId
-  WHERE vote>0 ORDER BY v.subId, v.revId";
+  FROM votes v, committee c
+  WHERE v.voteId=$voteId AND c.revId=v.revId AND vote>0
+  ORDER BY v.subId, v.revId";
 }
 $res = db_query($qry, $cnnct);
 while ($row=mysql_fetch_assoc($res)) {
@@ -131,7 +132,7 @@ function summaryResults($cnnct, $voteId, $voteOnSubmissions, $voteTitles)
 
   if ($voteOnSubmissions) {
     $qry = "SELECT s.subId, SUM(v.vote) sum, title
-  FROM submissions s INNER JOIN votes v ON v.voteId=$voteId AND s.subId=v.subId
+  FROM submissions s, votes v WHERE v.voteId=$voteId AND s.subId=v.subId
   GROUP BY s.subId ORDER BY sum DESC, s.subId ASC";
     $res = db_query($qry, $cnnct);
 
