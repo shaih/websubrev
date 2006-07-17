@@ -270,6 +270,9 @@ The algorithm never assigns a submission to a reviewer if a conflict-of-interest
 </ul>
 <input type="submit" value="Compute Assignments">
 </form>
+<b>Note:</b> The computed assignments will not be visible to the reviewers;
+you can make them visible from the manual assignment page. (<a target=_blank
+href="../documentation/chair.html#scratchAssign">explain this</a>)
 <hr />
 $links
 </body>

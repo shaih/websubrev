@@ -102,6 +102,9 @@ function create_tabels($cnnct, $nCrits=0)
   // this reviewer is a good reviewer for that submission, and it can be
   // either -1 (not compatible) 0 (default) or 1 (should review this).
   //
+  // The sktchAssgn field can be -1 (conflict), 1 (assigned) or 0 (neither).
+  // This is used in the process of assigning submissions to reviewers.
+  //
   // The assign field can be either -1 (conflict), 1 (assigned) or 0 (neither).
   //
   // The watch field (0/1) is used to let reviewers specify a list of
@@ -112,6 +115,7 @@ function create_tabels($cnnct, $nCrits=0)
     revId smallint(3) NOT NULL, 
     pref tinyint(1) NOT NULL DEFAULT 3, 
     compatible tinyint(1) NOT NULL DEFAULT 0,
+    sktchAssgn tinyint(1) NOT NULL DEFAULT 0,
     assign tinyint(1) NOT NULL DEFAULT 0,
     watch tinyint(1) NOT NULL DEFAULT 0,
     PRIMARY KEY (revId, subId)

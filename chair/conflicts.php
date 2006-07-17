@@ -31,7 +31,7 @@ while ($row = mysql_fetch_row($res)) {
   $committee[$revId] = $name;
 }
 
-$qry = "SELECT subId, revId, pref, assign FROM assignments ORDER BY revId, subId";
+$qry = "SELECT subId, revId, pref, sktchAssgn FROM assignments ORDER BY revId, subId";
 $res = db_query($qry, $cnnct);
 $current = array();
 while ($row = mysql_fetch_row($res)) {

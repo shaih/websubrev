@@ -29,7 +29,7 @@ while ($row = mysql_fetch_row($res)) {
   $committee[$revId] = true;
 }
 
-$qry = "SELECT subId, revId, assign FROM assignments ORDER BY revId, subId";
+$qry = "SELECT subId, revId, sktchAssgn FROM assignments ORDER BY revId, subId";
 $res = db_query($qry, $cnnct);
 $current = array();
 while ($row = mysql_fetch_row($res)) { 
@@ -48,10 +48,10 @@ foreach ($_POST as $nm => $val) {
 
   $qry = NULL;
   if (!isset($current[$revId][$subId])) {    // insert new entry
-    $qry = "INSERT INTO assignments SET subId ='{$subId}', revId='{$revId}', assign=-1";
+    $qry = "INSERT INTO assignments SET subId ='{$subId}', revId='{$revId}', sktchAssgn=-1, assign=-1";
   }
   else if ($current[$revId][$subId] != -1) { // modify existing entry
-    $qry = "UPDATE assignments SET assign=-1 WHERE subId ='{$subId}' AND revId='{$revId}'";
+    $qry = "UPDATE assignments SET sktchAssgn=-1, assign=-1 WHERE subId ='{$subId}' AND revId='{$revId}'";
   }
   if (isset($qry)) db_query($qry, $cnnct);
 }
@@ -62,8 +62,7 @@ foreach ($_POST as $nm => $val) {
 foreach ($current as $revId => $pcmList) foreach ($pcmList as $subId => $a) {
   $subId = (int) $subId; $revId = (int) $revId;
   if ($a==-1 && !isset($_POST["b_{$revId}_{$subId}"])) {
-    $qry = "UPDATE assignments SET assign=0 "
-      . "WHERE subId ='{$subId}' AND revId='{$revId}'";
+    $qry = "UPDATE assignments SET sktchAssgn=0, assign=0 WHERE subId ='{$subId}' AND revId='{$revId}'";
     db_query($qry, $cnnct);
   }
 }

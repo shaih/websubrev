@@ -33,7 +33,7 @@ while ($row = mysql_fetch_row($res)) {
 $cmteIds = array_keys($committee);
 
 // Get the assignment preferences
-$qry = "SELECT revId, subId, pref, compatible, assign FROM assignments";
+$qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM assignments";
 $res = db_query($qry, $cnnct);
 $prefs = array();
 while ($row = mysql_fetch_row($res)) { 
@@ -45,19 +45,7 @@ while ($row = mysql_fetch_row($res)) {
 }
 
 // Make user-indicated changes before displaying the matrix
-if (isset($_POST["clearAllAssignments"])) {
-  foreach($subArray as $sub) foreach($cmteIds as $revId) {
-    $subId = (int) $sub[0];
-
-    if (isset($prefs[$subId][$revId])
-	&& $prefs[$subId][$revId][2]>0) { // modify an existing entry
-      $prefs[$subId][$revId][2] = 0;
-      $qry = "UPDATE assignments SET assign=0 WHERE revId={$revId} AND subId={$subId}";
-      db_query($qry, $cnnct);
-    }
-  }
-}
-else if (isset($_POST["saveAssign"])) { // input from matrix interface
+if (isset($_POST["saveAssign"])) { // input from matrix interface
   foreach($subArray as $sub) foreach($cmteIds as $revId) {
     $subId = (int) $sub[0];
     $assgn = isset($_POST["a_{$subId}_{$revId}"]) ? 1 : 0;
@@ -67,18 +55,19 @@ else if (isset($_POST["saveAssign"])) { // input from matrix interface
 	&& $prefs[$subId][$revId][2] == -1) $assgn=-1;
 
     if (isset($prefs[$subId][$revId])                 // modify existing entry
-	&& $prefs[$subId][$revId][2]!=$assgn) {
+	&& (isset($_POST["visible"]) || $prefs[$subId][$revId][2]!=$assgn)) {
       $prefs[$subId][$revId][2] = $assgn;
-      $qry = "UPDATE assignments SET assign={$assgn} "
-	. "WHERE revId='{$revId}' AND subId='{$subId}'";
+      $qry = "UPDATE assignments SET sktchAssgn={$assgn}";
+      if (isset($_POST["visible"])) $qry .= ", assign={$assgn}";
+      $qry .= " WHERE revId='{$revId}' AND subId='{$subId}'";
       db_query($qry, $cnnct);
     }
 
     if (!isset($prefs[$subId][$revId]) && $assgn!=0) {// inser a new entry
       if (!isset($prefs[$subId])) { $prefs[$subId] = array(); }
       $prefs[$subId][$revId] = array(3, 0, $assgn);
-      $qry = "INSERT INTO assignments SET "
-	   . "revId={$revId}, subId={$subId}, assign={$assgn}";
+      $qry = "INSERT INTO assignments SET revId={$revId}, subId={$subId}, sktchAssgn={$assgn}";
+      if (isset($_POST["visible"])) $qry .= ", assign={$assgn}";
       db_query($qry, $cnnct);
     }
   }
@@ -102,21 +91,23 @@ else if (isset($_POST["manualAssign"])) { // input from list interface
       $list .= $revId . ', ';
       if (!isset($prefs[$subId][$revId])) { // insert new entry
 	$prefs[$subId][$revId] = array(3, 0, 1);
-	$qry = "INSERT INTO assignments SET "
-	     . "revId={$revId}, subId={$subId}, assign=1";
+	$qry = "INSERT INTO assignments SET revId={$revId}, subId={$subId}, sktchAssgn=1";
+	if (isset($_POST["visible"])) $qry .= ", assign=1";
 	db_query($qry, $cnnct);
       }
-      else if ($prefs[$subId][$revId][2] != 1) { // update existing entry
+      else if (isset($_POST["visible"]) || $prefs[$subId][$revId][2] != 1) { // update existing entry
 	$prefs[$subId][$revId][2] = 1;
-	$qry = "UPDATE assignments SET assign=1 "
-	     . "WHERE revId='{$revId}' AND subId='{$subId}'";
+	$qry = "UPDATE assignments SET sktchAssgn=1";
+	if (isset($_POST["visible"])) $qry .= ", assign=1";
+	$qry .= " WHERE revId='{$revId}' AND subId='{$subId}'";
 	db_query($qry, $cnnct);
       }
     }
 
     // Remove all other assignments to $subId from database and $prefs
-    $qry = "UPDATE assignments SET assign=0 "
-         . "WHERE subId={$subId} AND revId NOT IN ({$list}0) AND assign=1";
+    $qry = "UPDATE assignments SET sktchAssgn=0";
+    if (isset($_POST["visible"])) $qry .= ", assign=0";
+    $qry .= " WHERE subId={$subId} AND revId NOT IN ({$list}0) AND sktchAssgn=1";
     db_query($qry, $cnnct);
     foreach ($prefs[$subId] as $revId => $p) {
       if ($p[2]==1 && !isset($newAssignment[$subId][$revId]))
@@ -180,34 +171,40 @@ $links
 <hr />
 <h1>Manual Assignments of Submissions to Reviewers</h1>
 
-<form action="assignments.php" enctype="multipart/form-data" method="post">
+<form action="scrap-assignments.php" enctype="multipart/form-data" method="post">
 To manually assign submissions to reviewers, you can use either the <a
 href="#matrix">matrix interface</a> or the <a href="#sublist">submission-list
-interface</a> below. When you hit the "Save Assignments" button at the
-bottom of each interface the reviewers will be able to see what submissions
-were assigned to them (and the sums at the right column and the bottom row
-will be updated). You can always start from scratch by using the clear-all
-button: 
-<input type="submit" value="Clear All Assignments"> (Note: <big><strong>there
-is no way to "undo" the clear-all button</strong></big>.)
-<input type="hidden" name="clearAllAssignments" value="on">
+interface</a> below. The two interfaces are synchronized (and the sums at
+the right column and the bottom row of the matrix are updated) whenever
+you hit the "Save Assignments" button at the bottom of either interface.
+In addition, if you check the box for making the changes visible then the
+reviewers will be able to see what submissions were assigned to them.<br/>
+<br/>
+You can always start from scratch by using the clear-all button, or
+reset the form to the assignments that are currently visible to the
+reviewers.
+<input type="submit" name="clearAll" value="Clear All Assignments"> or 
+<input type="submit" name="reset2visible" value="Reset to Visible Assignments">
+Note: this only effects the scratch copy of the assignments and is not
+visible to the reviewers. (<a target=_blank
+href="../documentation/chair.html#scratchAssign">explain this</a>)
 </form>
 
 EndMark;
 
 if (defined('REVPREFS') && REVPREFS) {
   print <<<EndMark
-You can have the software automatically computes an assignment of
+You can have the software automatically compute an assignment of
 submissions to reviewers (using the reviewer preferences and a stable-marriage
 algorithm) by going to <a href="auto-assign.php">the Auto-Assignment page</a>.
-(The Auto-Assignment page includes also a form for specifying the <a
+The Auto-Assignment page includes also a form for specifying the <a
 href="auto-assign.php#chairPrefs">chair-preferences</a>, and these
 preferences are used in the automatic assignment algorithm. Also, the
 check-boxes in the <a href="#matrix">matrix interface</a> below will
 be colored <span style="color: green;">green</span> when you indicate
 a preference for the PC-member to review the submission or <span
 style="color: red;">red</span> when you indicate a preference that the
-PC-member do not review the submission.)<br/>
+PC-member do not review the submission.<br/>
 <br/>
 
 EndMark;
@@ -281,6 +278,8 @@ print <<<EndMark
 <a name="saveMatrix"></a>
 <input type="hidden" name="saveAssign" value="on">
 <input type="submit" value="Save Assignments">
+<input type="checkbox" name="visible" value="on">
+Make these assignments visible to the reviewers
 </form>
 <hr /><hr />
 <a name="sublist"></a><h2>Submission-List Interface</h2>
@@ -349,6 +348,8 @@ print <<<EndMark
 </ol>
 <input type="hidden" name="manualAssign" value="on">
 <input type="submit" value="Save Assignments">
+<input type="checkbox" name="visible" value="on">
+Make these assignments visible to the reviewers
 </form>
 
 <hr />

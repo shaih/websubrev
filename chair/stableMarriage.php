@@ -107,7 +107,7 @@ foreach ($subs as $subId => $y) {
 
 
 // Get the prefernces from the database and overwrite the above defualt values
-$qry = "SELECT revId, subId, pref, compatible, assign FROM assignments";
+$qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM assignments";
 $res = db_query($qry, $cnnct);
 $curAssign = array();
 while ($row = mysql_fetch_assoc($res)) {
@@ -124,7 +124,7 @@ while ($row = mysql_fetch_assoc($res)) {
   $compatible = (int) $row['compatible'];         // -1, 0, or 1
   if ($compatible < -1 || $compatible > 1) $compatible = 0;
 
-  $assign = (int) $row['assign'];                 // -1, 0, or 1
+  $assign = (int) $row['sktchAssgn'];             // -1, 0, or 1
   if ($assign < -1 || $assign > 1) $assign = 0;
 
   // record the current assignment
@@ -216,11 +216,9 @@ foreach ($revs as $revId => $x) foreach ($subs as $subId => $y) {
   if ($aNew == (int)$aOld) continue;    // nothing to update
 
   if (isset($aOld)) {    // modify existing entry
-    $qry = "UPDATE assignments SET assign={$aNew} "
-      . "WHERE revId={$revId} AND subId={$subId}";
+    $qry = "UPDATE assignments SET sktchAssgn={$aNew} WHERE revId={$revId} AND subId={$subId}";
   } else if ($aNew==1) { // insert a new entry
-    $qry = "INSERT INTO assignments "
-      . "SET revId={$revId}, subId={$subId}, assign=1";
+    $qry = "INSERT INTO assignments SET revId={$revId}, subId={$subId}, sktchAssgn=1";
   }
   db_query($qry, $cnnct);
 }

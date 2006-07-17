@@ -175,6 +175,7 @@ function SYSmkTar()
   while ($row=mysql_fetch_row($res)) {
     $submissions .= $row[0].'.'.$row[1].' ';
   }
+  if (empty($submissions)) return NULL;
 
   chdir(SUBMIT_DIR);
   if (isset($_GET['noZip'])) {
