@@ -15,7 +15,7 @@ print <<<EndMark
 <html>
 <head>
   <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-  <title>Submission/Revision Instructions</title>
+  <title>Submission/Revision Instructions, $confName</title>
 
 <style type="text/css">
 h1 { text-align: center; }
@@ -35,7 +35,7 @@ if (defined('CAMERA_PERIOD')) {
   $cameraInstructions = htmlspecialchars($cameraInstructions);
 
   print <<<EndMark
-<h1>Final-Version Submission Instructions</h1>
+<h1>Final-Version Submission Instructions, $confName</h1>
 <h3>Deadline is $deadline<br/>Time now is $now</h3>
 
 Use the <a href="cameraready.php">camera-ready revision form</a> (with
@@ -59,7 +59,7 @@ EndMark;
 $deadline = SUBMIT_DEADLINE;
 
 print <<<EndMark
-<h1>Submission/Revision Instructions</h1>
+<h1>Submission/Revision Instructions, $confName</h1>
 <h3>Deadline is $deadline<br/>Time now is $now</h3>
 
 The following forms are available:

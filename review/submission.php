@@ -111,7 +111,7 @@ $authors
 <center>
 <a href="$subFile" title="download"><img src="download.gif" alt="download"
    border=0></a>
-$discussText
+<span class="Discuss"><a href="discuss.php?subId=$subId" target="_blank">$discussText</a></span>
 <span class="$revStyle"><a href="review.php?subId=$subId" target="_blank">$revText</a></span>&nbsp;
 $toggleWatch
 </center>

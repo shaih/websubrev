@@ -11,6 +11,7 @@ require 'header.php'; // defines $pcMember=array(id, name, ...)
 $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
 $disFlag= (int) $pcMember[3];
+$confName = CONF_SHORT . ' ' . CONF_YEAR;
 
 $links = show_rev_links(2);
 $message = show_message();
@@ -31,14 +32,14 @@ h1, h2 { text-align: center; }
 div.frame { border-style: inset; }
 tr { vertical-align: top; }
 </style>
-<title>Review homepage for $revName</title>
+<title>$confName Review homepage for $revName</title>
 </head>
 <body>
 $message
 $links
 <hr />
 
-<h1>{$revName}'s Review Page</h1> <!-- ' -->
+<h1>{$revName}'s Review Page, $confName</h1> <!-- ' -->
 <h2>$phase</h2>
 Hello $revName. 
 EndMark;

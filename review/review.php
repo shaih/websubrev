@@ -84,11 +84,11 @@ h2 { text-align: center; }
 tr { vertical-align: top; }
 </style>
 
-<title>Review of Summission $subId{$update}</title></head>
+<title>Review of Submission $subId{$update}</title></head>
 <body>
 $links
 <hr />
-<h1>Review of Summission $subId{$update}</h1>
+<h1>Review of Submission $subId{$update}</h1>
 <h2>$title</h2>
 
 <form action="act-review.php" enctype="multipart/form-data" method=post>
