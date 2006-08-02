@@ -69,6 +69,14 @@ $listSubmissions = "<td style=\"width: 265px;\">\n"
 if (!$disFlag) { // Reviewer still in the individual review phase
   individual_review($revId);
   $showReviews = $allReviews = '';
+  $uploadScores = '<form target=_blank action="parse-scorecard.php"
+enctype="multipart/form-data" method=POST>
+<input type=submit value="Upload scorecard file:">
+<input type=file size=40 name=scorecard>
+(<a target=_blank href="scorecard.php">what\'s that?</a>)<br/>
+<b>Warning:</b> <i>Check that the file does not contain out-of-date
+reviews!</i> Upload will overwrite previous reviews. 
+</form>';
 } else {         // Reviewer in the discussion phase
   $watchedSubs = discussion_phase($revId);
   if ($watchedSubs) {
@@ -82,7 +90,7 @@ if (!$disFlag) { // Reviewer still in the individual review phase
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;<a
 href="listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on">html</a> or <a href="listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on&amp;format=ascii">ascii</a>
 <br/>';
-
+  $uploadScores='';
 }
 
 print <<<EndMark
@@ -94,6 +102,7 @@ $listSubmissions
 <td><strong>Some other links:</strong><br />
 $allSubFile
 $indicatePrefs
+&nbsp;o&nbsp;&nbsp;<a target=_blank href="scorecard.php">Work with scorecard files</a><br />
 &nbsp;o&nbsp;&nbsp;<a href="password.php">Change password</a><br />
 $allReviews
 </td>
@@ -101,6 +110,7 @@ $allReviews
 <!-- A box that lets the reviewer list reviews in different orders -->
 $showReviews
 </tr></tbody></table>
+$uploadScores
 $legend
 <hr/>
 $links

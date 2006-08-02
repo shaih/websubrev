@@ -76,8 +76,6 @@ print <<<EndMark
   "http://www.w3.org/TR/html4/loose.dtd">
 
 <html><head>
-<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-
 <style type="text/css">
 h1 { text-align: center; }
 h2 { text-align: center; }
