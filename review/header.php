@@ -19,8 +19,8 @@ if (empty($errorMsg)) {
   $errorMsg = "A valid username/password is needed to access this page";
 }
 
-/* Authenticate a PC member unless $needsAuthentication === false (in
- * particular this means authenticate when $needsAuthentication is NULL)
+/* Authenticate a PC member unless $needsAuthentication===false (this
+ * means authenticate also when $needsAuthentication is undefined or zero)
  */
 //$pcMember = array(2, "Shai Halevi", "shaih@watson.ibm.com", 1, 1);
 if ($needsAuthentication !== false) { 
@@ -35,6 +35,12 @@ if ($needsAuthentication !== false) {
     header("HTTP/1.0 401 Unauthorized");
     exit($errorMsg);
   }
+}
+
+// Before the review period: the chair can access everything,
+// but others can only access pages that set $preReview=true
+if (!defined('REVIEW_PERIOD') && $preReview!==true && $pcMember[0]!=CHAIR_ID) {
+  exit("<h1>This area of the review site is not active yet</h1>");
 }
 
 // If 'magic quotes' are on, get rid of them
@@ -52,9 +58,12 @@ function show_rev_links($current = 0)
     $html .= make_link('../chair/', 'Administer');
 
   $html .= make_link('guidelines.php', 'Guidelines', ($current==1))
-    . make_link('index.php', 'Review Home', ($current==2))
-    . make_link('listSubmissions.php', 'List submissions', ($current==3));
-  if (REVPREFS) $html .= make_link('prefs.php', 'Preferences', ($current==4));
+    . make_link('index.php', 'Review Home', ($current==2));
+  if (defined('REVIEW_PERIOD')) {
+    $html.=make_link('listSubmissions.php', 'List submissions',($current==3));
+    if (REVPREFS && !$pcMember[3])
+      $html .= make_link('prefs.php', 'Preferences', ($current==4));
+  }
   $html .= make_link('password.php', 'Change Password', ($current==5))
     . make_link('../documentation/reviewer.html', 'Documentation')."</div>\n";
 

@@ -30,5 +30,8 @@ foreach ($_POST as $key => $val) {
   }
 }
 
-return_to_caller('index.php');
+if ($subId>0 && !isset($_POST['noAnchor']))
+     $anchor="#stts{$subId}";
+else $anchor="";
+return_to_caller('index.php', '', $anchor);
 ?>

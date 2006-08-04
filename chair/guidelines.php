@@ -64,8 +64,6 @@ h1 { text-align: center; }
 <title>Review Guidelines for $cName</title>
 </head>
 <body>
-<hr/>
-
 <h1>Review Guidelines for $cName</h1>
 $schedule
 
@@ -257,8 +255,12 @@ h1 {text-align: center;}
 $links
 <hr />
 <h1>Set Review Guideline for $cName</h1>
-You can either upload your own guidelines HTML file or use the HTML text in the form below. <br/>
-
+You can either upload your own guidelines HTML file or use the HTML text
+in the form below. A reasonable algorithm is to first use the form below,
+then download <a href='../review/guidelines.php'>the resulting guidelines 
+file</a> and save it locally, and then edit it to suit your needs and upload
+it back to the server.<br/>
+<br/>
 <form action="guidelines.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
 <input type="submit" name="uploadGuidelines" value="Upload Review Guidelines File:"><input name="guidelinesFile" size="60" type="file">

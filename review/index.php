@@ -6,6 +6,7 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
 $needsAuthentication=true;
+$preReview=true;      // page is available also before the review peiod
 require 'printSubList.php';
 require 'header.php'; // defines $pcMember=array(id, name, ...)
 $revId  = (int) $pcMember[0];
@@ -18,6 +19,8 @@ $message = show_message();
 $phase = $disFlag ? 'Discussion Phase' : 'Individual Review Phase';
 if (defined('CAMERA_PERIOD')) $phase = 'Read Only';
 $legend = '';
+$cnnct = db_connect();
+$ballotsText = votingText($cnnct, $disFlag);
 
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
@@ -41,8 +44,20 @@ $links
 
 <h1>{$revName}'s Review Page, $confName</h1> <!-- ' -->
 <h2>$phase</h2>
-Hello $revName. 
+Hello $revName. $ballotsText
 EndMark;
+
+// Before the review period: only chair can sees things.
+if (!defined('REVIEW_PERIOD') && $pcMember[0]!=CHAIR_ID) {
+  print <<<EndMark
+The review period has not started yet.
+<hr/>
+$links
+</body>
+</html>
+EndMark;
+ exit();
+}
 
 // look for a tar or tgz file with all the submissions
 $allSubFile = SUBMIT_DIR."/all_in_one.tgz";
@@ -53,7 +68,6 @@ if (!file_exists($allSubFile)) {   // maybe .zip rather than .tzg?
     if (!file_exists($allSubFile)) $allSubFile = NULL; // oh, I give up
   }
 }
-
 if (isset($allSubFile)) {
   $allSubFile = '&nbsp;o&nbsp;&nbsp;<a href="../'.$allSubFile.'">Download submissions in one file</a><br />';
 }
@@ -61,13 +75,12 @@ if (isset($allSubFile)) {
 if (REVPREFS && !$disFlag) {
   $indicatePrefs = '&nbsp;o&nbsp;&nbsp;<a href="prefs.php">Indicate reviewing preferences</a><br />';
 }
-else $indicatePrefs = NULL;
+else $indicatePrefs = '';
 
-$listSubmissions = "<td style=\"width: 265px;\">\n"
-  . listSubmissionsBox($disFlag) . "</td>\n";
+$listSubmissions = listSubmissionsBox($disFlag);
 
 if (!$disFlag) { // Reviewer still in the individual review phase
-  individual_review($revId);
+  individual_review($cnnct, $revId);
   $showReviews = $allReviews = '';
   $uploadScores = '<form target=_blank action="parse-scorecard.php"
 enctype="multipart/form-data" method=POST>
@@ -78,7 +91,7 @@ enctype="multipart/form-data" method=POST>
 reviews!</i> Upload will overwrite previous reviews. 
 </form>';
 } else {         // Reviewer in the discussion phase
-  $watchedSubs = discussion_phase($revId);
+  $watchedSubs = discussion_phase($cnnct, $revId);
   if ($watchedSubs) {
     $legend = show_legend(); // defined in confUtils.php
   }
@@ -97,7 +110,9 @@ print <<<EndMark
 <br/>
 <table cellspacing=5 width="100%"><tbody><tr>
 <!-- A box that lets the reviewer list submissions in different orders -->
+<td style="width: 265px;">
 $listSubmissions
+</td>
 
 <td><strong>Some other links:</strong><br />
 $allSubFile
@@ -129,11 +144,10 @@ function show_message()
   return '';
 }
 
-function individual_review($revId)
+function individual_review($cnnct, $revId)
 {
   $subs = array();
   $reviewed = array();
-  $cnnct = db_connect();
 
   $qry ="SELECT s.subId subId, title, s.format format, status, 
       UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
@@ -172,12 +186,9 @@ function individual_review($revId)
   else print "<br/>\n";
 }
 
-function discussion_phase($revId)
+function discussion_phase($cnnct, $revId)
 {
   global $discussIcon1, $discussIcon2;
-
-  $cnnct = db_connect();
-  print votingText($cnnct);
 
   // Get a list of submissions for which this reviewer already saw all
   // the discussions/reviews. Everything else is considered "new"
@@ -224,17 +235,19 @@ function discussion_phase($revId)
 	. " of the submissions on your watch list " . $require 
 	. " additional discussion.\n";
     }
-    print "<br/><br/>\n";
+    print "<br/>\n";
     print_sub_list($subs, "Submissions on your watch list", $reviewed, true);
     return true;
   }
-  else print '<br/>';
   return false;
 }
 
-function votingText($cnnct)
+function votingText($cnnct, $disFlag)
 {
-  $res = db_query("SELECT voteId, voteTitle, deadline FROM votePrms WHERE voteActive=1", $cnnct);
+  $qry = "SELECT voteId, voteTitle, deadline FROM votePrms WHERE voteActive=1";
+  // Before the discussion phase, cannot vote on submissions
+  if (!$disFlag) $qry .= " AND (voteFlags&1)!=1";
+  $res = db_query($qry, $cnnct);
   if (mysql_num_rows($res)<= 0) return '';
 
   $html = "You can participate in the current active ballots:\n";

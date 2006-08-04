@@ -52,10 +52,10 @@ if (isset($_GET['download'])) { // Display current scorecard
   print <<<EndMark
 # SCORECARD for $revName, reviews for $confName
 #################################################################
-# A line that beging with the symbol '#' is considered a
+# A line that begins with the symbol '#' is considered a
 # comment line and is ignored by the software. 
 # 
-# See the buttom of this file for formatting information, and
+# See the bottom of this file for formatting information, and
 # try not to deviate significantly from the specified format.
 
 
@@ -82,13 +82,13 @@ EndMark;
     $cmnt2chr  = wordwrap($review['chrCmnt']);
     print "AUTHOR-COMMENTS: ".$cmnt2athr."\n";
     print "PC-COMMENTS: ".$cmnt2PC."\n";
-    print "AUTHOR-COMMENTS: ".$cmnt2chr."\n";
+    print "CHAIR-COMMENTS: ".$cmnt2chr."\n";
     print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
   }
 
   print <<<EndMark
 #################################################################
-# Formattign information
+# Formatting information
 #################################################################
 # The reviews should look as follows:
 # 
@@ -100,7 +100,7 @@ EndMark;
 #     aux-criteria-1: num
 #     aux-criteria-2: num
 #     [...]
-#     AUTH-COMMENTS: anything here is considered comments to the
+#     AUTHOR-COMMENTS: anything here is considered comments to the
 #       authors
 #     PC-COMMENTS: anything here is considered comments to 
 #       to program committee
@@ -108,8 +108,9 @@ EndMark;
 #       to the program chair
 #     +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #  
-# Different reviews are separated with a line of '+' symbols (at
-# least 20 '+' symbols, with no white-spaces or anything else). 
+# Different reviews in the same file are separated with a line of '+'
+# symbols (at least 20 '+' symbols, with no white-spaces or anything
+# else). 
 # 
 # Each review starts by a line containing the submission number and
 # optionally the title. The software ignores the title and only uses
@@ -124,12 +125,12 @@ EndMark;
 # 
 # Next comes lines for the score and confidence. If the num is not
 # supplied, the software will record the special symbol 'ignore'.
-# Next you can put lines for the other evaluation cryteria that the
+# Next you can put lines for the other evaluation criteria that the
 # chair specified (e.g., Technical, Editorial quality, etc). If the
 # software does not recognize a criterion it will ignore that line
 # and display a warning. 
 #
-# Next comes the comments. Anything after the tag "AUTH-COMMENTS:"
+# Next comes the comments. Anything after the tag "AUTHOR-COMMENTS:"
 # (which must be at the beginning of a line) and on the following
 # lines is considered comments-to-authors, until the end of the
 # review or until a line that begins with "PC-COMMENTS:" or

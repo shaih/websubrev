@@ -302,9 +302,12 @@ function return_to_caller($url, $extraPrms='', $anchor='')
     $whoseCalling .= $sep . $extraPrms;
   }
 
-  if (!empty($anchor) && (strpos($whoseCalling, '#')===false))
-    $whoseCalling .= $anchor;
-
+  if (!empty($anchor)) {
+    if (($pos=strpos($whoseCalling, '#'))===false)
+      $whoseCalling .= $anchor;
+    else 
+      $whoseCalling = subsrt($whoseCalling, 0, $pos) . $anchor;
+  }
   header("Location: $whoseCalling");
   exit();
 }
