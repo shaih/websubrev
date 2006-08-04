@@ -6,9 +6,12 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
 $needsAuthentication=true;
+$preReview=true;      // page is available also before the review peiod
 
 require 'header.php'; // defines $pcMember=array(id, name, ...)
 $revId = (int) $pcMember[0];
+$disFlag= (int) $pcMember[3];
+
 $links = show_rev_links();
 
 // Get the parameters of the current active vote.
@@ -18,6 +21,10 @@ if ($voteId <= 0) die("<h1>Vote-ID must be specified</h1>");
 
 $cnnct = db_connect();
 $qry = "SELECT * from votePrms WHERE voteId=$voteId AND voteActive=1";
+
+// Before the discussion phase, cannot vote on submissions
+if (!$disFlag) $qry .= " AND (voteFlags&1)!=1";
+
 $res = db_query($qry,$cnnct);
 $row = mysql_fetch_array($res)
      or die("<h1>No Active vote with Vote-ID $voteId</h1>");

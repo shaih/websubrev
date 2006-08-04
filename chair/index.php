@@ -89,6 +89,11 @@ Deadline is <big>$subDdline</big>
 <li><a href="close-submissions.php">Close Submissions and Activate Review
      Site...</a> (<b>deadline is not enforced automatically</b>)</li>
 </ul>
+<ul>
+<li><a href="guidelines.php">Edit the review guidelines page</a></li>
+<li><a href="manage-review-site.php">Manage PC membership</a></li>
+<li><a href="voting.php">Set-up and manage PC votes</a></li>
+</ul>
 
 EndMark;
 }

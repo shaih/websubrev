@@ -11,7 +11,7 @@ require 'header.php';
 $voteId = isset($_GET['voteId']) ? intval($_GET['voteId']) : 0; // 0 for generic form
 $cnnct = db_connect();
 
-$chkAll = $chkSome = $chkOthers = '';
+$chkAll = $chkSome = $chkOther = '';
 $chkAC = $chkMA = $chkDI = $chkNO = $chkMR = $chkRE = '';
 $voteBudget = $voteMaxGrade = $voteOnThese = $voteItems = '';
 $voteFlags = 0;
@@ -31,7 +31,9 @@ if ($voteId > 0) { // If voteId is specified, get details of vote
   $voteInstructions = htmlspecialchars($voteDetails['instructions']);
   $chooseVote= ($voteDetails['voteType']=='Choose')? 'checked="checked"' : '';
   $gradeVote = ($voteDetails['voteType']=='Grade') ? 'checked="checked"' : '';
-  $voteBudget = intval($voteDetails['voteBudget']);
+  $voteBudget = trim($voteDetails['voteBudget']);
+  if ($voteBudget<=0) $voteBudget='';
+  else $voteBudget=" value=".intval($voteBudget);
   $voteMaxGrade = intval($voteDetails['voteMaxGrade']);
   if ($voteFlags & VOTE_ON_SUBS) {
     if ($voteFlags & VOTE_ON_ALL) $chkAll = 'checked="checked"';
@@ -53,7 +55,7 @@ if ($voteId > 0) { // If voteId is specified, get details of vote
 }
 else {             // Get a list of votes
   $head2 = "Set-up a new vote";
-  $qry = "SELECT voteId, voteTitle, deadline, voteActive FROM votePrms";
+  $qry = "SELECT voteId, voteTitle, deadline, voteActive FROM votePrms ORDER BY voteId DESC";
   $res = db_query($qry, $cnnct);
   while ($row=mysql_fetch_array($res)) {
     $allVotes[] = $row;
@@ -152,12 +154,16 @@ A "Grade vote" on a scale of 0 to
 (max-garde cannot be more than 9).<br/>
 <br />
 Every PC member has "voting budget" of 
-<input type="text" name="voteBudget" size=1 value=$voteBudget> (leave empty
+<input type="text" name="voteBudget" size=1{$voteBudget}> (empty or zero
 for unlimited budget). For a "Choose vote", the budget is the number of
 submissions that the PC member can choose. For a "Grade vote", it
 is the sum of all grades that this PC member can assign.
 
 <h3>What is included in this vote?</h3>
+(<b>Note:</b> PC members can only vote on submissions after you set their
+"discuss" flags from the <a href="overview.php#progress">progress overview
+page</a>. Until then they can only participate in "votes on other things"
+as per the third optoin below.)<br/>
 <input type="radio" name="voteOnWhat" value="all" $chkAll>
 Include all submissions.
 <br/>
@@ -186,7 +192,7 @@ Include only the submissions that are specified below
 </tr>
 </tbody></table>
 <br />
-<input type="radio" name="voteOnWhat" value="other" $chkOthers>
+<input type="radio" name="voteOnWhat" value="other" $chkOther>
 Vote on things other than submissions (e.g., invited speaker):
 <textarea name="voteItems" rows=5 cols=80>$voteItems</textarea><br />
 A <b>semi-colon separated</b> list of items to vote on. For example, to let
