@@ -19,7 +19,7 @@ function subDetailedHeader(&$sub, $revId=0, $showDiscussButton=true)
   $disText = (isset($sub['hasNew'])&&$sub['hasNew']) ? $discussIcon2 : $discussIcon1;
 
   $lastModif = isset($sub['lastModif']) ? 
-               date('M-j H:i', ((int)$sub['lastModif'])) : '';
+               date('M\&\n\b\s\p\;j H:i', ((int)$sub['lastModif'])) : '';
 
   print "<br />\n<div class=\"darkbg\">\n";
   // If this is the chair: allow setting the status of this submission
@@ -78,12 +78,21 @@ function show_reviews(&$reviews, $revId)
 
   $nReviews = count($reviews);
   for ($j=0; $j<$nReviews; $j++) {
-    $rev =& $reviews[$j];
+    $rev = $reviews[$j];
     $pcm = htmlspecialchars($rev['PCmember']);
     $subRev = $rev['subReviewer'];
     if (!empty($subRev)) $subRev = " (".htmlspecialchars($subRev).")";
+
+    $sid = $rev['subId'];
+    $rid = $rev['revId'];
+    // If this is my review, show a link to edit it
+    if (!defined('CAMERA_PERIOD') && $rid==$revId) 
+      $reviseTxt = " <a target=_blank title=\"Revise your report\" href=\"review.php?subId=$sid\">[revise]</a>";
+    else
+      $reviseTxt = ''; 
+
     $mod = isset($rev['modified']) 
-           ? date('M-j H:i', ((int)$rev['modified'])) : '';
+           ? date('M\&\n\b\s\p\;j H:i', ((int)$rev['modified'])) : '';
     $confidence = (int) $rev['conf'];
     if ($confidence <= 0) $confidence = '*';
     $grade = (int) $rev['grade'];
@@ -98,7 +107,7 @@ function show_reviews(&$reviews, $revId)
       if ($grade <= 0) $grade = '*';
       print "      <td class=\"ctr\">$grade</td>\n";
     }
-    print "      <td>&nbsp;</td>\n      <td><b>{$pcm}$subRev</b></td></tr>\n";
+    print "      <td>&nbsp;</td>\n      <td><b>$pcm{$subRev}</b>$reviseTxt</td></tr>\n";
   }
   print "<tr><td></td></tr></tbody></table></div>\n\n";
 }
@@ -111,7 +120,7 @@ function show_reviews_with_comments(&$reviews, $revId)
   if (!is_array($reviews)) return;
   $nReviews = count($reviews);
   for ($j=0; $j<$nReviews; $j++) {
-    $rev =& $reviews[$j];
+    $rev = $reviews[$j];
 
     $cmnt2athr = isset($rev['cmnts2athr'])?htmlspecialchars($rev['cmnts2athr']):'';
     $cmnt2PC   = isset($rev['cmnts2PC']) ? htmlspecialchars($rev['cmnts2PC']):'';
@@ -120,15 +129,23 @@ function show_reviews_with_comments(&$reviews, $revId)
 
     $PCmember = htmlspecialchars($rev['PCmember']);
     $subRev = isset($rev['subReviewer']) ?
-      "(".htmlspecialchars($rev['subReviewer']).")" : "";
+      " (".htmlspecialchars($rev['subReviewer']).")" : "";
     $grade = isset($rev["grade"]) ? ((int) $rev['grade']) : '*';
+
+    $sid = $rev['subId'];
+    $rid = $rev['revId'];
+    // If this is my review, show a link to edit it
+    if (!defined('CAMERA_PERIOD') && $rid==$revId) 
+      $reviseTxt = " <a target=_blank title=\"Revise your report\" href=\"review.php?subId=$sid\"> [revise]</a>";
+    else
+      $reviseTxt = ''; 
 
     print <<<EndMark
 <table class="lightbg" style="text-align: center;"
     cellspacing=0 cellpadding=5>
 <tbody>
 <tr>
-  <td style="text-align: left; width: 400px;"><h3>$PCmember $subRev</h3></td>
+  <td style="text-align: left; width: 400px;"><h3>$PCmember{$subRev}$reviseTxt</h3></td>
   <td></td>
   $confHtml
   <td>Grade<br />$grade</td>
@@ -141,7 +158,7 @@ EndMark;
       print "  <td>$name<br />$grade</td>\n";
     }
     $lastModif = isset($rev['modified']) ? 
-                 date('M-j\<\b\r\/\>H:i', ((int)$rev['modified'])) : '';
+                 date('M\&\n\b\s\p\;j\<\b\r\/\>H:i', ((int)$rev['modified'])) : '';
 
     print "  <td class=\"ctr\">$lastModif</td>\n</tr>\n";
     print "</tbody></table>\n";

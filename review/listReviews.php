@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication=true;
+$needsAuthentication=true;
 require 'showReviews.php';
 require 'ascii-showReviews.php';
 require 'header.php';  // defines $pcMember=array(id, name, email, ...)
@@ -55,7 +55,7 @@ $qry = "SELECT s.subId subId, s.title title,
        a.assign assign, a.watch watch,\n";
 
 // Next the reviwe details
-$qry .="       r.confidence conf, r.grade grade, 
+$qry .="       r.revId revId, r.confidence conf, r.grade grade, 
        UNIX_TIMESTAMP(r.lastModified) modified, c.name PCmember,
        r.subReviewer subReviewer";
 for ($i=0; $i<count($criteria); $i++) {
@@ -115,7 +115,9 @@ while ($row = mysql_fetch_assoc($res)) {
 
   // Record the details of the current review in the submission's review list
   if (isset($row['PCmember'])) {
-    $review = array('PCmember'    => $row['PCmember'],
+    $review = array('subId'       => $row['subId'],
+		    'revId'       => $row['revId'],
+		    'PCmember'    => $row['PCmember'],
 		    'subReviewer' => $row['subReviewer'],
 		    'modified'    => $row['modified'],
 		    'conf'        => $row['conf'],

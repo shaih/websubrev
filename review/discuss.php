@@ -49,7 +49,7 @@ for ($i=0; $i<count($criteria); $i++) {
   $grades .= ",\n       r.grade_{$i} grade_{$i}";
 }
 $chrCmnts = ($revId == CHAIR_ID) ? "r.comments2chair cmnts2chr, " : "";
-$qry = "SELECT c.name PCmember, r.subReviewer subReviewer,
+$qry = "SELECT r.subId subId, r.revId revId, c.name PCmember, r.subReviewer subReviewer,
        {$grades},
        r.comments2authors cmnts2athr,
        r.comments2committee cmnts2PC, $chrCmnts
