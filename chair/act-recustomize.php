@@ -503,16 +503,22 @@ function send_camera_instructions($cnnct, $text)
   $qry = "SELECT subId, title, authors, contact FROM submissions
   WHERE status='Accept'";
   $res = db_query($qry, $cnnct);
+  $count=0;
   while ($row = mysql_fetch_row($res)) {
     $subId = (int) $row[0];
     $contact = $row[3];
 
-  if (ini_get('safe_mode') || !defined('EML_EXTRA_PRM'))
-    $success = mail($contact, $sbjct, $text, $hdr);
-  else
-    $success = mail($contact, $sbjct, $text, $hdr, EML_EXTRA_PRM);
+    if (ini_get('safe_mode') || !defined('EML_EXTRA_PRM'))
+      $success = mail($contact, $sbjct, $text, $hdr);
+    else
+      $success = mail($contact, $sbjct, $text, $hdr, EML_EXTRA_PRM);
 
-  if (!$success) error_log(date('Y.m.d-H:i:s ')."Cannot send instructions for submission {$subId} to {$contact}. {$php_errormsg}\n", 3, './log/'.LOG_FILE);
+    if (!$success) error_log(date('Y.m.d-H:i:s ')."Cannot send instructions for submission {$subId} to {$contact}. {$php_errormsg}\n", 3, './log/'.LOG_FILE);
+
+    $count++;
+    if (($count % 25)==0) { // rate-limiting, avoids cutoff
+      sleep(1);
+    }
   }
 }
 ?>

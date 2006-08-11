@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true; 
+$needsAuthentication = true; 
 require 'header.php';
 
 if (defined('SHUTDOWN')) exit("<h1>Site is Closed</h1>");
@@ -63,11 +63,10 @@ if (isset($_POST['sendComments2Submitters'])) {
     $qry .= " AND s.subId IN ({$subIds2send})";
   }
   $qry .= " ORDER by s.subId";
-
-  $res = db_query($qry, $cnnct);
-
   $submissions = array();
   $curId = -1;
+
+  $res = db_query($qry, $cnnct);
   while ($row=mysql_fetch_row($res)) {
     $subId = (int) $row[0];
     if ($subId<=0) continue;
@@ -82,13 +81,23 @@ if (isset($_POST['sendComments2Submitters'])) {
   }
   print "<h3>Sending comments...</h3>\n";
 
+  $count=0;
   foreach ($submissions as $subId => $sb) {
-    if (($sb[4]=="Accept") || ($sb[4]=="Reject"))
+    if (($sb[4]=="Accept") || ($sb[4]=="Reject")) {
       sendComments($subId, $sb[0], $sb[1], $sb[2], $sb[3], $ltr);
+    }
+    else continue;
+
+    $count++;
+    if (($count % 25)==0) { // rate-limiting, avoids cutoff
+      print "$count messages sent so far...<br/>\n"
+      sleep(1);
+    }
   }
 
   print <<<EndMark
-Comments sent. Check the <a href="view-log.php">log file</a>
+<br/>
+Total of $count messages sent. Check the <a href="view-log.php">log file</a>
 for any errors.
 
 <hr />

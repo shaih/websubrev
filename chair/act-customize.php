@@ -410,7 +410,7 @@ The start page for administration is
   {$baseURL}chair/
 
 You can login to the administration page using your email address as username,
-and with password $chrPwd.
+and with password $chrPwd
 
 EndMark;
 

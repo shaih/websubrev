@@ -115,6 +115,7 @@ if (isset($_POST['notifySubmitters'])) {
 
   print "<h3>Sending notification letters...</h3>\n";
 
+  $count=0;
   while ($row = mysql_fetch_row($res)) {
     if ($row[4]=='Accept') {
       notifySubmitters($row[0], $row[1], $row[2], $row[3], $row[5],
@@ -125,10 +126,18 @@ if (isset($_POST['notifySubmitters'])) {
       notifySubmitters($row[0], $row[1], $row[2], $row[3], $row[5],
 		       "Your {$cName} submission", $rej);
     }
+    else continue;
+
+    $count++;
+    if (($count % 25)==0) { // rate-limiting, avoids cutoff
+      print "$count messages sent so far...<br/>\n"
+      sleep(1);
+    }
   }
 
   print <<<EndMark
-Notification email sent. Check the <a href="view-log.php">log file</a>
+<br/>
+Total of $count messages sent. Check the <a href="view-log.php">log file</a>
 for any errors.
 
 <hr />
