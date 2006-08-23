@@ -38,6 +38,8 @@ print <<<EndMark
 EndMark;
 
 $cName = CONF_NAME." (".CONF_SHORT." ".CONF_YEAR.")";
+$sbDdline = utcDate('r (T)', SUBMIT_DEADLINE);
+$crDdline = utcDate('r (T)', CAMERA_DEADLINE);
 print "
   <tr><td>Conference name:</td>
       <td><b>$cName</b></td>
@@ -51,10 +53,10 @@ print "
       <td><tt>".ADMIN_EMAIL."</tt></td>
   </tr>
   <tr><td>Submission deadline:</td>
-      <td><b>".SUBMIT_DEADLINE."</b></td>
+      <td><b>$sbDdline</b></td>
   </tr>
   <tr><td>Camera-ready deadline:</td>
-      <td><b>".CAMERA_DEADLINE."</b></td>
+      <td><b>$crDdline</b></td>
   </tr>
   <tr><td>Affiliations:</td>\n";
 

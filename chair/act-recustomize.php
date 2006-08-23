@@ -60,10 +60,21 @@ if (isset($_POST['emlExtraPrm']) || !defined(EML_EXTRA_PRM))
   $emlExtraPrm = $x;
 
 $x = isset($_POST['subDeadline']) ?  trim($_POST['subDeadline']) : NULL;
-if (!empty($x) && $x!=$subDeadline) {$changeConstFile=true; $subDeadline=$x;}
+if (!empty($x)) {
+  $tsb = strtotime($x);
+  if ($tsb===false || $tsb==-1)
+     die ("<h1>Unrecognized time format for submission deadline</h1>");   
+  if ($tsb!=$subDeadline) { $changeConstFile=true; $subDeadline=$tsb; }
+}
 
 $x = isset($_POST['cameraDeadline']) ? trim($_POST['cameraDeadline']) : NULL;
-if (!empty($x) && $x!=$cmrDeadline) {$changeConstFile=true; $cmrDeadline=$x;}
+if (!empty($x)) {
+  $tcr = strtotime($x);
+  if ($tcr===false || $tcr==-1)
+    die ("<h1>Unrecognized time format for camera-ready deadline</h1>");
+  if ($tcr!=$cmrDeadline) { $changeConstFile=true; $cmrDeadline=$tcr; }
+}
+
 
 $x = isset($_POST['categories']) ? explode(';', $_POST['categories']) : NULL;
 if (is_array($x)) {

@@ -160,10 +160,11 @@ submissions that the PC member can choose. For a "Grade vote", it
 is the sum of all grades that this PC member can assign.
 
 <h3>What is included in this vote?</h3>
-(<b>Note:</b> PC members can only vote on submissions after you set their
+<b>Note:</b> PC members can only vote on submissions after you set their
 "discuss" flags from the <a href="overview.php#progress">progress overview
 page</a>. Until then they can only participate in "votes on other things"
-as per the third optoin below.)<br/>
+as per the third option below.<br/>
+<br/>
 <input type="radio" name="voteOnWhat" value="all" $chkAll>
 Include all submissions.
 <br/>
@@ -187,8 +188,7 @@ Include only the submissions that are specified below
 </tr>
 <tr><td> &nbsp; &nbsp; </td>
     <td style="text-align: right;">..and also these submission IDs:</td>
-    <td colspan=2><input type="text" name="voteOnThese" value="$voteOnThese" size=80><br />
-                  (comma-separated list of submission-IDs)</td>
+    <td colspan=2><input type="text" name="voteOnThese" value="$voteOnThese" size=80><br/>comma-separated list of submission-IDs</td>
 </tr>
 </tbody></table>
 <br />
@@ -198,14 +198,26 @@ Vote on things other than submissions (e.g., invited speaker):
 A <b>semi-colon separated</b> list of items to vote on. For example, to let
 the PC members choose their main course for the PC dinner, you can use a line
 such as <tt>"Maine Lobster; Australian barramundi; Squab breast; Medallions of
-Millbrook venison; Lamb rack 'au sautoir'"</tt>.
-<br/><br/>
+Millbrook venison; Lamb rack 'au sautoir'"</tt>.<br/>
+<br/>
+EndMark;
+
+if (!empty($voteOnThese) || !empty($voteItems)) print <<<EndMark
+<b>Note:</b>
+If you modify the list of submission-IDs or the list of "other things" in
+mid-vote, make sure that you <i>do not modify the order of items</i>, since
+the software identifies vote-items with their position in the list. 
+For example, swapping the order of two items will result in each of them
+being assigned the tally of the other. <br/>
+<br/>
+EndMark;
+
+
+print <<<EndMark
+
 <input type="hidden" name="voteId" value=$voteId>
 <input type="submit" name="setup" value="Set/Change Vote Parameters">
 </form>
-EndMark;
-
-print <<<EndMark
 <hr />
 $links
 </body>

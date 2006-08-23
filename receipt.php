@@ -36,7 +36,7 @@ if (!($cnnct = @mysql_connect(MYSQL_HOST, MYSQL_USR, MYSQL_PWD))
 
 $subId = my_addslashes($subId);
 $subPwd = my_addslashes($subPwd);
-$qry = "SELECT *, UNIX_TIMESTAMP(lastModified) revised FROM submissions WHERE subId = '{$subId}' AND subPwd = '{$subPwd}'";
+$qry = "SELECT *, UNIX_TIMESTAMP(whenSubmitted) sbmtd, UNIX_TIMESTAMP(lastModified) revised FROM submissions WHERE subId = '{$subId}' AND subPwd = '{$subPwd}'";
 
 if (!($res=@mysql_query($qry, $cnnct)) || !($row=@mysql_fetch_array($res)))
   generic_receipt($subId, $subPwd);
@@ -52,9 +52,10 @@ $cmnt = nl2br(htmlspecialchars($row['comments2chair']));
 $frmt = htmlspecialchars($row['format']);
 $unsupFormat = (substr($row['format'], -12) == '.unsupported');
 $status = $row['status'];
-$rvsd = ((int) $row['revised']);
-$rvsd = $rvsd ? date('Y-m-j H:i:s', $rvsd) : ''; 
-$sbmtd = htmlspecialchars($row['whenSubmitted']);
+$sbmtd = (int) $row['sbmtd'];
+$sbmtd = $sbmtd ? utcDate('Y-m-j H:i:s (T)', $sbmtd) : ''; 
+$rvsd = (int) $row['revised'];
+$rvsd = $rvsd ? utcDate('Y-m-j H:i:s (T)', $rvsd) : ''; 
 
 if (defined('CAMERA_PERIOD') && $status=='Accept') {
   $subRev = 'camera-ready revision';

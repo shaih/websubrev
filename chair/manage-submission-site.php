@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true; // Just a precaution
+$needsAuthentication = true; // Just a precaution
 require 'header.php';
 
 if (defined('REVIEW_PERIOD')) { exit("<h1>Submission Site is Closed</h1>"); }
@@ -16,8 +16,8 @@ $confYear    = CONF_YEAR;
 $confURL     = CONF_HOME;
 $chairEml    = CHAIR_EMAIL;
 $adminEml    = ADMIN_EMAIL;
-$subDeadline = SUBMIT_DEADLINE;
-$cmrDeadline = CAMERA_DEADLINE;
+$subDeadline = utcDate('r (T)', SUBMIT_DEADLINE);
+$cmrDeadline = utcDate('r (T)', CAMERA_DEADLINE);
 $emlCrlf = addcslashes(EML_CRLF, "\r\n");
 $emlExtraPrm =  EML_EXTRA_PRM;
 
@@ -25,7 +25,6 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html><head>
-  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
 <style type="text/css">
 h1 { text-align: center; }
 tr { vertical-align: top; }

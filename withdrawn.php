@@ -80,7 +80,7 @@ if (!($cnnct = @mysql_connect(MYSQL_HOST, MYSQL_USR, MYSQL_PWD))
 
 if (empty($subId) || empty($subPwd) || !isset($cnnct)) generic_confirm();
 
-$qry = "SELECT *, UNIX_TIMESTAMP(lastModified) revised FROM submissions WHERE subId = '{$subId}' AND subPwd = '{$subPwd}'";
+$qry = "SELECT *, UNIX_TIMESTAMP(whenSubmitted) sbmtd, UNIX_TIMESTAMP(lastModified) revised FROM submissions WHERE subId = '{$subId}' AND subPwd = '{$subPwd}'";
 
 if (!($res=@mysql_query($qry, $cnnct)) || !($row=@mysql_fetch_array($res))) 
   generic_confirm();
@@ -95,9 +95,10 @@ $kwrd = htmlspecialchars($row['keyWords']);
 $cmnt = nl2br(htmlspecialchars($row['comments2chair']));
 $frmt = htmlspecialchars($row['format']);
 $status = $row['status'];
-$rvsd = ((int) $row['revised']);
-$rvsd = $rvsd ? date('Y-m-j H:i:s', $rvsd) : '';
-$sbmtd = htmlspecialchars($row['whenSubmitted']);
+$sbmtd = (int) $row['sbmtd'];
+$sbmtd = $sbmtd ? utcDate('Y-m-j H:i:s (T)', $sbmtd) : ''; 
+$rvsd = (int) $row['revised'];
+$rvsd = $rvsd ? utcDate('Y-m-j H:i:s (T)', $rvsd) : ''; 
 
 print "<br/>\n";
 if ($status!='Withdrawn')

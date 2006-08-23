@@ -59,7 +59,7 @@ exit("</body>\n</html>\n");
 
 function manage_submissions($period)
 {
-  $subDdline = SUBMIT_DEADLINE;
+  if ($period>2) return;
   if ($period==2) {
     print <<<EndMark
 <b><big>&nbsp;Submission Site is Closed</big></b><br/>
@@ -68,9 +68,10 @@ function manage_submissions($period)
 &nbsp;(use to withdraw/revise submissions)&nbsp;
 
 EndMark;
+    return; 
   }
-  if ($period>1) return;
 
+  $subDdline = utcDate('r (T)', SUBMIT_DEADLINE);
   $cnnct = db_connect();
   $qry = "SELECT count(subId) FROM submissions WHERE status!='Withdrawn'";
   $res = db_query($qry, $cnnct);
@@ -125,6 +126,7 @@ print <<<EndMark
 <br /><br />
 
 <dt><strong>Paper assignments</strong>
+<dd>Download the submission-list as an <a href="submissionSpreadsheet.php">Excel spreadsheet</a>
 <dd><a href="conflicts.php">Edit conflicts</a> (Use to block access to
   submissions due to conflict-of-interests, etc.)
 <dd>$assignHTML
@@ -162,7 +164,7 @@ EndMark;
 
 function manage_final_version($period)
 {
-  $cmrDdline = CAMERA_DEADLINE;
+  $cmrDdline = utcDate('r (T)', CAMERA_DEADLINE);
   if ($period < 3) return;
 
   // look for a tar or tgz file with all the submissions

@@ -462,4 +462,54 @@ function numberlist($lst)
   }
   return $s;
 }
+
+// like date(), but returns time in UTC instead of server time
+function utcDate($fmt, $when=NULL)
+{
+  if (!isset($when)) $when=time(); // use current time if none is specified
+
+  if ($fmt=='Z') return date('Z',$when);// who would do such a contrived thing?
+
+  $when -= date('Z',$when);        // add delta between server and UTC
+  $fmt = str_replace("(T)", "(\U\T\C)", $fmt);
+  $ret = date($fmt, $when);
+
+  // A hack to remove -4000 (or similar) when $fmt has 'r' or 'O' or 'P'
+  $diff2gmt = date('O',$when);
+  $ret = str_replace($diff2gmt, "+0000", $ret);
+  $diff2gmt = date('P',$when);
+  $ret = str_replace($diff2gmt, "+00:00", $ret);
+
+  return $ret;
+}
+
+function deltaTime($delta)
+{
+  if ($delta <= 0) {
+    return 'Time is up';
+  }
+
+  $secs = $delta % 60;
+  $delta -= $secs;
+  $delta /= 60;
+
+  $mins = $delta % 60;
+  $delta -= $mins;
+  $delta /= 60;
+
+  $hours = $delta % 24;
+  $delta -= $hours;
+
+  $days = $delta / 24;
+  if ($days <1) $days='';
+  else $days = "$days days and";
+
+  return sprintf("Time left: $days %02d:%02d:%02d", $hours, $mins, $secs);
+}
+
+function show_deadline($when)
+{
+  $delta = $when-time();
+  return deltaTime($delta);
+}
 ?>

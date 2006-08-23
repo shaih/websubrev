@@ -5,14 +5,15 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true; // Just a precaution
+$needsAuthentication = true; // Just a precaution
 require 'header.php';
 
 if (defined('CAMERA_PERIOD')) { exit("<h1>Review Site is Closed</h1>"); }
 
 $maxGrade = MAX_GRADE;
-$subDdline = SUBMIT_DEADLINE;
-$now= date('r (T)');
+
+$subDdline = utcDate('r (T)', SUBMIT_DEADLINE);
+$now= utcDate('r (T)');
 
 $crList = '';
 if (is_array($criteria) && count($criteria)>0) {

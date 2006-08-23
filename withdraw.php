@@ -23,13 +23,13 @@ if (defined('CAMERA_PERIOD')) {
   }
 }
 
+$deadline = show_deadline(SUBMIT_DEADLINE);
 $links = show_sub_links(5);
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
 <script language="Javascript" type="text/javascript">
 <!--
 function checkform( form )
@@ -57,6 +57,7 @@ function checkform( form )
 $links
 <hr />
 <h1 style="text-align: center;">Withdraw a Submission from $confName</h1>
+<h3 style="text-align: center; color: blue;">$deadline</h3>
 
 <form name="withdraw" onsubmit="return checkform(this);" action="act-withdraw.php" enctype="multipart/form-data" method="post">
 
@@ -77,7 +78,7 @@ $links
   </tr>
   <tr>
     <td></td>
-    <td><input value="I want to Withdraw my submission" type="submit">
+    <td><input value="I want to withdraw my submission" type="submit">
     </td>
   </tr>
 </tbody>

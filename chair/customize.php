@@ -294,11 +294,9 @@ Jordan, Michael &lt;Air-Jordan@nike.com&gt;</textarea><br />
       <tr>
         <td style="text-align: right;">
             Camera&nbsp;ready&nbsp;Deadline:</td>
-        <td><input name="cameraDeadline" size="90" type="text"><br />
-	    Use any reasonable format (e.g., Jan 15 2005 11:20pm GMT
-	    or 2005-1-15 18:20 EST, etc.) <br />The dates will be displayed 
-	    for the users, but <b>the software does not enforce these 
-            deadlines <br />automatically.
+        <td><input name="cameraDeadline" size="90" type="text"><br/>
+	    Use a format such as 2005-1-15 18:20 EST. <b>The software
+	    does not enforce these deadlines automatically.
             </b>
         </td>
       </tr>  

@@ -110,18 +110,18 @@ if ((empty($sqlRoot) || empty($sqlRtPw))
 // Try to parse the deadlines as some recognized date format
 // The error code from strtotime is -1 for PHP 4 and FALSE for PHP 5
 $tsb = empty($subDeadline) ? false : strtotime($subDeadline);
-if ($tsb !== false && $tsb !== -1) { 
-  $subDeadline = date('r (T)', $tsb); 
-  $tsb = '';
+if ($tsb!==false && $tsb!=-1) {
+  $subDeadline = $tsb; // store as a number (unix time)
+  $subDeadlineHtml = utcDate('r (T)', $tsb);
 }
-else { $tsb = '(warning: unregocnized time format)'; }
+else die("<h1>Unregocnized time format for submission deadline</h1>");
 
 $tcr = empty($cameraDeadline) ? false : strtotime($cameraDeadline) ;
-if ($tcr !== false && $tcr !== -1) { 
-  $cameraDeadline = date('r (T)', $tcr);
-  $tcr = '';
+if ($tcr!==false && $tcr!=-1) {
+  $cameraDeadline = $tcr; // store as a number (unix time)
+  $cameraDeadlineHtml = utcDate('r (T)', $tcr);
 }
-else { $tcr = '(warning: unregocnized time format)'; }
+else die("<h1>Unregocnized time format for camera-ready deadline</h1>");
 
 // Create an array of committee members
 if (isset($committee)) {
@@ -196,8 +196,6 @@ $chairEmlHtml  = htmlspecialchars($chair[1]);
 $emlCrlfHtml   = htmlspecialchars($emlCrlf);
 $emlExtraPrmHtml= empty($emlExtraPrm) ? "none" :
                                         htmlspecialchars($emlExtraPrm);
-$subDeadlineHtml= htmlspecialchars($subDeadline);
-$cameraDeadlineHtml= htmlspecialchars($cameraDeadline);
 
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -308,11 +306,11 @@ print <<<EndMark
 <table cellspacing=6>
 <tbody>
   <tr><td style="text-align: right;">Submission Deadline:</td>
-    <td colspan="3"><b>$subDeadlineHtml</b> $tsb
+    <td colspan="3"><b>$subDeadlineHtml</b>
     </td>
   </tr>
   <tr><td style="text-align: right;">Camera-ready Deadline:</td>
-    <td colspan="3"><b>$cameraDeadlineHtml</b> $tcr
+    <td colspan="3"><b>$cameraDeadlineHtml</b>
     </td>
   </tr>
 
