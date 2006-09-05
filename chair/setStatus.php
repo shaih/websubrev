@@ -17,7 +17,7 @@ foreach ($_POST as $key => $val) {
   if ($subId<=0) continue;
 
   $status = my_addslashes(trim($val), $cnnct);
-  $qry = "UPDATE submissions SET status='{$status}', lastModified=NOW() WHERE subId={$subId}";
+  $qry = "UPDATE submissions SET status='$status', lastModified=NOW() WHERE subId={$subId} AND status!='$status'";
   db_query($qry, $cnnct);
 
   // insert an entry to the acceptedPapers table if needed
