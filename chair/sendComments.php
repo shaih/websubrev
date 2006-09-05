@@ -53,7 +53,8 @@ if (isset($_POST['sendComments2Submitters'])) {
   $ltr = str_replace("\r\n", "\n", $ltr); // just in case
 
   $cnnct = db_connect();
-  $qry = "SELECT s.subId, title, authors, contact, comments2authors, status
+  $qry = "SELECT s.subId, title, authors, contact, comments2authors, status,
+    confidence, grade
   FROM submissions s LEFT JOIN reports r USING(subId)
   WHERE s.status!='Withdrawn'";
 
@@ -76,8 +77,14 @@ if (isset($_POST['sendComments2Submitters'])) {
 				   $row[3], array(), trim($row[5]));
     }
     $comment = trim($row[4]);
-    if (!empty($comment))
+    if (!empty($comment)) {
+      if (isset($_POST['withGrades']) && $row[7]>0) {
+        $grade = "Grade: ".$row[7];
+        if ($row[6]>0) $grade .= "\nConfidence: ".$row[6];
+        $comment = $grade."\n\n".$comment;
+      }
       array_push($submissions[$subId][3], wordwrap($comment, 78));
+    }
   }
   print "<h3>Sending comments...</h3>\n";
 
@@ -140,6 +147,8 @@ Send comments only for these submissions:
 
 <input type="submit" value="Send Comments">
 <input type="hidden" name="sendComments2Submitters" value="yes">
+<input type=checkbox name=withGrades value=yes> Check to include grade
+and confidence in the email sent to the authors
 </form>
 
 <hr />
