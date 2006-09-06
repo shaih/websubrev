@@ -78,13 +78,13 @@ print <<<EndMark
 EndMark;
 
 $cnnct = db_connect();
-$qry = "SELECT s.subId, s.title, a.pref
-  FROM submissions s LEFT JOIN assignments a
-       ON a.revId='$revId' AND a.subId=s.subId
+$qry = "SELECT s.subId, s.title, a.pref, a.assign
+  FROM submissions s LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId
   WHERE s.status!='Withdrawn'
   ORDER BY s.subId";
 $res = db_query($qry, $cnnct, "Cannot retrieve submission list: ");
 while ($row = mysql_fetch_row($res)) {
+  if ($row[3]==-1) continue; // conflict
   // Get the submission details
   $subId = (int) $row[0];
   $title = htmlspecialchars($row[1]);
