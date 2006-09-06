@@ -138,17 +138,13 @@ EndMark;
 
 subDetailedHeader($submission, $revId, false);
 
-show_reviews_with_comments($reports, $revId);
-print "<hr />\n";
-
 if (is_array($posts) && count($posts)>0) {
   $altview = ($threaded) ? 'UNthreaded' : 'threaded';
   print <<<EndMark
-<hr size=4 noshade="noshade"/>
 <div style="float: right;">
     <a href="toggleThreaded.php">Switch to $altview view</a>
 </div>
-<h1 style="text-align: left;"><a name="discuss">Discussion</a></h1>
+<h2 style="text-align: left;"><a name="discuss">Discussion</a></h2>
 
 EndMark;
   show_posts($posts, $subId, $threaded, $lastSaw, $pageWidth);
@@ -173,6 +169,10 @@ if (!defined('CAMERA_PERIOD')) print <<<EndMark
 </form>
 
 EndMark;
+
+print "<hr size=4 noshade=noshade/>\n";
+
+show_reviews_with_comments($reports, $revId);
 
 exit("<hr />\n{$links}\n</body>\n</html>\n");
 /********************************************************************/
