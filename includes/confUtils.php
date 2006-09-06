@@ -178,6 +178,11 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
   }
   if ($sid != 0)     { $msg .= "Submission number:  \t{$sid}\n"; }
   if (!empty($pwd))  { $msg .= "Submission password:\t{$pwd}\n\n"; }
+  if ($sid != 0 && !empty($pwd)) {
+    $prot = (defined('HTTPS_ON')||isset($_SERVER['HTTPS']))? 'https' : 'http';
+    $revURL = "$prot://".BASE_URL."revise.php?subId=$sid&subPwd=$pwd";
+    $msg .= "You can revise this submission by going to\n\n  $revURL\n\n";
+  }
 
   if (!empty($ttl))  { $msg .= "Title:    \t{$ttl}\n"; }
   if (!empty($athr)) { $msg .= "Authors:  \t{$athr}\n"; }
