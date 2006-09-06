@@ -160,6 +160,7 @@ $vInstructions<br/>
 $vDeadline<br/>
 <br/>
 <form action="vote.php?voteId=$voteId" enctype="multipart/form-data" method=post>
+<input type=reset>
 <table><tbody>
 <tr>
   $voteHdr
@@ -191,6 +192,9 @@ print <<<EndMark
 </tbody></table>
 <input type="submit" value="Submit Vote">
 </form>
+Vote early, vote often: if you change your mind you can return to this page
+anytime before the vote closes to change your vote. PC members can't see each
+other's vote, but the chair sees a complete picture of who voted for what.
 <hr />
 $links
 </body>
