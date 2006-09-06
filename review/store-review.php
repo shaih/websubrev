@@ -1,7 +1,7 @@
 <?php
 // returns 0 when all is well, otherwise an error code
-function storeReview($subId, $revId, $subReviewer,
-		     $conf, $grade, $auxGrades, $authCmnt, $pcCmnt, $chrCmnt)
+function storeReview($subId, $revId, $subReviewer, $conf, $grade,
+		     $auxGrades, $authCmnt, $pcCmnt, $chrCmnt, $watch=false)
 {
   global $criteria;
 
@@ -98,6 +98,12 @@ function storeReview($subId, $revId, $subReviewer,
 
     $qry = "UPDATE submissions SET avg={$avg}, wAvg={$wAvg}, minGrade={$min}, maxGrade={$max}, lastModified=NOW() WHERE subId='$subId'";
     db_query($qry, $cnnct);
+
+    // also add the submission to reviewer's watch list is asked to
+    if ($watch) {
+      $qry = "UPDATE assignments SET watch=1 WHERE subId=$subId AND revId=$revId";
+      db_query($qry, $cnnct);
+    }
   }
 
   return 0;

@@ -9,6 +9,8 @@ $needsAuthentication=true;
 require 'header.php';   // defines $pcMember=array(id, name, ...)
 require 'store-review.php';
 $revId = (int) $pcMember[0];
+$disFlag=(int) $pcMember[3];
+
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 
 if (defined('CAMERA_PERIOD'))
@@ -197,8 +199,8 @@ function saveReview($subId,$title,$subrev,
     return true;
   }
 
-  $ret = storeReview($subId, $revId, $subrev,
-		     $conf, $grade, $grades, $cmnt, $pcCmnt, $chrCmnt);
+  $ret = storeReview($subId, $revId, $subrev, $conf, $grade,
+		     $grades, $cmnt, $pcCmnt, $chrCmnt, !$disFlag);
 
   if ($ret==-1 || $ret==-2) return false; // unspecified subId or revId? something is wrong here..
   else if ($ret==-3) {
