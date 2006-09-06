@@ -67,14 +67,21 @@ function show_reviews(&$reviews, $revId)
   if (!is_array($reviews) || count($reviews)<=0)
     return;
 
+  $sid = isset($reviews[0]['subId']) ? intval($reviews[0]['subId']) : 0;
+  if (!defined('CAMERA_PERIOD') && $sid>0) {
+    $revTxt = "<small><a target=_blank title=\"Submit/Revise a report\" href=\"review.php?subId=$sid\">[review]</a></small>";
+  }
+  else $revTxt = "";
+
   print "  <div class=\"lightbg\">\n";
   print "  <table cellpadding=0 cellspacing=5 border=0><tbody>\n";
-  print "    <tr><td></td>
-        <td class=\"ctr\"><small>Grade&nbsp;</small></td>
+  print "    <tr><td></td>\n";
+  print "        <td class=\"ctr\"><small>Grade&nbsp;</small></td>
         <td class=\"ctr\"><small>Confidence&nbsp;</small></td>\n";
   if (is_array($criteria)) foreach ($criteria as $c) {
     print "      <td class=\"ctr\"><small>".$c[0]."</small></td>\n";
   }
+  print "        <td></td><td>$revTxt</td></tr>\n";
 
   $nReviews = count($reviews);
   for ($j=0; $j<$nReviews; $j++) {
@@ -82,14 +89,6 @@ function show_reviews(&$reviews, $revId)
     $pcm = htmlspecialchars($rev['PCmember']);
     $subRev = $rev['subReviewer'];
     if (!empty($subRev)) $subRev = " (".htmlspecialchars($subRev).")";
-
-    $sid = $rev['subId'];
-    $rid = $rev['revId'];
-    // If this is my review, show a link to edit it
-    if (!defined('CAMERA_PERIOD') && $rid==$revId) 
-      $reviseTxt = " <a target=_blank title=\"Revise your report\" href=\"review.php?subId=$sid\">[revise]</a>";
-    else
-      $reviseTxt = ''; 
 
     $mod = isset($rev['modified']) 
            ? date('M\&\n\b\s\p\;j H:i', ((int)$rev['modified'])) : '';
@@ -107,7 +106,7 @@ function show_reviews(&$reviews, $revId)
       if ($grade <= 0) $grade = '*';
       print "      <td class=\"ctr\">$grade</td>\n";
     }
-    print "      <td>&nbsp;</td>\n      <td><b>$pcm{$subRev}</b>$reviseTxt</td></tr>\n";
+    print "      <td>&nbsp;</td>\n      <td><b>$pcm{$subRev}</b></td></tr>\n";
   }
   print "<tr><td></td></tr></tbody></table></div>\n\n";
 }
@@ -122,33 +121,33 @@ function show_reviews_with_comments(&$reviews, $revId)
   for ($j=0; $j<$nReviews; $j++) {
     $rev = $reviews[$j];
 
-    $cmnt2athr = isset($rev['cmnts2athr'])?htmlspecialchars($rev['cmnts2athr']):'';
-    $cmnt2PC   = isset($rev['cmnts2PC']) ? htmlspecialchars($rev['cmnts2PC']):'';
-    $cmnt2chr  = isset($rev['cmnts2chr'])? htmlspecialchars($rev['cmnts2chr']):'';
-    $confHtml= "<td>Confidence<br />".(int) $rev['conf']."</td>\n";
-
-    $PCmember = htmlspecialchars($rev['PCmember']);
-    $subRev = isset($rev['subReviewer']) ?
-      " (".htmlspecialchars($rev['subReviewer']).")" : "";
-    $grade = isset($rev["grade"]) ? ((int) $rev['grade']) : '*';
-
     $sid = $rev['subId'];
     $rid = $rev['revId'];
     // If this is my review, show a link to edit it
     if (!defined('CAMERA_PERIOD') && $rid==$revId) 
-      $reviseTxt = " <a target=_blank title=\"Revise your report\" href=\"review.php?subId=$sid\"> [revise]</a>";
+      $reviseTxt = ' <a target=_blank title="Revise your report" href="review.php?subId='
+                   . $sid. '"> [revise]</a>';
     else
       $reviseTxt = ''; 
 
+    $cmnt2athr = isset($rev['cmnts2athr'])?htmlspecialchars($rev['cmnts2athr']):'';
+    $cmnt2PC   = isset($rev['cmnts2PC']) ? htmlspecialchars($rev['cmnts2PC']):'';
+    $cmnt2chr  = isset($rev['cmnts2chr'])? htmlspecialchars($rev['cmnts2chr']):'';
+    $grade = isset($rev['grade']) ? ((int) $rev['grade']) : '*';
+    $conf =  isset($rev['conf']) ? ((int) $rev['conf']) : '*';
+
+    $PCmember = htmlspecialchars($rev['PCmember']);
+    $subRev = isset($rev['subReviewer']) ?
+      " (".htmlspecialchars($rev['subReviewer']).")" : "";
+
     print <<<EndMark
-<table class="lightbg" style="text-align: center;"
-    cellspacing=0 cellpadding=5>
+<table class="lightbg" style="text-align: center;" cellspacing=0 cellpadding=5>
 <tbody>
 <tr>
   <td style="text-align: left; width: 400px;"><h3>$PCmember{$subRev}$reviseTxt</h3></td>
   <td></td>
-  $confHtml
-  <td>Grade<br />$grade</td>
+  <td>Grade<br/>$grade</td>
+  <td>Confidence<br/>$conf</td>
 
 EndMark;
 
@@ -189,7 +188,7 @@ EndMark;
  * $post = array(depth, postId, parentId,
  *               subject, comments, whenEntered, name)
  ********************************************************************/
-function show_posts(&$postsArray, $subId, $threaded=true, 
+function show_posts($postsArray, $subId, $threaded=true, 
 		    $lastSaw=0, $pageWidth=720)
 {
   // exit("<pre>".print_r($postsArray, true)."</pre>");
