@@ -56,7 +56,7 @@ $others = array();
 while ($row = mysql_fetch_assoc($res)) {
   $subId = $row['subId'];
   $row['hasNew'] = !isset($seenSubs[$subId]);
-  if ($row['assign']==1)
+  if ($row['assign']==1 && !isset($_GET['ignoreAssign']))
     $assigned[] = $row;
   else if ($row['assign']!=-1)
     $others[] = $row; 
