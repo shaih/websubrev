@@ -13,6 +13,7 @@ require 'printSubList.php';
 $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
 $disFlag= (int) $pcMember[3];
+$pcmFlags= (int) $pcMember[5];
 
 // Prepare a list of submissions that the current member reviewed
 $cnnct = db_connect();
@@ -32,12 +33,13 @@ if ($disFlag) {
 
 
 // Prepare the ORDER BY clause for submission list (default is by number)
-list($order, $heading) = order_clause();
+list($order, $heading,$flags) = order_clause();
 if (empty($order)) { $order = 'subId ASC'; $heading='number';}
 
 // Limit to only assigned submissions?
 if (isset($_GET['onlyAssigned'])) {
   $assignedOnly = "AND a.assign=1";
+  $flags |= 16;
 } else {
   $assignedOnly = "";
 }
@@ -61,6 +63,7 @@ while ($row = mysql_fetch_assoc($res)) {
   else if ($row['assign']!=-1)
     $others[] = $row; 
 }
+if (isset($_GET['ignoreAssign'])) $flags |= 32;
 
 // Display results to the user
 $links = show_rev_links(3);
@@ -69,7 +72,6 @@ print <<<EndMark
   "http://www.w3.org/TR/html4/loose.dtd">
 
 <html><head>
-<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"/>
 <link rel="stylesheet" type="text/css" href="review.css" />
 <style type="text/css">
 h1 { text-align: center; }
@@ -88,7 +90,7 @@ if ($disFlag) {
   print "Note: You can click on the eye icons on the left to add/remove submissions from your <a href=\"../documentation/reviewer.html#watch\">watch list</a><br/><br/>\n";
 }
 
-$showAbst = isset($_GET['abstract']);
+if ($showAbst = isset($_GET['abstract'])) $flags |= 64;
 
 if (count($assigned)>0) {
   print_sub_list($assigned, "Submissions assigned to $revName", 
@@ -104,7 +106,11 @@ if (count($others)>0) {
 if ($disFlag && (count($assigned)>0 || count($others)>0))
      print show_legend(); // defined in confUtils.php
 
-print "\n<hr />\n{$links}";
+print "\n<hr />\n{$links}\n</body>\n</html>\n";
+
+if (isset($_GET['listBox'])) { // remember the flags for next time
+  $pcmFlags &= 0xffffff00;
+  $pcmFlags |= $flags;
+  db_query("UPDATE committee SET flags=$pcmFlags WHERE revId=$revId", $cnnct);
+}
 ?>
-</body>
-</html>

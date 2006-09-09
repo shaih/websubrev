@@ -12,6 +12,7 @@ require 'header.php'; // defines $pcMember=array(id, name, ...)
 $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
 $disFlag= (int) $pcMember[3];
+$pcmFlags= (int) $pcMember[5];
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 
 $links = show_rev_links(2);
@@ -77,7 +78,7 @@ if (REVPREFS && !$disFlag) {
 }
 else $indicatePrefs = '';
 
-$listSubmissions = listSubmissionsBox($disFlag);
+$listSubmissions = listSubmissionsBox($disFlag,$pcmFlags);
 
 if (!$disFlag) { // Reviewer still in the individual review phase
   individual_review($cnnct, $revId);
@@ -97,7 +98,7 @@ reviews!</i> Upload will overwrite previous reviews.
   }
 
   $showReviews = "<td style=\"width: 270px;\">\n"
-    . showReviewsBox() . "</td>\n";
+    . showReviewsBox($pcmFlags) . "</td>\n";
   $allReviews = '<br/>
 &nbsp;o&nbsp;&nbsp;List all reviews and discussions<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;<a

@@ -27,6 +27,7 @@ if (isset($_GET['format']) && $_GET['format']=='ascii') {
 $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
 $disFlag= (int) $pcMember[3];
+$pcmFlags=  (int) $pcMember[5];
 
 // Check that this reviewer is allowed to discuss submissions
 if ($disFlag != 1) exit("<h1>$revName cannot discuss submissions yet</h1>");
@@ -41,7 +42,7 @@ $res = db_query($qry, $cnnct);
 while ($row = mysql_fetch_row($res)) { $seenSubs[$row[0]] = true; }
 
 // Prepare the ORDER BY clause
-list($order, $heading) = order_clause();
+list($order, $heading,$flags) = order_clause();
 
 // The default order is by number, and we also use the same to break
 // ties in other ordering
@@ -63,6 +64,7 @@ for ($i=0; $i<count($criteria); $i++) {
 }
 
 if (isset($_GET['withReviews'])) { // get also the comments
+  $flags |= 64;
   $qry .= ",\n       r.comments2authors cmnts2athr,
        r.comments2committee cmnts2PC";
   if ($revId==CHAIR_ID) $qry .= ",\n       r.comments2chair cmnts2chr";
@@ -76,7 +78,13 @@ $qry .= "\n  FROM submissions s
 
 // Finally the WHERE and ORDER clauses
 $qry .= "  WHERE status!='Withdrawn'\n";
-if (isset($_GET['watchOnly'])) $qry .= " AND a.watch=1\n";
+if (isset($_GET['watchOnly'])) {
+  $qry .= " AND a.watch=1\n";
+  $flags |= 16;
+}
+if (isset($_GET['ignoreWatch'])) {
+  $flags |= 32;
+}
 $qry .= "  ORDER BY $order";
 
 $res = db_query($qry, $cnnct);
@@ -135,6 +143,7 @@ while ($row = mysql_fetch_assoc($res)) {
 }
 
 if (isset($_GET['withDiscussion'])) { // get also the discussions
+  $flags |= 128;
   $qry = "SELECT 0 AS depth, postId, parentId, subject, comments, 
      UNIX_TIMESTAMP(whenEntered) whenEntered, pc.name name, subId
   FROM posts pst, committee pc
@@ -214,8 +223,13 @@ print <<<EndMark
 $links
 </body>
 </html>
-EndMark;
-exit();
 
+EndMark;
+
+if (isset($_GET['showRevBox'])) { // remember setting for next time
+  $pcmFlags &= 0xffff00ff;
+  $pcmFlags |= ($flags << 8);
+  db_query("UPDATE committee SET flags=$pcmFlags WHERE revId=$revId", $cnnct);
+}
 /*********************************************************************/
 ?>

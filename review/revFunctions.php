@@ -29,8 +29,10 @@ function show_rev_links($current = 0)
 function order_clause()
 {
   $order = $heading = $comma = '';
+  $flags = 0;
 
   if (isset($_GET['sortByStatus'])) {
+    $flags = 8;
     $order = $heading = 'status';
     $comma = ', ';
   }
@@ -43,62 +45,90 @@ function order_clause()
     } else if ($ord=='mod') {
       $order .= $comma . 'lastModif DESC, s.subId';
       $heading .= $comma . 'modified';
+      $flags |= 1;
     } else if ($ord=='wAvg') {
       $order .= $comma . 's.wAvg DESC, s.subId';
       $heading .= $comma . 'weighted average';
+      $flags |= 2;
     } else if ($ord=='avg')  {
       $order .= $comma . 's.avg DESC, s.subId';
       $heading .= $comma . 'average';
+      $flags |= 3;
     } else if ($ord=='delta'){
       $order .= $comma . 'delta DESC, s.subId'; 
       $heading .= $comma . 'max-min grade';
+      $flags |= 4;
     }
   }
 
-  return array($order, $heading);
+  return array($order, $heading, $flags);
 }
 
-function showReviewsBox()
+function showReviewsBox($flags=0)
 {
+  $flags = ($flags & 0xffffff00) >> 8;
+  $srt0=$srt1=$srt2=$srt3=$srt4='';
+  switch ($flags % 8) {
+  case 1:
+    $srt1=' checked="checked"';
+    break;
+  case 2:
+    $srt2=' checked="checked"';
+    break;
+  case 3:
+    $srt3=' checked="checked"';
+    break;
+  case 4:
+    $srt4=' checked="checked"';
+    break;
+  default:
+    $srt0=' checked="checked"';
+  }
+  $sttsChk  = ($flags &   8) ? ' checked="checked"' : '';
+  $wtchChk  = ($flags &  16) ? ' checked="checked"' : '';
+  $noWtchChk= ($flags &  32) ? ' checked="checked"' : '';
+  $revwChk  = ($flags &  64) ? ' checked="checked"' : '';
+  $dscsChk  = ($flags & 128) ? ' checked="checked"' : '';
+
   $html =<<<EndMark
 <form action="listReviews.php" method="get">
 <div class="frame">
 <table><tbody>
 <tr style="background: blue; color: white;">
-  <td colspan=2><input type="submit" value="Show">
+  <td colspan=2><input type="submit" name="showRevBox" value="Show">
       <strong><big> Review Grades by:</big></strong>
   </td>
 </tr>
-<tr><td><input type="checkbox" name="sortByStatus"> Status+</td>
-  <td><input type="radio" name="sortOrder" value="num" checked="checked">
+<tr><td><input type="checkbox" name="sortByStatus"{$sttsChk}> Status+</td>
+  <td><input type="radio" name="sortOrder" value="num"{$srt0}>
     submission number</td>
 </tr>
 <tr><td></td>
-  <td><input type="radio" name="sortOrder" value="mod"> modification date</td>
+  <td><input type="radio" name="sortOrder" value="mod"{$srt1}> modification date</td>
 </tr>
 <tr><td></td>
-  <td><input type="radio" name="sortOrder" value="wAvg"> weighted average</td>
+  <td><input type="radio" name="sortOrder" value="wAvg"{$srt2}> weighted average</td>
 </tr>
 <tr><td></td>
-  <td><input type="radio" name="sortOrder" value="avg"> average</td>
+  <td><input type="radio" name="sortOrder" value="avg"{$srt3}> average</td>
 </tr>
 <tr><td></td>
-  <td><input type="radio" name="sortOrder" value="delta"> max-min grade</td>
+  <td><input type="radio" name="sortOrder" value="delta"{$srt4}> max-min grade</td>
 </tr>
 <tr>
-  <td colspan=2><input type="checkbox" name="watchOnly">
+  <td colspan=2><input type="checkbox" name="watchOnly"{$wtchChk}>
     Only submissions on my watch list</td>
 </tr>
 <tr>
-  <td colspan=2>or <input type="checkbox" name="ignoreWatch">
+  <td colspan=2>or <input type="checkbox" name="ignoreWatch"{$noWtchChk}>
     Ignore watch-list designation<hr /></td>
 </tr>
 <tr>
-  <td colspan=2><input type="checkbox" name="withReviews">
+  <td colspan=2><input type="checkbox" name="withReviews"{$revwChk}>
     Show with reviews</td>
 </tr>
 <tr>
-  <td colspan=2><input type="checkbox" name="withDiscussion">
+  <td colspan=2><input type="checkbox" name="withDiscussion"{$dscsChk}>
     Show with discussion</td>
 </tr>
 </tbody></table>
@@ -108,10 +138,25 @@ EndMark;
   return $html;
 }
 
-function listSubmissionsBox($canDiscuss)
+function listSubmissionsBox($canDiscuss, $flags=0)
 {
+  $srt0=$srt1=$srt2='';
+  switch ($flags % 8) {
+  case 1:
+    $srt1=' checked="checked"';
+    break;
+  case 2:
+    $srt2=' checked="checked"';
+    break;
+  default:
+    $srt0=' checked="checked"';
+  }
+  $sttsChk  = ($flags &  8) ? ' checked="checked"' : '';
+  $asgnChk  = ($flags & 16) ? ' checked="checked"' : '';
+  $noAsgnChk= ($flags & 32) ? ' checked="checked"' : '';
+  $abstChk  = ($flags & 64) ? ' checked="checked"' : '';
   if ($canDiscuss) {
-    $stts = '<input type="checkbox" name="sortByStatus"> Status+';
+    $stts = '<input type="checkbox" name="sortByStatus"{$sttsChk}> Status+';
   } else { $stts = '&nbsp;'; }
 
   $html =<<<EndMark
@@ -119,12 +164,12 @@ function listSubmissionsBox($canDiscuss)
 <div class="frame">
 <table><tbody>
 <tr style="background: blue; color: white; text-align: center;">
-  <td colspan=2><input type="submit" value="List">
+  <td colspan=2><input type="submit" name="listBox" value="List">
       <strong><big> Submissions Sorted by:</big></strong>
   </td>
 </tr>
 <tr><td>$stts</td>
-  <td><input type="radio" name="sortOrder" value="num" checked="checked">
+  <td><input type="radio" name="sortOrder" value="num"{$srt0}>
     submission number</td>
 </tr>
 
@@ -133,22 +178,22 @@ EndMark;
   if ($canDiscuss) { // discussion phase
     $html .=<<<EndMark
 <tr><td></td>
-  <td><input type="radio" name="sortOrder" value="mod"> modification date</td>
+  <td><input type="radio" name="sortOrder" value="mod"{$srt1}> modification date</td>
 </tr>
 <tr><td></td>
-  <td><input type="radio" name="sortOrder" value="wAvg"> weighted average</td>
+  <td><input type="radio" name="sortOrder" value="wAvg"{$srt2}> weighted average</td>
 </tr>
 
 EndMark;
   }
 
   $html .=<<<EndMark
-<tr><td colspan=2><input type="checkbox" name="onlyAssigned">
+<tr><td colspan=2><input type="checkbox" name="onlyAssigned"{$asgnChk}>
   Only submissions assigned to me<br/>
-  or <input type="checkbox" name="ignoreAssign">Show all submissions in one list</td>
+  or <input type="checkbox" name="ignoreAssign"{$noAsgnChk}>Show all submissions in one list</td>
 </tr>
 <tr><td colspan=2><hr/>
-    <input type="checkbox" name="abstract">Show with abstracts</td>
+    <input type="checkbox" name="abstract"{$abstChk}>Show with abstracts</td>
 </tr>
 </tbody></table>\n</div></form>
 EndMark;
