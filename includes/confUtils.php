@@ -74,7 +74,7 @@ function auth_PC_member($eml, $pwd, $id=NULL)
   $eml = my_addslashes($eml, $cnnct);
 
   // Formulate the SQL find the user
-  $qry = "SELECT revId, name, email, canDiscuss, threaded FROM committee WHERE";
+  $qry = "SELECT revId, name, email, canDiscuss, threaded, flags FROM committee WHERE";
   if (isset($id)) {
     $id = (int) trim($id);
     $qry .= " revId='{$id}' AND email = '{$eml}' AND revPwd = '{$pwd}'";
@@ -89,7 +89,7 @@ function auth_PC_member($eml, $pwd, $id=NULL)
     return false;
 
   // return the user details
-  return mysql_fetch_row($res);
+  return mysql_fetch_array($res);
 }
 
 function my_addslashes($str, $cnnct=NULL)
