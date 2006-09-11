@@ -170,7 +170,7 @@ function generic_receipt($subId, $subPwd)
   global $links;
   $adminEml = ADMIN_EMAIL;
   print <<<EndMark
-Your submission/revision was recieved, but due to database problems we
+Your submission/revision was received, but due to database problems we
 currently cannot access its details. An administrator was notified of
 the problems and he/she will contact you if there is a need. You can contact
 the administrator at <a href="mailto:$adminEml">$adminEml</a>

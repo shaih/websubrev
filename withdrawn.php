@@ -44,7 +44,7 @@ $links
 <b>Your submission to $confName has been withdrawn.</b>
 <br/>
 <br/>
-An email confirmation was swent to the contact address below. If you do
+An email confirmation was sent to the contact address below. If you do
 not receive the confirmation email in the next few minutes, contact the
 administrator at $adminEmail. <br />
 <br />
