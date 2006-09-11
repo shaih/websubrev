@@ -85,9 +85,16 @@ appropriate form with all the submission details already filled in.)</i>
 <br/><br/>
 Below are the (up-to-date) details of your submission. You will need the
 submission-ID and password if you want to revise or withdraw the
-submission. An email confirmation was sent to the contact address below.
+submission. 
+EndMark;
+
+if (!defined('REVIEW_PERIOD') || REVIEW_PERIOD!=true) {
+  print "An email confirmation was sent to the contact address below.
 If you do not receive the confirmation email soon, contact the administrator
-at $adminEmail.
+at $adminEmail.";
+}
+print <<<EndMark
+
 <hr/>
 
 <table style="text-align: left;" cellspacing="6">
