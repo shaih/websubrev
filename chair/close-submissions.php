@@ -36,7 +36,7 @@ function checkInt( fld, mn, mx )
 
   var pat = /^-?[0-9]+$/;
   if((pat.test(fld.value)==false) || (fld.value<mn) || (fld.value>mx)) {
-    alert("Field must contain an integet between "+mn+" and "+mx);
+    alert("Field must contain an integer between "+mn+" and "+mx);
     fld.focus();
     fld.select();
     return false ;

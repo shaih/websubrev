@@ -128,7 +128,7 @@ these emails below.<br />
 
 (Note that the keywords <code>&lt;&#36;authors&gt;</code>,
 <code>&lt;&#36;title&gt;</code>, and <code>&lt;&#36;comments&gt;</code>
-will be replaced by the authors and title as they specified by the
+will be replaced by the authors and title as specified by the
 submitters and by the list of comments, respectively. To be recognized
 as keywords, these words MUST include the '&lt;' and '&gt;' characters
 and the dollar-sign.)
@@ -138,7 +138,7 @@ and the dollar-sign.)
 
 <h3>Send comments to only a few submissions</h3>
 To send comments only to certain submissions, put a comma-separated
-list of submiddion-IDs in the line below. Leaving the line empty will
+list of submission-IDs in the line below. Leaving the line empty will
 send comments to the authors of all the submissions.<br /><br />
 
 Send comments only for these submissions:

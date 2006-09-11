@@ -125,7 +125,7 @@ submissions in 'Maybe Reject' category to move back to the 'Discuss' pile."
 <br /><br /></li>
 <li>The other type is a "Grade vote" in which you specify a list of submissions
 and every PC member needs to grade these submissions on some scale. For
-example, "Grade each of the remaining submission in the 'Discuss' category
+example, "Grade each of the remaining submissions in the 'Discuss' category
 on a scale of zero to three."
 <small>(Technically, a "Choose vote" is a special case of a "Grade vote"
 with the scale being 0-1, but the interface that the PC member sees for
@@ -151,7 +151,7 @@ A simple "Choose vote"<br/>
 <input type="radio" name="voteType" value="Grade" $gradeVote>
 A "Grade vote" on a scale of 0 to
 <input type="text" name="voteMaxGrade" size=1 value=$voteMaxGrade>
-(max-garde cannot be more than 9).<br/>
+(max-grade cannot be more than 9).<br/>
 <br />
 Every PC member has "voting budget" of 
 <input type="text" name="voteBudget" size=1{$voteBudget}> (empty or zero

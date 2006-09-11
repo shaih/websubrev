@@ -21,7 +21,7 @@ $semantics = array(
   'I prefer not to review this submission (but can do it if I have to)',
   'No preferences (default): I can review this submission if need be',
   'I would like to review this submission',
-  'This submissions is one of my favorites to review'
+  'This submission is one of my favorites to review'
 );
 
 $links = show_rev_links(4);
@@ -48,7 +48,7 @@ h1 { text-align: center; }
 $links
 <hr />
 <h1>Review Preferences for $pcMember[1]</h1>
-Please indicate your reviewing preferneces. For each submisssion
+Please indicate your reviewing preferences. For each submisssion
 you can specify one of the following options: <br /><br />
 
 <table><tbody>

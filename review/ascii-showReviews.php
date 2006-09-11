@@ -62,7 +62,7 @@ function ascii_showReviews(&$reviews, $revId)
     }
     if (!empty($cmnt2PC)) {
       print "\n--------------------------------------------------------\n";
-      print "Comments to Comittee:\n{$cmnt2PC}\n";
+      print "Comments to Committee:\n{$cmnt2PC}\n";
     }
     if (!empty($cmnt2athr)) {
       print "\n--------------------------------------------------------\n";

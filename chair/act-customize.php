@@ -9,7 +9,7 @@
 chdir('..'); // This script is placed in a sub-directory
 $constFile = './includes/confConstants.php';
 if (file_exists($constFile)) { // Already customized
-  exit("<h1>This installation is already cusomized</h1>");
+  exit("<h1>This installation is already customized</h1>");
 }
 
 // Some things in confUtils need the BASE_URL constant
@@ -65,7 +65,7 @@ for ($i=0; $i<$nCmmtee; $i++) {
 }
 
 $nCats = isset($_POST['nCats']) ? (int) $_POST['nCats'] : 0;
-if ($nCats > 100) { die("Cannot handle more than 100 cetegories"); }
+if ($nCats > 100) { die("Cannot handle more than 100 categories"); }
 if ($nCats > 0) {
   $categories = array();
   for ($i=0; $i<$nCats; $i++) {
@@ -114,7 +114,7 @@ if (empty($longName) || empty($shortName) || empty($confYear)
 
 if (!preg_match('/^[0-9]{4}$/', $confYear)) {
   exit("<h1>Wrong format for the conference year: $confYear</h1>
-       Year must consists of exatly two digits.\n");
+       Year must consist of exactly two digits.\n");
 }
 
 if ((empty($sqlRoot) || empty($sqlRootPwd)) 
@@ -123,7 +123,7 @@ if ((empty($sqlRoot) || empty($sqlRootPwd))
        To automatically generate MySQL database, you must specify the
        MySQL root username and password.<br />
        Otherwise, you must manually create the database and specify the
-       database name, and also specify MySQL usename and password of a
+       database name, and also specify MySQL username and password of a
        user that has access to that database.\n");
 }
 
@@ -380,7 +380,7 @@ if (!mkdir(SUBMIT_DIR, 0775)) {
   exit ("<h1>Cannot create submission directory ".SUBMIT_DIR."</h1>\n");
 }
 if (!mkdir(SUBMIT_DIR.'/backup', 0775)) { 
-  exit ("<h1>Cannot create submission nackup directory ".SUBMIT_DIR."/backup</h1>\n");
+  exit ("<h1>Cannot create submission backup directory ".SUBMIT_DIR."/backup</h1>\n");
 }
 if (!mkdir(SUBMIT_DIR.'/final', 0775)) { 
   exit ("<h1>Cannot create camera-ready submission directory ".SUBMIT_DIR."/final</h1>\n");
@@ -421,7 +421,7 @@ else
 
 if (!$success)
   error_log(date('Y.m.d-H:i:s ')
-	    ."Cannot send passowrd $chrPwd to {$sndto}. {$php_errormsg}\n", 
+	    ."Cannot send password $chrPwd to {$sndto}. {$php_errormsg}\n", 
 	    3, './log/'.LOG_FILE);
 
 // if in testing mode: insert dummy submissions/reviewers

@@ -152,7 +152,7 @@ EndMark;
 // Allow the chair to customize the emails
 print <<<EndMark
 Use the form below to customize your accept/reject letters. The email
-notifications will be send when you hit the "Send Notification" button
+notifications will be sent when you hit the "Send Notification" button
 at the bottom of this page.<br />
 <br />
 

@@ -284,7 +284,7 @@ Make these assignments visible to the reviewers
 <hr /><hr />
 <a name="sublist"></a><h2>Submission-List Interface</h2>
 For each submission you may provide a <b>semi-colon-separated</b> list of PC
-members that are assignde to review that submission. When listing PC members,
+members that are assigned to review that submission. When listing PC members,
 you should provide the name of the PC member as recorded in the database. You
 can specify only a prefix of the name, as long as it is sufficient to uniquely
 identify a single member (e.g., if you have a committee member named Wawrzyniec
