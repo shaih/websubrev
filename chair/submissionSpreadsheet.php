@@ -9,15 +9,15 @@ $needsAuthentication = true;
 require 'header.php';
 
 $cnnct = db_connect();
-$qry = "SELECT subId, title, authors FROM submissions WHERE status!='Withdrawn' ORDER BY subId";
+$qry = "SELECT subId, title, authors, contact FROM submissions WHERE status!='Withdrawn' ORDER BY subId";
 $res = db_query($qry, $cnnct);
 if (!$res || mysql_num_rows($res)==0) die("<h1>No submissions found</h1>");
 
 $hdr = 'Content-Disposition: attachment; filename="'
        .CONF_SHORT.CONF_YEAR.'submissions.xls"';
 header($hdr);
-print "subId\tTitle\tAuthors\n";
+print "subId\tTitle\tAuthors\tContact\n";
 while ($row = mysql_fetch_row($res)) {
-  print $row[0]."\t".$row[1]."\t".$row[2]."\n";
+  print $row[0]."\t".$row[1]."\t".$row[2]."\t".$row[3]."\n";
 }
 ?>
