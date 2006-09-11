@@ -130,7 +130,7 @@ if (isset($_POST['notifySubmitters'])) {
 
     $count++;
     if (($count % 25)==0) { // rate-limiting, avoids cutoff
-      print "$count messages sent so far...<br/>\n"
+      print "$count messages sent so far...<br/>\n";
       sleep(1);
     }
   }

@@ -66,20 +66,20 @@ EndMark;
     if (strlen($title)>65) $title=substr($title,0,62).'...';
     print "$subId: $title\n";
     if (!ANONYMOUS) {
-      print "AUTHORS: ".$review['authors']."\n";
+      print "AUTHORS: ".(isset($review['authors'])?$review['authors']:'')."\n";
     }
-    print "SUBREVIEWER: ".$review['subReviewer']."\n";
-    print "SCORE: ".$review['grade']."\n";
-    print "CONFIDENCE: ".$review['conf']."\n";
+    print "SUBREVIEWER: ".(isset($review['subReviewer'])?$review['subReviewer']:'')."\n";
+    print "SCORE: ".(isset($review['grade'])?$review['grade']:'')."\n";
+    print "CONFIDENCE: ".(isset($review['conf'])?$review['conf']:'')."\n";
     if (is_array($criteria)) { 
       $nCrit = count($criteria);
       for ($i=0; $i<$nCrit; $i++) {
-	print $criteria[$i][0].": ".$review["grade_{$i}"]."\n";
+	print $criteria[$i][0].": ".(isset($review["grade_{$i}"])?$review["grade_{$i}"]:'')."\n";
       }
     }
-    $cmnt2athr = wordwrap($review['cmnt']);
-    $cmnt2PC   = wordwrap($review['pcCmnt']);
-    $cmnt2chr  = wordwrap($review['chrCmnt']);
+    $cmnt2athr = isset($review['cmnt']) ? wordwrap($review['cmnt']) : '';
+    $cmnt2PC   = isset($review['pcCmnt']) ? wordwrap($review['pcCmnt']) : '';
+    $cmnt2chr  = isset($review['chrCmnt']) ? wordwrap($review['chrCmnt']) : '';
     print "AUTHOR-COMMENTS: ".$cmnt2athr."\n";
     print "PC-COMMENTS: ".$cmnt2PC."\n";
     print "CHAIR-COMMENTS: ".$cmnt2chr."\n";

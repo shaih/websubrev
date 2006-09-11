@@ -13,7 +13,7 @@ if (defined('SHUTDOWN')) exit("<h1>Site is Closed</h1>");
 $cName = CONF_SHORT.' '.CONF_YEAR;
 $cNameLowCase = strtolower(CONF_SHORT).CONF_YEAR;
 $links = show_chr_links();
-$cmrDdline = CAMERA_DEADLINE;
+$cmrDdline = utcDate('r (T)', CAMERA_DEADLINE);
 
 
 $prot = (defined('HTTPS_ON') || isset($_SERVER['HTTPS']))? 'https' : 'http';
@@ -46,7 +46,7 @@ Use the final-version submissions form at
 to upload your archive file. (*NOTE: you will need the submission-ID and
 password that were given to you when you first submitted the paper. Contact
 the chair if you lost your submiddion-ID and password.) The deadline for
-uploading the files is ".CAMERA_DEADLINE.".
+uploading the files is $cmrDdline.
 
 The page limit is 17 pages total, including bibliography and all appendices.
 
@@ -58,7 +58,7 @@ and mail or FAX a signed copy of this form to the editor, at the address:
 
 [[your-address-here]]
 
-The form should be mailed (postmarked) or FAXed by ".CAMERA_DEADLINE.".\n";
+The form should be mailed (postmarked) or FAXed by $cmrDdline.\n";
 
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">

@@ -110,7 +110,7 @@ then create the archive file locally and upload it to the server. The
 extension of the local archive file must be either .tgz, .tar, or .zip
 for this method to work.<br/> 
 <form action="uploadArchive.php" enctype="multipart/form-data" method=post>
-<input type=hidden name="MAX_FILE_SIZE" value=20000000>
+<input type=hidden name="MAX_FILE_SIZE" value=200000000>
 Local archive file:<input name=sub_archive size=50 type="file">
 <input name=submit type=submit value="Upload">
 </form>

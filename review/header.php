@@ -39,7 +39,8 @@ if ($needsAuthentication !== false) {
 
 // Before the review period: the chair can access everything,
 // but others can only access pages that set $preReview=true
-if (!defined('REVIEW_PERIOD') && $preReview!==true && $pcMember[0]!=CHAIR_ID) {
+if (!defined('REVIEW_PERIOD') && 
+    (!isset($preReview) || $preReview!==true) && $pcMember[0]!=CHAIR_ID) {
   exit("<h1>This area of the review site is not active yet</h1>");
 }
 
