@@ -154,7 +154,11 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
 {
   $emlCrlf = (EML_CRLF == "\n") ? "\n" : "\r\n";
   $hdr = 'From: '.CONF_SHORT.' '.CONF_YEAR.' Chair <'.CHAIR_EMAIL.">$emlCrlf";
-  $hdr .= 'Cc: ' . CHAIR_EMAIL . $emlCrlf;
+  // During review process, don't send email to authors, only to chair
+  if (defined('REVIEW_PERIOD') && REVIEW_PERIOD==true) {
+    $sndto = CHAIR_EMAIL;
+  }
+  else { $hdr .= 'Cc: ' . CHAIR_EMAIL . $emlCrlf; }
   if ($status < 0) { $hdr .= 'Bcc: '.ADMIN_EMAIL.$emlCrlf; }
   $hdr .= 'X-Mailer: PHP/' . phpversion();
 
