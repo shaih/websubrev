@@ -38,6 +38,8 @@ if (get_magic_quotes_gpc()) {
   $_POST  = array_map('stripslashes_deep', $_POST);
 }
 
+$php_errormsg = ''; // just so we don't get notices when it is not defined.
+
 function status_summary($statuses)
 {
   $html = '<table style="text-align: center;" border=1><tbody><tr>

@@ -47,6 +47,7 @@ if ($disFlag == 1) {
   // no new items in the discussoin board. The vars $discussIcon1 and
   // $discussIcon2 are defined in confUtils.php
   $discussText = (mysql_num_rows($res)>0) ? $discussIcon1 : $discussIcon2;
+  $discussLine = '<span class="Discuss"><a href="discuss.php?subId=$subId" target="_blank">'.$discussText.'</a></span>';
 
   $toggleWatch = "<a href=\"toggleWatch.php?subId={$subId}\">\n";
   if ($watch == 1) {
@@ -59,7 +60,7 @@ if ($disFlag == 1) {
   }
   $toggleWatch .= "  <img src=\"$src\" alt=\"$alt\" title=\"$tooltip\" border=\"0\"></a>&nbsp;";
 }
-else $toggleWatch = $discussText = '';
+else $toggleWatch = $discussLine = '';
 
 // The styles are defiend in review.css, the icon constants in confUtils.php
 if (isset($submission['revId'])) {// PC member already reviewed this submission
@@ -94,7 +95,7 @@ $links
 <center>
 <a href="$subFile" title="download"><img src="download.gif" alt="download"
    border=0></a>
-<span class="Discuss"><a href="discuss.php?subId=$subId" target="_blank">$discussText</a></span>
+$discussLine
 <span class="$revStyle"><a href="review.php?subId=$subId" target="_blank">$revText</a></span>&nbsp;
 $toggleWatch
 </center>
@@ -111,7 +112,7 @@ $authors
 <center>
 <a href="$subFile" title="download"><img src="download.gif" alt="download"
    border=0></a>
-<span class="Discuss"><a href="discuss.php?subId=$subId" target="_blank">$discussText</a></span>
+$discussLine
 <span class="$revStyle"><a href="review.php?subId=$subId" target="_blank">$revText</a></span>&nbsp;
 $toggleWatch
 </center>

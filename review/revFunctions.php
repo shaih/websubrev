@@ -156,7 +156,7 @@ function listSubmissionsBox($canDiscuss, $flags=0)
   $noAsgnChk= ($flags & 32) ? ' checked="checked"' : '';
   $abstChk  = ($flags & 64) ? ' checked="checked"' : '';
   if ($canDiscuss) {
-    $stts = '<input type="checkbox" name="sortByStatus"{$sttsChk}> Status+';
+    $stts = '<input type="checkbox" name="sortByStatus"'.$sttsChk.'> Status+';
   } else { $stts = '&nbsp;'; }
 
   $html =<<<EndMark

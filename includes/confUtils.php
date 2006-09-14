@@ -185,7 +185,7 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
   if ($sid != 0 && !empty($pwd)) {
     $prot = (defined('HTTPS_ON')||isset($_SERVER['HTTPS']))? 'https' : 'http';
     $revURL = "$prot://".BASE_URL."revise.php?subId=$sid&subPwd=$pwd";
-    $msg .= "You can revise this submission by going to\n\n  $revURL\n\n";
+    $msg .= "You can still revise this submission by going to\n\n  $revURL\n\n";
   }
 
   if (!empty($ttl))  { $msg .= "Title:    \t{$ttl}\n"; }

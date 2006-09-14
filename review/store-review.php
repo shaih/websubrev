@@ -41,7 +41,7 @@ function storeReview($subId, $revId, $subReviewer, $conf, $grade,
   }
 
   for ($i=0; $i<count($criteria); $i++) {
-    $grade = (int) trim($auxGrades["grade_{$i}"]);
+    $grade = isset($auxGrades["grade_{$i}"]) ? (int) trim($auxGrades["grade_{$i}"]) : 0;
     $mx = $criteria[$i][1];
     if ($grade>0 && $grade<=$mx) {
       $qry .= "    grade_{$i}={$grade},\n";

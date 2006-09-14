@@ -50,5 +50,7 @@ if (get_magic_quotes_gpc()) {
   $_POST  = array_map('stripslashes_deep', $_POST);
 }
 
+$php_errormsg = ''; // just so we don't get notices when it is not defined.
+
 require 'revFunctions.php';
 ?>

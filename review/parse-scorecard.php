@@ -78,7 +78,7 @@ function nextReview($fd) {
 			 $grade,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt);
     }
 
-    if ($line[0]=='#' || $skip) continue; /* skip to next line */
+    if (empty($line) || $line[0]=='#' || $skip) continue; // skip to next line
 
     // first thing in a record must be subId (except perhaps empty lines)
     if (!isset($subId)) {
@@ -172,6 +172,7 @@ function saveReview($subId,$title,$subrev,
 {
   global $revId;
   global $criteria;
+  global $disFlag;
 
   if (!isset($subId) || $subId<=0) return true;
 
@@ -195,7 +196,7 @@ function saveReview($subId,$title,$subrev,
   if (empty($grade) && empty($conf) && !$foundAuxGrades
       && empty($cmnt) && empty($pcCmnt) && empty($chrCmnt)) {
     print "<b>Notice:</b> ignoring empty review for submission $subId: <tt>"
-      .htmlspecialchars($title)."</tt>\n";
+      .htmlspecialchars($title)."</tt><br/>\n";
     return true;
   }
 

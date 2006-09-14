@@ -94,6 +94,8 @@ Camera-ready deadline: <input type="text" name="cameraDeadline" value="$cmrDdlin
 <br /><br />
 <input type="submit" value="Activate Final-Version Submissions">
 </form>
+<hr />
+$links
 </body>
 </html>
 EndMark;

@@ -27,12 +27,11 @@ if (!empty($ext)) {
   if (file_exists("all_in_one.$ext")) rename("all_in_one.$ext", "all_in_one.$ext.bak");
  
   if (!rename("all_in_one.tmp.$ext", "all_in_one.$ext")) {
-    error_log(date('Ymd-His: ')."rename(all_in_one.$ext.tar, all_in_one.$ext) failed\n", 3, '../../log/'.LOG_FILE);
-  }  
+    error_log(date('Ymd-His: ')."rename(all_in_one.tmp.$ext, all_in_one.$ext) failed\n", 3, '../../log/'.LOG_FILE);
+    exit("<h1>Cannot rename all_in_one.tmp.$ext to all_in_one.$ext</h1>\nContact the administrator.\n<a href=\".\">Back to main page</a>");
+  }
+  exit("<h1>Archive file all_in_one.$ext created</h1>\n<a href=\".\">Back to main page</a>");
 }
-
-header("Location: index.php");
-exit();
 
 function SYSmkTar()
 {

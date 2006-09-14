@@ -12,6 +12,8 @@ if (defined('SHUTDOWN')) exit("<h1>Site is Closed</h1>");
 
 $cName = CONF_SHORT.' '.CONF_YEAR;
 $links = show_chr_links();
+$cmrDdline = utcDate('r (T)', CAMERA_DEADLINE);
+
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -57,7 +59,7 @@ Submission-ID: <$subId>
 Password:      <$subPwd>
 
 In order to be included in the proceedings, the final version of your paper
-must be received no later than '.CAMERA_DEADLINE.'.
+must be received no later than '.$cmrDdline.'.
 This is a firm deadline.
 
 Thank you very much for contributing to '.$cName.'.

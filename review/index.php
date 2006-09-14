@@ -31,7 +31,7 @@ print <<<EndMark
 <head>
 <link rel="stylesheet" type="text/css" href="review.css" />
 <style type="text/css">
-body { width: 800px; }
+body { width: 818px; }
 h1, h2 { text-align: center; }
 div.frame { border-style: inset; }
 tr { vertical-align: top; }
