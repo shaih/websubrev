@@ -18,9 +18,14 @@ if (defined('CAMERA_PERIOD'))
 
 if (!isset($_FILES['scorecard']))    die("No scorecard file uploaded");
 if ($_FILES['scorecard']['size']==0) die("Empty scorecard file uploaded.");
-$fileName=$_FILES['scorecard']['tmp_name'];
-if (!is_uploaded_file($fileName))   die("No scorecard file uploaded");
-if (!($fd=fopen($fileName,'r')))    die("Could not open scorecard file");
+
+$tmpFile=$_FILES['scorecard']['tmp_name'];
+$fName = SUBMIT_DIR."/scorecard_$revId_".date('is');
+if (!move_uploaded_file($tmpFile,$fName)) {
+  error_log(date('Ymd-His: ')."move_uploaded_file($tmpFile, $fName) failed\n", 3, LOG_FILE);
+  die("Cannot move scorecard file");
+}
+if (!($fd=fopen($fName,'r')))        die("Could not open scorecard file");
 
 $links = show_rev_links();
 print <<<EndMark
@@ -42,6 +47,8 @@ EndMark;
 
 // process the reviews from the scorecard file one by one
 while (nextReview($fd));
+close($fd);
+unlink($fName);
 
 print <<<EndMark
 <br/><br/>
