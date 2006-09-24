@@ -84,10 +84,12 @@ if ($voteFlags & VOTE_ON_SUBS) { // voting on submissions
 else {                           // voting on "other things"
   $voteItems = array();
   $voteTitles = explode(';', $voteOnThese);
+  $i = 1;
   foreach ($voteTitles as $title) {
     $title = trim($title);
     if (!empty($title)) 
-    $voteItems[] = array($title, NULL);
+    $voteItems[$i] = array($title, NULL);
+    $i++;
   }
 
   $qry = "SELECT subId, vote FROM votes WHERE voteId=$voteId AND revId=$revId ORDER by subId";
@@ -114,7 +116,7 @@ if (isset($_POST["votes"]) && is_array($_POST["votes"])) {
     if ($theVote<0) $theVote = 0;
     else if ($theVote>$voteMaxGrade) $theVote = $voteMaxGrade;
 
-    if ($theVote!=$vItem[1]) {
+    if ($theVote!==$vItem[1]) {
       if (!isset($vItem[1])) { // insert a new entry
 	$qry = "INSERT INTO votes SET voteId=$voteId, revId=$revId, subId=$itemId, vote=$theVote";
       } else {                // modify existing entry

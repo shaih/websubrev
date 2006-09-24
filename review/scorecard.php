@@ -47,8 +47,8 @@ if (isset($_GET['download'])) { // Display current scorecard
   // sort by submission-ID
   ksort($reviews);
 
-  // header("Content-Type: text/plain");
-  header('Content-Disposition: attachment; filename="scorecard.txt"');
+  header("Content-Type: text/plain");
+  header('Content-Disposition: inline; filename="scorecard.txt"');
   print <<<EndMark
 # SCORECARD for $revName, reviews for $confName
 #################################################################
@@ -103,7 +103,7 @@ EndMark;
 #     AUTHOR-COMMENTS: anything here is considered comments to the
 #       authors
 #     PC-COMMENTS: anything here is considered comments to 
-#       to program committee
+#       the program committee
 #     CHAIR-COMMENTS: anything here is considered comments
 #       to the program chair
 #     +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -26,7 +26,8 @@ $voteMaxGrade= isset($row['voteMaxGrade'])? intval($row['voteMaxGrade']): 1;
 if (empty($voteTitle)) $voteTitle = "Ballot #$voteId";
 if ($voteFlags & VOTE_ON_SUBS)
      $voteTitles = NULL;
-else $voteTitles = explode(';', $voteOnThese);
+else $voteTitles = explode(';', ';'.$voteOnThese);
+// the above puts an empty sting at index 0 to make the array start at index 1
 
 // Get the vote results
 $voters = array();
@@ -71,7 +72,7 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<head>
 <style type="text/css">
 h1 { text-align: center;}
 th { font: bold 10px ariel; text-align: center; }

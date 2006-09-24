@@ -20,7 +20,7 @@ if (!isset($_FILES['scorecard']))    die("No scorecard file uploaded");
 if ($_FILES['scorecard']['size']==0) die("Empty scorecard file uploaded.");
 
 $tmpFile=$_FILES['scorecard']['tmp_name'];
-$fName = SUBMIT_DIR."/scorecard_$revId_".date('is');
+$fName = SUBMIT_DIR."/scorecard_{$revId}_".date('is');
 if (!move_uploaded_file($tmpFile,$fName)) {
   error_log(date('Ymd-His: ')."move_uploaded_file($tmpFile, $fName) failed\n", 3, LOG_FILE);
   die("Cannot move scorecard file");
@@ -47,7 +47,7 @@ EndMark;
 
 // process the reviews from the scorecard file one by one
 while (nextReview($fd));
-close($fd);
+fclose($fd);
 unlink($fName);
 
 print <<<EndMark
@@ -85,11 +85,11 @@ function nextReview($fd) {
 			 $grade,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt);
     }
 
-    if (empty($line) || $line[0]=='#' || $skip) continue; // skip to next line
+    if ($skip || ($comments==0 && (empty($line) || $line[0]=='#')))
+      continue; // skip to next line
 
-    // first thing in a record must be subId (except perhaps empty lines)
+    // first thing in a record must be subId
     if (!isset($subId)) {
-      if (empty($line)) continue;
       $subId = getSubId($title,$line);
       if (!$subId) {
 	print "<b>Warning:</b> expected '<tt>sub-ID: title</tt>', found '<tt>$line</tt>'. Skipping this review.<br/>\n";
@@ -200,6 +200,9 @@ function saveReview($subId,$title,$subrev,
   }
 
   // sanity-check: do not store empty reviews
+  $cmnt = trim($cmnt);
+  $pcCmnt = trim($pcCmnt);
+  $chrCmnt = trim($chrCmnt);
   if (empty($grade) && empty($conf) && !$foundAuxGrades
       && empty($cmnt) && empty($pcCmnt) && empty($chrCmnt)) {
     print "<b>Notice:</b> ignoring empty review for submission $subId: <tt>"
