@@ -47,7 +47,7 @@ if ($disFlag == 1) {
   // no new items in the discussoin board. The vars $discussIcon1 and
   // $discussIcon2 are defined in confUtils.php
   $discussText = (mysql_num_rows($res)>0) ? $discussIcon1 : $discussIcon2;
-  $discussLine = '<span class="Discuss"><a href="discuss.php?subId=$subId" target="_blank">'.$discussText.'</a></span>';
+  $discussLine = '<span class="Discuss"><a href="discuss.php?subId='.$subId.'" target="_blank">'.$discussText.'</a></span>';
 
   $toggleWatch = "<a href=\"toggleWatch.php?subId={$subId}\">\n";
   if ($watch == 1) {
@@ -80,8 +80,6 @@ print <<<EndMark
   "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-
 <style type="text/css">
 h1, h2, h3 {text-align: center;}
 div.fixed { font: 14px monospace; width: 90%; }
