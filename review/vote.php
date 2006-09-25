@@ -48,6 +48,16 @@ if (!empty($vDeadline)) {
 
 // Get the items to vote on (with the current votes of this reviewer if any)
 if ($voteFlags & VOTE_ON_SUBS) { // voting on submissions
+
+  // Don't show submissions where there is a conflict
+  $forbidden = array();
+  $qry = "SELECT subId from assignments WHERE revId=$revId and assign=-1";
+  $res = db_query($qry, $cnnct);
+  while ($row=mysql_fetch_row($res)) {
+    $subId = (int) $row[0];
+    $forbidden[$subId] = true;
+  }
+
   if ($voteFlags & VOTE_ON_ALL)
     $where = "s.status!='Withdrawn'";
   else 
@@ -78,7 +88,8 @@ if ($voteFlags & VOTE_ON_SUBS) { // voting on submissions
   $voteItems = array();
   while ($row=mysql_fetch_row($res)) {
     $subId = (int) $row[0];
-    $voteItems[$subId] = array($row[1], $row[2]);
+    if (!isset($forbidden[$subId]))
+      $voteItems[$subId] = array($row[1], $row[2]);
   }
 }
 else {                           // voting on "other things"
