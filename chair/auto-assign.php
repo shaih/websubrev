@@ -101,10 +101,9 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-
+<head>
 <style type="text/css">h1 { text-align:center; }</style>
-<link rel="stylesheet" type="text/css" href="autosuggest.css" />        
+<link rel="stylesheet" type="text/css" href="../common/autosuggest.css" />        
 <script type="text/javascript">
   /**
    * Provides suggestions for PC member names
@@ -128,7 +127,7 @@ print <<<EndMark
     }
   };
 </script>
-<script type="text/javascript" src="autosuggest.js"></script>
+<script type="text/javascript" src="../common/autosuggest.js"></script>
 
 <title>Auto-Assignment of Submissions to Reviewers</title>
 </head>

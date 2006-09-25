@@ -74,7 +74,7 @@ else
   print "<b>Your $subRev was successful.</b> ";
 
 if ($unsupFormat) {
-  print "<b>WARNING: Although we received your submission, it was flagged as having an unsupported format ($frmt). Please check with the program chair(s).</b>";
+  print "<b style=\"color: red\">WARNING: Although we received your submission, it was flagged as having an unsupported format ($frmt). Please check with the program chair(s).</b>";
 }
 
 print <<<EndMark

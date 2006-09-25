@@ -72,7 +72,7 @@ print <<<EndMark
   "http://www.w3.org/TR/html4/loose.dtd">
 
 <html><head>
-<link rel="stylesheet" type="text/css" href="review.css" />
+<link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 h1 { text-align: center; }
 .fixed { font: 14px monospace; }

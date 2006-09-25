@@ -15,7 +15,7 @@ if (isset($_GET['download'])) { // Display current scorecard
   $cnnct = db_connect();
 
   // get all the reviews that this reviewer submitted
-  $qry = "SELECT subReviewer, confidence conf, grade, comments2authors cmnt,
+  $qry = "SELECT subReviewer, confidence conf, score, comments2authors cmnt,
      comments2committee pcCmnt, r.comments2chair chrCmnt,\n";
 
   if (is_array($criteria)) {
@@ -69,7 +69,7 @@ EndMark;
       print "AUTHORS: ".(isset($review['authors'])?$review['authors']:'')."\n";
     }
     print "SUBREVIEWER: ".(isset($review['subReviewer'])?$review['subReviewer']:'')."\n";
-    print "SCORE: ".(isset($review['grade'])?$review['grade']:'')."\n";
+    print "SCORE: ".(isset($review['score'])?$review['score']:'')."\n";
     print "CONFIDENCE: ".(isset($review['conf'])?$review['conf']:'')."\n";
     if (is_array($criteria)) { 
       $nCrit = count($criteria);

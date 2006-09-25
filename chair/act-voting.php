@@ -17,15 +17,15 @@ if (isset($_POST["setup"])) {
   $voteFlags = 0;
   $voteOnWhat = trim($_POST["voteOnWhat"]);
   if ($voteOnWhat!="other") {
-    $voteFlags |= VOTE_ON_SUBS;
-    if ($voteOnWhat=="all") $voteFlags |= VOTE_ON_ALL;
+    $voteFlags |= FLAG_VOTE_ON_SUBS;
+    if ($voteOnWhat=="all") $voteFlags |= FLAG_VOTE_ON_ALL;
     else {
-      if (isset($_POST["voteOnAC"])) $voteFlags |= VOTE_ON_AC;
-      if (isset($_POST["voteOnMA"])) $voteFlags |= VOTE_ON_MA;
-      if (isset($_POST["voteOnDI"])) $voteFlags |= VOTE_ON_DI;
-      if (isset($_POST["voteOnNO"])) $voteFlags |= VOTE_ON_NO;
-      if (isset($_POST["voteOnMR"])) $voteFlags |= VOTE_ON_MR;
-      if (isset($_POST["voteOnRE"])) $voteFlags |= VOTE_ON_RE;
+      if (isset($_POST["voteOnAC"])) $voteFlags |= FLAG_VOTE_ON_AC;
+      if (isset($_POST["voteOnMA"])) $voteFlags |= FLAG_VOTE_ON_MA;
+      if (isset($_POST["voteOnDI"])) $voteFlags |= FLAG_VOTE_ON_DI;
+      if (isset($_POST["voteOnNO"])) $voteFlags |= FLAG_VOTE_ON_NO;
+      if (isset($_POST["voteOnMR"])) $voteFlags |= FLAG_VOTE_ON_MR;
+      if (isset($_POST["voteOnRE"])) $voteFlags |= FLAG_VOTE_ON_RE;
     }
   }
   $values = "voteFlags=$voteFlags";
@@ -60,9 +60,9 @@ if (isset($_POST["setup"])) {
     if ($voteBudget < 0) $voteBudget = 0;
     $values .= ", voteBudget=".$voteBudget;
   }
-  if (!($voteFlags & VOTE_ON_SUBS)) {
+  if (!($voteFlags & FLAG_VOTE_ON_SUBS)) {
     $voteOnThese = trim($_POST["voteItems"]);
-  } else if (!($voteFlags & VOTE_ON_ALL)) {
+  } else if (!($voteFlags & FLAG_VOTE_ON_ALL)) {
     $voteOnThese = trim($_POST["voteOnThese"]);
   }
   if (!empty($voteOnThese)) {

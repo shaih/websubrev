@@ -17,7 +17,7 @@ $cmrDdline = utcDate('r (T)', CAMERA_DEADLINE);
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<head>
 <style type="text/css">
 h1 {text-align: center;}
 h2 {text-align: center;}
@@ -33,7 +33,8 @@ $links
 EndMark;
 
 // the default accept letter
-$acc = 'Dear <$authors>,
+$acc = ACCEPT_LTR;
+if (empty($acc)) $acc = 'Dear <$authors>,
 
 It is our pleasure to inform you that your submission
 
@@ -68,10 +69,11 @@ We are looking forward to seeing you at the conference.
 Sincerely,
 
 '.$cName.' program chair(s)';
-
+$acc = htmlspecialchars($acc);
 
 // the default reject letter
-$rej = 'Dear <$authors>,
+$rej = REJECT_LTR;
+if (empty($rej)) $rej = 'Dear <$authors>,
 
 We are sorry to inform you that your submission
 
@@ -95,8 +97,13 @@ Sincerely,
 
 '.$cName.' program chair(s)';
 
+$rej = htmlspecialchars($rej);
+
+// If either $_POST['saveText'] or $_POST['notifySubmitters'] are set
+// then store the current text in the database
+
 // If $_POST['notifySubmitters'] is set, send the actual emails
-if (isset($_POST['notifySubmitters'])) {
+if (isset($_POST['notifySubmitters']) || isset($_POST['saveText'])) {
   $x = trim($_POST['accLetter']);
   if (!empty($x)) $acc = $x;
   $acc = str_replace("\r\n", "\n", $acc); // just in case
@@ -106,6 +113,13 @@ if (isset($_POST['notifySubmitters'])) {
   $rej = str_replace("\r\n", "\n", $rej); // just in case
 
   $cnnct = db_connect();
+  $qry = "UPDATE parameters SET acceptLtr='".my_addslashes($acc,$cnnct)
+  . "',\n  rejectLtr='".my_addslashes($rej,$cnnct)
+  . "'\n  WHERE version=".PARAMS_VERSION;
+  db_query($qry, $cnnct);
+}
+
+if (isset($_POST['notifySubmitters'])) {
   $qry = "SELECT subId, title, authors, contact, status, subPwd FROM submissions WHERE status!='Withdrawn'";
 
   $subIds2notify = trim($_POST['subIds2notify']);
@@ -133,7 +147,7 @@ if (isset($_POST['notifySubmitters'])) {
     $count++;
     if (($count % 25)==0) { // rate-limiting, avoids cutoff
       print "$count messages sent so far...<br/>\n";
-      sleep(1);
+      ob_flush();flush();sleep(1);
     }
   }
 
@@ -153,19 +167,19 @@ EndMark;
 
 // Allow the chair to customize the emails
 print <<<EndMark
+<form action="notifications.php" enctype="multipart/form-data" method="post">
 Use the form below to customize your accept/reject letters. The email
 notifications will be sent when you hit the "Send Notification" button
-at the bottom of this page.<br />
-<br />
-
+at the bottom of this page. You can also make changes to the text of
+these letetrs and then save it without sending the email yet by using
+this button: <input type="submit" name="saveText" value="Save Text"><br/>
+<br/>
 (Note that the keywords <code>&lt;&#36;authors&gt;</code>, 
 <code>&lt;&#36;title&gt;</code>,  <code>&lt;&#36;subId&gt;</code>
 and <code>&lt;&#36;subPwd&gt;</code> will be replaced by the authors,
 title and the submission-ID and password as they appear in the
 database. To be recognized as keywords, these words MUST include the
 '&lt;' and '&gt;' characters and the dollar-sign.)
-
-<form action="notifications.php" enctype="multipart/form-data" method="post">
 
 <h3>Acceptance letters</h3>
 <textarea name="accLetter" cols=80 rows=13>$acc</textarea>
@@ -183,8 +197,7 @@ Notify only these submissions:
 <input type="text" name="subIds2notify" size="70">
 <br /><br />
 
-<input type="submit" value="Send Notifications">
-<input type="hidden" name="notifySubmitters" value="yes">
+<input type="submit" name="notifySubmitters" value="Send Notifications">
 </form>
 
 <hr />
@@ -197,22 +210,14 @@ exit();
 
 function notifySubmitters($subId, $title, $authors, $contact, $pwd, $sbjct, $text)
 {
+  $errMsg = "notification for submission {$subId} to {$contact}";
   $cName = CONF_SHORT.' '.CONF_YEAR;
-
-  $hdr = "From: {$cName} Chair <".CHAIR_EMAIL.">".EML_CRLF;
-  $hdr .= "Cc: ".CHAIR_EMAIL.EML_CRLF;
-  $hdr .= "X-Mailer: PHP/" . phpversion();
 
   $text = str_replace('<$authors>', $authors, $text);
   $text = str_replace('<$title>', $title, $text);
   $text = str_replace('<$subId>', $subId, $text);
   $text = str_replace('<$subPwd>', $pwd, $text);
 
-  if (ini_get('safe_mode') || !defined('EML_EXTRA_PRM'))
-    $success = mail($contact, $sbjct, $text, $hdr);
-  else
-    $success = mail($contact, $sbjct, $text, $hdr, EML_EXTRA_PRM);
-
-  if (!$success) error_log(date('Y.m.d-H:i:s ') . "Cannot send notification for submission {$subId} to {$contact}. {$php_errormsg}\n", 3, './log/'.LOG_FILE);
+  my_send_mail($contact, $sbjct, $text, CHAIR_EMAIL, $errMsg);
 }
 ?>

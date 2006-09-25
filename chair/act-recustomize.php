@@ -5,14 +5,14 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true; // Just a precaution
+$needsAuthentication = true; // Just a precaution
 require 'header.php';
 
 if (defined('SHUTDOWN')) {
   exit("<h1>The Site is Closed</h1>");
 }
 
-$changeConstFile = false;
+$changeParams = false;
 $chrPwd = NULL;
 $cnnct = db_connect();
 
@@ -30,41 +30,45 @@ $anonymous   = ANONYMOUS;
 $revPrefs    = REVPREFS;
 $affiliations= USE_AFFILIATIONS;
 $emlCrlf     = addcslashes(EML_CRLF, "\\\n\r");
-$emlExtraPrm = EML_EXTRA_PRM;
+$emlSender   = EML_SENDER;
+$period      = PERIOD;
+$cameraInstructions = CAMERA_INSTRUCTIONS;
+$accLtr      = ACCEPT_LTR;
+$rejLtr      = REJECT_LTR;
 
 // Read all the fields, stripping spurious white-spaces
 
 $x  = isset($_POST['longName'])  ? trim($_POST['longName'])  : NULL;
-if (!empty($x) && $x!=$longName) { $changeConstFile = true; $longName = $x; }
+if (!empty($x) && $x!=$longName) { $changeParams = true; $longName = $x; }
 
 $x  = isset($_POST['shortName']) ? trim($_POST['shortName']) : NULL;
-if (!empty($x) && $x!=$shortName) { $changeConstFile = true; $shortName = $x; }
+if (!empty($x) && $x!=$shortName) { $changeParams = true; $shortName = $x; }
 
 $x  = isset($_POST['confYear'])  ? trim($_POST['confYear'])  : NULL;
-if (!empty($x) && $x!=$confYear) { $changeConstFile = true; $confYear = $x; }
+if (!empty($x) && $x!=$confYear) { $changeParams = true; $confYear = $x; }
 
 $x  = isset($_POST['confURL'])   ? trim($_POST['confURL'])   : NULL;
-if (!empty($x) && $x!=$confURL) { $changeConstFile = true; $confURL = $x; }
+if (!empty($x) && $x!=$confURL) { $changeParams = true; $confURL = $x; }
 
 $x  = isset($_POST['adminEml'])  ? trim($_POST['adminEml'])  : NULL;
 if (!empty($x) && strtolower($x)!=strtolower($adminEml)) {
-  $changeConstFile = true; $adminEml = $x;
+  $changeParams = true; $adminEml = $x;
 }
 
 $x = isset($_POST['emlCrlf'])  ? trim($_POST['emlCrlf']) : NULL;
 if ($x != "\\n") $x = "\\r\\n";
 if (isset($_POST['emlCrlf']) || !defined(EML_CRLF)) $emlCrlf = $x;
 
-$x  = isset($_POST['emlExtraPrm']) ? trim($_POST['emlExtraPrm']) : NULL;
-if (isset($_POST['emlExtraPrm']) || !defined(EML_EXTRA_PRM))
-  $emlExtraPrm = $x;
+$x  = isset($_POST['emlSender']) ? trim($_POST['emlSender']) : NULL;
+if (isset($_POST['emlSender']) || !defined(EML_SENDER))
+  $emlSender = $x;
 
 $x = isset($_POST['subDeadline']) ?  trim($_POST['subDeadline']) : NULL;
 if (!empty($x)) {
   $tsb = strtotime($x);
   if ($tsb===false || $tsb==-1)
      die ("<h1>Unrecognized time format for submission deadline</h1>");   
-  if ($tsb!=$subDeadline) { $changeConstFile=true; $subDeadline=$tsb; }
+  if ($tsb!=$subDeadline) { $changeParams=true; $subDeadline=$tsb; }
 }
 
 $x = isset($_POST['cameraDeadline']) ? trim($_POST['cameraDeadline']) : NULL;
@@ -72,7 +76,7 @@ if (!empty($x)) {
   $tcr = strtotime($x);
   if ($tcr===false || $tcr==-1)
     die ("<h1>Unrecognized time format for camera-ready deadline</h1>");
-  if ($tcr!=$cmrDeadline) { $changeConstFile=true; $cmrDeadline=$tcr; }
+  if ($tcr!=$cmrDeadline) { $changeParams=true; $cmrDeadline=$tcr; }
 }
 
 
@@ -81,7 +85,7 @@ if (is_array($x)) {
   $categories = array();
   foreach ($x as $cat)
     $categories[] = trim($cat);
-  $changeConstFile = true;
+  $changeParams = true;
 }
 else $categories = NULL;
 
@@ -94,7 +98,7 @@ if (isset($_POST['formats'])) {
     foreach($confFormats as $ext => $x) { // go over all the formats
       if (!isset($_POST["keepFormats_{$ext}"])) { // should we keep this one?
 	unset($confFormats[$ext]);                //   nope: remove it
-	$changeConstFile = true;
+	$changeParams = true;
       }
     }
   }
@@ -113,12 +117,12 @@ if (isset($_POST['subFlags'])) {
   $anonymous = isset($_POST['anonymous']);
   $affiliations = isset($_POST['affiliations']);
   if (USE_AFFILIATIONS!=$affiliations || ANONYMOUS!=$anonymous) 
-    $changeConstFile = true;
+    $changeParams = true;
 }
 
 if (isset($_POST['revPrefsFlag'])) {
   $revPrefs = isset($_POST['revPrefs']);
-  if (REVPREFS!=$revPrefs) $changeConstFile = true;
+  if (REVPREFS!=$revPrefs) $changeParams = true;
 }
 
 // The review parameters cannot be changed after activation of the review site
@@ -126,7 +130,7 @@ if (isset($_POST['reviewPrms']) && !defined('REVIEW_PERIOD')) {
 
   $x = isset($_POST['maxGrade']) ? (int) trim($_POST['maxGrade']) : 0;
   if ($x>=2 && $x<=9 && $x != $maxGrade) {
-    $maxGrade = $x; $changeConstFile = true;
+    $maxGrade = $x; $changeParams = true;
   }
 
   if (isset($_POST['setCriteria'])) { // Create an array of criteria
@@ -134,7 +138,7 @@ if (isset($_POST['reviewPrms']) && !defined('REVIEW_PERIOD')) {
 
     $x = isset($_POST['criteria']) ? explode(';', $_POST['criteria']) : NULL;
     if (is_array($x) && count($x)>0) {
-      $changeConstFile = true;
+      $changeParams = true;
       $criteria = array();
       foreach ($x as $c) {
 	if ($cr = parse_criterion($c)){ $criteria[]= array($cr[0], $cr[1]);}
@@ -143,7 +147,7 @@ if (isset($_POST['reviewPrms']) && !defined('REVIEW_PERIOD')) {
     } else {
       $criteria = NULL;
       $n_criteria = 0;
-      if ($n_old > 0) $changeConstFile = true;
+      if ($n_old > 0) $changeParams = true;
     }
 
     // add or remove criteria from the database - if needed
@@ -162,7 +166,8 @@ if (isset($_POST['reviewPrms']) && !defined('REVIEW_PERIOD')) {
 // This is where we close the submission site
 if (!defined('REVIEW_PERIOD') && isset($_POST['closeSubmissions'])) {
   define('REVIEW_PERIOD', true);// Review site will be active after this call
-  $changeConstFile = true;
+  $period = PERIOD_REVIEW;
+  $changeParams = true;
 }
 
 // Manage access to the review cite
@@ -206,6 +211,7 @@ if (isset($_POST['reviewSite'])) {
 // Close review and activate final-version submission site
 if (isset($_POST['finalVersionInstructions'])) {
   if (!defined('CAMERA_PERIOD')) define('CAMERA_PERIOD', true);
+  $period = PERIOD_CAMERA;
   $cameraInstructions = trim($_POST['finalVersionInstructions']);
   $cameraInstructions = str_replace("\r\n", "\n", $cameraInstructions);
 
@@ -215,165 +221,94 @@ if (isset($_POST['finalVersionInstructions'])) {
        'tgz'    => array('Compressed tar', 'application/x-compressed-tar'),
        'zip'    => array('zip', 'application/x-zip')
   );
-  $changeConstFile = true;
+  $changeParams = true;
 
   send_camera_instructions($cnnct, $cameraInstructions);
 }
 
 if (isset($_POST['shutdown']) && $_POST['shutdown']=="yes") {
   define('SHUTDOWN', true);
-  $changeConstFile = true;
+  $period = PERIOD_FINAL;
+  $changeParams = true;
 }
 
-if ($changeConstFile) {
+if ($changeParams) {
+  // If we got here after undo's, delete paramater-sets that
+  // have larger version numbers than the new one. 
+  $qry = "DELETE FROM parameters WHERE version>".PARAMS_VERSION;
+  mysql_query($qry, $cnnct); //  no need to abort of failure
 
-  // escape things before storing them in the constant file
-  $longName = str_replace("\\", "\\\\", $longName);
-  $longName = str_replace("'", "\\'", $longName);
+  $qry = "INSERT INTO parameters SET\n  version=".(PARAMS_VERSION+1).",\n"
+    . "  isCurrent=1,\n"
+    . "  longName='"  .my_addslashes($longName, $cnnct)."',\n"
+    . "  shortName='" .my_addslashes($shortName, $cnnct)."',\n"
+    . "  confYear="   .intval($confYear).",\n";
 
-  $shortName = str_replace("\\", "\\\\", $shortName);
-  $shortName = str_replace("'", "\\'", $shortName);
+  if (empty($confURL)) $confURL = '.';
+  $qry .= "  confURL='"   .my_addslashes($confURL, $cnnct)."',\n"
+    . "  subDeadline=".intval($subDeadline).",\n"
+    . "  cmrDeadline=".intval($cmrDeadline).",\n"
+    . "  maxGrade="   .intval($maxGrade).",\n"
+    . "  maxConfidence=3,\n";
 
-  $confURL = str_replace("\\", "\\\\", $confURL);
-  $confURL = str_replace("'", "\\'", $confURL);
-
-  $chairEml = str_replace("\\", "\\\\", $chairEml);
-  $chairEml = str_replace("'", "\\'", $chairEml);
-
-  $adminEml = str_replace("\\", "\\\\", $adminEml);
-  $adminEml = str_replace("'", "\\'", $adminEml);
-
-  $subDeadline = str_replace("\\", "\\\\", $subDeadline);
-  $subDeadline = str_replace("'", "\\'", $subDeadline);
-
-  $cmrDeadline= str_replace("\\", "\\\\", $cmrDeadline);
-  $cmrDeadline= str_replace("'", "\\'", $cmrDeadline);
-
-  $constString = "<?php
-/* Web Submission and Review Software
- * Written by Shai Halevi
- * This software is distributed under the terms of the open-source license
- * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
- * in this package or at http://www.opensource.org/licenses/cpl1.0.php
- */
-\n"
-    . "define('BASE_URL', '".BASE_URL."');\n"
-    . "define('CONST_FILE', '".CONST_FILE."');\n"
-    . "define('CONF_NAME', '$longName');\n"
-    . "define('CONF_SHORT', '$shortName');\n"
-    . "define('CONF_YEAR', '$confYear');\n"
-    . "define('CONF_HOME', '$confURL');\n"
-    . "define('CHAIR_ID', ".CHAIR_ID.");\n"
-    . "define('CHAIR_EMAIL', '$chairEml');\n"
-    . "define('ADMIN_EMAIL', '$adminEml');\n"
-    . "define('SUBMIT_DEADLINE', '$subDeadline');\n"
-    . "define('CAMERA_DEADLINE', '$cmrDeadline');\n"
-    . "define('CONF_SALT', '".CONF_SALT."');\n"
-    . "define('SUBMIT_DIR', '".SUBMIT_DIR."');\n"
-    . "define('LOG_FILE', '".LOG_FILE."');\n"
-    . "define('MYSQL_HOST', '".MYSQL_HOST."');\n"
-    . "define('MYSQL_DB', '".MYSQL_DB."');\n"
-    . "define('MYSQL_USR', '".MYSQL_USR."');\n"
-    . "define('MYSQL_PWD', '".MYSQL_PWD."');\n"
-    . "define('EML_CRLF', \"$emlCrlf\");\n"
-    . "define('EML_EXTRA_PRM', '$emlExtraPrm');\n";
-
-  if (defined('HTTPS_ON') || isset($_SERVER['HTTPS']))
-    $constString .= "define('HTTPS_ON', true);\n";
- 
-  if ($affiliations) $constString .= "define('USE_AFFILIATIONS', true);\n";
-  else               $constString .= "define('USE_AFFILIATIONS', false);\n";
-
-  if ($anonymous) $constString .= "define('ANONYMOUS', true);\n";
-  else            $constString .= "define('ANONYMOUS', false);\n";
-
-  if ($revPrefs) $constString .= "define('REVPREFS', true);\n";
-  else           $constString .= "define('REVPREFS', false);\n";
-
-  $constString .= "define('MAX_GRADE', $maxGrade);\n";
-  $constString .= "define('MAX_CONFIDENCE', $maxConfidence);\n";
-
-  if (defined('SHUTDOWN')) {
-    $constString .= "define('REVIEW_PERIOD', false);\n";
-    $constString .= "define('CAMERA_PERIOD', false);\n";
-    $constString .= "define('SHUTDOWN', true);\n";
-  } else if (defined('CAMERA_PERIOD')) {
-    $constString .= "define('REVIEW_PERIOD', false);\n";
-    $constString .= "define('CAMERA_PERIOD', true);\n";
-    $constString .= "\$cameraInstructions='"
-      . addslashes($cameraInstructions) . "';\n";
-  } else if (defined('REVIEW_PERIOD'))
-    $constString .= "define('REVIEW_PERIOD', true);\n";
+  $flags = 0;
+  if ($revPrefs)       $flags |= FLAG_PCPREFS;
+  if ($anonymous)      $flags |= FLAG_ANON_SUBS;
+  if ($affiliations)   $flags |= FLAG_AFFILIATIONS;
+  if ($emlCrlf=="\\n") $flags |= FLAG_EML_HDR_CRLF;
+  if (defined('HTTPS_ON') || isset($_SERVER['HTTPS'])) $flags |= FLAG_SSL;
+  $qry .= "  flags=$flags,\n"
+    . "  emlSender='".my_addslashes($emlSender, $cnnct)."',\n"
+    . "  baseURL='"    .my_addslashes(BASE_URL, $cnnct)."',\n"
+    . "  period=$period,\n";
 
   if (is_array($confFormats) && count($confFormats)>0) {
-    $comma = '';
-    $constString .= "\$confFormats = array(";
+    $fmtString = $sc = '';
     foreach($confFormats as $ext => $f) {
-      $constString .= "{$comma}\n  '$ext' => array('$f[0]', '$f[1]')";
-      $comma = ',';
+      $fmtString .= $sc.$f[0]."($ext,".$f[1].")";
+      $sc = ';';
     }
-    $constString .= "\n);\n";
+    $fmtString = "'".my_addslashes($fmtString, $cnnct)."'";
   }
-  else $constString .= "\$confFormats = NULL;\n";
+  else $fmtString = 'NULL';
+  $qry .= "  formats=$fmtString,\n";
 
   if (is_array($categories) && count($categories)>0) {
-    $comma = '';
-    $constString .= "\$categories = array(";
+    $catString = $sc = '';
     foreach ($categories as $c) {
-      $c = str_replace("\\", "\\\\", $c);
-      $c = str_replace("'", "\\'", $c);
-      $constString .= "{$comma}\n  '$c'";
-      $comma = ',';
+      $catString .= $sc.$c;
+      $sc = ';';
     }
-    $constString .= "\n);\n";
+    $catString = "'".my_addslashes($catString, $cnnct)."'";
   }
-  else $constString .= "\$categories = NULL;\n";
+  else $catString = 'NULL';
+  $qry .= "  categories=$catString,\n";
 
   if (is_array($criteria) && count($criteria)>0) {
-    $comma = '';
-    $constString .= "\$criteria = array(";
+    $crtriaString = $sc = '';
     foreach($criteria as $cr) {
-      $cr[0] = str_replace("\\", "\\\\", $cr[0]);
-      $cr[0] = str_replace("'", "\\'", $cr[0]);
-      $constString .= "{$comma}\n  array('$cr[0]', $cr[1])";
-      $comma = ',';
+      $crtriaString .= $sc.$cr[0]."(".$cr[1].")";
+      $sc = ';';
     }
-    $constString .= "\n);\n";
+    $crtriaString = "'".my_addslashes($crtriaString, $cnnct)."'";
   }
-  else $constString .= "\$criteria = NULL;\n";
+  else $crtriaString = 'NULL';
+  $qry .= "  extraCriteria=$crtriaString,\n";
 
-  $constString .= '?>'; 
-  /* Note: "?>" must be the last thing in the file (not even "\n" after it) */
+  if (empty($cameraInstructions)) $cameraInstructions='NULL';
+  else $cameraInstructions="'".my_addslashes($cameraInstructions,$cnnct)."'";
 
-  $tFile = CONST_FILE . '.' . date('YmdHis');
-  if (file_exists($tFile)) unlink($tFile); // just in case
+  $accLtr = empty($accLtr) ? 'NULL' : ("'".my_addslashes($accLtr,$cnnct)."'");
+  $rejLtr = empty($rejLtr) ? 'NULL' : ("'".my_addslashes($rejLtr,$cnnct)."'");
+  $qry .= "  cmrInstrct=$cameraInstructions,\n"
+    . "  acceptLtr=$accLtr,\n"
+    . "  rejectLtr=$rejLtr";
+  db_query($qry, $cnnct, "Cannot INSERT conference parameters: ");
 
-  // Open for write
-  if (!($fd = fopen($tFile, 'w'))) {
-    exit("<h1>Cannot create the customization file at $tFile</h1>\n");
-  }
-
-  if (!fwrite($fd, $constString)) {
-    exit ("<h1>Cannot write into customization file $tFile</h1>\n");
-  }
-
-  // Close the temporary file and rename it to it's final name
-  fclose($fd);
-
-  // Move the old file to backup
-  $bkFile = CONST_FILE . '.bak.php';
-  if (file_exists($bkFile)) unlink($bkFile);
-  rename(CONST_FILE, $bkFile);
-
-  if (!rename($tFile, CONST_FILE)) {
-    if (!file_exists(CONST_FILE)) // recover from backup
-      rename($bkFile, CONST_FILE);
-    exit ("<h1>Cannot rename customization file $tFile</h1>\n");
-  }
-  chmod(CONST_FILE, 0664); // makes debugging a bit easier
-  $fwFile = CONST_FILE . '.fwd.php';
-  if (file_exists($fwFile)) unlink($fwFile);
-}
+  // and also reset the current (soon to be previous) parameter-set
+  $qry = "UPDATE parameters SET  isCurrent=0 WHERE version=".PARAMS_VERSION;
+  db_query($qry, $cnnct, "Cannot reset parameters: ");
+} /* if ($changeParams) */
 
 // All went well, go to confirmation page (or directly to administration page)
 if (!defined('REVIEW_PERIOD')) {
@@ -389,7 +324,7 @@ function update_committee_member($cnnct, $revId, $name, $email, $reset=false)
 {
   global $chrPwd;
   global $chairEml;
-  global $changeConstFile;
+  global $changeParams;
 
   if (!empty($name)) $nm = my_addslashes(trim($name), $cnnct);
   if (!empty($email)) {
@@ -443,11 +378,8 @@ function update_committee_member($cnnct, $revId, $name, $email, $reset=false)
 
     if (!empty($email) && $email!=$row[2]) {
       $updates .= $comma . "email='$eml'";
-      if ($revId == CHAIR_ID) { $changeConstFile = true; }
     }
 
-    // Make sure that the chair's email is the same
-    // in the database and the constant file
     if (!empty($email) && $revId==CHAIR_ID) 
       $chairEml = $email;
 
@@ -464,16 +396,13 @@ function email_password($emailTo, $pwd, $isChair=false)
   global $shortName;
   global $confYear;
   global $chairEml;
-  $php_errormsg = ''; // so we don't get notices if it is not defined
 
   $prot = (defined('HTTPS_ON') || isset($_SERVER['HTTPS']))? 'https' : 'http';
   $baseURL = $prot.'://'.BASE_URL;
 
-  $emlCrlf = (EML_CRLF == "\n") ? "\n" : "\r\n";
-  $hdr = "From: $shortName $confYear <$chairEml>".$emlCrlf;
-  if ($isChair) $hdr .= 'Cc: '.ADMIN_EMAIL.$emlCrlf;
-  else $hdr .= 'Cc: ' . $chairEml . $emlCrlf;
-  $hdr .= 'X-Mailer: PHP/' . phpversion();
+  if ($isChair) $cc = ADMIN_EMAIL;
+  else          $cc = $chairEml;
+
   $sbjct = "New/reset password for submission and review site for $shortName $confYear";
 
   $msg =<<<EndMark
@@ -494,40 +423,22 @@ and with password $pwd
 
 EndMark;
 
-  if (ini_get('safe_mode') || !defined('EML_EXTRA_PRM'))
-    $success = mail($emailTo, $sbjct, $msg, $hdr);
-  else
-    $success = mail($emailTo, $sbjct, $msg, $hdr, EML_EXTRA_PRM);
-
-  if (!$success) error_log(date('Y.m.d-H:i:s ')."Cannot send password $pwd to {$emailTo}. {$php_errormsg}\n", 3, './log/'.LOG_FILE);
+  $success = my_send_mail($emailTo, $sbjct, $msg, $cc, "password $pwd to $emailTo");
 }
 
 function send_camera_instructions($cnnct, $text)
 {
-  $php_errormsg = ''; // so we don't get notices if it is not defined
-  $cName = CONF_SHORT.' '.CONF_YEAR;
+  $sbjct = "Final-version instructions for ".CONF_SHORT.' '.CONF_YEAR;
 
-  $emlCrlf = (EML_CRLF == "\n") ? "\n" : "\r\n";
-  $hdr = "From: {$cName} Chair <".CHAIR_EMAIL.">".$emlCrlf;
-  $hdr .= "Cc: " .CHAIR_EMAIL .$emlCrlf;
-  $hdr .= "X-Mailer: PHP/" . phpversion();
-
-  $sbjct = "Final-version instructions for $cName";
-
-  $qry = "SELECT subId, title, authors, contact FROM submissions
-  WHERE status='Accept'";
+  $qry = "SELECT subId, title, authors, contact FROM submissions WHERE status='Accept'";
   $res = db_query($qry, $cnnct);
   $count=0;
   while ($row = mysql_fetch_row($res)) {
     $subId = (int) $row[0];
     $contact = $row[3];
 
-    if (ini_get('safe_mode') || !defined('EML_EXTRA_PRM'))
-      $success = mail($contact, $sbjct, $text, $hdr);
-    else
-      $success = mail($contact, $sbjct, $text, $hdr, EML_EXTRA_PRM);
-
-    if (!$success) error_log(date('Y.m.d-H:i:s ')."Cannot send instructions for submission {$subId} to {$contact}. {$php_errormsg}\n", 3, './log/'.LOG_FILE);
+    my_send_mail($contact, $sbjct, $text, CHAIR_EMAIL,
+	       "camera-ready instructions for subID $subId, contact $contact");
 
     $count++;
     if (($count % 25)==0) { // rate-limiting, avoids cutoff

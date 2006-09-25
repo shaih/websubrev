@@ -23,8 +23,8 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-<link rel="stylesheet" type="text/css" href="../review/review.css" />
+<head>
+<link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 h1 {text-align: center;}
 </style>

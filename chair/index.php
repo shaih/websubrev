@@ -5,15 +5,19 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-
 $needsAuthentication = true; 
 require 'header.php';
+
+if (PERIOD==PERIOD_SETUP) {
+  print "<h1>Site Not Customized Yet</h1>\n";
+  exit ('Go to the <a href="customize.php">customization page</a>'.".\n");
+} 
 $cName = CONF_NAME.' ('.CONF_SHORT.' '.CONF_YEAR.')';
 $links = show_chr_links(1);
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<head>
 <style type="text/css">
 h1 {text-align: center;}
 h2 {text-align: center;}
@@ -29,28 +33,24 @@ $links
 
 EndMark;
 
-if (!defined('REVIEW_PERIOD'))      $period = 1; // submissions
-else if (!defined('CAMERA_PERIOD')) $period = 2; // review
-else                                $period = 3; // camera-ready
-
-switch ($period) {
-  case 1:
-    manage_submissions($period);
+switch (PERIOD) {
+  case PERIOD_SUBMIT:
+    manage_submissions(PERIOD);
     break;
 
- case 2:
+ case PERIOD_REVIEW:
     print "<div class=\"inactive\">\n";
-    manage_submissions($period);
+    manage_submissions(PERIOD);
     print "</div>\n";
-    manage_reviews($period);
+    manage_reviews(PERIOD);
     break;
 
  default:
     print "<div class=\"inactive\">\n";
-    manage_submissions($period);
-    manage_reviews($period);
+    manage_submissions(PERIOD);
+    manage_reviews(PERIOD);
     print "</div>\n";
-    manage_final_version($period);
+    manage_final_version(PERIOD);
 }
 
 print "<hr />\n{$links}\n{$footer}\n";
@@ -59,12 +59,18 @@ exit("</body>\n</html>\n");
 
 function manage_submissions($period)
 {
-  if ($period>2) return;
-  if ($period==2) {
+  global $categories;
+  if (is_array($categories) && count($categories)>0) {
+    $catLink='<a href="listSubmissions.php?subOrder=category">category</a>, ';
+  }
+  else $catLink = '';
+  if ($period>PERIOD_REVIEW) return;
+  if ($period==PERIOD_REVIEW) {
     print <<<EndMark
 <b><big>&nbsp;Submission Site is Closed</big></b><br/>
+&nbsp;&nbsp;o&nbsp;&nbsp;<a href="tweakSite.php">Tweak site settings</a>,<br/>
 &nbsp;&nbsp;o&nbsp;&nbsp;<a href="listSubmissions.php">Submission list by number</a>,<br/>
-&nbsp;&nbsp;o&nbsp;&nbsp;by&nbsp;<a href="listSubmissions.php?subOrder=category">category</a>, <a href="listSubmissions.php?subOrder=status">status</a>, <a href="listSubmissions.php?subOrder=format">format</a>&nbsp;<br/>
+&nbsp;&nbsp;o&nbsp;&nbsp;by&nbsp;$catLink<a href="listSubmissions.php?subOrder=status">status</a>, <a href="listSubmissions.php?subOrder=format">format</a>&nbsp;<br/>
 &nbsp;(use to withdraw/revise submissions)&nbsp;
 
 EndMark;
@@ -81,9 +87,11 @@ EndMark;
 <h3><span style="background-color: red;">Submission Site is Active:</span></h3>
 Deadline is <big>$subDdline</big>
 <ul>
+<li><a href="tweakSite.php">Tweak Site Settings</a> (email settings, etc.)</li>
+</ul>
+<ul>
 <li>List submissions by <a href="listSubmissions.php">number</a>, 
-    <a href="listSubmissions.php?subOrder=category">category</a>,
-    or <a href="listSubmissions.php?subOrder=format">format</a>
+    $catLink <a href="listSubmissions.php?subOrder=format">format</a>
     ($nSubs submissions so far)</li>
 <li><a href="manage-submission-site.php">Manage Parameters</a>
     (deadlines, supported formats, categories, etc.)</li>
@@ -102,8 +110,8 @@ EndMark;
 
 function manage_reviews($period)
 {
-  if ($period < 2) return;
-  if ($period == 2) { 
+  if ($period < PERIOD_REVIEW) return;
+  if ($period == PERIOD_REVIEW) { 
 
     if (defined('REVPREFS') && REVPREFS) { $assignHTML = <<<EndMark
 Assign submissions to reviewers:
@@ -146,14 +154,14 @@ print <<<EndMark
 </dl>
 
 EndMark;
-  } else { // $period > 2
+  } else { // $period > PERIOD_REVIEW
 print <<<EndMark
 <b><big>&nbsp;Review Site is Closed</big></b><br />
 &nbsp;&nbsp;o&nbsp;&nbsp;<a href="../review/listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on&amp;format=ascii">List all reviews/discussions (text)</a>&nbsp;&nbsp;<br />
 
 EndMark;
  
-    if (!defined('SHUTDOWN')) print <<<EndMark
+    if ($period<PERIOD_FINAL) print <<<EndMark
 &nbsp;&nbsp;o&nbsp;&nbsp;<a href="status.php">Set status of submissions</a>&nbsp;&nbsp;<br />
 &nbsp;&nbsp;o&nbsp;&nbsp;<a href="notifications.php">Send accept/reject letters...</a>&nbsp;&nbsp;<br />
 &nbsp;&nbsp;o&nbsp;&nbsp;<a href="sendComments.php">Send comments...</a>&nbsp;&nbsp;<br />
@@ -165,23 +173,23 @@ EndMark;
 function manage_final_version($period)
 {
   $cmrDdline = utcDate('r (T)', CAMERA_DEADLINE);
-  if ($period < 3) return;
+  if ($period < PERIOD_CAMERA) return;
 
   // look for a tar or tgz file with all the submissions
-  $allSubFile = SUBMIT_DIR."/final/all_in_one.tgz";
-  if (!file_exists($allSubFile)) {   // maybe .zip rather than .tzg?
-    $allSubFile = SUBMIT_DIR."/final/all_in_one.zip";
-    if (!file_exists($allSubFile)) { // or perhaps jusr .tar?
-      $allSubFile = SUBMIT_DIR."/final/all_in_one.tar";
-      if (!file_exists($allSubFile)) $allSubFile = NULL; // oh, I give up
+  $allSubFile = "tgz";
+  if (!file_exists(SUBMIT_DIR."/final/all_in_one.$allSubFile")) { // .zip?
+    $allSubFile = "zip";
+    if (!file_exists(SUBMIT_DIR."/final/all_in_one.$allSubFile")){ // or .tar?
+      $allSubFile = "tar";
+      if (!file_exists(SUBMIT_DIR."/final/all_in_one.$allSubFile"))
+	$allSubFile = NULL;                                   // oh, I give up
     }
   }
-
   if (isset($allSubFile)) {
-    $allSubFile = '<li><a href="../'.$allSubFile.'">Download all camera-ready archives in one file</a></li>';
+    $allSubFile = '<li><a href="../review/download.php?final=yes&all_in_one='.$allSubFile.'">Download all camera-ready archives in one file</a></li>';
   }
 
-  if (defined('SHUTDOWN')) {
+  if ($period==PERIOD_FINAL) {
     $hdr = '<h3>Final Submission Site is Closed</h3>';
     $mkTOC = '<li><a href="makeTOC.php">Generate a LeTeX file with TOC and author index</a></li>';
     $closeIt = '';

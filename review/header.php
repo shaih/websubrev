@@ -6,14 +6,13 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
  /********* standard header for the /review directory ************/
-
-chdir('..');     // This is a header file for a sub-directory
-if (!file_exists('./includes/confConstants.php')) { // Not yet customized
-  header("Location: ../chair/customize.php");
+if (!file_exists('../init/confParams.php')) { // Not yet customized
+  header("Location: ../chair/initialize.php");
   exit();
 }
-require './includes/confConstants.php'; 
-require './includes/confUtils.php';
+require_once('../includes/getParams.php');
+
+if (PERIOD==PERIOD_SETUP) die("<h1>Site Not Active Yet</h1>");
 
 if (empty($errorMsg)) {
   $errorMsg = "A valid username/password is needed to access this page";

@@ -51,18 +51,18 @@ if ($disFlag == 1) {
 
   $toggleWatch = "<a href=\"toggleWatch.php?subId={$subId}\">\n";
   if ($watch == 1) {
-    $src = 'openeye.gif'; $alt = 'W';
+    $src = '../common/openeye.gif'; $alt = 'W';
     $tooltip = "Click to remove from watch list";
   }
   else {
-    $src = 'shuteye.gif'; $alt = 'X';
+    $src = '../common/shuteye.gif'; $alt = 'X';
     $tooltip = "Click to add to watch list";
   }
   $toggleWatch .= "  <img src=\"$src\" alt=\"$alt\" title=\"$tooltip\" border=\"0\"></a>&nbsp;";
 }
 else $toggleWatch = $discussLine = '';
 
-// The styles are defiend in review.css, the icon constants in confUtils.php
+// The styles are defiend in ../common/review.css, the icons in confUtils.php
 if (isset($submission['revId'])) {// PC member already reviewed this submission
   $revStyle = "Revise";
   $revText = $reviseIcon;
@@ -70,7 +70,6 @@ if (isset($submission['revId'])) {// PC member already reviewed this submission
   $revStyle = "Review";
   $revText = $reviewIcon;
 }
-$subFile = '../'.SUBMIT_DIR."/$subId.$format";
 
 // $pageWidth = 720; body { width : {$pageWidth}px; }
 
@@ -91,7 +90,7 @@ div.fixed { font: 14px monospace; width: 90%; }
 $links
 <hr />
 <center>
-<a href="$subFile" title="download"><img src="download.gif" alt="download"
+<a href="download.php?subId=$subId" title="download"><img src="../common/download.gif" alt="download"
    border=0></a>
 $discussLine
 <span class="$revStyle"><a href="review.php?subId=$subId" target="_blank">$revText</a></span>&nbsp;
@@ -108,7 +107,7 @@ $authors
 
 <br /><br />
 <center>
-<a href="$subFile" title="download"><img src="download.gif" alt="download"
+<a href="download.php?subId=$subId" title="download"><img src="../common/download.gif" alt="download"
    border=0></a>
 $discussLine
 <span class="$revStyle"><a href="review.php?subId=$subId" target="_blank">$revText</a></span>&nbsp;

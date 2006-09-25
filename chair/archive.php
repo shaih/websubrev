@@ -99,9 +99,8 @@ show on the review page.)
 <h2>Manually creating archive files</h2>
 If the above methods for creating an archive file do not work, and if you
 have administrative access to the server, you can manually create an archive
-file in one of these three formats and put it in the submission directory.
-(This is the directory <code>$subDir</code> under the base directory where
-you installed this software package.) The file must be called either
+file in one of these three formats and put it in the submission directory
+(which is <code>$subDir</code>). The file must be called either
 <i>all_in_one.tgz</i>, <i>all_in_one.zip</i>, or <i>all_in_one.tar</i>.
 <br/><br/>
 As a last resort, if you do not have have administrative access to the
@@ -157,7 +156,7 @@ function PEARmkTar()
     $subName = $row[0].'.'.$row[1];
     if (!($tar_object->addModify($subName, "submissions"))) {
       error_log(date('Y.m.d-H:i:s ')."Cannot add $subName to tar file",
-		3, '../log/'.LOG_FILE);
+		3, LOG_FILE);
       return NULL;
     }
   }

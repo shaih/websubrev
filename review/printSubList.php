@@ -32,15 +32,15 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
 
     if (isset($lastMod)) $lastMod = date('d/m\&\n\b\s\p\;H:i', $lastMod);
     if ($watch == 1) {
-      $src = 'openeye.gif'; $alt = 'W';
+      $src = '../common/openeye.gif'; $alt = 'W';
       $tooltip = "Click to remove from watch list";
     }
     else {
-      $src = 'shuteye.gif'; $alt = 'X';
+      $src = '../common/shuteye.gif'; $alt = 'X';
       $tooltip = "Click to add to watch list";
     }
 
-    // Styles defined in review.css, text constants in confUtils.php
+    // Styles defined in ../common/review.css, text constants in confUtils.php
     if (defined('CAMERA_PERIOD')) {
       $width = "70px";
       $revStyle = "none";
@@ -56,7 +56,6 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
       $revText = $reviewIcon;
     }
 
-    $subFile = '../'.SUBMIT_DIR."/$subId.$fmt";
     if (!empty($avg)) $avg="($avg)";
 
     // If this member can discuss - show more details
@@ -79,8 +78,8 @@ EndMark;
     }  // end if ($disFlag == 1) 
 
     else { print <<<EndMark
-    <tr><td style="width:20px;"><a href="$subFile" title="download">
-	<img src="download.gif" alt="download" border=0></a>
+    <tr><td style="width:20px;"><a href="download.php?subId=$subId" title="download">
+	<img src="../common/download.gif" alt="download" border=0></a>
     </td>
     <td style="width:60px;"><span class=$revStyle><a href="review.php?subId=$subId" target="_blank">$revText</a></span>
     </td>

@@ -28,7 +28,7 @@ if (is_array($criteria)) for ($i=0; $i<count($criteria); $i++) {
 }
 
 $qry= "SELECT s.title ttl, a.assign assign, r.subReviewer subRev,
-      r.lastModified lastModif, r.confidence conf, r.grade grade,
+      r.lastModified lastModif, r.confidence conf, r.score grade,
       $auxGrades
       r.comments2authors cmnts2athr, r.comments2committee cmnts2PC,
       r.comments2chair cmnts2chair, a.watch watch

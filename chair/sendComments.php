@@ -15,7 +15,7 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<head>
 <style type="text/css">
 h1 {text-align: center;}
 h2 {text-align: center;}
@@ -54,7 +54,7 @@ if (isset($_POST['sendComments2Submitters'])) {
 
   $cnnct = db_connect();
   $qry = "SELECT s.subId, title, authors, contact, comments2authors, status,
-    confidence, grade
+    confidence, score
   FROM submissions s LEFT JOIN reports r USING(subId)
   WHERE s.status!='Withdrawn'";
 
@@ -79,7 +79,7 @@ if (isset($_POST['sendComments2Submitters'])) {
     $comment = trim($row[4]);
     if (!empty($comment)) {
       if (isset($_POST['withGrades']) && $row[7]>0) {
-        $grade = "Grade: ".$row[7];
+        $grade = "Score: ".$row[7];
         if ($row[6]>0) $grade .= "\nConfidence: ".$row[6];
         $comment = $grade."\n\n".$comment;
       }
@@ -98,7 +98,7 @@ if (isset($_POST['sendComments2Submitters'])) {
     $count++;
     if (($count % 25)==0) { // rate-limiting, avoids cutoff
       print "$count messages sent so far...<br/>\n";
-      sleep(1);
+      ob_flush();flush();sleep(1);
     }
   }
 
@@ -147,7 +147,7 @@ Send comments only for these submissions:
 
 <input type="submit" value="Send Comments">
 <input type="hidden" name="sendComments2Submitters" value="yes">
-<input type=checkbox name=withGrades value=yes> Check to include grade
+<input type=checkbox name=withGrades value=yes> Check to include score
 and confidence in the email sent to the authors
 </form>
 
@@ -159,13 +159,10 @@ $links
 EndMark;
 exit();
 
-function sendComments($subId, $title, $authors, $contact, &$cmnts, $text)
+function sendComments($subId, $title, $authors, $contact, $cmnts, $text)
 {
-  $cName = CONF_SHORT.' '.CONF_YEAR;
-
-  $hdr = "From: {$cName} Chair <".CHAIR_EMAIL.">".EML_CRLF;
-  $hdr .= "Cc: ".CHAIR_EMAIL.EML_CRLF;
-  $hdr .= "X-Mailer: PHP/" . phpversion();
+  $subject = "Reviewer comments for ".CONF_SHORT.' '.CONF_YEAR." submission";
+  $errMsg = "comments for submission {$subId} to {$contact}";
 
   $text = str_replace('<$authors>', $authors, $text);
   $text = str_replace('<$title>', $title, $text);
@@ -173,13 +170,6 @@ function sendComments($subId, $title, $authors, $contact, &$cmnts, $text)
     $text = str_replace('<$comments>', implode("\n\n========================================================================\n\n", $cmnts), $text);
   else $text = str_replace('<$comments>', "\nNo Reviewer Comments\n", $text);
 
-  if (ini_get('safe_mode') || !defined('EML_EXTRA_PRM'))
-    $success = mail($contact, "Reviewer comments for $cName submission",
-		    $text, $hdr);
-  else
-    $success = mail($contact, "Reviewer comments for $cName submission",
-		    $text, $hdr, EML_EXTRA_PRM);
-
-  if (!$success) error_log(date('Y.m.d-H:i:s ') . "Cannot send comments for submission {$subId} to {$contact}. {$php_errormsg}\n", 3, './log/'.LOG_FILE);
+  my_send_mail($contact, $subject, $text, CHAIR_EMAIL, $errMsg);
 }
 ?>

@@ -5,33 +5,34 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-require 'header.php'; // brings in the constants file and utils file
+ 
+require 'header.php'; // brings in the contacts file and utils file
+
+// Camera-ready revisions are now done from cameraready.php
+if (defined('CAMERA_PERIOD')) exit("<h1>Submission Deadline Expired</h1>");
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
-if (CAMERA_PERIOD!==true)
-     die("<h1>Final-version submission site for $confName is closed</h1>");
-
-$h1text = "<h1>Camera-Ready Revision for $confName</h1>";
-$deadline = show_deadline(CAMERA_DEADLINE);
+$deadline = show_deadline(SUBMIT_DEADLINE);
+$h1text = "<h1>Revise a Submission to $confName</h1>";
 
 $subId = isset($_GET['subId']) ? trim($_GET['subId']) : '';
 $subPwd = isset($_GET['subPwd']) ? trim($_GET['subPwd']) : '';
-$title = $authors = $affiliations = $contact = $abstract= $nPages = '';
+$title = $authors  = $affiliations  
+  = $contact = $abstract= $category = $keywords = $comment = '';
 
 if ($subId > 0 && !empty($subPwd)) {
   $cnnct = db_connect();
-  $sid = my_addslashes($subId, $cnnct);
-  $pw = my_addslashes($subPwd, $cnnct);
-  $qry = "SELECT title, authors, affiliations, contact, abstract, nPages\n"
-    . "  FROM submissions sb LEFT JOIN acceptedPapers ac USING(subId)\n"
-    . "  WHERE sb.subId='$sid' AND subPwd='$pw' AND status='Accept'\n";
+  $qry = "SELECT title, authors, affiliations, contact, abstract, category,\n"
+    . "   keyWords, comments2chair\n"
+    . "FROM submissions WHERE subId='" . my_addslashes($subId, $cnnct) .
+    "' AND subPwd='" . my_addslashes($subPwd, $cnnct) . "'";
   $res=db_query($qry, $cnnct);
   $row=@mysql_fetch_row($res);
   if (!$row) {
-    $h1text="<h1>Non-Existent Accepted Submission</h1>\n"
-     . "<span style=\"color: red;\">\n"
-     . "No accepted submission with ID $subId and password $subPwd found.\n"
-     . "Please enter the correct details below:</span><br/><br/>\n\n";
+    $h1text="<h1>Cannot Revise a Non-Existent Submission</h1>\n"
+      . "<span style=\"color: red;\">\n"
+      . "No submission with ID $subId and password $subPwd was found.\n"
+      . "Please enter the correct details below:</span><br/><br/>\n\n";
     $subId = $subPwd = '';
   }
   if (!empty($subId)) {
@@ -42,19 +43,34 @@ if ($subId > 0 && !empty($subPwd)) {
     $affiliations  = htmlspecialchars($row[2]);
     $contact = htmlspecialchars($row[3]);
     $abstract= htmlspecialchars($row[4]);
-    $nPages = (int) $row[5];
-    if ($nPages <= 0) $nPages = '';
+    $category= htmlspecialchars($row[5]);
+    $keywords= htmlspecialchars($row[6]);
+    $comment = htmlspecialchars($row[7]);
   }
 }
 
-$links = show_sub_links(6);
+if (is_array($confFormats) && count($confFormats)>0) {
+  $supportedFormats = '';
+  foreach ($confFormats as $ext => $f) {
+    $supportedFormats .= $ext . ", ";
+  }
+  if (strlen($supportedFormats)>100) { // don't display long lines in the form
+    $supportedFormats = '<a href="index.php#formats" title="'
+      .$supportedFormats.'">click for details</a>';
+  }
+  else {
+    $supportedFormats .= '<a href="index.php#formats">click for details</a>';
+  }
+} else { // no formats were specified
+  $supportedFormats = 'none specified';
+}
+
+$links = show_sub_links(4); 
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-
 <style type="text/css">
 h1 { text-align: center; }
 h3 { text-align: center; color: blue; }
@@ -84,7 +100,7 @@ function checkform( form )
   if (pat.test(form.subPwd.value))   { st |= 2; }
 
   if (st != 0) {
-    alert( "You must specify the submission number and password" );
+    alert( "You must specify the submission-ID and password" );
     if (st & 1) { form.subId.focus(); }
     else if (st & 2) { form.subPwd.focus(); }
     return false;
@@ -94,17 +110,17 @@ function checkform( form )
 //-->
 </script>
 
-<title>Camera-Ready Revision for $confName</title>
+<title>Revise a Submission to $confName</title>
+<link rel="stylesheet" type="text/css" href="../common/submission.css"/>
 </head>
 <body>
 $links
 <hr />
 $h1text
-<h3>$deadline</h3>
-
-<form name="cameraready" onsubmit="return checkform(this);" action="act-revise.php" enctype="multipart/form-data" method="post">
+<h3 class=timeleft>$deadline</h3>
+<form name="revise" onsubmit="return checkform(this);" action="act-revise.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
-<input type="hidden" name="referer" value="cameraready.php">
+<input type="hidden" name="referer" value="revise.php">
 <table cellspacing="6">
 <tbody>
   <tr>
@@ -112,7 +128,7 @@ $h1text
          <small>(*)</small>&nbsp;Submission&nbsp;ID:</td>
     <td> <input name="subId" size="4" type="text"
                 value="$subId">
-         The submission number, as returned when the paper was first submitted.
+         The submission-ID, as returned when the paper was first submitted.
     </td>
   </tr>
   <tr>
@@ -124,27 +140,21 @@ $h1text
 
 EndMark;
 
-if (empty($subId)) { // put a button to "Load submission details"
+if (empty($subId) || empty($subPwd)) {// put button to Load submission details
   print '  <tr>
     <td></td>
     <td><input value="Reload Form with Submission Details (Submission-ID and Password must be specified)" type="submit" name="loadDetails">
-    (<a href="documentation/submitter.html#camera" target="documentation" title="this button reloads the revision form with all the submission details filled-in">what\'s this?</a>)
+    (<a href="documentation/submitter.html#revise" target="documentation" title="this button reloads the revision form with all the submission details filled-in">what\'s this?</a>)
     </td>
   </tr>';
 }
 
 print <<<EndMark
+
   <tr>
     <td colspan="2" style="text-align: center;"><hr />
         <big>Any input below will overwrite existing information;
-             no input means the old content remains intact.</big><br /><br />
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">Number&nbsp;of&nbsp;Pages:</td>
-    <td><input name="nPages" size="3" type="text" value="$nPages">
-     Will be used by the chair to
-     automatically generate the table-of-contents and author index.
+             no input means the old content remains intact.</big><br/><br/>
     </td>
   </tr>
   <tr>
@@ -154,41 +164,79 @@ print <<<EndMark
   </tr>
   <tr>
     <td style="text-align: right;">Authors:</td>
-    <td><input name="authors" size="90" type="text" value="$authors"><br/>
+    <td><input name="authors" size="90" type="text" value="$authors"><br />
         Separate multiple authors with '<i>and</i>' (e.g., Alice First 
 	<i>and</i> Bob T. Second <i>and</i> C. P. Third). <br />
     </td>
   </tr>
+
+EndMark;
+if (USE_AFFILIATIONS) {
+  print <<<EndMark
   <tr>
     <td style="text-align: right;">Affiliations:</td>
         <td><input name="affiliations" size="70" type="text" value="$affiliations">
   </tr>
+
+EndMark;
+}
+
+print <<<EndMark
   <tr>
     <td style="text-align: right;">Contact Email:</td>
-    <td><input name="contact" size="70" type="text" value="$contact"
+    <td><input name="contact" size="70" type="text"  value="$contact"
          onchange="return check_email(this)"><br />
         Must be <b>one valid email address</b> of the form user@domain;
-        <b>make sure that this is a valid address</b>, it will be used
-        for communication with the publisher. <br /><br />
+        will be used for communication. <br /><br />
     </td>
   </tr>
   <tr>
     <td style="text-align: right;">Abstract:</td>
     <td><textarea name="abstract" rows="15" cols="80">$abstract</textarea><br/>
         Use only plain ASCII and LaTeX conventions for math, but no HTML tags.
-        <br/><br/>
+        <br /> <br />
     </td>
   </tr>
   <tr>
     <td style="text-align: right;">Submission&nbsp;File: </td>
     <td><input name="sub_file" size="70" type="file"><br />
-        The archive file (tar, tzg, etc.) with all the necessary files.
-        See <a href="index.php">the instructions</a>.<br/><br/>
+        The submission itself, in one of the supported formats
+	($supportedFormats).
+        <br />
+    </td>
+  </tr>
+
+EndMark;
+
+if (is_array($categories) && (count($categories)>1)) {
+  $select = empty($category) ? 'selected="selected" ' : '';
+  print '  <tr>
+    <td style="text-align: right;">Category:</td>
+    <td><select name="category">
+        <option '.$select.'value="">(no change)</option>'."\n";
+  foreach ($categories as $c) {
+    $select = ($c==$category) ? 'selected="selected" ' : '';
+    print "        <option {$select}value=\"$c\">$c</option>\n";
+  }
+  print "        <option value=\"None\">Reset to (no category)</option>\n";
+  print "      </select>\n    </td>\n  </tr>\n";
+}
+
+print <<<EndMark
+  <tr>
+    <td style="text-align: right;">Keywords:</td>
+    <td><input name="keywords" size="90" type="text" value="$keywords">
+        <br/><br/></td>
+  </tr>
+  <tr>
+    <td style="text-align: right;">Comments to Chair: </td>
+    <td><textarea name="comment" rows="4" cols="80">$comment</textarea><br/>
+        This message will only be seen by the program chair(s).
     </td>
   </tr>
   <tr>
     <td></td>
-    <td><input value="Submit camera-ready devision" type="submit">
+    <td><input value="Revise Submission" type="submit" name="reviseSub">
     </td>
   </tr>
 </tbody>

@@ -29,7 +29,7 @@ print <<<EndMark
 
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="review.css" />
+<link rel="stylesheet" type="text/css" href="../review.css" />
 <style type="text/css">
 body { width: 818px; }
 h1, h2 { text-align: center; }
@@ -61,16 +61,17 @@ EndMark;
 }
 
 // look for a tar or tgz file with all the submissions
-$allSubFile = SUBMIT_DIR."/all_in_one.tgz";
-if (!file_exists($allSubFile)) {   // maybe .zip rather than .tzg?
-  $allSubFile = SUBMIT_DIR."/all_in_one.zip";
-  if (!file_exists($allSubFile)) { // or perhaps jusr .tar?
-    $allSubFile = SUBMIT_DIR."/all_in_one.tar";
-    if (!file_exists($allSubFile)) $allSubFile = NULL; // oh, I give up
+$allSubFile = "tgz";
+if (!file_exists(SUBMIT_DIR."/all_in_one.$allSubFile")) { // maybe .zip?
+  $allSubFile = "zip";
+  if (!file_exists(SUBMIT_DIR."/all_in_one.$allSubFile")){ // or maybe .tar?
+    $allSubFile = "tar";
+    if (!file_exists(SUBMIT_DIR."/all_in_one.$allSubFile")) // oh, I give up
+      $allSubFile = NULL;
   }
 }
 if (isset($allSubFile)) {
-  $allSubFile = '&nbsp;o&nbsp;&nbsp;<a href="../'.$allSubFile.'">Download submissions in one file</a><br />';
+  $allSubFile = '&nbsp;o&nbsp;&nbsp;<a href="download.php?all_in_one='.$allSubFile.'">Download submissions in one file</a><br/>';
 }
 
 if (REVPREFS && !$disFlag) {

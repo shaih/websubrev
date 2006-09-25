@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true; 
+$needsAuthentication = true; 
 require 'header.php';
 
 // Get current preferences/assignments
@@ -51,7 +51,7 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<head>
 <style type="text/css">
 h1 {text-align: center;}
 </style>

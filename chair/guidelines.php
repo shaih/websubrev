@@ -10,7 +10,7 @@ require 'header.php';
 $cName = CONF_SHORT.' '.CONF_YEAR;
 
 // If the guidelines were specified, update the review guidelines file
-require 'review/revFunctions.php';
+require '../review/revFunctions.php';
 if (isset($_POST["setGuidelines"])) {
   $links = show_rev_links(1);
   $schedule = trim($_POST["schedule"]);

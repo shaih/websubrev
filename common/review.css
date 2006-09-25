@@ -18,3 +18,13 @@
 .Review { color: rgb(0,0,255); font: bold Verdana; }
 .Revise { color: rgb(255,0,0); font: bold Verdana; }
 .Discuss { color: rgb(0,128,0); font: bold Verdana; }
+
+.notice  { color: red; font-size: small; }
+.rjust   { text-align: right; }
+.hidden  { display: none; }
+.shown   { display: inline; }
+.lightbg { background-color: rgb(245,245,245); } 
+.darkbg  { background-color: lightgrey; } 
+.sbjct   { color: maroon; font-size: large; } 
+div.fixed { font: 14px monospace; width: 90%; }
+.ctr   { text-align: center; }

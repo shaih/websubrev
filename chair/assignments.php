@@ -137,7 +137,7 @@ td { font: bold 16px ariel; text-align: center; }
 .four { background: lightgreen; }
 .five { background: green; }
 </style>
-<link rel="stylesheet" type="text/css" href="autosuggest.css" />        
+<link rel="stylesheet" type="text/css" href="../common/autosuggest.css" />        
 <script type="text/javascript">
   /**
    * Provides suggestions for PC member names 
@@ -161,7 +161,7 @@ td { font: bold 16px ariel; text-align: center; }
     }
   };
 </script>
-<script type="text/javascript" src="autosuggest.js"></script>
+<script type="text/javascript" src="../common/autosuggest.js"></script>
 
 <title>Manual Assignments of Submissions to Reviewers</title>
 </head>
@@ -383,7 +383,7 @@ function checkbox($subId, $revId, $name, $cmpt, $isChecked)
   $ttl = "{$subId}/{$name}";
   switch ($isChecked) {
   case -1:
-      return '<span class="'.$cls.'"><img src=xmark.gif title="'.$ttl.' (conflict)" alt="x"></span>';
+      return '<span class="'.$cls.'"><img src=../common/xmark.gif title="'.$ttl.' (conflict)" alt="x"></span>';
       // $chk = ' disabled="disabled"'; $ttl .= ' (conflict)'; break;
   case 1:
     $chk = ' checked="checked"'; $ttl .= ' (assigned)'; break;

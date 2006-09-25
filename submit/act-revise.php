@@ -127,7 +127,7 @@ if (!empty($sbFileName)) {
   $fileName = SUBMIT_DIR."/tmp.{$subId}." . date('YmdHis');
   if (!empty($fileFormat)) $fileName .= ".{$fileFormat}";
   if (!move_uploaded_file($tmpFile, $fileName)) {
-    error_log(date('Ymd-His: ')."move_uploaded_file($tmpFile, $fileName) failed\n", 3, './log/'.LOG_FILE);
+    error_log(date('Ymd-His: ')."move_uploaded_file($tmpFile, $fileName) failed\n", 3, LOG_FILE);
     exit("<h1>Revision Failed</h1>
           Cannot move submission file " . $tmpFile . " to " . $fileName);
   }
@@ -163,7 +163,7 @@ if (!empty($sbFileName)) {
 
   if (file_exists("$directory/$newName")) unlink("$directory/$newName");
   if (!rename($fileName, "$directory/$newName")) {
-    error_log(date('Ymd-His: ')."rename($fileName, $directory/$newName) failed\n", 3, './log/'.LOG_FILE);
+    error_log(date('Ymd-His: ')."rename($fileName, $directory/$newName) failed\n", 3, LOG_FILE);
     email_submission_details($oldCntct, -2, $subId, $subPwd, $title, 
 	  $author, $contact, $abstract, $category, $keywords, $comment);
     header("Location: receipt.php?subId={$subId}&subPwd={$subPwd}&warning=1");

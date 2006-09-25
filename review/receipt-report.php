@@ -18,7 +18,7 @@ if ($revId==CHAIR_ID && isset($_GET['revId'])) {
 }
 
 $cnnct = db_connect();
-$qry = "SELECT s.title, c.name, r.subReviewer, r.confidence, r.grade,\n";
+$qry = "SELECT s.title, c.name, r.subReviewer, r.confidence, r.score,\n";
 
 if (is_array($criteria)) {
   $qry .= "    ";
@@ -45,7 +45,7 @@ if (!empty($subReviewer)) {
   $subReviewer = '(' . htmlspecialchars($subReviewer) . ')';
 }
 $confidence = isset($row[3]) ? ((int) $row[3]) : '*';
-$grade      = isset($row[4]) ? ((int) $row[4]) : '*';
+$score      = isset($row[4]) ? ((int) $row[4]) : '*';
 
 if ($nCrit > 0) {
   $zGrades = array();
@@ -79,7 +79,7 @@ $links
 <h2>$title</h2>
 <h3 style="text-align: center;">$name $subReviewer</h3>
 
-<b>Grade:</b> $grade, &nbsp;
+<b>Score:</b> $score, &nbsp;
 <b>Confidence:</b> $confidence
 EndMark;
 

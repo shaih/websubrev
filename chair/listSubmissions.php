@@ -14,7 +14,7 @@ $title = defined('CAMERA_PERIOD') ? 'Accepted Submissions' : 'Submission List';
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<head>
 <style type="text/css">
 h1 {text-align: center;}
 tr {vertical-align: top;}
@@ -83,13 +83,16 @@ foreach($subArray as $sb) {
   $subPwd = htmlspecialchars($sb['subPwd']);
   $status = htmlspecialchars($sb['status']);
 
-  if (defined('CAMERA_PERIOD')) 
-       $downld = SUBMIT_DIR."/final/$subId.$format";
-  else $downld = SUBMIT_DIR."/$subId.$format";
-
+  if (defined('CAMERA_PERIOD')) {
+    $downld = SUBMIT_DIR."/final/$subId.$format";
+    $isFinal = '&final=yes';
+  } else {
+    $downld = SUBMIT_DIR."/$subId.$format";
+    $isFinal = '';
+  }
   $reviewTime = defined('REVIEW_PERIOD') ? REVIEW_PERIOD : false;
   if (!$reviewTime && file_exists($downld))
-       $downld = '<a href="../'.$downld.'" title="download"><img src="../review/download.gif" alt="download" border=0></a>';
+       $downld = '<a href="../review/download.php?subId='.$subId.$isFinal.'" title="download"><img src="../common/download.gif" alt="download" border=0></a>';
   else $downld = '';
 
   if ($countByCat) {
@@ -106,10 +109,10 @@ foreach($subArray as $sb) {
   if ($reviewTime) { // let the chair revise/withdraw submisstins
     print <<<EndMark
   <td style="width: 50px;"><span style="background: lightgrey;">
-    [<a href="../revise.php?subId={$subId}&amp;subPwd={$subPwd}">Revise</a>]
+    [<a href="../submit/revise.php?subId={$subId}&amp;subPwd={$subPwd}">Revise</a>]
   </span></td>
   <td style="width: 50px;"><span style="background: lightgrey;">
-    [<a href="../withdraw.php?subId={$subId}&amp;subPwd={$subPwd}">Withdraw</a>]
+    [<a href="../submit/withdraw.php?subId={$subId}&amp;subPwd={$subPwd}">Withdraw</a>]
   </span></td>
 
 EndMark;

@@ -69,8 +69,8 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-<link rel="stylesheet" type="text/css" href="../review/review.css" />
+<head>
+<link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 h1 { text-align:center; }
 th { font: bold 10px ariel; text-align: center; }
@@ -100,10 +100,10 @@ for PC members.
 <!-- <h2>Review Details</h2> -->
 <span style="vertical-align: bottom;">
 <b>Legend:</b> &nbsp;&nbsp;
-<img src="check3.GIF" alt="(+)" height=20> Assigned,&nbsp;&nbsp; 
-<img src="check2.GIF" alt="(+)" height=20> Reviewed,&nbsp;&nbsp; 
-<img src="check1.GIF" alt="(+)" height=20> Assigned and reviewed,&nbsp;&nbsp;
-<img src="stop.GIF" alt="(+)" height=16> Conflict
+<img src="../common/check3.GIF" alt="(+)" height=20> Assigned,&nbsp;&nbsp; 
+<img src="../common/check2.GIF" alt="(+)" height=20> Reviewed,&nbsp;&nbsp; 
+<img src="../common/check1.GIF" alt="(+)" height=20> Assigned and reviewed,&nbsp;&nbsp;
+<img src="../common/stop.GIF" alt="(+)" height=16> Conflict
 </span>
 <br /><br />
 <table cellspacing=0 cellpadding=0 border=1><tbody>
@@ -141,21 +141,21 @@ foreach ($subArray as $sub) {
       if ($subRevs[$subId][$revId][0]) { // review entered
 	$nRevs++;
 	if ($assgn==1) {       // assigned and reviewed 
-	  $img = 'check1.GIF';
+	  $img = '../common/check1.GIF';
 	  $committee[$j][2]++;
 	  $committee[$j][3]++;
 	} else {               // reviewed but not assigned
-	  $img = 'check2.GIF';
+	  $img = '../common/check2.GIF';
 	  $committee[$j][4]++;
 	}
 	$img = "<a href=\"../review/receipt-report.php?subId={$subId}&amp;revId={$revId}\" target=\"_blank\">\n"
 	  . '      <img src="'.$img.'" alt="(+)" height=20 border=0></a>';
       }
       else if ($assgn==1) {    // assigned but not reviewed
-	$img = "<img src=\"check3.GIF\" alt=\"(-)\" height=20>";
+	$img = "<img src=\"../common/check3.GIF\" alt=\"(-)\" height=20>";
 	$committee[$j][2]++;
       } else if ($assgn==-1)   // conflict
-	$img = "<img src=\"stop.GIF\" alt=\"(X)\" height=18>";
+	$img = "<img src=\"../common/stop.GIF\" alt=\"(X)\" height=18>";
     }
     print "  <td>$img</td>\n";
   }

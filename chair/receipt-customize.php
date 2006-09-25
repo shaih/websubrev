@@ -5,18 +5,13 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true;
+$needsAuthentication = true;
+require 'header.php';
 
-// If password is given in the URL, don't need to ask the user for it 
-$pwd = isset($_GET['pwd']) ? trim($_GET['pwd']) : NULL;
-if (!empty($pwd)) {
-  require_once('../includes/confConstants.php'); 
-  $_SERVER['PHP_AUTH_PW'] = $pwd;
-  $_SERVER['PHP_AUTH_USER'] = CHAIR_EMAIL;
+if (isset($_GET['username']) && isset($_GET['password'])) {
+  $urlParams = '?username='.$_GET['username'].'&password='.$_GET['password'];
 }
-require 'header.php';// authenticate the chair
-
-if (defined('REVIEW_PERIOD')) exit("<h1>Submission Site is Closed</h1>");
+else { $urlParams = ''; }
 
 $eml = CHAIR_EMAIL;
 $eml2 = ADMIN_EMAIL;
@@ -106,10 +101,10 @@ while ($row = mysql_fetch_row($res)) {
 print "</tbody>\n</table>\n<br />\n";
 
 if (!defined('REVIEW_PERIOD')) {
-  print "The submission start page is now <a href=\"../index.php\">";
+  print "The submission start page is now <a href=\"../submit/index.php\">";
 } else if (!defined('CAMERA_PERIOD')) {
   print "The review start page is <a href=\"../review/index.php\">";
-} else print "The final-version submission page is <a href=\"../index.php\">";
+} else print "The final-version submission page is <a href=\"../submit/index.php\">";
 
 print <<<EndMark
 available here</a>,
@@ -117,7 +112,8 @@ and the administration page is <a href="index.php">available here</a>.
 
 EndMark;
 
-if (!empty($pwd)) {
+if (isset($_GET['password'])) {
+  $pwd = $_GET['password'];
   print <<<EndMark
 <b>To access the administration page you must login with username "$eml" and
 password "$pwd".</b> An email message containing the username/password

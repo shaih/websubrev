@@ -92,7 +92,7 @@ $fileName = SUBMIT_DIR."/tmp.{$subPwd}" . date('is');
 if (!empty($fileFormat)) $fileName .= ".{$fileFormat}";
 
 if (!move_uploaded_file($tmpFile, $fileName)) {
-  error_log(date('Ymd-His: ')."move_uploaded_file($tmpFile, $fileName) failed\n", 3, './log/'.LOG_FILE);
+  error_log(date('Ymd-His: ')."move_uploaded_file($tmpFile, $fileName) failed\n", 3, LOG_FILE);
   exit("<h1>Submission Failed</h1>
         Cannot move submission file " . $tmpFile . " to " . $fileName);
 }
@@ -123,7 +123,7 @@ $subId = $row[0];   // What number was assigned to this submission
 
 if (empty($subId)) { // can't find this submission (transient database problem?)
   // Send a confirmation email without the submission-id
-  error_log(date('Ymd-His: ')."Can't find new submission: ".mysql_error()."\n", 3, './log/'.LOG_FILE);  
+  error_log(date('Ymd-His: ')."Can't find new submission: ".mysql_error()."\n", 3, LOG_FILE);  
   email_submission_details($contact, -1, 0, $subPwd, $title, 
         $author, $contact, $abstract, $category, $keywords, $comment);
 
@@ -139,7 +139,7 @@ if (!empty($fileFormat)) $sbFileName .= ".{$fileFormat}";
 
 if (file_exists($sbFileName)) unlink($sbFileName); // just in case
 if (!rename($fileName, $sbFileName)) {  // problems with the file system?
-  error_log(date('Ymd-His: ')."rename($fileName, $sbFileName) failed\n", 3, './log/'.LOG_FILE);
+  error_log(date('Ymd-His: ')."rename($fileName, $sbFileName) failed\n", 3, LOG_FILE);
   email_submission_details($contact, -1, $subId, $subPwd, $title, 
         $author, $contact, $abstract, $category, $keywords, $comment);
   header("Location: receipt.php?subId=$subId&subPwd=$subPwd&warning=1");

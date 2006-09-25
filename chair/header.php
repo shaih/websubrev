@@ -7,24 +7,33 @@
  */
  /********* standard header for the /chair directory ************/
 
-chdir('..');     // This is a header file for a sub-directory
-if (!file_exists('./includes/confConstants.php')) { // Not yet customized
-  header("Location: customize.php");
+if (!file_exists('../init/confParams.php')) { // Not yet customized
+  header("Location: initialize.php");
   exit();
 }
-require_once('./includes/confConstants.php'); 
-require_once('./includes/confUtils.php');
+require_once('../includes/getParams.php');
 
 /* Authenticate the chair unless $needsAuthentication === false (in
  * particular this means authenticate when $needsAuthentication is NULL)
  */
 if ($needsAuthentication !== false) {
-  // returns either an array (id, name, email) or false 
   $chair = false;
-  if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
+
+  // first try uname/pwd from the URL (if any)
+  if (isset($_GET['username']) && isset($_GET['password'])) {
+    // returns either an array (id, name, email, ...) or false 
+    $chair = auth_PC_member($_GET['username'], $_GET['password'], CHAIR_ID);
+  }
+
+  // next try uname/pwd from HTTP authentication
+  if ($chair===false && isset($_SERVER['PHP_AUTH_USER'])
+                     && isset($_SERVER['PHP_AUTH_PW'])) {
     $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
 			    $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
-  if ($chair === false) {
+  }
+
+  // If nothing works, prompt client for credentials
+  if ($chair===false) {
     $confShortName = CONF_SHORT.' '.CONF_YEAR;
     header("WWW-Authenticate: Basic realm=\"$confShortName\"");
     header("HTTP/1.0 401 Unauthorized");
@@ -65,7 +74,13 @@ function status_summary($statuses)
 
 function show_chr_links($current = 0) 
 {
-  if (file_exists(CONST_FILE.'.bak.php') || file_exists(CONST_FILE.'.fwd.php'))
+  $cnnct = db_connect();
+  $qry = "SELECT MAX(version) FROM parameters";
+  $res = db_query($qry, $cnnct);
+  $row = mysql_fetch_row($res);
+  $maxVersion = $row[0];
+
+  if (PARAMS_VERSION>1 || PARAMS_VERSION<$maxVersion)
        $undoLink = make_link('undoLast.php', 'Undo/Redo', ($current==4));
   else $undoLink = '';
 

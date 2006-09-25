@@ -9,6 +9,7 @@ $needsAuthentication=true;
 require 'header.php';
 
 // If the guidelines file exists, send it to the client
+header("Content-Type: text/html");
 $gdFile = SUBMIT_DIR."/guidelines.html";
 if (!file_exists($gdFile) || !readfile($gdFile)) {
   exit("<h1>No Guidelines Available</h1>");

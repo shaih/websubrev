@@ -56,7 +56,7 @@ $qry = "SELECT s.subId subId, s.title title,
        a.assign assign, a.watch watch,\n";
 
 // Next the reviwe details
-$qry .="       r.revId revId, r.confidence conf, r.grade grade, 
+$qry .="       r.revId revId, r.confidence conf, r.score grade, 
        UNIX_TIMESTAMP(r.lastModified) modified, c.name PCmember,
        r.subReviewer subReviewer";
 for ($i=0; $i<count($criteria); $i++) {
@@ -171,8 +171,7 @@ print <<<EndMark
   "http://www.w3.org/TR/html4/loose.dtd">
 
 <html><head>
-<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-<link rel="stylesheet" type="text/css" href="review.css" />
+<link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 h1 {text-align: center; }
 tr { vertical-align: top; }

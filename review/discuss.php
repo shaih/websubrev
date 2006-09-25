@@ -44,7 +44,7 @@ $title = htmlspecialchars($submission['title']);
 
 // Get the reviews for this subsmission
 
-$grades = "r.confidence conf, r.grade grade";
+$grades = "r.confidence conf, r.score grade";
 for ($i=0; $i<count($criteria); $i++) {
   $grades .= ",\n       r.grade_{$i} grade_{$i}";
 }
@@ -99,8 +99,14 @@ print <<<EndMark
   "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-<link rel="stylesheet" type="text/css" href="review.css" />
+<title>Discussion of Submission $subId</title>
+
+<link rel="stylesheet" type="text/css" href="../common/review.css" />
+<style type="text/css">
+body { width : {$pageWidth}px; }
+h1, h2 {text-align: center;}
+table { width: 100%; }
+</style>
 
 <script type="text/javascript" language="javascript">
 <!--
@@ -112,22 +118,6 @@ print <<<EndMark
 }
 // -->
 </script>
-
-<style type="text/css">
-body { width : {$pageWidth}px; }
-h1, h2 {text-align: center;}
-table { width: 100%; }
-.rjust { text-align: right; }
-.hidden {display:none;}
-.shown {display:inline;}
-.lightbg { background-color: rgb(245, 245, 245); } 
-.darkbg { background-color: lightgrey; } 
-.sbjct { color: maroon; font-size: large; } 
-div.fixed { font: 14px monospace; width: 90%;}
-td.ctr { text-align: center;} 
-</style>
-
-<title>Discussion of Submission $subId</title>
 </head>
 <body>
 $links

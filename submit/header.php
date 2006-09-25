@@ -6,13 +6,12 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
  /********* standard header for the top directory ************/
-
-if (!file_exists('./includes/confConstants.php')) { // Not yet customized
-  header("Location: chair/customize.php");
+if (!file_exists('../init/confParams.php')) { // Not yet customized
+  header("Location: ../chair/customize.php");
   exit();
 }
-require './includes/confConstants.php'; 
-require './includes/confUtils.php';     
+require_once('../includes/getParams.php'); 
+
 $confShortName = CONF_SHORT.' '.CONF_YEAR;
 
 if (defined('SHUTDOWN')) exit("<h1>Site is Closed</h1>");
@@ -55,7 +54,7 @@ function show_sub_links($current=0, $prt=false)
   if (defined('CAMERA_PERIOD')) {
     $html .= make_link('cameraready.php', 'Camera-Ready Form', ($current==6));
   }
-  $html .= make_link('documentation/submitter.html', 'Documentation')."</div>\n";
+  $html .= make_link('../documentation/submitter.html', 'Documentation')."</div>\n";
 
   if ($prt) {print $html; return true;}
   else return $html;

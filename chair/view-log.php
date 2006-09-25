@@ -12,27 +12,24 @@ $links = show_chr_links(2);
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-<title>Submission Error log</title>
+<head>
+<title>View Log File</title>
 </head>
 <body>
 $links
 <hr />
-<h1 style="text-align: center;">Submission Error log</h1>
+<h1 style="text-align: center;">View Log File</h1>
 <pre>
 
 EndMark;
 
-if (file_exists('log/'.LOG_FILE))
-     $lines = file('log/'.LOG_FILE); // read file into array
-if (is_array($lines)) foreach ($lines as $line) {
-   print htmlspecialchars($line);
+if (!file_exists(LOG_FILE) || !readfile(LOG_FILE)) {
+  exit("</pre><h1>Cannot Find Log File</h1>\n<hr/>$links</body></html>");
 }
-else print "No errors recorded";
 
 print <<<EndMark
 </pre>
-<hr />
+<hr/>
 $links
 </body>
 </html>

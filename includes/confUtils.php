@@ -6,39 +6,6 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
 
-$prot = (defined('HTTPS_ON') || isset($_SERVER['HTTPS']))? 'https' : 'http';
-$logo = $prot.'://'.BASE_URL."ibm-research-logo.jpg";
-$footer = <<<EndMark
-<br />
-This is a version 0.53 (beta) of the
-<a href="http://alum.mit.edu/www/shaih/websubrev">Web-Submission-and-Review
-software</a>, written by Shai Halevi from
-<a href="http://www.research.ibm.com"><img src="$logo" alt="IBM Research"></a>
-<br/>
-Shai would love to hear your comments and suggestions regarding this software.
-EndMark;
-
-$reviewIcon = '<img alt="[Review]" title="Write a report about this submission" src="'.$prot.'://'.BASE_URL.'review/Review.gif" border=1>';
-$reviseIcon = '<img alt="[Revise]" title="Revise your report on this submission" src="'.$prot.'://'.BASE_URL.'review/Revise.gif" border=1>';
-$discussIcon1 = '<img alt="[Discuss ]" title="See reports and discussion board" src="'.$prot.'://'.BASE_URL.'review/Discuss1.gif" border=1>';
-$discussIcon2 = '<img alt="[Discuss*]" title="See reports and discussion board (some new items)" src="'.$prot.'://'.BASE_URL.'review/Discuss2.gif" border=1>';
-$ACicon = '<img alt="[AC]" title="Status: accept" src="'.$prot.'://'.BASE_URL.'review/AC.gif" border=0>';
-$MAicon = '<img alt="[MA]" title="Status: maybe accept" src="'.$prot.'://'.BASE_URL.'review/MA.gif" border=0>';
-$DIicon = '<img alt="[DI]" title="Status: needs discussion" src="'.$prot.'://'.BASE_URL.'review/DI.gif" border=0>';
-$MRicon = '<img alt="[MR]" title="Status: maybe reject" src="'.$prot.'://'.BASE_URL.'review/MR.gif" border=0>';
-$REicon = '<img alt="[RE]" title="Status: reject" src="'.$prot.'://'.BASE_URL.'review/RE.gif" border=0>';
-$NOicon = '<img alt="[NO]" title="Status: none" src="'.$prot.'://'.BASE_URL.'review/NO.gif" border=0>';
-$WDicon = '<img alt="[WD]" title="Status: Withdrawn" src="'.$prot.'://'.BASE_URL.'review/WD.gif" border=0>';
-
-define('VOTE_ON_SUBS', 1);
-define('VOTE_ON_ALL',  2);
-define('VOTE_ON_RE',   4);
-define('VOTE_ON_MR',   8);
-define('VOTE_ON_NO',  16);
-define('VOTE_ON_DI',  32);
-define('VOTE_ON_MA',  64);
-define('VOTE_ON_AC', 128);
-
 function show_legend()
 {
   global $WDicon, $NOicon, $REicon, $MRicon, $DIicon, $MAicon, $ACicon;
@@ -56,6 +23,43 @@ EndMark;
   return $legend;
 }
 
+function my_send_mail($sendTo, $subject, $msg, $cc=NULL, $errMsg='')
+{
+  $php_errormsg = ''; // avoid notices in case it isn't defined 
+
+  if (defined('EML_CRLF') && EML_CRLF=="\n") $emlCRLF = "\n";
+  else                                       $emlCRLF = "\r\n";
+
+  $chrEml = defined('CHAIR_EMAIL')  ? CHAIR_EMAIL  : '';
+  $sender = defined('EML_SENDER')   ? EML_SENDER   : '';
+  $xMailer= defined('EML_X_MAILER') ? EML_X_MAILER : false;
+  $xParam = defined('EML_EXTRA_PRM')? EML_EXTRA_PRM: false;
+
+  if (empty($chrEml)) 
+    $hdr = "From: ".ini_get('sendmail_from');
+  else if (defined('CONF_SHORT') && defined ('CONF_YEAR'))
+    $hdr = "From: ".CONF_SHORT.CONF_YEAR." Chair <$chrEml>";
+  else
+    $hdr = "From: $chrEml";
+
+  if (!empty($cc))     $hdr .= $emlCRLF."Cc: $cc";
+  if (!empty($sender)) $hdr .= $emlCRLF."Sender: ".EML_SENDER;
+  if ($xMailer)        $hdr .= $emlCRLF."X-Mailer: PHP/".phpversion();
+
+  if ($xParam && !empty($chrEml) && !ini_get('safe_mode'))
+    $success = mail($sendTo, $subject, $msg, $hdr, "-f $chrEml");
+  else
+    $success = mail($sendTo, $subject, $msg, $hdr);
+
+  if (!$success) {
+    if (empty($errMsg))
+      $errMsg = "Cannot send email. {$php_errormsg}\n";
+    else
+      $errMsg = "Cannot send email, $errMsg. {$php_errormsg}\n";
+    error_log(date('Y.m.d-H:i:s ').$errMsg, 3, LOG_FILE);
+  }
+  return $success;
+}
 
 // If the user is found in the database, returns the user details
 // as array(id, name, email). Otherwise returns false.
@@ -102,13 +106,13 @@ function my_addslashes($str, $cnnct=NULL)
 function db_connect($host=MYSQL_HOST,
 		    $usr=MYSQL_USR, $pwd=MYSQL_PWD, $db=MYSQL_DB)
 {
-  if (!($cnnct=@mysql_connect($host, $usr, $pwd))) {
-    error_log(date('Y.m.d-H:i:s ').mysql_error()."\n", 3, 'log/'.LOG_FILE);
+  if (!($cnnct=mysql_connect($host, $usr, $pwd))) {
+    error_log(date('Y.m.d-H:i:s ').mysql_error()."\n", 3, LOG_FILE);
     exit("<h1>Cannot connect to MySQL server</h1>\n" .
 	 "mysql_connect($host, $usr, $pwd)<br />". mysql_error());
   }
-  if (isset($db) && !@mysql_select_db($db, $cnnct)) {
-    error_log(date('Y.m.d-H:i:s ').mysql_error()."\n", 3, './log/'.LOG_FILE);
+  if (isset($db) && !mysql_select_db($db, $cnnct)) {
+    error_log(date('Y.m.d-H:i:s ').mysql_error()."\n", 3, LOG_FILE);
     exit("<h1>Cannot select database $db</h1>\n" . mysql_error());
   }
   return $cnnct;
@@ -116,10 +120,11 @@ function db_connect($host=MYSQL_HOST,
 
 function db_query($qry, $cnnct, $desc='')
 {
+  $php_errormsg = ''; // avoid notices in case it isn't defined 
   $res=mysql_query($qry, $cnnct);
   if ($res===false) {
     error_log(date('Y.m.d-H:i:s ')
-      .mysql_errno().'-'.mysql_error()." $php_errormsg\n", 3, './log/'.LOG_FILE);
+      .mysql_errno().'-'.mysql_error()." $php_errormsg\n", 3, LOG_FILE);
     exit("<h1>Query Failed</h1>\n{$desc}"
 	 . "Query: <pre>". htmlspecialchars($qry) . "</pre>\nError: "
 	 . htmlspecialchars(mysql_error())
@@ -152,18 +157,19 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
 				  $cat = NULL, $kwrd = NULL, $cmnt = NULL,
 				  $fileFormat = NULL)
 {
-  $emlCrlf = (EML_CRLF == "\n") ? "\n" : "\r\n";
-  $hdr = 'From: '.CONF_SHORT.' '.CONF_YEAR.' Chair <'.CHAIR_EMAIL.">$emlCrlf";
   // During review process, don't send email to authors, only to chair
   if (defined('REVIEW_PERIOD') && REVIEW_PERIOD==true) {
     $sndto = CHAIR_EMAIL;
+    $cc = NULL;
   }
-  else { $hdr .= 'Cc: ' . CHAIR_EMAIL . $emlCrlf; }
-  if ($status < 0) { $hdr .= 'Bcc: '.ADMIN_EMAIL.$emlCrlf; }
-  $hdr .= 'X-Mailer: PHP/' . phpversion();
+  else $cc = CHAIR_EMAIL;
+
+  if ($status < 0) {  // if an error occured, send also to the administrator
+    if (isset($cc)) $cc .= ', '.ADMIN_EMAIL;
+    else $cc = ADMIN_EMAIL;
+  }
 
   $dots = (strlen($ttl) > 50) ? '... ' : ' ';
-
   switch (abs($status)) {
   case 1:
     $sbjct = "Submission " . substr($ttl, 0, 50) . $dots . "received";
@@ -196,16 +202,7 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
   if (!empty($cmnt)) { $msg .= "Comments: \t{$cmnt}\n"; }
   if (!empty($abs))  { $msg .= "\nAbstract:\n" . wordwrap($abs, 78) . "\n"; }
 
-  if (ini_get('safe_mode') || !defined('EML_EXTRA_PRM'))
-    //      || empty(EML_EXTRA_PRM))
-    $success = mail($sndto, $sbjct, $msg, $hdr);
-  else
-    $success = mail($sndto, $sbjct, $msg, $hdr, EML_EXTRA_PRM);
-
-  if (!$success)
-    error_log(date('Y.m.d-H:i:s ')
-	      ."Cannot send receipt to {$sndto}. {$php_errormsg}\n", 
-	      3, './log/'.LOG_FILE);
+  $success = my_send_mail($sndto, $sbjct, $msg, $cc, "receipt to $sndto");
 }
 
 
@@ -371,6 +368,7 @@ function parse_criterion($str)
   if (count($tok)>1) {       // At least one '(' found
     $cr[0] = trim($tok[0]);
     if (empty($cr[0])) return false;
+    if ($cr[0]=='Confidence') return false; // No 'Confidence' criterion
 
     $i = strpos($tok[1], ')');
     if ($i !== false) $cr[1] = (int) trim(substr($tok[1], 0, $i));

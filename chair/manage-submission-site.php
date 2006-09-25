@@ -35,72 +35,30 @@ tr { vertical-align: top; }
 $links
 <hr/>
 <h1>Managing Submissions Site</h1>
-<form name="manage-subs" action="act-recustomize.php"
-      enctype="multipart/form-data" method="post">
-  <table cellpadding="6">
-    <tbody>
-      
-      <tr><td>
-          <big><b>The&nbsp;Conference:</b></big></td><td></td>
-      </tr>
-      <tr><td style="text-align: right;">Conference&nbsp;Name:</td>
-        <td><input name="longName" size="90" type="text" value="$longName">
-        </td>
-      </tr>
-      <tr><td style="text-align: right;">Short&nbsp;Name:</td>
-        <td><input name="shortName" size="30" type="text" value="$shortName">
-	    e.g., BASKET, &nbsp; &nbsp; &nbsp; &nbsp;Year:
-	    <input name="confYear" size="4" maxlength="4" 
-            type="text" value="$confYear">
-        </td>
-      </tr>
-      <tr><td>
-          <big><b>The&nbsp;Site:</b></big></td><td></td>
-      </tr>
-      <tr><td style="text-align: right;">Administrator&nbsp;Email:</td>
-        <td><input name="adminEml" size="90" onchange="return checkEmail(this)"
-            type="text" value="$adminEml">
-        </td>
-      </tr>
-      <tr><td style="text-align: right;"><a href="../documentation/chair.html#emailSettings" target="documentation" title="click for more help">Email&nbsp;parameters:</a></td>
-        <td>Email header lines separated by <input name="emlCrlf" size="4"
-      type="text" value="$emlCrlf"> (either <tt>\\r\\n</tt> or <tt>\\n</tt>).
-        </td>
-      </tr> 
-      <tr><td></td><td>
-EndMark;
-if (ini_get('safe_mode')) {
-  print '<input type="hidden" name="emlExtraPrm" value="">';
-} else {
-  print 'Extra parameters to sendmail<input name="emlExtraPrm" size="50" type="text" value="'.$emlExtraPrm.'">';
-}
-print <<<EndMark
-        </td>
-      </tr>
-     
-      <tr>
-        <td style="text-align: right;">
-            Conference&nbsp;URL:</td>
-        <td><input name="confURL" size="90" type="text" value="$confURL">
-	   
-        </td>
-      </tr>
-      <tr>
-        <td><big><b>Submission:</b></big></td>
-        <td><br></td>
-      </tr>
-      <tr><td style="text-align: right;">Submission&nbsp;Deadline:</td>
-        <td><input name="subDeadline" size="90" type="text"
-             value="$subDeadline"></td>
-      </tr>  
-      <tr>
-        <td style="text-align: right;">Camera&nbsp;ready&nbsp;Deadline:</td>
-        <td><input name="cameraDeadline" size="90" type="text"
-	     value="$cmrDeadline"><br />
-	    Remember that <b>the software does not enforce these deadlines
-	    automatically.</b>
-        </td>
-      </tr>  
+<form name="manage-subs" action="act-recustomize.php" enctype="multipart/form-data" method="post">
+<table cellpadding="6"><tbody>
+<tr><td><big><b>The&nbsp;Conference:</b></big></td><td></td>
+</tr>
+<tr><td style="text-align: right;">Conference&nbsp;Name:</td>
+  <td><input name="longName" size="90" type="text" value="$longName"></td>
+</tr>
+<tr><td style="text-align: right;">Short&nbsp;Name:</td>
+  <td><input name="shortName" size="30" type="text" value="$shortName">
+    e.g., BASKET, &nbsp; &nbsp; &nbsp; &nbsp;Year: <input name="confYear"
+    size="4" maxlength="4" type="text" value="$confYear"></td>
+</tr>
+<tr><td style="text-align: right;">Conference&nbsp;URL:</td>
+  <td><input name="confURL" size="90" type="text" value="$confURL"></td>
+</tr>
+<tr><td><big><b>Submission:</b></big></td><td><br></td>
+</tr>
+<tr><td style="text-align: right;">Submission&nbsp;Deadline:</td>
+  <td><input name="subDeadline" size="90" type="text" value="$subDeadline"></td>
+</tr>  
+<tr><td style="text-align: right;">Camera&nbsp;ready&nbsp;Deadline:</td>
+  <td><input name="cameraDeadline" size="90" type="text" value="$cmrDeadline"><br/>
+    Remember that <b>the software does not enforce these deadlines automatically.</b></td>
+</tr>  
 
 EndMark;
 $cats = $sc = '';

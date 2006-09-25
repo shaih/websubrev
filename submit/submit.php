@@ -34,11 +34,9 @@ print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<link rel="stylesheet" type="text/css" href="../common/submission.css"/>
 
 <style type="text/css">
-h1 { text-align: center; }
-h3 { text-align: center; color: blue; }
 tr { vertical-align: top; }
 </style>
 
@@ -88,7 +86,7 @@ function checkform( form )
 $links
 <hr />
 <h1>New Submission to $confName</h1>
-<h3>$deadline</h3>
+<h3 class=timeleft>$deadline</h3>
 
 <form name="submit" onsubmit="return checkform(this);" action="act-submit.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">

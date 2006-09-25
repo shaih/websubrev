@@ -13,6 +13,7 @@ $qry = "SELECT subId, title, authors, contact FROM submissions WHERE status!='Wi
 $res = db_query($qry, $cnnct);
 if (!$res || mysql_num_rows($res)==0) die("<h1>No submissions found</h1>");
 
+header('Content-Type: application/vnd.ms-excel');
 $hdr = 'Content-Disposition: attachment; filename="'
        .CONF_SHORT.CONF_YEAR.'submissions.xls"';
 header($hdr);

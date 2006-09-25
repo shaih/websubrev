@@ -13,13 +13,8 @@ print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-  <title>Submission/Revision Instructions, $confName</title>
-
-<style type="text/css">
-h1 { text-align: center; }
-h3 { text-align: center; color: blue; }
-</style>
+<title>Submission/Revision Instructions, $confName</title>
+<link rel="stylesheet" type="text/css" href="../common/submission.css"/>
 </head>
 
 <body>
@@ -31,11 +26,11 @@ EndMark;
 // Final-version submissions
 if (defined('CAMERA_PERIOD')) { 
   $deadline = show_deadline(CAMERA_DEADLINE);
-  $cameraInstructions = htmlspecialchars($cameraInstructions);
+  $cameraInstructions = htmlspecialchars(CAMERA_INSTRUCTIONS);
 
   print <<<EndMark
 <h1>Final-Version Submission Instructions, $confName</h1>
-<h3>$deadline</h3>
+<h3 class=timeleft>$deadline</h3>
 
 Use the <a href="cameraready.php">camera-ready revision form</a> (with
 the password that you got when you submitted the paper) to submit the
@@ -59,7 +54,7 @@ $deadline = show_deadline(SUBMIT_DEADLINE);
 
 print <<<EndMark
 <h1>Submission/Revision Instructions, $confName</h1>
-<h3>$deadline</h3>
+<h3 class=timeleft>$deadline</h3>
 
 The following forms are available:
 <ul>

@@ -250,8 +250,10 @@ EndMark;
 
 }
 
-print "<pre>" . htmlspecialchars($ltxFile) . "</pre>\n"; //debug
-//header("Location: index.php");
+header("Content-Type: application/x-tex");
+header("Content-Disposition: inline; filename=$cNameLowCase.tex");
+print $ltxFile;
+//print "<pre>" . htmlspecialchars($ltxFile) . "</pre>\n"; //debug
 exit();
 
 function cmpOrder($a, $b)

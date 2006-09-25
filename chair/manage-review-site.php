@@ -123,7 +123,7 @@ correct any errors</i>. Note the following:
   </td>
   <td style="text-align: center;">
     <input name="members[$chrId][2]" type="checkbox"></td>
-  <td style="text-align: center;"><img alt="(X)" width=12 src="stop.GIF">
+  <td style="text-align: center;"><img alt="(X)" width=12 src="../common/stop.GIF">
     <input disabled type="checkbox"></td>
 </tr>
 
@@ -150,7 +150,7 @@ foreach($cmmtee as $m) {
   </td>
   <td style="text-align: center;">
       <input name="members[$revId][2]" type="checkbox" $chk></td>
-  <td style="text-align: center;"><img alt="(X)" width=12 src="stop.GIF">
+  <td style="text-align: center;"><img alt="(X)" width=12 src="../common/stop.GIF">
       <input title="Check to remove $m[2] from the committee"
              name="mmbrs2remove[$revId]" type="checkbox">
   </td>
