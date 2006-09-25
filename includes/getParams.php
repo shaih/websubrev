@@ -6,19 +6,18 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
 if (!($lines=file('../init/confParams.php'))) die("Cannot read parameters");
-list($sqlHost,$sqlDB,$sqlUsr,$sqlPwd,$subDir,$logFile,$adminEml,$salt)=$lines;
-if (empty($sqlHost)||empty($sqlDB)||empty($sqlUsr)||empty($sqlPwd)
-    ||empty($subDir)||empty($logFile)||empty($adminEml)||empty($salt)) {
-  die("Missing parameters");
+foreach ($lines as $line) {
+  $i = strpos($line, '=');           // look for NAME=value
+  if ($i===false || $i==0) continue; // no 'NAME=' found
+  $nm = substr($line,0,$i);
+  $vl = rtrim(substr($line,$i+1));
+  if ($nm=='MYSQL_HOST'     || $nm=='MYSQL_DB'   || $nm=='MYSQL_USR'
+      || $nm=='MYSQL_PWD'   || $nm=='SUBMIT_DIR' || $nm=='LOG_FILE'
+      || $nm=='ADMIN_EMAIL' || $nm=='CONF_SALT') {
+    if (empty($vl)) die("<h1>Parameter $nm cannot be empty</h1>");
+    define($nm, $vl);
+  }
 }
-define('MYSQL_HOST', trim($sqlHost));
-define('MYSQL_DB',   trim($sqlDB));
-define('MYSQL_USR',  trim($sqlUsr));
-define('MYSQL_PWD',  trim($sqlPwd));
-define('SUBMIT_DIR', trim($subDir));
-define('LOG_FILE',   trim($logFile));
-define('ADMIN_EMAIL',trim($adminEml));
-define('CONF_SALT',  trim($salt));
 
 require_once('../includes/confConstants.php');
 require_once('../includes/confUtils.php');

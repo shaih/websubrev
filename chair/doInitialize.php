@@ -1,0 +1,230 @@
+<?php
+/* Web Submission and Review Software
+ * Written by Shai Halevi
+ * This software is distributed under the terms of the open-source license
+ * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
+ * in this package or at http://www.opensource.org/licenses/cpl1.0.php
+ */
+
+// Get the BASE directory
+chdir('..');
+$baseDir = getcwd();
+chdir('chair');
+
+$prmsFile = '../init/confParams.php';
+if (file_exists($prmsFile)) { // Already customized
+  exit("<h1>This installation is already initialized</h1>");
+}
+
+// Some things in confUtils need the BASE_URL constant
+$webServer = trim($_POST['webServer']);
+if (empty($webServer)) $webServer = $_SERVER['HTTP_HOST'];
+$baseURL = $webServer . $_SERVER['PHP_SELF'];             // this file
+$baseURL = substr($baseURL, 0, strrpos($baseURL, '/'));   // the directory
+$baseURL = substr($baseURL, 0, strrpos($baseURL, '/')+1); // parent directory
+define('BASE_URL', $baseURL);
+
+require_once('../includes/confConstants.php'); 
+require_once('../includes/confUtils.php'); 
+require_once('../includes/database.php');
+
+// If 'magic quotes' are on, get rid of them
+if (get_magic_quotes_gpc()) 
+  $_POST  = array_map('stripslashes_deep', $_POST);
+
+// Read all the fields, stripping spurious white-spaces
+
+$shortName = isset($_POST['shortName']) ? trim($_POST['shortName']) : NULL;
+$year = isset($_POST['confYear']) ? trim($_POST['confYear']) : NULL;
+
+$chair = isset($_POST['chair']) ? parse_email($_POST['chair']) : false;
+if ($chair) {
+  $chairName  = $chair[0];
+  $chairEmail = $chair[1];
+} else {
+  $chairName  = $chairEmail = '';
+}
+
+$admin = isset($_POST['admin']) ? parse_email($_POST['admin']) : false;
+$adminEmail = $admin ? $admin[1] : '';
+
+if (isset($_POST['localMySQL'])) { $sqlHost = 'localhost'; }
+else {
+  $sqlHost   = trim($_POST['MySQLhost']); // MySQL server as seen by web server
+  if (empty($sqlHost)) $sqlHost = 'localhost';
+}
+$sqlDB       = trim($_POST['confDB']);
+$sqlRoot     = trim($_POST['rootNm']);
+$sqlRootPwd  = trim($_POST['rootPwd']);
+$sqlUsr      = trim($_POST['user']);
+$sqlPwd      = trim($_POST['pwd']) ;
+
+$subDir      = trim($_POST['subDir']) ;
+if (empty($subDir)) { $subDir = $baseDir.'/subs'; }
+
+// replace '\' by '/', remove trailing '/' if needed
+$subDir = str_replace("\\", "/", $subDir);
+$lastChar = substr($subDir, -1);
+if ($lastChar=="/") $subDir = substr($subDir, 0, -1);
+
+// Check that the required fileds are specified
+
+if (empty($shortName) || empty($year)
+    || empty($chairEmail) || empty($adminEmail)) {
+  print "<h1>Mandatory fields are missing</h1>\n";
+  exit("You must specify the conference name and year and the chair and administrator email\n");
+}
+
+if ($year < 1970 || $year > 2099) {
+  print "<h1>Wrong format for the conference year</h1>\n";
+  exit("Year must be an integer between 1970 and 2099");
+}
+
+if ((empty($sqlRoot) || empty($sqlRootPwd)) 
+    && (empty($sqlDB) || empty($sqlUsr) || empty($sqlPwd))) {
+  exit("<h1>Cannot create/access MySQL database</h1>
+       To automatically generate MySQL database, you must specify the
+       MySQL root username and password.<br />
+       Otherwise, you must manually create the database and specify the
+       database name, and also specify MySQL username and password of a
+       user that has access to that database.\n");
+}
+
+/* We are ready to initialize the installation */
+
+// Create the error log file (also to check that $subDir is writable)
+$logFile = $subDir.'/log'.time();
+define('LOG_FILE', $logFile); // needed for error reporting in some functions
+if (!($fd = fopen(LOG_FILE, 'w'))) {          // Open for write
+  exit("<h1>Cannot create log file $logFile</h1>\n");
+}
+fclose($fd);
+error_log(date('Y.m.d-H:i:s ')."Log file created\n", 3, LOG_FILE);
+
+// We generate some randomness for salting the password hashes
+$salt = alphanum_encode(md5(uniqid(rand()).mt_rand()));
+
+// If MySQL database and username are not specified,
+// generate the database and create a new user
+if (empty($sqlUsr) || empty($sqlPwd) || empty($sqlDB)) {
+
+  // Test that we can actually connect using the root username/pwd
+  $cnnct = db_connect($sqlHost, $sqlRoot, $sqlRootPwd, NULL);
+
+  // Create the database
+  if (empty($sqlDB) || !preg_match('/^[a-z][0-9a-z_.\-]*$/i', $sqlDB))
+    $sqlDB = substr(makeName($shortName), 0, 16) . $year;
+  $sqlDB = makeName($sqlDB); // make sure this is a valid name
+
+  $qry = 'DROP DATABASE IF EXISTS ' .  $sqlDB;
+  db_query($qry, $cnnct, "Cannot create a new database $sqlDB: ");
+  $qry = 'CREATE DATABASE IF NOT EXISTS ' . $sqlDB;
+  db_query($qry, $cnnct, "Cannot create a new database $sqlDB: ");
+
+  mysql_select_db($sqlDB, $cnnct);
+  create_tabels($cnnct); // from database.php, create the tables in the DB
+
+  // Create new user if not exist
+  if (empty($sqlUsr) || !preg_match('/^[a-z][0-9a-z_.\-]*$/i', $sqlDB)) {
+    $sqlUsr = $sqlDB;
+    $sqlPwd = md5(uniqid(rand()). mt_rand(). $sqlUsr); // returns hex string
+    $sqlPwd = alphanum_encode(substr($sqlPwd, 0, 12)); // "compress" a bit
+  } 
+  $sqlUsr = my_addslashes($sqlUsr, $cnnct);
+  $sqlPwd = my_addslashes($sqlPwd, $cnnct);
+
+  if ($sqlHost=='localhost') {
+    $qry = "GRANT SELECT, INSERT, UPDATE, DELETE ON {$sqlDB}.* "
+      ."TO '$sqlUsr'@'localhost' IDENTIFIED BY '{$sqlPwd}'";
+  } else {
+    $qry = "GRANT SELECT, INSERT, UPDATE, DELETE ON {$sqlDB}.* "
+      ."TO '$sqlUsr' IDENTIFIED BY '{$sqlPwd}'";
+  }
+  db_query($qry, $cnnct, "Cannot GRANT privileges: ");
+
+  mysql_close($cnnct);
+}
+
+// The database and user should already exist by now
+$cnnct = db_connect($sqlHost, $sqlUsr, $sqlPwd, $sqlDB);
+
+// If we got here, then database and all tables were created
+
+// Store database parameters in file
+if (file_exists($prmsFile)) unlink($prmsFile); // just in case
+if (!($fd = fopen($prmsFile, 'w'))) {          // Open for write
+  exit("<h1>Cannot create the parameters file at $prmsFile</h1>\n");
+}
+$prmsString = "<?php /* Parameters for installation of $shortName $year\n"
+  . " * This file is formatted as a php file to ensure that accessing it\n"
+  . " * directly by mistake does not cause the server to send this\n"
+  . " * information to a client.\n"
+  . "MYSQL_HOST=$sqlHost\n"
+  . "MYSQL_DB=$sqlDB\n"
+  . "MYSQL_USR=$sqlUsr\n"
+  . "MYSQL_PWD=$sqlPwd\n"
+  . "SUBMIT_DIR=$subDir\n"
+  . "LOG_FILE=$logFile\n"
+  . "ADMIN_EMAIL=$adminEmail\n"
+  . "CONF_SALT=$salt\n"
+  . " */\n"
+  . "?>\n";
+if (!fwrite($fd, $prmsString)) {
+  exit ("<h1>Cannot write into parameters file $tFile</h1>\n");
+}
+fclose($fd);
+chmod($prmsFile, 0400);
+
+// Create the submission sub-directories
+if (!mkdir("$subDir/backup", 0775)) { 
+  exit ("<h1>Cannot create submission backup directory $subDir/backup</h1>\n");
+}
+if (!mkdir("$subDir/final", 0775)) { 
+  exit ("<h1>Cannot create camera-ready submission directory $subDir/final</h1>\n");
+}
+copy('../init/.htaccess', $subDir.'/.htaccess');
+copy('../init/index.html', $subDir.'/index.html');
+copy('../init/index.html', $subDir.'/backup/index.html');
+copy('../init/index.html', $subDir.'/final/index.html');
+
+// Initialize the parameters in the databse
+$defaultFlags = FLAG_PCPREFS | FLAG_AFFILIATIONS | FLAG_EML_HDR_X_MAILER;
+if (isset($_SERVER['HTTPS'])) $defaultFlags |= FLAG_SSL;
+$qry = "INSERT INTO parameters SET version=1, isCurrent=1, longName='', shortName='$shortName', confYear=$year, subDeadline=0, cmrDeadline=0, maxGrade=0, maxConfidence=0, flags=$defaultFlags, baseURL='$baseURL', period=0, formats=''";
+
+db_query($qry, $cnnct, "Cannot insert program chair to database: ");
+
+// Insert the PC chair into the committee table. Also generates password
+// for the chair and send it by email. The value that is written to the
+// database is MD5(salt.email.password)
+$chrPwd = md5(uniqid(rand()).mt_rand());            // returns hex string
+$chrPwd = alphanum_encode(substr($chrPwd, 0, 15));  // "compress" a bit
+$chrEml = strtolower($chairEmail);                  // store for later
+
+$chairEmail = my_addslashes($chairEmail, $cnnct);
+$chairPw = md5($salt . $chrEml . $chrPwd);
+
+$qry = "INSERT INTO {$sqlDB}.committee SET revId=1, revPwd='$chairPw', 
+  name='$chairName', email='{$chairEmail}', canDiscuss='1'";
+db_query($qry, $cnnct, "Cannot insert program chair to database: ");
+
+// Send email to chair and admin with the password for using this site
+$hdr   = "From: $adminEmail";
+$sndTo = "$adminEmail, $chairEmail";
+$sbjct = "New submission and review site initialized";
+
+$prot = (isset($_SERVER['HTTPS'])) ? 'https' : 'http';
+$baseURL = $prot.'://'.$baseURL;
+$msg =<<<EndMark
+A new submission and review site was initialized, it now needs to be
+customized for its conference. The administration page is accessible
+from
+
+  {$baseURL}chair/
+
+using username $chairEmail and password $chrPwd
+
+EndMark;
+mail($sndTo, $sbjct, $msg, $hdr);
+header("Location: customize.php?username=$chairEmail&password=$chrPwd");
+?>
