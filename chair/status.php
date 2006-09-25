@@ -114,7 +114,7 @@ EndMark;
 }
 print <<<EndMark
 </tbody></table>
-<input type="submit" value="Set Status">
+<input type="submit" name="noAnchor" value="Set Status">
 </form>
 <hr />
 {$links}

@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true; 
+$needsAuthentication = true; 
 require 'header.php';
 
 if (defined('SHUTDOWN')) exit("<h1>Site is Closed</h1>");
@@ -53,7 +53,8 @@ if (isset($_POST['sendComments2Submitters'])) {
   $ltr = str_replace("\r\n", "\n", $ltr); // just in case
 
   $cnnct = db_connect();
-  $qry = "SELECT s.subId, title, authors, contact, comments2authors, status
+  $qry = "SELECT s.subId, title, authors, contact, comments2authors, status,
+    confidence, grade
   FROM submissions s LEFT JOIN reports r USING(subId)
   WHERE s.status!='Withdrawn'";
 
@@ -63,11 +64,10 @@ if (isset($_POST['sendComments2Submitters'])) {
     $qry .= " AND s.subId IN ({$subIds2send})";
   }
   $qry .= " ORDER by s.subId";
-
-  $res = db_query($qry, $cnnct);
-
   $submissions = array();
   $curId = -1;
+
+  $res = db_query($qry, $cnnct);
   while ($row=mysql_fetch_row($res)) {
     $subId = (int) $row[0];
     if ($subId<=0) continue;
@@ -77,18 +77,34 @@ if (isset($_POST['sendComments2Submitters'])) {
 				   $row[3], array(), trim($row[5]));
     }
     $comment = trim($row[4]);
-    if (!empty($comment))
+    if (!empty($comment)) {
+      if (isset($_POST['withGrades']) && $row[7]>0) {
+        $grade = "Grade: ".$row[7];
+        if ($row[6]>0) $grade .= "\nConfidence: ".$row[6];
+        $comment = $grade."\n\n".$comment;
+      }
       array_push($submissions[$subId][3], wordwrap($comment, 78));
+    }
   }
   print "<h3>Sending comments...</h3>\n";
 
+  $count=0;
   foreach ($submissions as $subId => $sb) {
-    if (($sb[4]=="Accept") || ($sb[4]=="Reject"))
+    if (($sb[4]=="Accept") || ($sb[4]=="Reject")) {
       sendComments($subId, $sb[0], $sb[1], $sb[2], $sb[3], $ltr);
+    }
+    else continue;
+
+    $count++;
+    if (($count % 25)==0) { // rate-limiting, avoids cutoff
+      print "$count messages sent so far...<br/>\n";
+      sleep(1);
+    }
   }
 
   print <<<EndMark
-Comments sent. Check the <a href="view-log.php">log file</a>
+<br/>
+Total of $count messages sent. Check the <a href="view-log.php">log file</a>
 for any errors.
 
 <hr />
@@ -112,7 +128,7 @@ these emails below.<br />
 
 (Note that the keywords <code>&lt;&#36;authors&gt;</code>,
 <code>&lt;&#36;title&gt;</code>, and <code>&lt;&#36;comments&gt;</code>
-will be replaced by the authors and title as they specified by the
+will be replaced by the authors and title as specified by the
 submitters and by the list of comments, respectively. To be recognized
 as keywords, these words MUST include the '&lt;' and '&gt;' characters
 and the dollar-sign.)
@@ -122,7 +138,7 @@ and the dollar-sign.)
 
 <h3>Send comments to only a few submissions</h3>
 To send comments only to certain submissions, put a comma-separated
-list of submiddion-IDs in the line below. Leaving the line empty will
+list of submission-IDs in the line below. Leaving the line empty will
 send comments to the authors of all the submissions.<br /><br />
 
 Send comments only for these submissions:
@@ -131,6 +147,8 @@ Send comments only for these submissions:
 
 <input type="submit" value="Send Comments">
 <input type="hidden" name="sendComments2Submitters" value="yes">
+<input type=checkbox name=withGrades value=yes> Check to include grade
+and confidence in the email sent to the authors
 </form>
 
 <hr />

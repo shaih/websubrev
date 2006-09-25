@@ -97,7 +97,7 @@ exists, and failing that it will first try <i>all_in_one.zip</i> and then
 show on the review page.)
 
 <h2>Manually creating archive files</h2>
-If the above methods for creating an archive file do not works, and if you
+If the above methods for creating an archive file do not work, and if you
 have administrative access to the server, you can manually create an archive
 file in one of these three formats and put it in the submission directory.
 (This is the directory <code>$subDir</code> under the base directory where
@@ -105,12 +105,12 @@ you installed this software package.) The file must be called either
 <i>all_in_one.tgz</i>, <i>all_in_one.zip</i>, or <i>all_in_one.tar</i>.
 <br/><br/>
 As a last resort, if you do not have have administrative access to the
-server, you can download all the submissoin files to your local machine,
+server, you can download all the submission files to your local machine,
 then create the archive file locally and upload it to the server. The
 extension of the local archive file must be either .tgz, .tar, or .zip
 for this method to work.<br/> 
 <form action="uploadArchive.php" enctype="multipart/form-data" method=post>
-<input type=hidden name="MAX_FILE_SIZE" value=20000000>
+<input type=hidden name="MAX_FILE_SIZE" value=200000000>
 Local archive file:<input name=sub_archive size=50 type="file">
 <input name=submit type=submit value="Upload">
 </form>

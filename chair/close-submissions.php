@@ -5,14 +5,15 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true; // Just a precaution
+$needsAuthentication = true; // Just a precaution
 require 'header.php';
 
 if (defined('CAMERA_PERIOD')) { exit("<h1>Review Site is Closed</h1>"); }
 
 $maxGrade = MAX_GRADE;
-$subDdline = SUBMIT_DEADLINE;
-$now= date('r (T)');
+
+$subDdline = utcDate('r (T)', SUBMIT_DEADLINE);
+$now= utcDate('r (T)');
 
 $crList = '';
 if (is_array($criteria) && count($criteria)>0) {
@@ -35,7 +36,7 @@ function checkInt( fld, mn, mx )
 
   var pat = /^-?[0-9]+$/;
   if((pat.test(fld.value)==false) || (fld.value<mn) || (fld.value>mx)) {
-    alert("Field must contain an integet between "+mn+" and "+mx);
+    alert("Field must contain an integer between "+mn+" and "+mx);
     fld.focus();
     fld.select();
     return false ;

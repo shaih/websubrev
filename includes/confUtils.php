@@ -74,7 +74,7 @@ function auth_PC_member($eml, $pwd, $id=NULL)
   $eml = my_addslashes($eml, $cnnct);
 
   // Formulate the SQL find the user
-  $qry = "SELECT revId, name, email, canDiscuss, threaded FROM committee WHERE";
+  $qry = "SELECT revId, name, email, canDiscuss, threaded, flags FROM committee WHERE";
   if (isset($id)) {
     $id = (int) trim($id);
     $qry .= " revId='{$id}' AND email = '{$eml}' AND revPwd = '{$pwd}'";
@@ -89,7 +89,7 @@ function auth_PC_member($eml, $pwd, $id=NULL)
     return false;
 
   // return the user details
-  return mysql_fetch_row($res);
+  return mysql_fetch_array($res);
 }
 
 function my_addslashes($str, $cnnct=NULL)
@@ -154,7 +154,11 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
 {
   $emlCrlf = (EML_CRLF == "\n") ? "\n" : "\r\n";
   $hdr = 'From: '.CONF_SHORT.' '.CONF_YEAR.' Chair <'.CHAIR_EMAIL.">$emlCrlf";
-  $hdr .= 'Cc: ' . CHAIR_EMAIL . $emlCrlf;
+  // During review process, don't send email to authors, only to chair
+  if (defined('REVIEW_PERIOD') && REVIEW_PERIOD==true) {
+    $sndto = CHAIR_EMAIL;
+  }
+  else { $hdr .= 'Cc: ' . CHAIR_EMAIL . $emlCrlf; }
   if ($status < 0) { $hdr .= 'Bcc: '.ADMIN_EMAIL.$emlCrlf; }
   $hdr .= 'X-Mailer: PHP/' . phpversion();
 
@@ -178,6 +182,11 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
   }
   if ($sid != 0)     { $msg .= "Submission number:  \t{$sid}\n"; }
   if (!empty($pwd))  { $msg .= "Submission password:\t{$pwd}\n\n"; }
+  if ($sid != 0 && !empty($pwd)) {
+    $prot = (defined('HTTPS_ON')||isset($_SERVER['HTTPS']))? 'https' : 'http';
+    $revURL = "$prot://".BASE_URL."revise.php?subId=$sid&subPwd=$pwd";
+    $msg .= "You can still revise this submission by going to\n\n  $revURL\n\n";
+  }
 
   if (!empty($ttl))  { $msg .= "Title:    \t{$ttl}\n"; }
   if (!empty($athr)) { $msg .= "Authors:  \t{$athr}\n"; }
@@ -302,9 +311,12 @@ function return_to_caller($url, $extraPrms='', $anchor='')
     $whoseCalling .= $sep . $extraPrms;
   }
 
-  if (!empty($anchor) && (strpos($whoseCalling, '#')===false))
-    $whoseCalling .= $anchor;
-
+  if (!empty($anchor)) {
+    if (($pos=strpos($whoseCalling, '#'))===false)
+      $whoseCalling .= $anchor;
+    else 
+      $whoseCalling = subsrt($whoseCalling, 0, $pos) . $anchor;
+  }
   header("Location: $whoseCalling");
   exit();
 }
@@ -458,5 +470,55 @@ function numberlist($lst)
     }
   }
   return $s;
+}
+
+// like date(), but returns time in UTC instead of server time
+function utcDate($fmt, $when=NULL)
+{
+  if (!isset($when)) $when=time(); // use current time if none is specified
+
+  if ($fmt=='Z') return date('Z',$when);// who would do such a contrived thing?
+
+  $when -= date('Z',$when);        // add delta between server and UTC
+  $fmt = str_replace("(T)", "(\U\T\C)", $fmt);
+  $ret = date($fmt, $when);
+
+  // A hack to remove -4000 (or similar) when $fmt has 'r' or 'O' or 'P'
+  $diff2gmt = date('O',$when);
+  $ret = str_replace($diff2gmt, "+0000", $ret);
+  $diff2gmt = date('P',$when);
+  $ret = str_replace($diff2gmt, "+00:00", $ret);
+
+  return $ret;
+}
+
+function deltaTime($delta)
+{
+  if ($delta <= 0) {
+    return 'Time is up';
+  }
+
+  $secs = $delta % 60;
+  $delta -= $secs;
+  $delta /= 60;
+
+  $mins = $delta % 60;
+  $delta -= $mins;
+  $delta /= 60;
+
+  $hours = $delta % 24;
+  $delta -= $hours;
+
+  $days = $delta / 24;
+  if ($days <1) $days='';
+  else $days = "$days days and";
+
+  return sprintf("Time left: $days %02d:%02d:%02d", $hours, $mins, $secs);
+}
+
+function show_deadline($when)
+{
+  $delta = $when-time();
+  return deltaTime($delta);
 }
 ?>

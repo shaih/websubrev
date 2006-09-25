@@ -5,14 +5,14 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- 
-require 'header.php'; // brings in the contacts file and utils file
+require 'header.php'; // brings in the constants file and utils file
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 if (CAMERA_PERIOD!==true)
      die("<h1>Final-version submission site for $confName is closed</h1>");
 
 $h1text = "<h1>Camera-Ready Revision for $confName</h1>";
+$deadline = show_deadline(CAMERA_DEADLINE);
 
 $subId = isset($_GET['subId']) ? trim($_GET['subId']) : '';
 $subPwd = isset($_GET['subPwd']) ? trim($_GET['subPwd']) : '';
@@ -57,6 +57,7 @@ print <<<EndMark
 
 <style type="text/css">
 h1 { text-align: center; }
+h3 { text-align: center; color: blue; }
 tr { vertical-align: top; }
 </style>
 
@@ -99,6 +100,7 @@ function checkform( form )
 $links
 <hr />
 $h1text
+<h3>$deadline</h3>
 
 <form name="cameraready" onsubmit="return checkform(this);" action="act-revise.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
@@ -147,7 +149,8 @@ print <<<EndMark
   </tr>
   <tr>
     <td style="text-align: right;">Title:</td>
-    <td><input name="title" size="90" type="text" value="$title"></td>
+    <td><input name="title" size="90" type="text" value="$title"><br/>
+        The title of your submission</td>
   </tr>
   <tr>
     <td style="text-align: right;">Authors:</td>

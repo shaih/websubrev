@@ -5,9 +5,12 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-  $needsAuthentication=true;
+$needsAuthentication=true;
 $errorMsg="You can contact the program chair to reset your password manually.";
+$preReview=true;      // page is available also before the review peiod
+
 require 'header.php'; // defines $pcMember=array(id, name, email...)
+
 $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
 

@@ -5,12 +5,14 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true; 
+$needsAuthentication = true; 
 require 'header.php';
 $cName = CONF_SHORT.' '.CONF_YEAR;
 
 // If the guidelines were specified, update the review guidelines file
+require 'review/revFunctions.php';
 if (isset($_POST["setGuidelines"])) {
+  $links = show_rev_links(1);
   $schedule = trim($_POST["schedule"]);
   if (!empty($schedule))
     $schedule = "<h2>Schedule</h2>\n".nl2br($schedule)."\n";
@@ -64,8 +66,8 @@ h1 { text-align: center; }
 <title>Review Guidelines for $cName</title>
 </head>
 <body>
+$links
 <hr/>
-
 <h1>Review Guidelines for $cName</h1>
 $schedule
 
@@ -86,6 +88,8 @@ $contactAuthors
 $discussPhase<br/>
 <br/>
 $closing
+<hr/>
+$links
 </body>
 </html>
 
@@ -257,8 +261,12 @@ h1 {text-align: center;}
 $links
 <hr />
 <h1>Set Review Guideline for $cName</h1>
-You can either upload your own guidelines HTML file or use the HTML text in the form below. <br/>
-
+You can either upload your own guidelines HTML file or use the HTML text
+in the form below. A reasonable algorithm is to first use the form below,
+then download <a href='../review/guidelines.php'>the resulting guidelines 
+file</a> and save it locally, and then edit it to suit your needs and upload
+it back to the server.<br/>
+<br/>
 <form action="guidelines.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
 <input type="submit" name="uploadGuidelines" value="Upload Review Guidelines File:"><input name="guidelinesFile" size="60" type="file">

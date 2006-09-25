@@ -11,7 +11,7 @@ require 'header.php';
 $voteId = isset($_GET['voteId']) ? intval($_GET['voteId']) : 0; // 0 for generic form
 $cnnct = db_connect();
 
-$chkAll = $chkSome = $chkOthers = '';
+$chkAll = $chkSome = $chkOther = '';
 $chkAC = $chkMA = $chkDI = $chkNO = $chkMR = $chkRE = '';
 $voteBudget = $voteMaxGrade = $voteOnThese = $voteItems = '';
 $voteFlags = 0;
@@ -31,7 +31,9 @@ if ($voteId > 0) { // If voteId is specified, get details of vote
   $voteInstructions = htmlspecialchars($voteDetails['instructions']);
   $chooseVote= ($voteDetails['voteType']=='Choose')? 'checked="checked"' : '';
   $gradeVote = ($voteDetails['voteType']=='Grade') ? 'checked="checked"' : '';
-  $voteBudget = intval($voteDetails['voteBudget']);
+  $voteBudget = trim($voteDetails['voteBudget']);
+  if ($voteBudget<=0) $voteBudget='';
+  else $voteBudget=" value=".intval($voteBudget);
   $voteMaxGrade = intval($voteDetails['voteMaxGrade']);
   if ($voteFlags & VOTE_ON_SUBS) {
     if ($voteFlags & VOTE_ON_ALL) $chkAll = 'checked="checked"';
@@ -53,7 +55,7 @@ if ($voteId > 0) { // If voteId is specified, get details of vote
 }
 else {             // Get a list of votes
   $head2 = "Set-up a new vote";
-  $qry = "SELECT voteId, voteTitle, deadline, voteActive FROM votePrms";
+  $qry = "SELECT voteId, voteTitle, deadline, voteActive FROM votePrms ORDER BY voteId DESC";
   $res = db_query($qry, $cnnct);
   while ($row=mysql_fetch_array($res)) {
     $allVotes[] = $row;
@@ -123,7 +125,7 @@ submissions in 'Maybe Reject' category to move back to the 'Discuss' pile."
 <br /><br /></li>
 <li>The other type is a "Grade vote" in which you specify a list of submissions
 and every PC member needs to grade these submissions on some scale. For
-example, "Grade each of the remaining submission in the 'Discuss' category
+example, "Grade each of the remaining submissions in the 'Discuss' category
 on a scale of zero to three."
 <small>(Technically, a "Choose vote" is a special case of a "Grade vote"
 with the scale being 0-1, but the interface that the PC member sees for
@@ -149,15 +151,20 @@ A simple "Choose vote"<br/>
 <input type="radio" name="voteType" value="Grade" $gradeVote>
 A "Grade vote" on a scale of 0 to
 <input type="text" name="voteMaxGrade" size=1 value=$voteMaxGrade>
-(max-garde cannot be more than 9).<br/>
+(max-grade cannot be more than 9).<br/>
 <br />
 Every PC member has "voting budget" of 
-<input type="text" name="voteBudget" size=1 value=$voteBudget> (leave empty
+<input type="text" name="voteBudget" size=1{$voteBudget}> (empty or zero
 for unlimited budget). For a "Choose vote", the budget is the number of
 submissions that the PC member can choose. For a "Grade vote", it
 is the sum of all grades that this PC member can assign.
 
 <h3>What is included in this vote?</h3>
+<b>Note:</b> PC members can only vote on submissions after you set their
+"discuss" flags from the <a href="overview.php#progress">progress overview
+page</a>. Until then they can only participate in "votes on other things"
+as per the third option below.<br/>
+<br/>
 <input type="radio" name="voteOnWhat" value="all" $chkAll>
 Include all submissions.
 <br/>
@@ -181,25 +188,36 @@ Include only the submissions that are specified below
 </tr>
 <tr><td> &nbsp; &nbsp; </td>
     <td style="text-align: right;">..and also these submission IDs:</td>
-    <td colspan=2><input type="text" name="voteOnThese" value="$voteOnThese" size=80><br />
-                  (comma-separated list of submission-IDs)</td>
+    <td colspan=2><input type="text" name="voteOnThese" value="$voteOnThese" size=80><br/>comma-separated list of submission-IDs</td>
 </tr>
 </tbody></table>
 <br />
-<input type="radio" name="voteOnWhat" value="other" $chkOthers>
+<input type="radio" name="voteOnWhat" value="other" $chkOther>
 Vote on things other than submissions (e.g., invited speaker):
 <textarea name="voteItems" rows=5 cols=80>$voteItems</textarea><br />
 A <b>semi-colon separated</b> list of items to vote on. For example, to let
 the PC members choose their main course for the PC dinner, you can use a line
 such as <tt>"Maine Lobster; Australian barramundi; Squab breast; Medallions of
-Millbrook venison; Lamb rack 'au sautoir'"</tt>.
-<br/><br/>
+Millbrook venison; Lamb rack 'au sautoir'"</tt>.<br/>
+<br/>
+EndMark;
+
+if (!empty($voteOnThese) || !empty($voteItems)) print <<<EndMark
+<b>Note:</b>
+If you modify the list of submission-IDs or the list of "other things" in
+mid-vote, make sure that you <i>do not modify the order of items</i>, since
+the software identifies vote-items with their position in the list. 
+For example, swapping the order of two items will result in each of them
+being assigned the tally of the other. <br/>
+<br/>
+EndMark;
+
+
+print <<<EndMark
+
 <input type="hidden" name="voteId" value=$voteId>
 <input type="submit" name="setup" value="Set/Change Vote Parameters">
 </form>
-EndMark;
-
-print <<<EndMark
 <hr />
 $links
 </body>

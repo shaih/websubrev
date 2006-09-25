@@ -5,10 +5,11 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-  $needsAuthentication=true;
+$needsAuthentication=true;
 require 'header.php'; // defines $pcMember=array(id, name, ...)
 $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
+$disFlag = (int) $pcMember[3];
 
 if (defined('CAMERA_PERIOD'))
    exit("<h1>Site closed: cannot post new reviews</h1>");
@@ -30,7 +31,7 @@ $qry= "SELECT s.title ttl, a.assign assign, r.subReviewer subRev,
       r.lastModified lastModif, r.confidence conf, r.grade grade,
       $auxGrades
       r.comments2authors cmnts2athr, r.comments2committee cmnts2PC,
-      r.comments2chair cmnts2chair
+      r.comments2chair cmnts2chair, a.watch watch
       FROM submissions s
         LEFT JOIN assignments a ON a.revId='$revId' AND a.subId='$subId'
         LEFT JOIN reports r     ON r.revId='$revId' AND r.subId='$subId'
@@ -67,28 +68,31 @@ $cmnts2chair= isset($row['cmnts2chair'])? htmlspecialchars($row['cmnts2chair']):
 if (isset($row['lastModif'])) // revision 
      $update = ' (updated)';
 else $update = '';
+$watch = $row['watch'];
+
+if ($disFlag && !$watch) { // put a checkbox to add to watch list
+  $watchHtml = '<input type=checkbox name=add2watch> Also add this submission to my watch list';
+}
+else $watchHtml = '';
 
 $colors = array('lightgrey', 'rgb(240, 240, 240)');
-
 $links = show_rev_links();
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
   "http://www.w3.org/TR/html4/loose.dtd">
 
 <html><head>
-<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-
 <style type="text/css">
 h1 { text-align: center; }
 h2 { text-align: center; }
 tr { vertical-align: top; }
 </style>
 
-<title>Review of Summission $subId{$update}</title></head>
+<title>Review of Submission $subId{$update}</title></head>
 <body>
 $links
 <hr />
-<h1>Review of Summission $subId{$update}</h1>
+<h1>Review of Submission $subId{$update}</h1>
 <h2>$title</h2>
 
 <form action="act-review.php" enctype="multipart/form-data" method=post>
@@ -201,7 +205,8 @@ print <<<EndMark
 <br /><br />
 
 <input type="hidden" name="subId" value="$subId">
-<center><input style="width: 100px;" type="submit" value="Submit"></center>
+<center><input style="width: 100px;" type="submit" value="Submit">
+$watchHtml</center>
 </form>
 <hr />
 $links

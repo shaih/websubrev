@@ -21,7 +21,7 @@ $semantics = array(
   'I prefer not to review this submission (but can do it if I have to)',
   'No preferences (default): I can review this submission if need be',
   'I would like to review this submission',
-  'This submissions is one of my favorites to review'
+  'This submission is one of my favorites to review'
 );
 
 $links = show_rev_links(4);
@@ -48,7 +48,7 @@ h1 { text-align: center; }
 $links
 <hr />
 <h1>Review Preferences for $pcMember[1]</h1>
-Please indicate your reviewing preferneces. For each submisssion
+Please indicate your reviewing preferences. For each submisssion
 you can specify one of the following options: <br /><br />
 
 <table><tbody>
@@ -78,13 +78,13 @@ print <<<EndMark
 EndMark;
 
 $cnnct = db_connect();
-$qry = "SELECT s.subId, s.title, a.pref
-  FROM submissions s LEFT JOIN assignments a
-       ON a.revId='$revId' AND a.subId=s.subId
+$qry = "SELECT s.subId, s.title, a.pref, a.assign
+  FROM submissions s LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId
   WHERE s.status!='Withdrawn'
   ORDER BY s.subId";
 $res = db_query($qry, $cnnct, "Cannot retrieve submission list: ");
 while ($row = mysql_fetch_row($res)) {
+  if ($row[3]==-1) continue; // conflict
   // Get the submission details
   $subId = (int) $row[0];
   $title = htmlspecialchars($row[1]);

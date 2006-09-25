@@ -19,7 +19,7 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
   foreach ($sbList as $sb) {
     $subId = (int) $sb['subId']; 
     $title = $sb['title']; 
-    if (strlen($title)>82) $title = substr($title, 0, 80).'...';
+    if (strlen($title)>70) $title = substr($title, 0, 68).'...';
     $title = htmlspecialchars($title);
 
     $authors = isset($sb['authors']) ? htmlspecialchars($sb['authors']) : ''; 

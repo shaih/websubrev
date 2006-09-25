@@ -67,6 +67,7 @@ function create_tabels($cnnct, $nCrits=0)
     email varchar(255) NOT NULL,
     canDiscuss tinyint(1) NOT NULL DEFAULT 0, 
     threaded tinyint(1) NOT NULL DEFAULT 1, 
+    flags int NOT NULL DEFAULT 0,
     PRIMARY KEY (revId),
     KEY pw (revPwd(2))
   )";

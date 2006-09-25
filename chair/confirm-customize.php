@@ -8,7 +8,7 @@
 chdir('..'); // This script is placed in a sub-directory
 
 if (file_exists('./includes/confConstants.php')) { // Already customized
-  exit("<h1>This installation is already cusomized</h1>");
+  exit("<h1>This installation is already customized</h1>");
 }
 
 // Some things in confUtils need the BASE_URL constant
@@ -91,7 +91,7 @@ if (empty($longName)      || empty($shortName)     || empty($confYear)
 
 if (!preg_match('/^[0-9]{2}$/', $confYear)) {
   print "<h1>Wrong format for the conference year</h1>\n";
-  print "Year must consists of exatly two digits.\n";
+  print "Year must consist of exactly two digits.\n";
   exit();
 }
 else $confYear += 2000;
@@ -102,7 +102,7 @@ if ((empty($sqlRoot) || empty($sqlRtPw))
   print "To automatically generate MySQL database, you must specify the
          MySQL root username and password.<br />\n";
   print "Otherwise, you must manually create the database and specify the
-         database name, and also specify MySQL usename and password of a
+         database name, and also specify MySQL username and password of a
          user that can write into that database.\n";
   exit();
 }
@@ -110,18 +110,18 @@ if ((empty($sqlRoot) || empty($sqlRtPw))
 // Try to parse the deadlines as some recognized date format
 // The error code from strtotime is -1 for PHP 4 and FALSE for PHP 5
 $tsb = empty($subDeadline) ? false : strtotime($subDeadline);
-if ($tsb !== false && $tsb !== -1) { 
-  $subDeadline = date('r (T)', $tsb); 
-  $tsb = '';
+if ($tsb!==false && $tsb!=-1) {
+  $subDeadline = $tsb; // store as a number (unix time)
+  $subDeadlineHtml = utcDate('r (T)', $tsb);
 }
-else { $tsb = '(warning: unregocnized time format)'; }
+else die("<h1>Unrecognized time format for submission deadline</h1>");
 
 $tcr = empty($cameraDeadline) ? false : strtotime($cameraDeadline) ;
-if ($tcr !== false && $tcr !== -1) { 
-  $cameraDeadline = date('r (T)', $tcr);
-  $tcr = '';
+if ($tcr!==false && $tcr!=-1) {
+  $cameraDeadline = $tcr; // store as a number (unix time)
+  $cameraDeadlineHtml = utcDate('r (T)', $tcr);
 }
-else { $tcr = '(warning: unregocnized time format)'; }
+else die("<h1>Unrecognized time format for camera-ready deadline</h1>");
 
 // Create an array of committee members
 if (isset($committee)) {
@@ -196,8 +196,6 @@ $chairEmlHtml  = htmlspecialchars($chair[1]);
 $emlCrlfHtml   = htmlspecialchars($emlCrlf);
 $emlExtraPrmHtml= empty($emlExtraPrm) ? "none" :
                                         htmlspecialchars($emlExtraPrm);
-$subDeadlineHtml= htmlspecialchars($subDeadline);
-$cameraDeadlineHtml= htmlspecialchars($cameraDeadline);
 
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -210,8 +208,8 @@ print <<<EndMark
 <h1 style="text-align: center;">Confirm Customization</h1>
 
 Please go carefully over these details and make sure that they are all
-correct. If you find mistakes, use your browsers Back button to return
-to the customization form and correct them. If all the detais are correct,
+correct. If you find mistakes, use the Back button of your browser to return
+to the customization form and correct them. If all the details are correct,
 hit the Confirm button below to customize this installation. 
 
 <h2>The Conference:</h2>     
@@ -308,11 +306,11 @@ print <<<EndMark
 <table cellspacing=6>
 <tbody>
   <tr><td style="text-align: right;">Submission Deadline:</td>
-    <td colspan="3"><b>$subDeadlineHtml</b> $tsb
+    <td colspan="3"><b>$subDeadlineHtml</b>
     </td>
   </tr>
   <tr><td style="text-align: right;">Camera-ready Deadline:</td>
-    <td colspan="3"><b>$cameraDeadlineHtml</b> $tcr
+    <td colspan="3"><b>$cameraDeadlineHtml</b>
     </td>
   </tr>
 

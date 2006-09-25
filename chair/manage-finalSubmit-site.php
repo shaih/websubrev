@@ -13,7 +13,7 @@ if (defined('SHUTDOWN')) exit("<h1>Site is Closed</h1>");
 $cName = CONF_SHORT.' '.CONF_YEAR;
 $cNameLowCase = strtolower(CONF_SHORT).CONF_YEAR;
 $links = show_chr_links();
-$cmrDdline = CAMERA_DEADLINE;
+$cmrDdline = utcDate('r (T)', CAMERA_DEADLINE);
 
 
 $prot = (defined('HTTPS_ON') || isset($_SERVER['HTTPS']))? 'https' : 'http';
@@ -27,7 +27,7 @@ class file (llncs.cls), which can be obtained off Springer's site at:
 
   http://www.springer.de/comp/lncs/authors.html
 
-(Off that page you will find a zip file that include the class file as
+(Off that page you will find a zip file that includes the class file as
 well as documentation.)
 
 Please prepare an archive file (either zip, tar, tar.gz, or tgz) that
@@ -39,14 +39,14 @@ includes the following files:
   with the LaTeX commands \\title and \\author) $cNameLowCase.tex.
 * A PDF file that was created from the source LaTeX file(s).
 
-Use the final-version submissions form at
+Use the final-version submission form at
 
   ${baseURL}cameraready.php
 
 to upload your archive file. (*NOTE: you will need the submission-ID and
 password that were given to you when you first submitted the paper. Contact
-the chair if you lost your submiddion-ID and password.) The deadline for
-uploading the files is ".CAMERA_DEADLINE.".
+the chair if you lost your submission-ID and password.) The deadline for
+uploading the files is $cmrDdline.
 
 The page limit is 17 pages total, including bibliography and all appendices.
 
@@ -58,7 +58,7 @@ and mail or FAX a signed copy of this form to the editor, at the address:
 
 [[your-address-here]]
 
-The form should be mailed (postmarked) or FAXed by ".CAMERA_DEADLINE.".\n";
+The form should be mailed (postmarked) or FAXed by $cmrDdline.\n";
 
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -74,13 +74,13 @@ $links
 <hr />
 <h1>Activate Final-Version Submission Site for $cName</h1>
 When you hit the "Activate Final-Version Submissions" button at the
-bottom of this page, the authors of accepted authors will be sent emails
+bottom of this page, the authors of accepted papers will be sent emails
 with instructions for preparing the camera-ready version. At the same
 time, the review site will switch to a read-only mode. (I.e., PC members
 will still be able to view the reviews and discussions but not to modify
 them or insert new ones.)
 
-<h3>Instructions for camera-ready verision</h3>
+<h3>Instructions for camera-ready version</h3>
 <form name="cameraInstructions" action="act-recustomize.php"
       enctype="multipart/form-data" method="post">
 
@@ -94,6 +94,8 @@ Camera-ready deadline: <input type="text" name="cameraDeadline" value="$cmrDdlin
 <br /><br />
 <input type="submit" value="Activate Final-Version Submissions">
 </form>
+<hr />
+$links
 </body>
 </html>
 EndMark;

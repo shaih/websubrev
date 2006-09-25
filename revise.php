@@ -12,6 +12,7 @@ require 'header.php'; // brings in the contacts file and utils file
 if (defined('CAMERA_PERIOD')) exit("<h1>Submission Deadline Expired</h1>");
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
+$deadline = show_deadline(SUBMIT_DEADLINE);
 $h1text = "<h1>Revise a Submission to $confName</h1>";
 
 $subId = isset($_GET['subId']) ? trim($_GET['subId']) : '';
@@ -74,6 +75,7 @@ print <<<EndMark
 
 <style type="text/css">
 h1 { text-align: center; }
+h3 { text-align: center; color: blue; }
 tr { vertical-align: top; }
 </style>
 
@@ -116,7 +118,7 @@ function checkform( form )
 $links
 <hr />
 $h1text
-
+<h3>$deadline</h3>
 <form name="revise" onsubmit="return checkform(this);" action="act-revise.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
 <input type="hidden" name="referer" value="revise.php">
@@ -139,7 +141,7 @@ $h1text
 
 EndMark;
 
-if (empty($subId)) { // put a button to "Load submission details"
+if (empty($subId) || empty($subPwd)) {// put button to Load submission details
   print '  <tr>
     <td></td>
     <td><input value="Reload Form with Submission Details (Submission-ID and Password must be specified)" type="submit" name="loadDetails">
@@ -158,7 +160,8 @@ print <<<EndMark
   </tr>
   <tr>
     <td style="text-align: right;">Title:</td>
-    <td><input name="title" size="90" type="text" value="$title"></td>
+    <td><input name="title" size="90" type="text" value="$title"><br/>
+        The title of your submission</td>
   </tr>
   <tr>
     <td style="text-align: right;">Authors:</td>

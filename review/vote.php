@@ -6,9 +6,12 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
 $needsAuthentication=true;
+$preReview=true;      // page is available also before the review peiod
 
 require 'header.php'; // defines $pcMember=array(id, name, ...)
 $revId = (int) $pcMember[0];
+$disFlag= (int) $pcMember[3];
+
 $links = show_rev_links();
 
 // Get the parameters of the current active vote.
@@ -18,6 +21,10 @@ if ($voteId <= 0) die("<h1>Vote-ID must be specified</h1>");
 
 $cnnct = db_connect();
 $qry = "SELECT * from votePrms WHERE voteId=$voteId AND voteActive=1";
+
+// Before the discussion phase, cannot vote on submissions
+if (!$disFlag) $qry .= " AND (voteFlags&1)!=1";
+
 $res = db_query($qry,$cnnct);
 $row = mysql_fetch_array($res)
      or die("<h1>No Active vote with Vote-ID $voteId</h1>");
@@ -77,10 +84,12 @@ if ($voteFlags & VOTE_ON_SUBS) { // voting on submissions
 else {                           // voting on "other things"
   $voteItems = array();
   $voteTitles = explode(';', $voteOnThese);
+  $i = 1;
   foreach ($voteTitles as $title) {
     $title = trim($title);
     if (!empty($title)) 
-    $voteItems[] = array($title, NULL);
+    $voteItems[$i] = array($title, NULL);
+    $i++;
   }
 
   $qry = "SELECT subId, vote FROM votes WHERE voteId=$voteId AND revId=$revId ORDER by subId";
@@ -107,7 +116,7 @@ if (isset($_POST["votes"]) && is_array($_POST["votes"])) {
     if ($theVote<0) $theVote = 0;
     else if ($theVote>$voteMaxGrade) $theVote = $voteMaxGrade;
 
-    if ($theVote!=$vItem[1]) {
+    if ($theVote!==$vItem[1]) {
       if (!isset($vItem[1])) { // insert a new entry
 	$qry = "INSERT INTO votes SET voteId=$voteId, revId=$revId, subId=$itemId, vote=$theVote";
       } else {                // modify existing entry
@@ -153,6 +162,7 @@ $vInstructions<br/>
 $vDeadline<br/>
 <br/>
 <form action="vote.php?voteId=$voteId" enctype="multipart/form-data" method=post>
+<input type=reset>
 <table><tbody>
 <tr>
   $voteHdr
@@ -184,6 +194,9 @@ print <<<EndMark
 </tbody></table>
 <input type="submit" value="Submit Vote">
 </form>
+Vote early, vote often: if you change your mind you can return to this page
+anytime before the vote closes to change your vote. PC members can't see each
+other's vote, but the chair sees a complete picture of who voted for what.
 <hr />
 $links
 </body>

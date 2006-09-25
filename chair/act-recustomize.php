@@ -60,10 +60,21 @@ if (isset($_POST['emlExtraPrm']) || !defined(EML_EXTRA_PRM))
   $emlExtraPrm = $x;
 
 $x = isset($_POST['subDeadline']) ?  trim($_POST['subDeadline']) : NULL;
-if (!empty($x) && $x!=$subDeadline) {$changeConstFile=true; $subDeadline=$x;}
+if (!empty($x)) {
+  $tsb = strtotime($x);
+  if ($tsb===false || $tsb==-1)
+     die ("<h1>Unrecognized time format for submission deadline</h1>");   
+  if ($tsb!=$subDeadline) { $changeConstFile=true; $subDeadline=$tsb; }
+}
 
 $x = isset($_POST['cameraDeadline']) ? trim($_POST['cameraDeadline']) : NULL;
-if (!empty($x) && $x!=$cmrDeadline) {$changeConstFile=true; $cmrDeadline=$x;}
+if (!empty($x)) {
+  $tcr = strtotime($x);
+  if ($tcr===false || $tcr==-1)
+    die ("<h1>Unrecognized time format for camera-ready deadline</h1>");
+  if ($tcr!=$cmrDeadline) { $changeConstFile=true; $cmrDeadline=$tcr; }
+}
+
 
 $x = isset($_POST['categories']) ? explode(';', $_POST['categories']) : NULL;
 if (is_array($x)) {
@@ -173,12 +184,11 @@ if (isset($_POST['reviewSite'])) {
     $res = db_query($qry, $cnnct);
     while ($row = mysql_fetch_row($res)) {
       $revId = (int) trim($row[0]);
-      $m = $members[$revId];
+      $m = $members[$revId]; // $m = array(name, email, reset-flag)
       if (isset($m)) {
 	$nm = isset($m[0]) ? trim($m[0]) : NULL;
 	$eml = isset($m[1]) ? strtolower(trim($m[1])) : NULL;
-	if ($nm!=$row[1]
-	    || $eml!=strtolower($row[2]) || isset($m[2])) {
+	if ($nm!=$row[1] || $eml!=strtolower($row[2]) || isset($m[2])) {
 	  update_committee_member($cnnct, $revId, $nm, $eml, isset($m[2]));
 	}
       }
@@ -413,8 +423,10 @@ function update_committee_member($cnnct, $revId, $name, $email, $reset=false)
   if ($row=mysql_fetch_row($res)) {  // Found PC member
     $updates = $comma = '';
 
-    if (empty($row[0])) $reset=true;               // Set initial password
-    if ($reset || (isset($email) && $email!=$row[2])) {// reset pwd
+    if (empty($row[0])) $reset=true;                   // Set initial password
+    if (isset($email) && $email!=$row[2]) $reset=true; // Change email address
+
+    if ($reset) { // reset pwd
       $pwd = md5(uniqid(rand()).mt_rand());        // returns hex string
       $pwd = alphanum_encode(substr($pwd, 0, 15)); // "compress" a bit
       $pw = md5(CONF_SALT. $email . $pwd);
@@ -442,8 +454,8 @@ function update_committee_member($cnnct, $revId, $name, $email, $reset=false)
     if (!empty($updates)) {
       $qry = "UPDATE committee SET $updates WHERE revId='{$revId}'";
       db_query($qry, $cnnct, "Cannot update PC member $name <$email>: ");
-      email_password($email, $pwd, ($revId == CHAIR_ID));
-    }    
+      if ($reset) email_password($email, $pwd, ($revId == CHAIR_ID));
+    } 
   }
 }
 
@@ -452,6 +464,7 @@ function email_password($emailTo, $pwd, $isChair=false)
   global $shortName;
   global $confYear;
   global $chairEml;
+  $php_errormsg = ''; // so we don't get notices if it is not defined
 
   $prot = (defined('HTTPS_ON') || isset($_SERVER['HTTPS']))? 'https' : 'http';
   $baseURL = $prot.'://'.BASE_URL;
@@ -491,6 +504,7 @@ EndMark;
 
 function send_camera_instructions($cnnct, $text)
 {
+  $php_errormsg = ''; // so we don't get notices if it is not defined
   $cName = CONF_SHORT.' '.CONF_YEAR;
 
   $emlCrlf = (EML_CRLF == "\n") ? "\n" : "\r\n";
@@ -503,16 +517,22 @@ function send_camera_instructions($cnnct, $text)
   $qry = "SELECT subId, title, authors, contact FROM submissions
   WHERE status='Accept'";
   $res = db_query($qry, $cnnct);
+  $count=0;
   while ($row = mysql_fetch_row($res)) {
     $subId = (int) $row[0];
     $contact = $row[3];
 
-  if (ini_get('safe_mode') || !defined('EML_EXTRA_PRM'))
-    $success = mail($contact, $sbjct, $text, $hdr);
-  else
-    $success = mail($contact, $sbjct, $text, $hdr, EML_EXTRA_PRM);
+    if (ini_get('safe_mode') || !defined('EML_EXTRA_PRM'))
+      $success = mail($contact, $sbjct, $text, $hdr);
+    else
+      $success = mail($contact, $sbjct, $text, $hdr, EML_EXTRA_PRM);
 
-  if (!$success) error_log(date('Y.m.d-H:i:s ')."Cannot send instructions for submission {$subId} to {$contact}. {$php_errormsg}\n", 3, './log/'.LOG_FILE);
+    if (!$success) error_log(date('Y.m.d-H:i:s ')."Cannot send instructions for submission {$subId} to {$contact}. {$php_errormsg}\n", 3, './log/'.LOG_FILE);
+
+    $count++;
+    if (($count % 25)==0) { // rate-limiting, avoids cutoff
+      sleep(1);
+    }
   }
 }
 ?>

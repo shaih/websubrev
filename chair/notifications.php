@@ -12,6 +12,8 @@ if (defined('SHUTDOWN')) exit("<h1>Site is Closed</h1>");
 
 $cName = CONF_SHORT.' '.CONF_YEAR;
 $links = show_chr_links();
+$cmrDdline = utcDate('r (T)', CAMERA_DEADLINE);
+
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -57,7 +59,7 @@ Submission-ID: <$subId>
 Password:      <$subPwd>
 
 In order to be included in the proceedings, the final version of your paper
-must be received no later than '.CAMERA_DEADLINE.'.
+must be received no later than '.$cmrDdline.'.
 This is a firm deadline.
 
 Thank you very much for contributing to '.$cName.'.
@@ -115,6 +117,7 @@ if (isset($_POST['notifySubmitters'])) {
 
   print "<h3>Sending notification letters...</h3>\n";
 
+  $count=0;
   while ($row = mysql_fetch_row($res)) {
     if ($row[4]=='Accept') {
       notifySubmitters($row[0], $row[1], $row[2], $row[3], $row[5],
@@ -125,10 +128,18 @@ if (isset($_POST['notifySubmitters'])) {
       notifySubmitters($row[0], $row[1], $row[2], $row[3], $row[5],
 		       "Your {$cName} submission", $rej);
     }
+    else continue;
+
+    $count++;
+    if (($count % 25)==0) { // rate-limiting, avoids cutoff
+      print "$count messages sent so far...<br/>\n";
+      sleep(1);
+    }
   }
 
   print <<<EndMark
-Notification email sent. Check the <a href="view-log.php">log file</a>
+<br/>
+Total of $count messages sent. Check the <a href="view-log.php">log file</a>
 for any errors.
 
 <hr />
@@ -143,7 +154,7 @@ EndMark;
 // Allow the chair to customize the emails
 print <<<EndMark
 Use the form below to customize your accept/reject letters. The email
-notifications will be send when you hit the "Send Notification" button
+notifications will be sent when you hit the "Send Notification" button
 at the bottom of this page.<br />
 <br />
 

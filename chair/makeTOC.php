@@ -36,7 +36,7 @@ tr { vertical-align: top; }
 $links
 <hr />
 <h1>Generate Indexes for $cName Proceedings</h1>
-Use this form to aurtomatically generate the table-of-contents, author index,
+Use this form to automatically generate the table-of-contents, author index,
 and external-reviewer list for the proceedings. This form will generate a
 LaTeX2e file in the llncs format of Springer, but persumably the various
 tables can be used also for other LaTeX styles.<br/>

@@ -60,6 +60,11 @@ Use this form to Undo the last change that you did from the administration
 page (or redo the last change that you un-did from this page). Currently,
 only one version of Undo/Redo information is kept, so you cannot undo/redo
 multiple changes.<br/>
+<br/>
+Note that the only modifications that can be un-done from this page are
+to "system parameters" (such as deadlines, etc.). In particular you cannot
+undo things like setting status of individual submissions or setting the
+discuss flags of individual PC members.<br/>
 <form action="undoLast.php" method=get>
 $bkButton
 $fwButton

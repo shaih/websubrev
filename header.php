@@ -36,6 +36,8 @@ if (get_magic_quotes_gpc()) {
   $_POST  = array_map('stripslashes_deep', $_POST);
 }
 
+$php_errormsg = ''; // just so we don't get notices when it is not defined.
+
 function show_sub_links($current=0, $prt=false) 
 {
   global $chair;
