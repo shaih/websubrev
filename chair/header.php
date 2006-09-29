@@ -7,11 +7,14 @@
  */
  /********* standard header for the /chair directory ************/
 
-if (!file_exists('../init/confParams.php')) { // Not yet customized
+if (!file_exists('../init/confParams.php')) { // Not intialized yet
   header("Location: initialize.php");
   exit();
 }
 require_once('../includes/getParams.php');
+
+if (!isset($needsAuthentication)) $needsAuthentication = true;
+if (!isset($notCustomized))       $notCustomized = false;
 
 /* Authenticate the chair unless $needsAuthentication === false (in
  * particular this means authenticate when $needsAuthentication is NULL)
@@ -22,14 +25,15 @@ if ($needsAuthentication !== false) {
   // first try uname/pwd from the URL (if any)
   if (isset($_GET['username']) && isset($_GET['password'])) {
     // returns either an array (id, name, email, ...) or false 
-    $chair = auth_PC_member($_GET['username'], $_GET['password'], CHAIR_ID);
+    $chair = auth_PC_member($_GET['username'], 
+			    $_GET['password'], CHAIR_ID, $notCustomized);
   }
 
   // next try uname/pwd from HTTP authentication
   if ($chair===false && isset($_SERVER['PHP_AUTH_USER'])
                      && isset($_SERVER['PHP_AUTH_PW'])) {
     $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
-			    $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
+			    $_SERVER['PHP_AUTH_PW'], CHAIR_ID, $notCustomized);
   }
 
   // If nothing works, prompt client for credentials

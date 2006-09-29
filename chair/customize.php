@@ -6,6 +6,7 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
 $needsAuthentication = true; 
+$notCustomized = true;
 require 'header.php';
 
 if (PERIOD>PERIOD_SETUP) die("<h1>Installation Already Customized</h1>");
@@ -26,6 +27,9 @@ if ($year == 0) { // guess the year of the conference
 $chkAff = (CONF_FLAGS & FLAG_AFFILIATIONS) ? ' checked="checked"' : '';
 $chkRevPrf = (CONF_FLAGS & FLAG_PCPREFS) ? ' checked="checked"' : '';
 $chkAnon = (CONF_FLAGS & FLAG_ANON_SUBS) ? ' checked="checked"' : '';
+
+if (CHAIR_NAME=='') $chrEml = CHAIR_EMAIL;
+else $chrEml = CHAIR_NAME.' <'.CHAIR_EMAIL.'>';
 
 $star = "<span class=notice>(*)</span>";
 print <<<EndMark
@@ -75,9 +79,9 @@ conference name, deadlines, what formats are acceptable for submissions, etc.
 All the conference parameters that you specify here can be changed later from
 the administration page.<br/>
 <br/>
-This form has three sections, corresponding to <a href="#conference">
-the conference</a>, <a href="#submissions">submissions</a>, and
-<a href="#review">reviews</a>.
+This form has four sections, corresponding to <a href="#conference">the
+conference</a>, <a href="#submissions">submissions</a>, <a href="#committee">
+program committee</a>, and <a href="#review">reviews</a>.
 <br/>
 <form name="customize" onsubmit="return checkform(this);"
  action="confirm-customize.php{$urlParams}" enctype="multipart/form-data" method="post">
@@ -103,7 +107,7 @@ the conference</a>, <a href="#submissions">submissions</a>, and
   <td><input name="confURL" size="90" type="text"><br/>
     URL of the conference home page, where the call-for-papers is found.</td>
 </tr>
-<tr><td colspan="2" style="text-align: right;"><hr/></td></tr>
+<tr><td colspan="2" class=rjust><hr/></td></tr>
 <!-- ================= Submissions =================== -->
 <tr><td class=rjust><big><b><a NAME="submissions">Submissions:</a></b></big></td><td></td>
 </tr>
@@ -161,7 +165,25 @@ the conference</a>, <a href="#submissions">submissions</a>, and
     &nbsp; MIME-type:<input name="format3mime" size="15" type="text">
   </td>
 </tr>
-<tr><td colspan="2" style="text-align: right;"><hr /></td></tr>
+<tr><td colspan="2" class=rjust><hr /></td></tr>
+<!-- ================= The Program Committee =================== -->
+<tr><td class=rjust><big><b><a NAME="committee">Program&nbsp;Committee:</a></b></big></td><td></td>
+</tr>
+<tr><td class=rjust>{$star}<a href="../documentation/chair.html#PCemail" target="documentation" title="click for more help">Chair&nbsp;Email:</a></td>
+  <td><input name="chair" size="90" type="text" value="$chrEml" onchange="return checkEmail(this)"><br/>
+     Only one address (e.g., <tt>chair@basket06.org</tt> or <tt>Earvin Johnson
+     &lt;Magic.Johnson@retirement.net&gt;</tt>)</td>
+</tr>
+<tr><td class=rjust><a href="../documentation/chair.html#PCemail" target="documentation" title="click for more help">Program&nbsp;Committee:</a></td>
+  <td><textarea name="committee" rows=15 cols=70>Shaquille O'Neal &lt;shaq@MiamiHeat.nba.com&gt;;
+Larry J. Bird &lt;the-bird@old-timers.org&gt;;
+Jordan, Michael &lt;Air-Jordan@nike.com&gt;</textarea><br/>
+    A <i><b>semi-colon-separated</b></i> list of email addresses (including the
+    chair's personal email address).<br/> Each address should be in the format
+    "Name &lt;email-address&gt;". (The names that you enter here <br/>will be
+    displayed on the reports and discussion boards.)</td>
+</tr>
+<tr><td colspan=2 class=rjust><hr /></td></tr>
 <!-- ================= Reviews =================== -->
 <tr><td class=rjust><big><b><a NAME="review">Reviews:</a></b></big></td>
   <td>(the default options below should work just fine for most cases)</td>
@@ -189,7 +211,7 @@ the conference</a>, <a href="#submissions">submissions</a>, and
   format <tt>Name(max-val)</tt>.<br/><b>Do not add</b> <tt>Confidence(X)</tt>
   above, a field <tt>Confidence(3)</tt> is hard-wired in the software.</td>
 </tr>
-<tr><td colspan="2" style="text-align: right;"><hr /></td></tr>
+<tr><td colspan="2" class=rjust><hr /></td></tr>
 <!-- ================= The Submit Button =================== -->
 <tr><td colspan="2" class=ctr><input value="   Submit   " type="submit"></td>
 </tr>

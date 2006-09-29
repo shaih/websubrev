@@ -6,6 +6,7 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
 $needsAuthentication = true; 
+$notCustomized = true;
 require 'header.php';
 
 if (PERIOD>PERIOD_SETUP) die("<h1>Installation Already Customized</h1>");
@@ -37,6 +38,9 @@ $f3dsc     = isset($_POST['format3desc']) ? trim($_POST['format3desc']): NULL;
 $f3ext     = isset($_POST['format3ext'])  ? trim($_POST['format3ext']) : NULL;
 $f3mime    = isset($_POST['format3mime']) ? trim($_POST['format3mime']): NULL;
 
+$chair       = isset($_POST['chair']) ? parse_email($_POST['chair'])  : false;
+$committee   = isset($_POST['committee'])  ?
+                                    explode(';', $_POST['committee'])   : NULL;
 
 $anonymous = isset($_POST['anonymous']) ?
   'Anonymous submissions' :
@@ -52,9 +56,9 @@ $crList = isset($_POST['criteria']) ? explode(';', $_POST['criteria']) : NULL;
 
 // Check that the required fileds are specified
 
-if (empty($longName) || empty($shortName) || empty($confYear)) {
+if (empty($longName)|| empty($shortName)|| empty($confYear)|| !$chair) {
   print "<h1>Mandatory fields are missing</h1>\n";
-  exit("You must specify the conference short and long names and year");
+  exit("You must specify the conference short and long names and year, and the program chair email address\n");
 }
 
 if ($confYear < 1970 || $confYear > 2099) {
@@ -77,6 +81,13 @@ if ($tcr!==false && $tcr!=-1) {
   $cameraDeadlineHtml = utcDate('r (T)', $tcr);
 }
 else die("<h1>Unrecognized time format for camera-ready deadline</h1>");
+
+// Create an array of committee members
+if (isset($committee)) {
+  $list = $committee;
+  $committee = array();
+  foreach ($list as $m) { $committee[] = parse_email($m); }
+}
 
 // Create an array of criteria
 $nCrits = 0;
@@ -134,6 +145,9 @@ $longNameHtml  = htmlspecialchars($longName);
 $shortNameHtml = htmlspecialchars($shortName); 
 $confYearHtml  = htmlspecialchars($confYear);  
 $confURLHtml   = htmlspecialchars($confURL);   
+
+$chairNmHtml   = htmlspecialchars($chair[0]);
+$chairEmlHtml  = htmlspecialchars($chair[1]);
 
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -213,6 +227,34 @@ else {
   print "<tr><td style=\"text-align:right;\">Supported Formats:</td>\n";
   print "  <td colspan=\"3\"><b>No Formats Recorded</b></td></tr>\n";
 }
+print <<<EndMark
+</tbody></table>
+
+<h2>Program Committee:</h2>     
+<table cellspacing=6>
+<tbody>
+  <tr><th></th> <th>Name</th> <th>Email</th></tr>
+  <tr><td style="text-align: right;">Program Chair:</td>
+    <td><tt>$chairNmHtml</tt></td> <td><tt>$chairEmlHtml</tt></td>
+  </tr>
+
+EndMark;
+
+if (is_array($committee) && count($committee)>0) {
+  $i = 0;
+  foreach ($committee as $m) {
+    $nm = htmlspecialchars(trim($m[0])); $eml = htmlspecialchars(trim($m[1]));
+    if (!empty($eml)) {
+      if ($i>0) print "  <tr><td></td>\n";
+      else      print "  <tr><td style=\"text-align: right;\">Program Committee:</td>\n";
+
+      print "    <td><tt>$nm</tt></td> <td><tt>$eml</tt></td>\n  </tr>\n";
+      $i++;
+    }
+  }
+  $nCmmtee = $i; // How many non-empty email addresses
+}
+else $nCmmtee = 0;
 
 print <<<EndMark
 </tbody></table>
@@ -250,8 +292,27 @@ print <<<EndMark
 <input name="confURL"    type="hidden" value="$confURL">
 <input name="subDeadline" type="hidden" value="$subDeadline">
 <input name="cameraDeadline" type="hidden" value="$cameraDeadline">
+<input name="chairName"  type="hidden" value="$chair[0]">
+<input name="chairEmail" type="hidden" value="$chair[1]">
 
 EndMark;
+
+print "<input name=\"nCmmtee\" type=\"hidden\" value=\"$nCmmtee\">\n";
+if ($nCmmtee > 0) {
+  $i = 0;
+  foreach ($committee as $m) {
+    $nm = trim($m[0]); $eml = trim($m[1]);
+    if (!empty($eml)) {
+      print <<<EndMark
+  <input name="member_{$i}_name" type="hidden" value="$nm">
+  <input name="member_{$i}_email" type="hidden" value="$eml">
+
+EndMark;
+      $i++;
+    }
+  }
+  print "\n";
+}
 
 print "<input name=\"nCats\" type=\"hidden\" value=\"$nCats\">\n";
 if ($nCats > 0) {

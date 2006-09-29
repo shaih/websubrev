@@ -28,9 +28,12 @@ $row = mysql_fetch_row($res) or die("Cannot find chair in database");
 define('CHAIR_NAME', $row[0]);
 define('CHAIR_EMAIL', $row[1]);
 
-$qry = "SELECT * from parameters WHERE isCurrent=1 ORDER BY version DESC LIMIT 1";
-$res = db_query($qry, $cnnct, "Cannot load parameters: ");
-$row = mysql_fetch_assoc($res) or die("No parameters are specified");
+if (isset($notCustomized) && $notCustomized===true) $row=emptyPrms();
+else {
+  $qry = "SELECT * from parameters WHERE isCurrent=1 ORDER BY version DESC LIMIT 1";
+  $res = db_query($qry, $cnnct, "Cannot load parameters: ");
+  $row = mysql_fetch_assoc($res) or die("No parameters are specified");
+}
 
 define('PARAMS_VERSION', $row['version']);
 define('BASE_URL', $row['baseURL']);
@@ -216,5 +219,31 @@ function criteriaTable($criteriaString)
   else $criteria = NULL;
 
   return $criteria;
+}
+
+function emptyPrms()
+{
+  return array(
+    'version'       => 0,
+    'isCurrent'     => 0,
+    'longName'      => '',
+    'shortName'     => '',
+    'confYear'      => 0,
+    'confURL'       => NULL,
+    'subDeadline'   => 0,
+    'cmrDeadline'   => 0,
+    'maxGrade'      => 6,
+    'maxConfidence' => 3,
+    'flags'         => FLAG_PCPREFS| FLAG_AFFILIATIONS| FLAG_EML_HDR_X_MAILER,
+    'emlSender'     => NULL,
+    'baseURL'       => '',
+    'period'        => 0,
+    'formats'       => '',
+    'categories'    => NULL,
+    'extraCriteria' => NULL,
+    'cmrInstrct'    => NULL,
+    'acceptLtr'     => NULL,
+    'rejectLtr'     => NULL
+    );
 }
 ?>

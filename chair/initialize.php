@@ -5,10 +5,10 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-if (file_exists('../init/confParams.php')) { // Already customized
-  header("Location: index.php");
-  exit();
-}
+//if (file_exists('../init/confParams.php')) { // Already customized
+//  header("Location: index.php");
+//  exit();
+//}
 $webServer = $_SERVER['HTTP_HOST'];
 if ($webServer=='localhost' || $webServer=='127.0.0.1') $webServer='';
 
@@ -16,12 +16,10 @@ if ($webServer=='localhost' || $webServer=='127.0.0.1') $webServer='';
 $month = date('n');
 $year = date('Y');
 if ($month>6) $year++;
-if (isset($_GET['confName'])) {
-  $cName = trim($_GET['confName']);
-  $dbName = $cName.$year;
-}
-else { $cName = $dbName = ''; }
 
+// Set some default name for the database
+$rnd = mt_rand() % 100;
+$dbName = "Conf{$rnd}_$year";
 
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -42,22 +40,20 @@ function checkform( form )
   // Checking that all the mandatory fields are present
   var pat = /^\s*$/;
   var st = 0;
-  if (pat.test(form.shortName.value))   { st |= 1; }
-  if (pat.test(form.confYear.value))    { st |= 2; }
-  if (pat.test(form.webServer.value))   { st |= 4; }
+  if (pat.test(form.webServer.value))   { st |= 1; }
   if (form.localMySQL[1].checked &&
-      pat.test(form.MySQLhost.value))   { st |= 8; }
-  if (pat.test(form.chair.value))       { st |= 16; }
-  if (pat.test(form.admin.value))       { st |= 32; }
+      pat.test(form.MySQLhost.value))   { st |= 2; }
+  if (pat.test(form.chair.value))       { st |= 4; }
+  if (pat.test(form.admin.value))       { st |= 8; }
+  if (pat.test(form.confDB.value))      { st |= 16; }
 
   if (st != 0) {
     alert( "Some mandatory fields are missing" );
-    if (st & 1)      { form.shortName.focus(); }
-    if (st & 2)      { form.confYear.focus(); }
-    if (st & 4)      { form.webServer.focus(); }
-    else if (st & 8) { form.MySQLhost.focus(); }
-    else if (st & 16) { form.chair.focus();     }
-    else if (st & 32) { form.admin.focus();     }
+    if (st & 1)       { form.webServer.focus(); }
+    else if (st & 2)  { form.MySQLhost.focus(); }
+    else if (st & 4)  { form.chair.focus();     }
+    else if (st & 8)  { form.admin.focus();     }
+    else if (st & 16) { form.confDB.focus();    }
 
     return false ;
   }
@@ -65,12 +61,11 @@ function checkform( form )
   st = 0;
   if (pat.test(form.rootNm.value))  { st |= 1; }
   if (pat.test(form.rootPwd.value)) { st |= 2; }
-  if (pat.test(form.confDB.value))  { st |= 4; }
-  if (pat.test(form.user.value))    { st |= 8; }
-  if (pat.test(form.pwd.value))     { st |= 16; }
+  if (pat.test(form.user.value))    { st |= 4; }
+  if (pat.test(form.pwd.value))     { st |= 8; }
 
-  if ((st & 3) && (st & 28)) {
-    alert( "You must specify either the MySQL administarot name and password, or the name of a MySQL database as well as username and password to access that database" );
+  if ((st & 3) && (st & 12)) {
+    alert( "You must specify either the MySQL administarot name and password, or the name and password of a user that can access the conference database" );
     form.rootPwd.focus();
     return false ;
   }
@@ -92,13 +87,9 @@ kept, etc.<br/>
 
 <table cellpadding="6">
 <tbody>
-<tr><td class=rjust>Conference&nbsp;Short&nbsp;Name:</td>
-<td><input name="shortName" type="text" size=42 value="$cName"> &nbsp;
-    Year: <input name="confYear" size=5 type="text" value="$year" onchange="return checkInt(this, 1970, 2099)"></td>
-</tr>
 <tr><td class=rjust><a href="../documentation/chair.html#webServer" target="documentation" title="click for more help">Web&nbsp;Server:</a></td>
   <td><input name="webServer" type="text" value="$webServer" size="60"><br/>
-    The DNS name or IP address of the web-server (e.g., <tt>www.nba.com</tt> or <tt>18.7.22.83</tt>)</td>
+    The DNS name or IP address of the web-server (e.g., <tt>www.myConf.org</tt> or <tt>18.7.22.83</tt>)</td>
 </tr>
 <tr><td class=rjust><a href="../documentation/chair.html#SQLserver" target="documentation" title="click for more help">MySQL&nbsp;Server:</a></td>
   <td><input name="localMySQL" type="radio" value="yes" checked="checked">
@@ -120,12 +111,15 @@ kept, etc.<br/>
     it (or ask the site administrator to do it for you) and <br/>enter the
     details below.</td>
 </tr>
-<tr><td class=rjust><a href="../documentation/chair.html#SQLuser" target="documentation" title="click for more help">MySQL&nbsp;Database&nbsp;Name:</a></td>
-  <td><input name="confDB" size="90" type="text" value="$dbName"></td>
-</tr>
 <tr><td class=rjust><a href="../documentation/chair.html#SQLuser" target="documentation" title="click for more help">MySQL&nbsp;User:</a></td>
   <td>Name: <input name="user" size="32" type="text"> &nbsp; &nbsp;
     Password: <input name="pwd" size="32" type="password"></td>
+</tr>
+<tr><td class=rjust><a href="../documentation/chair.html#SQLuser" target="documentation" title="click for more help">MySQL&nbsp;Database&nbsp;Name:</a></td>
+  <td><input name=confDB size=40 type=text value="$dbName"> (e.g., FOCS2009)
+    <br/>Either the name of an existing database (if you specified username
+     and password above), or the<br/>name for the newly created database
+     (if you specified the administrator name and password above).</td>
 </tr>
 <tr><td class=rjust>Submission&nbsp;Directory:</td>
   <td><input name="subDir" size="90" type="text"><br/>

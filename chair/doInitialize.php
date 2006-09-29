@@ -69,25 +69,16 @@ if ($lastChar=="/") $subDir = substr($subDir, 0, -1);
 
 // Check that the required fileds are specified
 
-if (empty($shortName) || empty($year)
-    || empty($chairEmail) || empty($adminEmail)) {
+if (empty($sqlDB) || empty($chairEmail) || empty($adminEmail)) {
   print "<h1>Mandatory fields are missing</h1>\n";
-  exit("You must specify the conference name and year and the chair and administrator email\n");
-}
-
-if ($year < 1970 || $year > 2099) {
-  print "<h1>Wrong format for the conference year</h1>\n";
-  exit("Year must be an integer between 1970 and 2099");
+  exit("You must specify a name for the database, and the chair and administrator email addresses\n");
 }
 
 if ((empty($sqlRoot) || empty($sqlRootPwd)) 
-    && (empty($sqlDB) || empty($sqlUsr) || empty($sqlPwd))) {
-  exit("<h1>Cannot create/access MySQL database</h1>
-       To automatically generate MySQL database, you must specify the
-       MySQL root username and password.<br />
-       Otherwise, you must manually create the database and specify the
-       database name, and also specify MySQL username and password of a
-       user that has access to that database.\n");
+    && (empty($sqlUsr) || empty($sqlPwd))) {
+  print "<h1>Cannot create/access MySQL database</h1>\n";
+  print "To automatically generate MySQL database, you must specify the MySQL root username and password.<br/>\n";
+  exit("Otherwise you must manually create the database and specify the name and password of a user that has access to that database.\n");
 }
 
 /* We are ready to initialize the installation */
@@ -95,6 +86,7 @@ if ((empty($sqlRoot) || empty($sqlRootPwd))
 // Create the error log file (also to check that $subDir is writable)
 $logFile = $subDir.'/log'.time();
 define('LOG_FILE', $logFile); // needed for error reporting in some functions
+if (!file_exists($subDir)) mkdir($subDir);
 if (!($fd = fopen(LOG_FILE, 'w'))) {          // Open for write
   exit("<h1>Cannot create log file $logFile</h1>\n");
 }
@@ -104,34 +96,27 @@ error_log(date('Y.m.d-H:i:s ')."Log file created\n", 3, LOG_FILE);
 // We generate some randomness for salting the password hashes
 $salt = alphanum_encode(md5(uniqid(rand()).mt_rand()));
 
-// If MySQL database and username are not specified,
-// generate the database and create a new user
-if (empty($sqlUsr) || empty($sqlPwd) || empty($sqlDB)) {
+// If MySQL user & pwd are not specified, create a new database and user
+if (empty($sqlUsr) || empty($sqlPwd)) {
 
   // Test that we can actually connect using the root username/pwd
   $cnnct = db_connect($sqlHost, $sqlRoot, $sqlRootPwd, NULL);
 
   // Create the database
-  if (empty($sqlDB) || !preg_match('/^[a-z][0-9a-z_.\-]*$/i', $sqlDB))
-    $sqlDB = substr(makeName($shortName), 0, 16) . $year;
   $sqlDB = makeName($sqlDB); // make sure this is a valid name
-
-  $qry = 'DROP DATABASE IF EXISTS ' .  $sqlDB;
+  $qry = 'DROP DATABASE IF EXISTS '.$sqlDB;
   db_query($qry, $cnnct, "Cannot create a new database $sqlDB: ");
-  $qry = 'CREATE DATABASE IF NOT EXISTS ' . $sqlDB;
+  $qry = 'CREATE DATABASE IF NOT EXISTS '.$sqlDB;
   db_query($qry, $cnnct, "Cannot create a new database $sqlDB: ");
 
   mysql_select_db($sqlDB, $cnnct);
   create_tabels($cnnct); // from database.php, create the tables in the DB
 
-  // Create new user if not exist
-  if (empty($sqlUsr) || !preg_match('/^[a-z][0-9a-z_.\-]*$/i', $sqlDB)) {
-    $sqlUsr = $sqlDB;
-    $sqlPwd = md5(uniqid(rand()). mt_rand(). $sqlUsr); // returns hex string
-    $sqlPwd = alphanum_encode(substr($sqlPwd, 0, 12)); // "compress" a bit
-  } 
-  $sqlUsr = my_addslashes($sqlUsr, $cnnct);
-  $sqlPwd = my_addslashes($sqlPwd, $cnnct);
+  // Create new user if not specified
+  if (empty($sqlUsr)) $sqlUsr = $sqlDB;
+  else                $sqlUsr = my_addslashes($sqlUsr, $cnnct);
+  $sqlPwd = md5(uniqid(rand()). mt_rand(). $sqlUsr); // returns hex string
+  $sqlPwd = alphanum_encode(substr($sqlPwd, 0, 12)); // "compress" a bit
 
   if ($sqlHost=='localhost') {
     $qry = "GRANT SELECT, INSERT, UPDATE, DELETE ON {$sqlDB}.* "
@@ -155,10 +140,10 @@ if (file_exists($prmsFile)) unlink($prmsFile); // just in case
 if (!($fd = fopen($prmsFile, 'w'))) {          // Open for write
   exit("<h1>Cannot create the parameters file at $prmsFile</h1>\n");
 }
-$prmsString = "<?php /* Parameters for installation of $shortName $year\n"
-  . " * This file is formatted as a php file to ensure that accessing it\n"
-  . " * directly by mistake does not cause the server to send this\n"
-  . " * information to a client.\n"
+$prmsString = "<?php\n"
+  . "/* Parameters for a new installation: this file is formatted as a PHP\n"
+  . " * file to ensure that accessing it directly by mistake does not cause\n"
+  . " * the server to send this information to a client.\n"
   . "MYSQL_HOST=$sqlHost\n"
   . "MYSQL_DB=$sqlDB\n"
   . "MYSQL_USR=$sqlUsr\n"
@@ -167,13 +152,13 @@ $prmsString = "<?php /* Parameters for installation of $shortName $year\n"
   . "LOG_FILE=$logFile\n"
   . "ADMIN_EMAIL=$adminEmail\n"
   . "CONF_SALT=$salt\n"
-  . " */\n"
+  . " ********************************************************************/\n"
   . "?>\n";
 if (!fwrite($fd, $prmsString)) {
   exit ("<h1>Cannot write into parameters file $tFile</h1>\n");
 }
 fclose($fd);
-chmod($prmsFile, 0400);
+chmod($prmsFile, 0440);
 
 // Create the submission sub-directories
 if (!mkdir("$subDir/backup", 0775)) { 
@@ -187,25 +172,18 @@ copy('../init/index.html', $subDir.'/index.html');
 copy('../init/index.html', $subDir.'/backup/index.html');
 copy('../init/index.html', $subDir.'/final/index.html');
 
-// Initialize the parameters in the databse
-$defaultFlags = FLAG_PCPREFS | FLAG_AFFILIATIONS | FLAG_EML_HDR_X_MAILER;
-if (isset($_SERVER['HTTPS'])) $defaultFlags |= FLAG_SSL;
-$qry = "INSERT INTO parameters SET version=1, isCurrent=1, longName='', shortName='$shortName', confYear=$year, subDeadline=0, cmrDeadline=0, maxGrade=0, maxConfidence=0, flags=$defaultFlags, baseURL='$baseURL', period=0, formats=''";
-
-db_query($qry, $cnnct, "Cannot insert program chair to database: ");
-
 // Insert the PC chair into the committee table. Also generates password
-// for the chair and send it by email. The value that is written to the
-// database is MD5(salt.email.password)
+// for the chair and send it by email. Initialy, the password is written
+// to the database "in the clear" (to be consistent with the non-web-based
+// method of initialization). After customization, the value that will
+// be written to the database is MD5(salt.email.password)
 $chrPwd = md5(uniqid(rand()).mt_rand());            // returns hex string
 $chrPwd = alphanum_encode(substr($chrPwd, 0, 15));  // "compress" a bit
-$chrEml = strtolower($chairEmail);                  // store for later
+$chairEmail = strtolower($chairEmail);
+$chrEml = my_addslashes($chairEmail, $cnnct);
+$chrNam = my_addslashes($chairName, $cnnct);
 
-$chairEmail = my_addslashes($chairEmail, $cnnct);
-$chairPw = md5($salt . $chrEml . $chrPwd);
-
-$qry = "INSERT INTO {$sqlDB}.committee SET revId=1, revPwd='$chairPw', 
-  name='$chairName', email='{$chairEmail}', canDiscuss='1'";
+$qry = "INSERT INTO committee SET revId=1, revPwd='$chrPwd', name='$chrNam', email='$chrEml', canDiscuss=1";
 db_query($qry, $cnnct, "Cannot insert program chair to database: ");
 
 // Send email to chair and admin with the password for using this site

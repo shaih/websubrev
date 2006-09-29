@@ -63,7 +63,7 @@ function my_send_mail($sendTo, $subject, $msg, $cc=NULL, $errMsg='')
 
 // If the user is found in the database, returns the user details
 // as array(id, name, email). Otherwise returns false.
-function auth_PC_member($eml, $pwd, $id=NULL)
+function auth_PC_member($eml, $pwd, $id=NULL, $pwdInClear=false)
 {
   // Test the username and password parameters
   if (!isset($eml) || !isset($pwd))
@@ -74,7 +74,7 @@ function auth_PC_member($eml, $pwd, $id=NULL)
   // Create a digest of the password and sanitize the email address
   $eml = strtolower(trim($eml));
 
-  $pwd = md5(CONF_SALT . $eml . $pwd);
+  if (!$pwdInClear) $pwd = md5(CONF_SALT . $eml . $pwd);
   $eml = my_addslashes($eml, $cnnct);
 
   // Formulate the SQL find the user

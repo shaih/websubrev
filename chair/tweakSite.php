@@ -19,6 +19,9 @@ else                                    $chkCRLF = ' checked="checked"';
 if (CONF_FLAGS & FLAG_EML_HDR_X_MAILER) $chkXmlr = ' checked="checked"';
 if (CONF_FLAGS & FLAG_EML_EXTRA_PRM)    $chkXprm = ' checked="checked"';
 
+if (isset($_GET['tweaked'])) $confirm = '<center>Changes Recorded</center>';
+else                         $confirm = '';
+
 $links = show_chr_links();print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -35,6 +38,7 @@ h1 {text-align: center;}
 <body>
 $links
 <hr/>
+$confirm
 <h1>Tweak Site Settings</h1>
 
 This form is used to tweak some settings of the site, which is sometimes

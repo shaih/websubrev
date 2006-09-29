@@ -39,5 +39,5 @@ if (isset($_POST['tweakSettings'])) {
     $res = db_query($qry, $cnnct, "Cannot update settings: ");
   }
 }
-header("Location: tweakSite.php");
+header("Location: tweakSite.php?tweaked=yes");
 ?>
