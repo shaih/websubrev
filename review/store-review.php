@@ -1,7 +1,7 @@
 <?php
 // returns 0 when all is well, otherwise an error code
-function storeReview($subId, $revId, $subReviewer, $conf, $grade,
-		     $auxGrades, $authCmnt, $pcCmnt, $chrCmnt, $watch=false)
+function storeReview($subId, $revId, $subReviewer, $conf, $grade, $auxGrades,
+		     $authCmnt, $pcCmnt, $chrCmnt, $watch=false, $noUpdt=false)
 {
   global $criteria;
 
@@ -41,7 +41,7 @@ function storeReview($subId, $revId, $subReviewer, $conf, $grade,
   }
 
   for ($i=0; $i<count($criteria); $i++) {
-    $grade = isset($auxGrades["grade_{$i}"]) ? (int) trim($auxGrades["grade_{$i}"]) : 0;
+    $grade = isset($auxGrades["grade_{$i}"]) ? ((int) trim($auxGrades["grade_{$i}"])) : 0;
     $mx = $criteria[$i][1];
     if ($grade>0 && $grade<=$mx) {
       $qry .= "    grade_{$i}={$grade},\n";
@@ -71,13 +71,14 @@ function storeReview($subId, $revId, $subReviewer, $conf, $grade,
     $qry .= "    comments2chair=NULL,\n";
   }
 
-  $qry .= "    whenEntered=NOW()";
-
   if (isset($row[2])) {  // existing entry
-    $qry = "UPDATE reports SET " . $qry
-      . "\n  WHERE revId=$revId AND subId=$subId";
+    if ($noUpdt) $qry .= "    lastModified=lastModified"; // don't update
+    else         $qry .= "    lastModified=NOW()";
+    $qry = "UPDATE reports SET $qry WHERE revId=$revId AND subId=$subId";
   } else {
-    $qry = "INSERT into reports SET revId=$revId, subId=$subId,\n   ".$qry;
+    $noUpdt = false;
+    $qry .= "    whenEntered=NOW()";
+    $qry = "INSERT into reports SET revId=$revId, subId=$subId,\n   $qry";
   }
   db_query($qry, $cnnct);
 
@@ -96,7 +97,9 @@ function storeReview($subId, $revId, $subReviewer, $conf, $grade,
       ($row[3] / ((float)$row[4])) : "NULL"; 
     if (!isset($wAvg)) $wAvg = "NULL";
 
-    $qry = "UPDATE submissions SET avg={$avg}, wAvg={$wAvg}, minGrade={$min}, maxGrade={$max}, lastModified=NOW() WHERE subId='$subId'";
+    $qry = "UPDATE submissions SET avg={$avg}, wAvg={$wAvg}, minGrade={$min}, maxGrade={$max}, ";
+    if ($noUpdt) $qry .= "lastModified=lastModified WHERE subId='$subId'";
+    else         $qry .= "lastModified=NOW() WHERE subId='$subId'";
     db_query($qry, $cnnct);
 
     // also add the submission to reviewer's watch list is asked to

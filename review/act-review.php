@@ -18,10 +18,11 @@ if (defined('CAMERA_PERIOD')) {
 }
 
 $add2watch = (!$disFlag || isset($_POST['add2watch']));
-
+$noUpdtModTime = $disFlag;
 $ret = storeReview($subId, $revId, $_POST['subRev'], $_POST['conf'],
 		   $_POST['grade'], $_POST, $_POST['comments2authors'],
-		   $_POST['comments2PC'], $_POST['comments2chair'],$add2watch);
+		   $_POST['comments2PC'], $_POST['comments2chair'],
+		   $add2watch, $noUpdtModTime);
 
 if ($ret==-1) exit("<h1>No Submission specified</h1>");
 if ($ret==-3) exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
