@@ -160,7 +160,9 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
   }
   else { $hdr .= 'Cc: ' . CHAIR_EMAIL . $emlCrlf; }
   if ($status < 0) { $hdr .= 'Bcc: '.ADMIN_EMAIL.$emlCrlf; }
-  $hdr .= 'X-Mailer: PHP/' . phpversion();
+  $hdr .= 'Sender: www@s1.iacr.org' . $emlCrlf;
+  $hdr .= 'Reply-To: '.CHAIR_EMAIL;
+//  $hdr .= 'X-Mailer: PHP/' . phpversion();
 
   $dots = (strlen($ttl) > 50) ? '... ' : ' ';
 
@@ -315,7 +317,7 @@ function return_to_caller($url, $extraPrms='', $anchor='')
     if (($pos=strpos($whoseCalling, '#'))===false)
       $whoseCalling .= $anchor;
     else 
-      $whoseCalling = subsrt($whoseCalling, 0, $pos) . $anchor;
+      $whoseCalling = substr($whoseCalling, 0, $pos) . $anchor;
   }
   header("Location: $whoseCalling");
   exit();
