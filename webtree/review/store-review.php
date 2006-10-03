@@ -1,6 +1,6 @@
 <?php
 // returns 0 when all is well, otherwise an error code
-function storeReview($subId, $revId, $subReviewer, $conf, $grade, $auxGrades,
+function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
 		     $authCmnt, $pcCmnt, $chrCmnt, $watch=false, $noUpdt=false)
 {
   global $criteria;
@@ -33,18 +33,18 @@ function storeReview($subId, $revId, $subReviewer, $conf, $grade, $auxGrades,
     $qry .= "    confidence=NULL,\n";
   }
 
-  $grade = (int) trim($grade);
-  if ($grade>0 && $grade<=MAX_GRADE) {
-    $qry .= "    score={$grade},\n";
+  $score = (int) trim($score);
+  if ($score>0 && $score<=MAX_GRADE) {
+    $qry .= "    score={$score},\n";
   } else {
     $qry .= "    score=NULL,\n";
   }
 
   for ($i=0; $i<count($criteria); $i++) {
-    $grade = isset($auxGrades["grade_{$i}"]) ? ((int) trim($auxGrades["grade_{$i}"])) : 0;
+    $score = isset($auxGrades["grade_{$i}"]) ? ((int) trim($auxGrades["grade_{$i}"])) : 0;
     $mx = $criteria[$i][1];
-    if ($grade>0 && $grade<=$mx) {
-      $qry .= "    grade_{$i}={$grade},\n";
+    if ($score>0 && $score<=$mx) {
+      $qry .= "    grade_{$i}={$score},\n";
     } else {
       $qry .= "    grade_{$i}=NULL,\n";
     }

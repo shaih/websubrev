@@ -15,9 +15,8 @@ echo
 echo "You need to specify a directory in the web-tree where the new site"
 echo "will reside (called the BASE directory, e.g., /var/www/html/MyConf),"
 echo "as well as a local directory where the submissions will be uploaded"
-echo "(called the submissions directory, e.g., /var/www/data/MyConf)."
-echo "Note that the web server must be able to write to the submissions"
-echo "directory." 
+echo "(called the UPLOAD directory, e.g., /var/www/data/MyConf). Note that"
+echo "the web server must be able to write to the UPLOAD directory."
 echo 
 echo "Make sure that the directory names are absolute (i.e., they must"
 echo "start with '/') and that they DO NOT end with '/'."
@@ -28,10 +27,10 @@ if [ -z $baseDir ]; then
   echo "You must specify the BASE directory for the site"
   exit
 fi
-read -p "submissions directory: " subDir
+read -p "UPLOAD directory: " subDir
 if [ -z $subDir ]; then
   echo
-  echo "You must specify the submissions directory"
+  echo "You must specify the UPLOAD directory"
   exit
 fi
 echo
@@ -85,7 +84,7 @@ echo "================================================="
 echo "PLEASE CONFIRM YOUR SELECTIONS BEFORE WE CONTINUE"
 echo "================================================="
 echo "BASE directory:        $baseDir" 
-echo "submissions directory: $subDir" 
+echo "UPLOAD directory:      $subDir" 
 echo "MySQL admin usrname:   $rootName"
 echo "MySQL database:        $dbName"
 echo "Web-servre group name: $webSrv"
@@ -148,7 +147,7 @@ chgrp $webSrv $baseDir/init/confParams.php
 chmod 640 $baseDir/init/confParams.php
 echo "done"
 echo
-echo -n "Preparing the submissions directory ... "
+echo -n "Preparing the UPLOAD directory ... "
 mkdir -p $subDir/backup
 mkdir -p $subDir/final
 cp $baseDir/init/.htaccess  $subDir
@@ -171,7 +170,7 @@ echo "               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
 echo "               NOTICE    NOTICE    NOTICE    NOTICE    NOTICE    NOTICE"
 echo 
 echo "You may want to consider modifying ownership/permissions on the BASE"
-echo "directory and the submissions directory, to comply with the security"
-echo "policy of your site. (Currently you own everything in the both dirs"
-echo "and $webSrv group-owns everything in the submissions dir.)"
+echo "and UPLOAD directories, to comply with the security policy of your site."
+echo "(Currently you own everything in the both directories and $webSrv"
+echo "group-owns everything in the UPLOAD directory.)"
 echo 
