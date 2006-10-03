@@ -52,7 +52,7 @@ unlink($fName);
 
 print <<<EndMark
 <br/><br/>
-Reviews uploaded. Go back to <a href=".">review homepage</a>.
+Reviews uploaded successfully. Go back to <a href=".">review homepage</a>.
 <hr/>
 $links
 </body>
@@ -175,7 +175,7 @@ function getAuxGrade(&$auxGrades, $line)
 }
 
 function saveReview($subId,$title,$subrev,
-		     $grade,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt)
+		     $score,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt)
 {
   global $revId;
   global $criteria;
@@ -203,15 +203,17 @@ function saveReview($subId,$title,$subrev,
   $cmnt = trim($cmnt);
   $pcCmnt = trim($pcCmnt);
   $chrCmnt = trim($chrCmnt);
-  if (empty($grade) && empty($conf) && !$foundAuxGrades
+  if (empty($score) && empty($conf) && !$foundAuxGrades
       && empty($cmnt) && empty($pcCmnt) && empty($chrCmnt)) {
     print "<b>Notice:</b> ignoring empty review for submission $subId: <tt>"
       .htmlspecialchars($title)."</tt><br/>\n";
     return true;
   }
 
-  $ret = storeReview($subId, $revId, $subrev, $conf, $grade,
-		     $grades, $cmnt, $pcCmnt, $chrCmnt, !$disFlag);
+  $add2watch = !$disFlag;
+  $noUpdtModTime = $disFlag;
+  $ret = storeReview($subId, $revId, $subrev, $conf, $score, $grades,
+		     $cmnt, $pcCmnt, $chrCmnt, $add2watch, $noUpdtModTime);
 
   if ($ret==-1 || $ret==-2) return false; // unspecified subId or revId? something is wrong here..
   else if ($ret==-3) {
