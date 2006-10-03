@@ -312,7 +312,7 @@ function return_to_caller($url, $extraPrms='', $anchor='')
     if (($pos=strpos($whoseCalling, '#'))===false)
       $whoseCalling .= $anchor;
     else 
-      $whoseCalling = subsrt($whoseCalling, 0, $pos) . $anchor;
+      $whoseCalling = substr($whoseCalling, 0, $pos) . $anchor;
   }
   header("Location: $whoseCalling");
   exit();

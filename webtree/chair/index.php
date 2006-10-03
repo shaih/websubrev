@@ -68,10 +68,10 @@ function manage_submissions($period)
   if ($period==PERIOD_REVIEW) {
     print <<<EndMark
 <b><big>&nbsp;Submission Site is Closed</big></b><br/>
-&nbsp;&nbsp;o&nbsp;&nbsp;<a href="tweakSite.php">Tweak site settings</a>,<br/>
-&nbsp;&nbsp;o&nbsp;&nbsp;<a href="listSubmissions.php">Submission list by number</a>,<br/>
-&nbsp;&nbsp;o&nbsp;&nbsp;by&nbsp;$catLink<a href="listSubmissions.php?subOrder=status">status</a>, <a href="listSubmissions.php?subOrder=format">format</a>&nbsp;<br/>
-&nbsp;(use to withdraw/revise submissions)&nbsp;
+&nbsp;&nbsp;o&nbsp;&nbsp;Submission list by <a href="listSubmissions.php">number</a>, $catLink<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="listSubmissions.php?subOrder=status">status</a>, <a href="listSubmissions.php?subOrder=format">format</a>&nbsp;
+(use to revise<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or withdraw submissions)&nbsp;<br/>
+&nbsp;&nbsp;o&nbsp;&nbsp;<a href="tweakSite.php">Tweak site settings</a>,
 
 EndMark;
     return; 

@@ -50,14 +50,14 @@ function SYSmkTar()
   chdir(SUBMIT_DIR.'/final');
   $return_var = 0;
   $output_lines = array();
-  unlink("all_in_one.tmp.tar");
+  if (file_exists("all_in_one.tmp.tar")) unlink("all_in_one.tmp.tar");
   $ret=exec("tar -cf all_in_one.tmp.tar $submissions", 
        $output_lines, $return_var); // execute the command
   if (file_exists("all_in_one.tmp.tar")) return 'tar';
 
   // If failed, try to create a zip file instead
   $return_var = 0;
-  unlink("all_in_one.tmp.zip");
+  if (file_exists("all_in_one.tmp.zip")) unlink("all_in_one.tmp.zip");
   $ret=exec("zip all_in_one.tmp.zip $submissions", $output_lines, $return_var);
   if (file_exists("all_in_one.tmp.zip")) return 'zip';
 

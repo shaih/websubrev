@@ -128,15 +128,15 @@ if (isset($_POST['formatODP']))
 		       'application/vnd.oasis.opendocument.presentation');
 
 if (!empty($f1ext) || !empty($f1mime)) {
-  if ($f1ext[0] == '.') $f1ext = subsrt($f1ext, 1); // Remove leading '.'
+  if ($f1ext[0] == '.') $f1ext = substr($f1ext, 1); // Remove leading '.'
   $cFrmts[] = array($f1dsc, $f1ext, $f1mime);
 }
 if (!empty($f2ext) || !empty($f2mime)) {
-  if ($f2ext[0] == '.') $f2ext = subsrt($f2ext, 1); // Remove leading '.'
+  if ($f2ext[0] == '.') $f2ext = substr($f2ext, 1); // Remove leading '.'
   $cFrmts[] = array($f2dsc, $f2ext, $f2mime);
 }
 if (!empty($f3ext) || !empty($f3mime)) {
-  if ($f3ext[0] == '.') $f3ext = subsrt($f3ext, 1); // Remove leading '.'
+  if ($f3ext[0] == '.') $f3ext = substr($f3ext, 1); // Remove leading '.'
   $cFrmts[] = array($f3dsc, $f3ext, $f3mime);
 }
 

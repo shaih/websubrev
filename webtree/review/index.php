@@ -81,18 +81,8 @@ else $indicatePrefs = '';
 
 $listSubmissions = listSubmissionsBox($disFlag,$pcmFlags);
 
-if (!$disFlag) { // Reviewer still in the individual review phase
-  individual_review($cnnct, $revId);
-  $showReviews = $allReviews = '';
-  $uploadScores = '<form target=_blank action="parse-scorecard.php"
-enctype="multipart/form-data" method=POST>
-<input type=submit value="Upload scorecard file:">
-<input type=file size=40 name=scorecard>
-(<a target=_blank href="scorecard.php">what\'s that?</a>)<br/>
-<b>Warning:</b> <i>Check that the file does not contain out-of-date
-reviews!</i> Upload will overwrite previous reviews. 
-</form>';
-} else {         // Reviewer in the discussion phase
+$showReviews = $allReviews = $uploadScores= '';
+if ($disFlag) {         // Reviewer in the discussion phase
   $watchedSubs = discussion_phase($cnnct, $revId);
   if ($watchedSubs) {
     $legend = show_legend(); // defined in confUtils.php
@@ -105,7 +95,16 @@ reviews!</i> Upload will overwrite previous reviews.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;<a
 href="listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on">html</a> or <a href="listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on&amp;format=ascii">ascii</a>
 <br/>';
-  $uploadScores='';
+} else  if (PERIOD==PERIOD_REVIEW) { // Reviewer still in the individual review phase
+  individual_review($cnnct, $revId);
+  $uploadScores = '<form target=_blank action="parse-scorecard.php"
+enctype="multipart/form-data" method=POST>
+<input type=submit value="Upload scorecard file:">
+<input type=file size=40 name=scorecard>
+(<a target=_blank href="scorecard.php">what\'s that?</a>)<br/>
+<b>Warning:</b> <i>Check that the file does not contain out-of-date
+reviews!</i> Upload will overwrite previous reviews. 
+</form>';
 }
 
 print <<<EndMark
