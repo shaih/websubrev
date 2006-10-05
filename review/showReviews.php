@@ -6,7 +6,7 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
 
-function subDetailedHeader(&$sub, $revId=0, $showDiscussButton=true)
+function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0)
 {
   global $discussIcon1, $discussIcon2;
 
@@ -21,6 +21,14 @@ function subDetailedHeader(&$sub, $revId=0, $showDiscussButton=true)
   $lastModif = isset($sub['lastModif']) ? 
                date('M\&\n\b\s\p\;j H:i', ((int)$sub['lastModif'])) : '';
 
+  if ($rank>0) {
+    $extra = "<small>$rank</small>";
+    $br = "<br/>";
+  }
+  else $extra = $br = '';
+  if (isset($sub['watch']) && $sub['watch'])
+    $extra .= $br.'<img src="smalleye.gif" alt="W" border=0>';
+
   print "<br />\n<div class=\"darkbg\">\n";
   // If this is the chair: allow setting the status of this submission
   if ($revId==CHAIR_ID) {
@@ -29,6 +37,10 @@ function subDetailedHeader(&$sub, $revId=0, $showDiscussButton=true)
   }
 
   print "<table style=\"width: 100%;\"><tbody><tr style=\"vertical-align: middle;\">\n";
+
+  if (!empty($extra))
+    print "    <td style=\"vertical-align: top;\">$extra</td>\n";
+
   if ($showDiscussButton) {
     print '    <td style="width: 25px;"><span class="Discuss"><a target="_blank" href="discuss.php?subId='.$subId.'#start'.$subId."\">$disText</a></span>
     </td>"."\n";

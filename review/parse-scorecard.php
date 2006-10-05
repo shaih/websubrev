@@ -52,7 +52,7 @@ unlink($fName);
 
 print <<<EndMark
 <br/><br/>
-Reviews uploaded. Go back to <a href=".">review homepage</a>.
+Reviews uploaded successfully. Go back to <a href=".">review homepage</a>.
 <hr/>
 $links
 </body>
