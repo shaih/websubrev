@@ -114,11 +114,14 @@ while ($row = mysql_fetch_assoc($res)) {
 			'delta'     => $row['delta'],
 			'hasNew'    => (!$nohtingNew) );
 
+    if (isset($_GET['ignoreWatch']) && $row['watch']==1)
+      $subs[$currentId]['watch'] = 1;
+
     // Store the newly found submission in one of the lists
     if (!isset($_GET['ignoreWatch']) && $row['watch']==1)
       $watch[] =& $subs[$currentId];
-    else
-      $others[] =& $subs[$currentId]; 
+    else 
+      $others[] =& $subs[$currentId];
   } // end new submission
 
   // Record the details of the current review in the submission's review list
@@ -195,8 +198,9 @@ EndMark;
 
 if (count($watch)>0) {
   print "<h2>Submissions on {$revName}'s Watch List:</h2>\n";
+  $i=1;
   foreach ($watch as $sub) {
-    $subHeader_fnc($sub, $revId);
+    $subHeader_fnc($sub, $revId, true, $i++);
     $showReviews_fnc($sub['reviews'], $revId);
     if (isset($_GET['withDiscussion']) && is_array($sub['posts'])) { 
       $showPosts_fnc($sub['posts'], $sub['subId'], false, $bigNumber);
@@ -208,8 +212,9 @@ else { $otherTtl = false; }
 
 if (count($others)>0) {
   if($otherTtl) print "<br /><br /><h2>Other Submissions:</h2>\n";
+  $i=1;
   foreach ($others as $sub) {
-    $subHeader_fnc($sub, $revId);
+    $subHeader_fnc($sub, $revId, true, $i++);
     $showReviews_fnc($sub['reviews'], $revId);
     if (isset($_GET['withDiscussion']) 
 	&& isset($sub['posts']) && is_array($sub['posts'])) {
