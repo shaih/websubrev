@@ -75,12 +75,16 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
     if ($noUpdt) $qry .= "    lastModified=lastModified"; // don't update
     else         $qry .= "    lastModified=NOW()";
     $qry = "UPDATE reports SET $qry WHERE revId=$revId AND subId=$subId";
+
+    // push up version number on old backups (if any), then backup last report
+    db_query("UPDATE reportBckp SET version=version+1 WHERE revId=$revId AND subId=$subId", $cnnct);
+    db_query("INSERT INTO reportBckp SELECT * FROM reports WHERE revId=$revId AND subId=$subId AND version=1", $cnnct);
   } else {
     $noUpdt = false;
     $qry .= "    whenEntered=NOW()";
     $qry = "INSERT into reports SET revId=$revId, subId=$subId,\n   $qry";
   }
-  db_query($qry, $cnnct);
+  db_query($qry, $cnnct); // finally, insert or update the report
 
   // Update the statistics in the submissions table
   $qry = "SELECT AVG(score), MIN(score), MAX(score),

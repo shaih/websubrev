@@ -114,8 +114,8 @@ function create_tabels($cnnct)
   )";
   db_query($qry, $cnnct, "Cannot CREATE committee table: ");
 
-  // The reports table
-  $qry = "CREATE TABLE IF NOT EXISTS reports (
+  // The reports table(s)
+  $reports = "version smallint(3) NOT NULL DEFAULT 1,
     subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL,
     subReviewer varchar(255),
@@ -130,10 +130,23 @@ function create_tabels($cnnct)
     comments2committee text,
     comments2chair text,
     whenEntered datetime NOT NULL,
-    lastModified timestamp,
+    lastModified timestamp    
+  )";
+
+  // The main table for reports
+  $qry = "CREATE TABLE IF NOT EXISTS reports (
+    $reports,
     PRIMARY KEY (subId, revId)
   )";
   db_query($qry, $cnnct, "Cannot CREATE reports table: ");
+
+  // A table to store backup of old reports
+  $qry = "CREATE TABLE IF NOT EXISTS reportBckp (
+    $reports,
+    PRIMARY KEY (subId, revId, version)
+  )";
+  db_query($qry, $cnnct, "Cannot CREATE report backup table: ");
+
 
   // The assignments table, relating PC members to submissions.
   //

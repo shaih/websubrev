@@ -108,7 +108,9 @@ CREATE TABLE IF NOT EXISTS committee (
     KEY pw (revPwd(2))
 );
 
+/* The main table for reports */
 CREATE TABLE IF NOT EXISTS reports (
+    version smallint(3) NOT NULL DEFAULT 1,
     subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL,
     subReviewer varchar(255),
@@ -125,6 +127,27 @@ CREATE TABLE IF NOT EXISTS reports (
     whenEntered datetime NOT NULL,
     lastModified timestamp,
     PRIMARY KEY (subId, revId)
+);
+
+/* A table to store backup of old reports */
+CREATE TABLE IF NOT EXISTS reportBckp (
+    version smallint(3) NOT NULL DEFAULT 1,
+    subId smallint(5) NOT NULL,
+    revId smallint(3) NOT NULL,
+    subReviewer varchar(255),
+    confidence tinyint(1),
+    score tinyint(2),
+    grade_0 tinyint(2),
+    grade_1 tinyint(2),
+    grade_2 tinyint(2),
+    grade_3 tinyint(2),
+    grade_4 tinyint(2),
+    comments2authors text,
+    comments2committee text,
+    comments2chair text,
+    whenEntered datetime NOT NULL,
+    lastModified timestamp,
+    PRIMARY KEY (subId, revId, version)
 );
 
   /* The assignments table, relating PC members to submissions.
