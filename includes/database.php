@@ -73,26 +73,35 @@ function create_tabels($cnnct, $nCrits=0)
   )";
   db_query($createCmteTbl, $cnnct, "Cannot CREATE committee table: ");
 
-  // The reports table
-  $createRprtTbl = "CREATE TABLE IF NOT EXISTS reports (
+  // The reports table(s)
+  $reports = "version smallint(3) NOT NULL DEFAULT 1,
     subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL,
     subReviewer varchar(255),
     confidence tinyint(1),
     grade tinyint(2),\n";
-
   for ($i=0; $i<$nCrits; $i++) { // additional evaluation criteria
-    $createRprtTbl .= "    grade_{$i} tinyint(2),\n";
+    $reports .= "    grade_{$i} tinyint(2),\n";
   }
-
-  $createRprtTbl .= "    comments2authors text,
+  $reports .= "    comments2authors text,
     comments2committee text,
     comments2chair text,
     whenEntered datetime NOT NULL,
-    lastModified timestamp,
+    lastModified timestamp";
+
+  // The main table for reports
+  $createRprtTbl = "CREATE TABLE IF NOT EXISTS reports (
+    $reports,
     PRIMARY KEY (subId, revId)
   )";
   db_query($createRprtTbl, $cnnct, "Cannot CREATE reports table: ");
+
+  // A table to store backup of old reports
+  $createRprtBckp = "CREATE TABLE IF NOT EXISTS reportBckp (
+    $reports,
+    PRIMARY KEY (subId, revId, version)
+  )";
+  db_query($createRprtBckp, $cnnct, "Cannot CREATE report backup table: ");
 
   // The assignments table, relating PC members to submissions.
   //
