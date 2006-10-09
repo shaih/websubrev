@@ -17,6 +17,14 @@ if ($revId==CHAIR_ID && isset($_GET['revId'])) {
   $revId = (int) trim($_GET['revId']);
 }
 
+if (isset($_GET['bckpVersion']) && $_GET['bckpVersion']>0) {
+  $table = "reportBckp";
+  $version = " AND version=".$_GET['bckpVersion'];
+  $old = "(old version)";
+} else {
+  $table = "reports";
+  $old = $version = "";
+}
 $cnnct = db_connect();
 $qry = "SELECT s.title, c.name, r.subReviewer, r.confidence, r.grade,\n";
 
@@ -29,9 +37,8 @@ if (is_array($criteria)) {
 else {$nCrit = 0;}
 
 $qry .= "    r.comments2authors, r.comments2committee, r.comments2chair\n";
-$qry .= "  FROM submissions s, committee c, reports r
-  WHERE s.SubId={$subId} AND c.revId={$revId}
-        AND r.SubId={$subId} AND r.revId={$revId}";
+$qry .= "  FROM submissions s, committee c, $table r
+  WHERE s.SubId=$subId AND c.revId=$revId AND r.SubId=$subId AND r.revId=$revId{$version}";
 
 $res = db_query($qry, $cnnct);
 if (!($row=mysql_fetch_row($res))) {
@@ -75,7 +82,7 @@ div.fixed { font: 14px monospace; width: 90%;}
 <body>
 $links
 <hr />
-<h1>Review for submission $subId</h1>
+<h1>Review for submission $subId $old</h1>
 <h2>$title</h2>
 <h3 style="text-align: center;">$name $subReviewer</h3>
 
