@@ -19,7 +19,7 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0)
   $disText = (isset($sub['hasNew'])&&$sub['hasNew']) ? $discussIcon2 : $discussIcon1;
 
   $lastModif = isset($sub['lastModif']) ? 
-               date('M\&\n\b\s\p\;j H:i', ((int)$sub['lastModif'])) : '';
+               utcDate('M\&\n\b\s\p\;j H:i', ((int)$sub['lastModif'])) : '';
 
   if ($rank>0) {
     $extra = "<small>$rank</small>";
@@ -103,7 +103,7 @@ function show_reviews(&$reviews, $revId)
     if (!empty($subRev)) $subRev = " (".htmlspecialchars($subRev).")";
 
     $mod = isset($rev['modified']) 
-           ? date('M\&\n\b\s\p\;j H:i', ((int)$rev['modified'])) : '';
+           ? utcDate('M\&\n\b\s\p\;j H:i', ((int)$rev['modified'])) : '';
     $confidence = (int) $rev['conf'];
     if ($confidence <= 0) $confidence = '*';
     $grade = (int) $rev['grade'];
@@ -169,7 +169,7 @@ EndMark;
       print "  <td>$name<br />$grade</td>\n";
     }
     $lastModif = isset($rev['modified']) ? 
-                 date('M\&\n\b\s\p\;j\<\b\r\/\>H:i', ((int)$rev['modified'])) : '';
+                 utcDate('M\&\n\b\s\p\;j\<\b\r\/\>H:i', ((int)$rev['modified'])) : '';
 
     print "  <td class=\"ctr\">$lastModif</td>\n</tr>\n";
     print "</tbody></table>\n";
@@ -246,7 +246,7 @@ function show_posts($postsArray, $subId, $threaded=true,
 
     $nameWhen = htmlspecialchars($post['name']);
     if (isset($post['whenEntered']))
-      $nameWhen .= ", " . date('j/n H:i', ((int)$post['whenEntered']));
+      $nameWhen .= ", " . utcDate('j/n H:i', ((int)$post['whenEntered']));
 
     $sbjct = htmlspecialchars($post['subject']);
     $startHere = '';
