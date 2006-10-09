@@ -121,6 +121,8 @@ $indicatePrefs
 &nbsp;o&nbsp;&nbsp;<a target=_blank href="scorecard.php">Work with scorecard files</a><br />
 &nbsp;o&nbsp;&nbsp;<a href="password.php">Change password</a><br />
 $allReviews
+<br/>
+&nbsp;o&nbsp;&nbsp;<a href="oops.php">Old versions of reviews...</a><br />
 </td>
 
 <!-- A box that lets the reviewer list reviews in different orders -->

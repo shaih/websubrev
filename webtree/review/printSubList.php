@@ -30,7 +30,7 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
     $watch = (int) $sb['watch']; 
     $avg = isset($sb['avg']) ? round((float)$sb['avg'], 1) : NULL ;
 
-    if (isset($lastMod)) $lastMod = date('d/m\&\n\b\s\p\;H:i', $lastMod);
+    if (isset($lastMod)) $lastMod = utcDate('d/m\&\n\b\s\p\;H:i', $lastMod);
     if ($watch == 1) {
       $src = '../common/openeye.gif'; $alt = 'W';
       $tooltip = "Click to remove from watch list";
