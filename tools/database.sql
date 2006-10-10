@@ -110,7 +110,6 @@ CREATE TABLE IF NOT EXISTS committee (
 
 /* The main table for reports */
 CREATE TABLE IF NOT EXISTS reports (
-    version smallint(3) NOT NULL DEFAULT 1,
     subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL,
     subReviewer varchar(255),
@@ -125,13 +124,12 @@ CREATE TABLE IF NOT EXISTS reports (
     comments2committee text,
     comments2chair text,
     whenEntered datetime NOT NULL,
-    lastModified timestamp,
+    lastModified datetime NOT NULL,
     PRIMARY KEY (subId, revId)
 );
 
 /* A table to store backup of old reports */
 CREATE TABLE IF NOT EXISTS reportBckp (
-    version smallint(3) NOT NULL DEFAULT 1,
     subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL,
     subReviewer varchar(255),
@@ -146,7 +144,7 @@ CREATE TABLE IF NOT EXISTS reportBckp (
     comments2committee text,
     comments2chair text,
     whenEntered datetime NOT NULL,
-    lastModified timestamp,
+    version smallint(3) NOT NULL DEFAULT 0,
     PRIMARY KEY (subId, revId, version)
 );
 
