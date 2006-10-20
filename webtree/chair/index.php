@@ -93,7 +93,7 @@ Deadline is <big>$subDdline</big>
 <li>List submissions by <a href="listSubmissions.php">number</a>, 
     $catLink <a href="listSubmissions.php?subOrder=format">format</a>
     ($nSubs submissions so far)</li>
-<li><a href="manage-submission-site.php">Manage Parameters</a>
+<li><a href="manageSubmissions.php">Manage Parameters</a>
     (deadlines, supported formats, categories, etc.)</li>
 <li><a href="close-submissions.php">Close Submissions and Activate Review
      Site...</a> (<b>deadline is not enforced automatically</b>)</li>
