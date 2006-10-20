@@ -111,7 +111,7 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
       $qry = "UPDATE assignments SET watch=1 WHERE subId=$subId AND revId=$revId";
       db_query($qry, $cnnct);
       if (mysql_affected_rows()==0) { // insert a new entry to table
-	$qry = "INSERT INTO assignments SET subId=$subId,revId=$revId,watch=1";
+	$qry = "INSERT IGNORE INTO assignments SET subId=$subId,revId=$revId,watch=1";
 	db_query($qry, $cnnct);
       }
     }
@@ -122,56 +122,14 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
 
 function backup_existing_review($subId, $revId, $nCrit, $cnnct)
 {
-  $qry = "SELECT subReviewer, confidence, score,\n";
-  for ($i=0; $i<$nCrit; $i++) { // additional evaluation criteria
-    $qry .= " grade_{$i},";
-  }
-  $qry .= "\n comments2authors, comments2committee, comments2chair, lastModified\n";
-  $qry .= " FROM reports WHERE subId=$subId AND revId=$revId";
-  $res = db_query($qry, $cnnct);
-  if (!($review=mysql_fetch_assoc($res))) return; // database error?
-
   // how many versions are backed-up for this review?
   $qry = "SELECT MAX(version) FROM reportBckp WHERE subId=$subId AND revId=$revId";
   $res=db_query($qry, $cnnct);
   $row = mysql_fetch_row($res);
   $nextVersion = (($row && $row[0])? $row[0] : 0) + 1;
 
-  $values = '';
-  if (isset($review['subReviewer'])) {
-    $subRev = "'".my_addslashes($review['subReviewer'],$cnnct)."'";
-    $values .= "subReviewer=$subRev, ";
-  }
-  if (isset($review['confidence'])) {
-    $conf = (int) $review['confidence'];
-    $values .= "confidence=$conf, ";
-  }
-  if (isset($review['score'])) {
-    $score = (int) $review['score'];
-    $values .= "score=$score, ";
-  }
-  for ($i=0; $i<$nCrit; $i++) // additional evaluation criteria
-    if (isset($review["grade_$i"])) {
-      $grade = (int) $review["grade_$i"];
-      $values .= "grade_$i=$grade, ";
-    }
-  if (isset($review['comments2authors'])) {
-    $cmntAthr = "'".my_addslashes($review['comments2authors'],$cnnct)."'";
-    $values .= "\n comments2authors=$cmntAthr,";
-  }
-  if (isset($review['comments2committee'])) {
-    $cmntCmte = "'".my_addslashes($review['comments2committee'],$cnnct)."'";
-    $values .= "\n comments2committee=$cmntCmte,";
-  }
-  if (isset($review['comments2chair'])) {
-    $cmntChr = "'".my_addslashes($review['comments2chair'],$cnnct)."'";
-    $values .= "\n comments2chair=$cmntChr,";
-  }
-
   while (true) { // keep trying until you manage to insert to database
-    $qry = "INSERT IGNORE INTO reportBckp
-  SET subId=$subId, revId=$revId, $values
-  whenEntered='".$review['lastModified']."', version=".$nextVersion;
+   $qry = "INSERT IGNORE INTO reportBckp SELECT subId, revId, subReviewer, confidence, score, grade_0, grade_1, grade_2, grade_3, grade_4, comments2authors, comments2committee, comments2chair, lastModified, $nextVersion FROM reports WHERE subId=$subId AND revId=$revId";
     $res = mysql_query($qry, $cnnct);
     if ($res && mysql_affected_rows()>0) break; // success
     else $nextVersion++;                        // try again
