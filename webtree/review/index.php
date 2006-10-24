@@ -97,7 +97,7 @@ href="listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on">h
 <br/>';
 } else  if (PERIOD==PERIOD_REVIEW) { // Reviewer still in the individual review phase
   individual_review($cnnct, $revId);
-  $uploadScores = '<form target=_blank action="parse-scorecard.php"
+  $uploadScores = '<form target=_blank action="parseScorecard.php"
 enctype="multipart/form-data" method=POST>
 <input type=submit value="Upload scorecard file:">
 <input type=file size=40 name=scorecard>
@@ -234,9 +234,8 @@ function discussion_phase($cnnct, $revId)
       }
       else { $require = "require"; }
 
-      print "The chair indicated that " . $needsDiscussion 
-	. " of the submissions on your watch list " . $require 
-	. " additional discussion.\n";
+      print "The chair indicated that $needsDiscussion of the submissions"
+	. " on your watch list $require additional discussion.\n";
     }
     print "<br/>\n";
     print_sub_list($subs, "Submissions on your watch list", $reviewed, true);

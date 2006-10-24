@@ -19,49 +19,44 @@ if ($revId==CHAIR_ID && isset($_GET['revId'])) {
 
 if (isset($_GET['bckpVersion']) && $_GET['bckpVersion']>0) {
   $table = "reportBckp";
-  $version = " AND version=".$_GET['bckpVersion'];
+  $ztable = "gradeBckp";
+  $version = " AND version=".((int)$_GET['bckpVersion']);
   $old = "(old version)";
 } else {
   $table = "reports";
+  $ztable = "auxGrades";
   $old = $version = "";
 }
 $cnnct = db_connect();
-$qry = "SELECT s.title, c.name, r.subReviewer, r.confidence, r.score,\n";
-
-if (is_array($criteria)) {
-  $qry .= "    ";
-  $nCrit = count($criteria);
-  for ($i=0; $i<$nCrit; $i++) { $qry .= "r.grade_{$i}, "; }
-  $qry .= "\n";
-}
-else {$nCrit = 0;}
-
-$qry .= "    r.comments2authors, r.comments2committee, r.comments2chair\n";
-$qry .= "  FROM submissions s, committee c, $table r
-  WHERE s.SubId=$subId AND c.revId=$revId AND r.SubId=$subId AND r.revId=$revId{$version}";
-
+$qry = "SELECT s.title, c.name, r.subReviewer, r.confidence, r.score,\n"
+     . "    r.comments2authors, r.comments2committee, r.comments2chair\n"
+     . "  FROM submissions s, committee c, $table r\n"
+     . "  WHERE s.subId=$subId AND c.revId=$revId AND r.subId=$subId AND r.revId=$revId{$version}";
+$qry2 = "SELECT gradeId, grade FROM $ztable WHERE subId=$subId AND revId=$revId{$version}";
 $res = db_query($qry, $cnnct);
+$auxRes = db_query($qry2, $cnnct);
+
 if (!($row=mysql_fetch_row($res))) {
   exit("<h1>Review Not Found in Database</h1>");
 }
 
-$title      = htmlspecialchars($row[0]);
-$name       = htmlspecialchars($row[1]);
-$subReviewer= trim($row[2]);
+$title             = htmlspecialchars($row[0]);
+$name              = htmlspecialchars($row[1]);
+$subReviewer       = trim($row[2]);
 if (!empty($subReviewer)) {
-  $subReviewer = '(' . htmlspecialchars($subReviewer) . ')';
+  $subReviewer     = '(' . htmlspecialchars($subReviewer) . ')';
 }
 $confidence = isset($row[3]) ? ((int) $row[3]) : '*';
 $score      = isset($row[4]) ? ((int) $row[4]) : '*';
+$comments2authors  = htmlspecialchars($row[5]);
+$comments2committee= htmlspecialchars($row[6]);
+$comments2chair    = htmlspecialchars($row[7]);
 
-if ($nCrit > 0) {
-  $zGrades = array();
-  for ($i=0; $i<$nCrit; $i++)
-    $zGrades[$i] = isset($row[5+$i]) ? ((int) $row[5+$i]) : '*';
+$zGrades = array();
+while ($row=mysql_fetch_row($auxRes)) {
+  $gId = (int) $row[0];
+  $zGrades[$gId] = $row[1]; // no cast to int, NULL remains NULL
 }
-$comments2authors  = htmlspecialchars($row[5+$nCrit]);
-$comments2committee= htmlspecialchars($row[6+$nCrit]);
-$comments2chair    = htmlspecialchars($row[7+$nCrit]);
 
 $links = show_rev_links();
 print <<<EndMark
@@ -69,8 +64,6 @@ print <<<EndMark
   "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-
 <style type="text/css">
 h1, h2 { text-align: center;}
 .rjust { text-align: right; }
@@ -90,9 +83,10 @@ $links
 <b>Confidence:</b> $confidence
 EndMark;
 
+$nCrit = is_array($criteria)? count($criteria): 0;
 for ($i=0; $i<$nCrit; $i++) {
   $grdName = $criteria[$i][0];
-  $grade = $zGrades[$i];
+  $grade = isset($zGrades[$i]) ? ((int) $zGrades[$i]) : '*';
   print ", &nbsp;\n<b>$grdName:</b> $grade";
 }
 

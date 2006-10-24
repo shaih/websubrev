@@ -22,45 +22,44 @@ else exit("<h1>No Submission specified</h1>");
 // a conflict with it, and get the review for it (if exists)
 $cnnct = db_connect();
 
-$auxGrades = '';
-if (is_array($criteria)) for ($i=0; $i<count($criteria); $i++) {
-  $auxGrades .= "r.grade_$i grade_$i, ";
-}
-
 $qry= "SELECT s.title ttl, a.assign assign, r.subReviewer subRev,
-      r.lastModified lastModif, r.confidence conf, r.score grade,
-      $auxGrades
+      r.lastModified lastModif, r.confidence conf, r.score score,
       r.comments2authors cmnts2athr, r.comments2committee cmnts2PC,
       r.comments2chair cmnts2chair, a.watch watch
       FROM submissions s
-        LEFT JOIN assignments a ON a.revId='$revId' AND a.subId='$subId'
-        LEFT JOIN reports r     ON r.revId='$revId' AND r.subId='$subId'
+        LEFT JOIN assignments a ON a.revId=$revId AND a.subId=$subId
+        LEFT JOIN reports r     ON r.revId=$revId AND r.subId=$subId
     WHERE s.subId='$subId'";
 
+// get also the auxiliary grades
+$qry2 = "SELECT gradeId, grade from auxGrades WHERE subId=$subId and revId=$revId";
+
 $res = db_query($qry, $cnnct);
+$auxRes = db_query($qry2, $cnnct);
 if (!($row = mysql_fetch_assoc($res)) || $row['assign']==-1) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 
-$title      = isset($row['ttl']) ? htmlspecialchars($row['ttl']) : '';
-$subRev     = isset($row['subRev']) ? htmlspecialchars($row['subRev']) : '';
-
-$conf  = (int) $row['conf'];  if ($conf<1 || $conf>3)           $conf=NULL;
-$grade = (int) $row['grade']; if ($grade<1 || $grade>MAX_GRADE) $grade=NULL;
-
 $mxGrades = MAX_GRADE;
 $auxGrades = array();
 if (is_array($criteria) && count($criteria)>0) {
+  while ($auxRow = mysql_fetch_row($auxRes)) {
+    $gId = $auxRow[0];
+    $auxGrades[$gId] = isset($auxRow[1]) ? ((int)$auxRow[1]) : NULL;
+  }
   for ($i=0; $i<count($criteria); $i++) {
-    $auxGrades[$i] = $row["grade_$i"];
-    if ($auxGrades[$i]<1 || $auxGrades[$i]>$criteria[$i][1])
+    if (!array_key_exists($i, $auxGrades)
+	|| $auxGrades[$i]<1 || $auxGrades[$i]>$criteria[$i][1])
       $auxGrades[$i] = NULL;
-    if ($mxGrades < $criteria[$i][1])
-      $mxGrades = $criteria[$i][1];
+    if ($mxGrades < $criteria[$i][1]) $mxGrades = $criteria[$i][1];
   }
 }
 if ($mxGrades<MAX_CONFIDENCE)  $mxGrades = MAX_CONFIDENCE;
 
+$title      = isset($row['ttl']) ? htmlspecialchars($row['ttl']) : '';
+$subRev     = isset($row['subRev']) ? htmlspecialchars($row['subRev']) : '';
+$conf  = (int) $row['conf'];  if ($conf<1 || $conf>3)           $conf=NULL;
+$score = (int) $row['score']; if ($score<1 || $score>MAX_GRADE) $score=NULL;
 $cmnts2athr = isset($row['cmnts2athr']) ? htmlspecialchars($row['cmnts2athr']) : '';
 $cmnts2PC   = isset($row['cmnts2PC'])   ? htmlspecialchars($row['cmnts2PC'])   : '';
 $cmnts2chair= isset($row['cmnts2chair'])? htmlspecialchars($row['cmnts2chair']): '';
@@ -95,7 +94,7 @@ $links
 <h1>Review of Submission $subId{$update}</h1>
 <h2>$title</h2>
 
-<form action="act-review.php" enctype="multipart/form-data" method=post>
+<form action="doReview.php" enctype="multipart/form-data" method=post>
 
 <table cellspacing="3" cellpadding="2"><tbody>
 <tr><td>Reviewer:    </td> <td>$revName</td></tr>
@@ -109,7 +108,7 @@ $links
 
 <!-- A header line with the numbers -->
 <tr style="text-align: center; background: $colors[0];">
-  <th style="text-align: left;"><small><a href="guidelines.php#grades">Grade&nbsp;semantics</a></small>&nbsp;&nbsp;&nbsp;&nbsp;</th> 
+  <th style="text-align: left;"><small><a href="guidelines.php#grades">Score&nbsp;semantics</a></small>&nbsp;&nbsp;&nbsp;&nbsp;</th> 
 
 EndMark;
 print "  <th>ignore</th>\n  <th style=\"width:50px;\">1<br/><small>(low)</small></th>\n";
@@ -118,18 +117,18 @@ for ($i=2; $i<$mxGrades; $i++)
 print "  <th style=\"width:50px;\">$mxGrades<br/><small>(high)</small></th>\n";
 print "</tr>\n\n";
 
-$chk = isset($grade) ? '' : 'checked="checked"';
+$chk = isset($score) ? '' : 'checked="checked"';
 print <<<EndMark
-<!-- A line of radio buttons for the grade -->
+<!-- A line of radio buttons for the score -->
 <tr style="text-align: center; background: $colors[1];">
-  <td style="text-align: right;">Grade:&nbsp;&nbsp;&nbsp;&nbsp;</td>
-  <td><input type="radio" name="grade" value="*" $chk title="Ignore my grade">
+  <td style="text-align: right;">Score:&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td><input type="radio" name="score" value="*" $chk title="Ignore my score">
   </td>
 
 EndMark;
 for ($i=1; $i<=MAX_GRADE; $i++) {
-  $chk = ($grade==$i) ? 'checked="checked"' : '';
-  print "  <td><input type=\"radio\" name=\"grade\" value=\"$i\" $chk></td>\n";
+  $chk = ($score==$i) ? 'checked="checked"' : '';
+  print "  <td><input type=\"radio\" name=\"score\" value=\"$i\" $chk></td>\n";
 }
 if (MAX_GRADE<$mxGrades) {
   $cspan = $mxGrades - MAX_GRADE; 

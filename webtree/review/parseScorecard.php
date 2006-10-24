@@ -7,7 +7,7 @@
  */
 $needsAuthentication=true;
 require 'header.php';   // defines $pcMember=array(id, name, ...)
-require 'store-review.php';
+require 'storeReview.php';
 $revId = (int) $pcMember[0];
 $disFlag=(int) $pcMember[3];
 
@@ -67,13 +67,13 @@ function nextReview($fd) {
   $skip=false;
   $comments=0;
   $subId=$title=$authors = NULL;
-  $grade=$conf=$subrev = NULL;
+  $score=$conf=$subrev = NULL;
   $cmnt=$pcCmnt=$chrCmnt ='';
   $auxGrades = array();
   while (true) {
     if (feof($fd) || ($line=fgets($fd))===false) {
       saveReview($subId,$title,$subrev,
-		  $grade,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt);
+		  $score,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt);
       return false; // last review in file
     }
 
@@ -82,7 +82,7 @@ function nextReview($fd) {
     // look for record separation: a line of at least 20 '+'s and nothing else
     if (preg_match('/\+{20,}$/', $line)) {
       return saveReview($subId,$title,$subrev,
-			 $grade,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt);
+			 $score,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt);
     }
 
     if ($skip || ($comments==0 && (empty($line) || $line[0]=='#')))
@@ -105,7 +105,7 @@ function nextReview($fd) {
       else if (strncmp($line,"SUBREVIEWER:",12)==0)
 	$subrev=trim(substr($line,12));
       else if (strncmp($line,"SCORE:",6)==0)
-	$grade=trim(substr($line,6));
+	$score=trim(substr($line,6));
       else if (strncmp($line,"CONFIDENCE:",11)==0)
 	$conf=trim(substr($line,11));
       else if (strncmp($line,"AUTHOR-COMMENTS:",16)==0) {

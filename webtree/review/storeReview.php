@@ -42,17 +42,6 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
     $qry .= "    score=NULL,\n";
   }
 
-  for ($i=0; $i<$nCrit; $i++) {
-    $grade = isset($auxGrades["grade_{$i}"]) ?
-             ((int) trim($auxGrades["grade_{$i}"])) : 0;
-    $mx = $criteria[$i][1];
-    if ($grade>0 && $grade<=$mx) {
-      $qry .= "    grade_{$i}={$grade},\n";
-    } else {
-      $qry .= "    grade_{$i}=NULL,\n";
-    }
-  }
-
   $cmnts = trim($authCmnt);
   if (!empty($cmnts)) {
     $qry .= "    comments2authors='" .my_addslashes($cmnts, $cnnct) ."',\n";
@@ -84,7 +73,23 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
     $qry .= "    lastModified=NOW(), whenEntered=NOW()";
     $qry = "INSERT into reports SET revId=$revId, subId=$subId,\n   $qry";
   }
-  db_query($qry, $cnnct); // finally, insert or update the report
+  $vals = $comma = '';
+  for ($i=0; $i<$nCrit; $i++) {
+    $grade = isset($auxGrades["grade_{$i}"])?((int)$auxGrades["grade_{$i}"]):0;
+    $mx = $criteria[$i][1];
+    if ($grade<=0 || $grade>$mx) $grade='NULL';
+    $vals .= $comma . "($subId, $revId, $i, $grade)";
+    $comma = ',';
+  }
+  // finally, insert or update the report
+  mysql_query("BEGIN", $cnnct);
+          // same as "START TRANSCTION" but works with older versions of MySQL
+  db_query($qry, $cnnct);
+  db_query("DELETE FROM auxGrades WHERE subId=$subId AND revId=$revId",$cnnct);
+  if (!empty($vals))
+    db_query("INSERT INTO auxGrades VALUES $vals", $cnnct);
+  mysql_query("COMMIT", $cnnct); // commit changes
+
 
   // Update the statistics in the submissions table
   $qry = "SELECT AVG(score), MIN(score), MAX(score),
@@ -129,10 +134,12 @@ function backup_existing_review($subId, $revId, $nCrit, $cnnct)
   $nextVersion = (($row && $row[0])? $row[0] : 0) + 1;
 
   while (true) { // keep trying until you manage to insert to database
-   $qry = "INSERT IGNORE INTO reportBckp SELECT subId, revId, subReviewer, confidence, score, grade_0, grade_1, grade_2, grade_3, grade_4, comments2authors, comments2committee, comments2chair, lastModified, $nextVersion FROM reports WHERE subId=$subId AND revId=$revId";
+   $qry = "INSERT IGNORE INTO reportBckp SELECT subId, revId, subReviewer, confidence, score, comments2authors, comments2committee, comments2chair, lastModified, $nextVersion FROM reports WHERE subId=$subId AND revId=$revId";
     $res = mysql_query($qry, $cnnct);
     if ($res && mysql_affected_rows()>0) break; // success
     else $nextVersion++;                        // try again
   }
+  $qry = "INSERT IGNORE INTO gradeBckp SELECT subId, revId, gradeId, grade, $nextVersion FROM auxGrades WHERE subId=$subId AND revId=$revId";
+  mysql_query($qry, $cnnct);
 }
 ?>

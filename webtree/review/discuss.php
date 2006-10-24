@@ -44,22 +44,35 @@ $title = htmlspecialchars($submission['title']);
 
 // Get the reviews for this subsmission
 
-$grades = "r.confidence conf, r.score grade";
-for ($i=0; $i<count($criteria); $i++) {
-  $grades .= ",\n       r.grade_{$i} grade_{$i}";
-}
+$grades = "r.confidence conf, r.score score";
 $chrCmnts = ($revId == CHAIR_ID) ? "r.comments2chair cmnts2chr, " : "";
-$qry = "SELECT r.subId subId, r.revId revId, c.name PCmember, r.subReviewer subReviewer,
-       {$grades},
-       r.comments2authors cmnts2athr,
-       r.comments2committee cmnts2PC, $chrCmnts
+$qry = "SELECT r.subId subId, r.revId revId, c.name PCmember,
+       r.subReviewer subReviewer, r.confidence conf, r.score score,
+       r.comments2authors cmnts2athr, r.comments2committee cmnts2PC, $chrCmnts
        UNIX_TIMESTAMP(r.lastModified) modified
-    FROM reports r, committee c
-    WHERE  r.revId=c.revId AND r.subId='$subId'
+    FROM reports r, committee c WHERE  r.revId=c.revId AND r.subId=$subId
     ORDER BY modified";
+
+$qry2 = "SELECT revId, gradeId, grade from auxGrades WHERE subId=$subId";
 $res = db_query($qry, $cnnct);
+$auxRes = db_query($qry2, $cnnct);
+
+// store the auxiliary grades in a more convenient array
+$auxGrades = array();
+while ($row = mysql_fetch_row($auxRes)) {
+  $rId = (int) $row[0];
+  $gId = (int) $row[1];
+  $auxGrades[$rId][$gId] = isset($row[2]) ? ((int) $row[2]) : NULL;
+}
+
+// store reports for this submission in an array
 $reports = array();
-while ($row = mysql_fetch_assoc($res)) { $reports[] = $row; }
+while ($row = mysql_fetch_assoc($res)) {
+  $rId = (int) $row['revId'];
+  for ($i=0; $i<count($criteria); $i++)
+    $row["grade_{$i}"] = $auxGrades[$rId][$i];
+  $reports[] = $row;
+}
 
 
 // Get the posts for this subsmission. (The depth field is initialized
@@ -143,7 +156,7 @@ EndMark;
 if (!defined('CAMERA_PERIOD')) print <<<EndMark
 <a name="endDiscuss"> </a>
 <big><b>Start a new discussion thread:</b></big><br />
-<form action="act-post.php" enctype="multipart/form-data" method="post">
+<form action="doPost.php" enctype="multipart/form-data" method="post">
 <table><tbody>
 <tr><td class="rjust">Subject:</td>
     <td style="text-align: left; width: 640px;">

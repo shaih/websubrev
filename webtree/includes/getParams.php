@@ -13,7 +13,7 @@ foreach ($lines as $line) {
   $vl = rtrim(substr($line,$i+1));
   if ($nm=='MYSQL_HOST'     || $nm=='MYSQL_DB'   || $nm=='MYSQL_USR'
       || $nm=='MYSQL_PWD'   || $nm=='SUBMIT_DIR' || $nm=='LOG_FILE'
-      || $nm=='ADMIN_EMAIL' || $nm=='CONF_SALT') {
+      || $nm=='ADMIN_EMAIL' || $nm=='CONF_SALT'  || $nm=='BASE_URL') {
     if (empty($vl)) die("<h1>Parameter $nm cannot be empty</h1>");
     define($nm, $vl);
   }
@@ -30,13 +30,12 @@ define('CHAIR_EMAIL', $row[1]);
 
 if (isset($notCustomized) && $notCustomized===true) $row=emptyPrms();
 else {
-  $qry = "SELECT * from parameters WHERE isCurrent=1 ORDER BY version DESC LIMIT 1";
+  $qry = "SELECT * from parameters ORDER BY version DESC LIMIT 1";
   $res = db_query($qry, $cnnct, "Cannot load parameters: ");
   $row = mysql_fetch_assoc($res) or die("No parameters are specified");
 }
 
 define('PARAMS_VERSION', $row['version']);
-define('BASE_URL', $row['baseURL']);
 define('CONF_NAME', $row['longName']);
 define('CONF_SHORT', $row['shortName']);
 define('CONF_YEAR', $row['confYear']);
@@ -225,7 +224,6 @@ function emptyPrms()
 {
   return array(
     'version'       => 0,
-    'isCurrent'     => 0,
     'longName'      => '',
     'shortName'     => '',
     'confYear'      => 0,
@@ -236,7 +234,6 @@ function emptyPrms()
     'maxConfidence' => 3,
     'flags'         => FLAG_PCPREFS| FLAG_AFFILIATIONS| FLAG_EML_HDR_X_MAILER,
     'emlSender'     => NULL,
-    'baseURL'       => '',
     'period'        => 0,
     'formats'       => '',
     'categories'    => NULL,

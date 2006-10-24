@@ -84,7 +84,7 @@ conference</a>, <a href="#submissions">submissions</a>, <a href="#committee">
 program committee</a>, and <a href="#review">reviews</a>.
 <br/>
 <form name="customize" onsubmit="return checkform(this);"
- action="confirm-customize.php{$urlParams}" enctype="multipart/form-data" method="post">
+ action="confirmCustomize.php{$urlParams}" enctype="multipart/form-data" method="post">
 
 <table cellpadding="6"><tbody>
 <!-- ============== Details of the conference ================== -->
@@ -203,9 +203,9 @@ Jordan, Michael &lt;Air-Jordan@nike.com&gt;</textarea><br/>
      (later you can assign semantics to these scores).</td>
 </tr>
 <tr><td class=rjust>Other&nbsp;Evaluation&nbsp;Criteria:</td>
-  <td>Other than overall score, you can have upto five different grades for
-  specific criteria such as <br/>presentation, IP status, etc. The min grade
-  value is always 1 and the max value must be in [2,9]. 
+  <td>Other than overall score, you can have different grades for specific
+  criteria such as <br/>presentation, IP status, etc. The min grade value
+  is always 1 and the max value must be in [2,9]. 
   <textarea name="criteria" cols="70">Technical(3); Editorial(3); Suitability(3)</textarea><br/>
   A <i><b>semi-colon-separated</b></i> list of upto five criteria, each criterion in the
   format <tt>Name(max-val)</tt>.<br/><b>Do not add</b> <tt>Confidence(X)</tt>

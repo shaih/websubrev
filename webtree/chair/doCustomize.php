@@ -17,6 +17,7 @@ $longName    = trim($_POST['longName']) ;
 $shortName   = trim($_POST['shortName']);
 $confYear    = trim($_POST['confYear']) ;
 $confURL     = trim($_POST['confURL'])  ;
+if (empty($confURL)) $confURL = '.';
 
 $chrName = isset($_POST['chairName']) ? trim($_POST['chairName']) : NULL;
 $chrEmail= isset($_POST['chairEmail']) ? trim($_POST['chairEmail']) : NULL;
@@ -59,41 +60,23 @@ for ($i=0; $i<$nCmmtee; $i++) {
 
 /* We are ready to start customizing the installation */
 
-// Store the conference parameters in the database
-$qry = "INSERT INTO parameters SET version=1, isCurrent=1,\n"
-   . "  longName='"  .my_addslashes($longName, $cnnct)."',\n"
-   . "  shortName='" .my_addslashes($shortName, $cnnct)."',\n"
-   . "  confYear="   .intval($confYear).",\n";
-
-if (empty($confURL)) $confURL = '.';
-$qry .= "  confURL='"   .my_addslashes($confURL, $cnnct)."',\n"
-   . "  subDeadline=".intval($subDeadline).",\n"
-   . "  cmrDeadline=".intval($cameraDeadline).",\n"
-   . "  maxGrade="   .intval($maxGrade).",\n"
-   . "  maxConfidence=3,\n";
-
 $flags = CONF_FLAGS;
 $flags &= ~(FLAG_PCPREFS | FLAG_ANON_SUBS | FLAG_AFFILIATIONS | FLAG_SSL);
 if (isset($_POST['revPrefs']))  $flags |= FLAG_PCPREFS;
 if (isset($_POST['anonymous'])) $flags |= FLAG_ANON_SUBS;
 if (isset($_POST['affiliations'])) $flags |= FLAG_AFFILIATIONS;
 if (isset($_SERVER['HTTPS']))   $flags |= FLAG_SSL;
-$qry .= "  flags=$flags,\n  period=".PERIOD_SUBMIT.",\n";
 
-if ($nFrmts <= 0) $confFormats = 'NULL';
-else {
-  $sc = $confFormats = '';
-  for ($i=0; $i<$nFrmts; $i++) {
-    $frmt = "frmt_{$i}_";
-    $nm   = trim($_POST["{$frmt}desc"]);
-    $ext  = trim($_POST["{$frmt}ext"]);
-    $mime = trim($_POST["{$frmt}mime"]);
-    $confFormats .= $sc . "$nm($ext, $mime)";
-    $sc = ';';
-  }
-  $confFormats = "'".my_addslashes($confFormats, $cnnct)."'";
+$sc = $confFormats = '';
+for ($i=0; $i<$nFrmts; $i++) {
+  $frmt = "frmt_{$i}_";
+  $nm   = trim($_POST["{$frmt}desc"]);
+  $ext  = trim($_POST["{$frmt}ext"]);
+  $mime = trim($_POST["{$frmt}mime"]);
+  $confFormats .= $sc . "$nm($ext, $mime)";
+  $sc = ';';
 }
-$qry .= "  formats=$confFormats,\n";
+$confFormats = "'".my_addslashes($confFormats, $cnnct)."'";
 
 if ($nCats <= 0) $categories = 'NULL';
 else {
@@ -104,7 +87,6 @@ else {
   }
   $categories = "'".my_addslashes($categories, $cnnct)."'";
 }
-$qry .= "  categories=$categories,\n";
 
 if ($nCrits <= 0) $criteria = 'NULL';
 else {
@@ -121,8 +103,22 @@ else {
   }
   $criteria = "'".my_addslashes($criteria, $cnnct)."'";
 }
-$qry .= "  extraCriteria=$criteria";
 
+// Store the conference parameters in the database
+$qry = "INSERT INTO parameters SET version=1,\n"
+   . "  longName='"  .my_addslashes($longName, $cnnct)."',\n"
+   . "  shortName='" .my_addslashes($shortName, $cnnct)."',\n"
+   . "  confYear="   .intval($confYear).",\n"
+   . "  confURL='"   .my_addslashes($confURL, $cnnct)."',\n"
+   . "  subDeadline=".intval($subDeadline).",\n"
+   . "  cmrDeadline=".intval($cameraDeadline).",\n"
+   . "  maxGrade="   .intval($maxGrade).",\n"
+   . "  maxConfidence=3,\n"
+   . "  flags=$flags,\n"
+   . "  period=".PERIOD_SUBMIT.",\n"
+   . "  formats=$confFormats,\n"
+   . "  categories=$categories,\n"
+   . "  extraCriteria=$criteria";
 db_query($qry, $cnnct, "Cannot set conference parameters: ");
 
 // Set the PC Chair name, email, and password in the database
@@ -196,5 +192,5 @@ $urlParams = '?username='.$chrEmail.'&password='.$chrPasswd;
 if (file_exists('testingOnly.php')) {
   header("Location: testingOnly.php{$urlParams}");
 }
-else header("Location: receipt-customize.php{$urlParams}");
+else header("Location: receiptCustomize.php{$urlParams}");
 ?>

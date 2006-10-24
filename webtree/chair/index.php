@@ -95,12 +95,12 @@ Deadline is <big>$subDdline</big>
     ($nSubs submissions so far)</li>
 <li><a href="manageSubmissions.php">Manage Parameters</a>
     (deadlines, supported formats, categories, etc.)</li>
-<li><a href="close-submissions.php">Close Submissions and Activate Review
+<li><a href="closeSubmissions.php">Close Submissions and Activate Review
      Site...</a> (<b>deadline is not enforced automatically</b>)</li>
 </ul>
 <ul>
 <li><a href="guidelines.php">Edit the review guidelines page</a></li>
-<li><a href="manage-review-site.php">Manage PC membership</a></li>
+<li><a href="managePCmembership.php">Manage PC membership</a></li>
 <li><a href="voting.php">Set-up and manage PC votes</a></li>
 </ul>
 
@@ -116,7 +116,7 @@ function manage_reviews($period)
     if (defined('REVPREFS') && REVPREFS) { $assignHTML = <<<EndMark
 Assign submissions to reviewers:
 <ul>
-<li><a href="auto-assign.php">Automatic assignments</a> (Compute assignments automatically from the reviewers preferences.)</li>
+<li><a href="autoAssign.php">Automatic assignments</a> (Compute assignments automatically from the reviewers preferences.)</li>
 <li><a href="assignments.php">Manual assignments</a> (Use matrix and list interfaces for manual assignment or adjusting the automatic assignment.)</li>
 </ul>
 The assignments can always be revised and recomputed.
@@ -130,7 +130,7 @@ print <<<EndMark
 <dt><strong>Initial set-up</strong>
 <dd><a href="archive.php">Create a tar file with all the submission files</a>
 <dd><a href="guidelines.php">Edit the review guidelines page</a>
-<dd><a href="manage-review-site.php">Manage PC membership</a>
+<dd><a href="managePCmembership.php">Manage PC membership</a>
 <br /><br />
 
 <dt><strong>Paper assignments</strong>
@@ -150,7 +150,7 @@ print <<<EndMark
 <dd><a href="../review/listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on&amp;format=ascii" target="_blank">A full list of all the reviews and discussions (text)</a>
 <dd><a href="notifications.php">Generate accept/reject letters...</a>
 <dd><a href="sendComments.php">Generate comments letters...</a>
-<dd><a href="manage-finalSubmit-site.php">Activate Final-submission site...</a>
+<dd><a href="activateCamera.php">Activate Final-submission site...</a>
 </dl>
 
 EndMark;
@@ -186,7 +186,7 @@ function manage_final_version($period)
     }
   }
   if (isset($allSubFile)) {
-    $allSubFile = '<li><a href="../review/download.php?final=yes&all_in_one='.$allSubFile.'">Download all camera-ready archives in one file</a></li>';
+    $allSubFile = '<li><a href="../review/download.php?final=yes&amp;all_in_one='.$allSubFile.'">Download all camera-ready archives in one file</a></li>';
   }
 
   if ($period==PERIOD_FINAL) {
@@ -197,7 +197,7 @@ function manage_final_version($period)
   else {
     $hdr = '<h3><span style="background-color: red;">Final Submission Site is Active</span></h3>' . "\nDeadline is <big>$cmrDdline</big>";
     $mkTOC = '';
-    $closeIt = '<a href="close-site.php">Close Final Submission Site</a> (<b>deadline is not enforced automatically</b>)';
+    $closeIt = '<a href="closeSite.php">Close Final Submission Site</a> (<b>deadline is not enforced automatically</b>)';
   }
 
   print <<<EndMark

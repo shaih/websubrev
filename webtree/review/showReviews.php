@@ -32,7 +32,7 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0)
   // If this is the chair: allow setting the status of this submission
   if ($revId==CHAIR_ID) {
     print "<a name=\"stts{$subId}\"> </a>";
-    print setFlags_table($subId, $sub['status']); // setFlags_table in header.php
+    print setFlags_table($subId, $sub['status']); // setFlags_table in revFunctions.php
   }
 
   print "<table style=\"width: 100%;\"><tbody><tr style=\"vertical-align: middle;\">\n";
@@ -74,7 +74,7 @@ function show_reviews(&$reviews, $revId)
   global $criteria;
 
   // All the reviews for this submission. Each review is an array of 
-  // (PCmember, subReviewer, modified, conf, grade, grade_0, grade_1, ...)
+  // (PCmember, subReviewer, modified, conf, score, grade_0, grade_1, ...)
   if (!is_array($reviews) || count($reviews)<=0)
     return;
 
@@ -87,7 +87,7 @@ function show_reviews(&$reviews, $revId)
   print "  <div class=\"lightbg\">\n";
   print "  <table cellpadding=0 cellspacing=5 border=0><tbody>\n";
   print "    <tr><td></td>\n";
-  print "        <td class=\"ctr\"><small>Grade&nbsp;</small></td>
+  print "        <td class=\"ctr\"><small>Score&nbsp;</small></td>
         <td class=\"ctr\"><small>Confidence&nbsp;</small></td>\n";
   if (is_array($criteria)) foreach ($criteria as $c) {
     print "      <td class=\"ctr\"><small>".$c[0]."</small></td>\n";
@@ -105,11 +105,11 @@ function show_reviews(&$reviews, $revId)
            ? utcDate('M\&\n\b\s\p\;j H:i', ((int)$rev['modified'])) : '';
     $confidence = (int) $rev['conf'];
     if ($confidence <= 0) $confidence = '*';
-    $grade = (int) $rev['grade'];
-    if ($grade <= 0) $grade = '*';
+    $score = (int) $rev['score'];
+    if ($score <= 0) $score = '*';
 
     print "    <tr><td class=\"ctr\"><small>$mod</small></td>
-      <td class=\"ctr\">$grade</td>
+      <td class=\"ctr\">$score</td>
       <td class=\"ctr\">$confidence</td>\n";
     $nCrits = (is_array($criteria)) ? count($criteria) : 0;
     for ($i=0; $i<$nCrits; $i++) {
@@ -144,7 +144,7 @@ function show_reviews_with_comments(&$reviews, $revId)
     $cmnt2athr = isset($rev['cmnts2athr'])?htmlspecialchars($rev['cmnts2athr']):'';
     $cmnt2PC   = isset($rev['cmnts2PC']) ? htmlspecialchars($rev['cmnts2PC']):'';
     $cmnt2chr  = isset($rev['cmnts2chr'])? htmlspecialchars($rev['cmnts2chr']):'';
-    $grade = isset($rev['grade']) ? ((int) $rev['grade']) : '*';
+    $score = isset($rev['score']) ? ((int) $rev['score']) : '*';
     $conf =  isset($rev['conf']) ? ((int) $rev['conf']) : '*';
 
     $PCmember = htmlspecialchars($rev['PCmember']);
@@ -157,7 +157,7 @@ function show_reviews_with_comments(&$reviews, $revId)
 <tr>
   <td style="text-align: left; width: 400px;"><h3>$PCmember{$subRev}$reviseTxt</h3></td>
   <td></td>
-  <td>Grade<br/>$grade</td>
+  <td>Score<br/>$score</td>
   <td>Confidence<br/>$conf</td>
 
 EndMark;
@@ -277,7 +277,7 @@ $startHere<a name="p$pid"> </a>
 
 <div style="position: relative; left: 12px; top:6px;">
 $cmnts
-   <form id="r$pid" class="$class" action="act-post.php"
+   <form id="r$pid" class="$class" action="doPost.php"
 		enctype="multipart/form-data" method="post">
      Subject:&nbsp;&nbsp;<input style="width: 91%;" type="text"
 		          name="subject" value="$subject">
@@ -326,7 +326,7 @@ function reply_to_thread($subId, $thrdPid, $thrdSubj)
 
   $html .=<<<EndMark
    <a name="rply{$thrdPid}"> </a>
-   <form id="rp{$thrdPid}" class="$class" action="act-post.php"
+   <form id="rp{$thrdPid}" class="$class" action="doPost.php"
          enctype="multipart/form-data" method="post">
    <br />
        Subject:&nbsp;&nbsp;<input

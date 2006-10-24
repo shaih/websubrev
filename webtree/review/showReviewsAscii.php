@@ -45,9 +45,9 @@ function ascii_showReviews(&$reviews, $revId)
     $PCmember = $rev['PCmember'];
     if (isset($rev['subReviewer'])) $PCmember .= ' ('.$rev['subReviewer'].')';
     $PCmember = htmlspecialchars($PCmember);
-    $grade = isset($rev["grade"]) ? ((int) $rev['grade']) : '*';
+    $score = isset($rev['score']) ? ((int) $rev['score']) : '*';
 
-    print "<pre>$PCmember,  Grade: $grade, Confidence: $conf\n";
+    print "<pre>$PCmember,  Score: $score, Confidence: $conf\n";
     $comma = '  ';
     for ($i=0; $i<$nCrits; $i++) {
       $name = $criteria[$i][0];

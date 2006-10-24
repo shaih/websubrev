@@ -7,7 +7,7 @@
  */
 $needsAuthentication=true;
 require 'header.php';   // defines $pcMember=array(id, name, ...)
-require 'store-review.php';
+require 'storeReview.php';
 $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
 $disFlag= (int) $pcMember[3];
@@ -56,7 +56,7 @@ while ($row=mysql_fetch_row($res)) {
     }
     $subId = $row[0];
     $title = $row[1];
-    print "</tr>\n<tr><td><form action=receipt-report.php method=GET>\n";
+    print "</tr>\n<tr><td><form action=receiptReport.php method=GET>\n";
     print "  <SELECT name=bckpVersion>";
   }
   $version = (int) $row[2];

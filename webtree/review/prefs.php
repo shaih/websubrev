@@ -64,7 +64,7 @@ print <<<EndMark
 </tbody></table>
 
 <br /><br />
-<form action="act-prefs.php" enctype="multipart/form-data" method="post">
+<form action="doPrefs.php" enctype="multipart/form-data" method="post">
 <table><tbody>
 <tr><th><small>pref</small></th>
   <th class="zero">0</th> 

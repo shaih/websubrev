@@ -103,7 +103,7 @@ if (isset($_POST['blockAccess'])) {
   // Ask the user to confirm the blocks
   print <<<EndMark
 <h2>Please confirm the list of blocked submissions:</h2>
-<form action="act-conflicts.php" enctype="multipart/form-data" method="post">
+<form action="doConflicts.php" enctype="multipart/form-data" method="post">
 <dl>
 
 EndMark;

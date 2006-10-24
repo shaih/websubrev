@@ -15,23 +15,26 @@ if (isset($_GET['download'])) { // Display current scorecard
   $cnnct = db_connect();
 
   // get all the reviews that this reviewer submitted
-  $qry = "SELECT subReviewer, confidence conf, score, comments2authors cmnt,
-     comments2committee pcCmnt, r.comments2chair chrCmnt,\n";
+  $qry = "SELECT subReviewer, confidence conf, score, comments2authors cmnt,"
+    ." comments2committee pcCmnt, r.comments2chair chrCmnt, title, authors,"
+    ." s.subId subId FROM submissions s, reports r"
+    ." WHERE r.subId=s.subId AND r.revId=$revId ORDER BY subId";
 
-  if (is_array($criteria)) {
-    $qry .= "    ";
-    $nCrit = count($criteria);
-    for ($i=0; $i<$nCrit; $i++) { $qry .= "grade_{$i}, "; }
-    $qry .= "\n";
-  }
+  $qry2 = "SELECT subId, gradeId, grade FROM auxGrades WHERE revId=$revId ORDER BY subId, gradeId";
 
-  $qry .= "    title, authors, s.subId subId
-  FROM submissions s, reports r WHERE r.subId=s.subId and r.revId={$revId}";
   $res = db_query($qry, $cnnct);
+  $auxRes = db_query($qry2, $cnnct);
+  
   $reviews = array();
   while ($row = mysql_fetch_assoc($res)) {
     $subId = (int) $row['subId'];
     $reviews[$subId] = $row;
+  }
+  while ($row = mysql_fetch_row($auxRes)) {
+    $subId = (int) $row[0];
+    $gId = (int) $row[1];
+    $grade = isset($row[2]) ? ((int)$row[2]) : NULL;
+    if (isset($reviews[$subId])) $reviews[$subId]["grade_{$gId}"] = $grade;
   }
 
   // add empty reviews for submissions that are assigned to this reviewer
@@ -71,10 +74,11 @@ EndMark;
     print "SUBREVIEWER: ".(isset($review['subReviewer'])?$review['subReviewer']:'')."\n";
     print "SCORE: ".(isset($review['score'])?$review['score']:'')."\n";
     print "CONFIDENCE: ".(isset($review['conf'])?$review['conf']:'')."\n";
-    if (is_array($criteria)) { 
-      $nCrit = count($criteria);
+    if (is_array($criteria) && ($nCrit=count($criteria))>0) { 
       for ($i=0; $i<$nCrit; $i++) {
-	print $criteria[$i][0].": ".(isset($review["grade_{$i}"])?$review["grade_{$i}"]:'')."\n";
+	print $criteria[$i][0].": ";
+	if (isset($review["grade_{$i}"])) print $review["grade_{$i}"];
+	print "\n";
       }
     }
     $cmnt2athr = isset($review['cmnt']) ? wordwrap($review['cmnt']) : '';
@@ -176,7 +180,7 @@ if you uploaded a review via the web interface and then uploaded from
 here a file that includes an old version of that review, then that "old
 version" will overwrite the "newer version" that was uploaded before.<br/>
 <br/>
-<form action="parse-scorecard.php" enctype="multipart/form-data" method=post>
+<form action="parseScorecard.php" enctype="multipart/form-data" method=post>
 <input type=submit value="Upload scorecard file:">
 <input type=file size=60 name=scorecard>
 </form>

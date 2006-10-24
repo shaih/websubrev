@@ -7,6 +7,7 @@
  */
  $needsAuthentication = true;
 require 'header.php';
+$subId=0;
 
 $cnnct = db_connect();
 foreach ($_POST as $key => $val) {

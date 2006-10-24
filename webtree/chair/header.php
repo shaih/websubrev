@@ -78,25 +78,33 @@ function status_summary($statuses)
 
 function show_chr_links($current = 0) 
 {
-  $cnnct = db_connect();
-  $qry = "SELECT MAX(version) FROM parameters";
-  $res = db_query($qry, $cnnct);
-  $row = mysql_fetch_row($res);
-  $maxVersion = $row[0];
-
-  if (PARAMS_VERSION>1 || PARAMS_VERSION<$maxVersion)
-       $undoLink = make_link('undoLast.php', 'Undo/Redo', ($current==4));
-  else $undoLink = '';
+  $undoLink = make_link('undoLast.php', 'Undo/Redo', ($current==4));
+  if (PARAMS_VERSION==1) {
+    $cnnct = db_connect();
+    $qry = "SELECT version FROM paramsBckp WHERE version=".(PARAMS_VERSION+1);
+    $res = db_query($qry, $cnnct);
+    if (mysql_num_rows($res)==0) $undoLink = '';
+  }
 
   $html = "<div style=\"text-align: center;\">\n";
   $html .= make_link('index.php', 'Administer', ($current==1))
     . make_link('../review/', 'Review', ($current==3))
-    . make_link('view-log.php', 'Log file', ($current==2))
+    . make_link('viewLog.php', 'Log file', ($current==2))
     . make_link('../review/password.php', 'Change password')
     . make_link('../documentation/chair.html', 'Documentation')
     . $undoLink
     . "</div>";
 
   return $html;
+}
+
+function backup_conf_params($cnnct,$version)
+{
+  // Delete paramater-sets with larger version number (can happen after undo's)
+  $qry = "DELETE FROM paramsBckp WHERE version>=$version";
+  mysql_query($qry, $cnnct); //  no need to abort of failure
+
+  $qry = "INSERT IGNORE INTO paramsBckp SELECT * FROM parameters WHERE version=$version";
+  mysql_query($qry, $cnnct);
 }
 ?>

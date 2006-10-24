@@ -44,7 +44,7 @@ $committee   = isset($_POST['committee'])  ?
 
 $anonymous = isset($_POST['anonymous']) ?
   'Anonymous submissions' :
-  'Non-anonymous (=nonymous?) submissions';
+  'Onymous (=non-anonymous) submissions';
 $revPrefs  = isset($_POST['revPrefs']) ?
   'PC members can specify reviewing preferences' :
   'Reviewing preferences and automatic assignments are disabled';
@@ -96,7 +96,6 @@ if (isset($crList)) {
   foreach ($crList as $cr) if ($c = parse_criterion($cr)) {
     $criteria[] = $c;
     $nCrits++;
-    if ($nCrits==5) break; // no more than five additional criteria
   }
 }
 

@@ -92,7 +92,7 @@ if (count($allVotes)>0) {// Generic form: print a list of votes
     if (isset($v['voteActive']) && $v['voteActive']>0) {
       $vActive = 'In progress';
       $vEdit = '<a href="voting.php?voteId='.$vtId.'">Edit...</a>';
-      $vClose = '<form action="act-voting.php" enctype="multipart/form-data" method=post>
+      $vClose = '<form action="doVoting.php" enctype="multipart/form-data" method=post>
   <input type="hidden" name="voteId" value="'.$vtId.'">
   <input type="submit" name="closeVote" value="Close vote">
   </form>';
@@ -136,7 +136,7 @@ In either type of vote, the tally is the sum of votes that each submission
 received. (In the "Choose vote" this is the number of PC members that chose
 that submission.)<br/>
 <br/>
-<form action="act-voting.php" enctype="multipart/form-data" method=post>
+<form action="doVoting.php" enctype="multipart/form-data" method=post>
 <b>Title:</b>&nbsp; <input type="text" name="voteTitle" size=60
    value="$voteTitle"> (used to distinguish this ballot from others)<br/>
 <b>Deadline:</b> <input type="text" name="voteDeadline" size=56
@@ -286,7 +286,7 @@ function print_vote_results($inProgress, $voteOnSubmissions, $voteTitles)
     print "All other items (if any) got zero votes. <a href=\"voteDetails.php\">See detailed results.</a><br/><br/>\n";
   }
   if ($inProgress) { print <<<EndMark
-<form action="act-voting.php" enctype="multipart/form-data" method=post>
+<form action="doVoting.php" enctype="multipart/form-data" method=post>
 <input type="hidden" name="voteClose" value="yes">
 <input type="submit" value="Close this vote">
 </form>

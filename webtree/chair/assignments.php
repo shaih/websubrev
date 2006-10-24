@@ -171,7 +171,7 @@ $links
 <hr />
 <h1>Manual Assignments of Submissions to Reviewers</h1>
 
-<form action="scrap-assignments.php" enctype="multipart/form-data" method="post">
+<form action="scrapAssignments.php" enctype="multipart/form-data" method="post">
 To manually assign submissions to reviewers, you can use either the <a
 href="#matrix">matrix interface</a> or the <a href="#sublist">submission-list
 interface</a> below. The two interfaces are synchronized (and the sums at
@@ -196,9 +196,9 @@ if (defined('REVPREFS') && REVPREFS) {
   print <<<EndMark
 You can have the software automatically compute an assignment of
 submissions to reviewers (using the reviewer preferences and a stable-marriage
-algorithm) by going to <a href="auto-assign.php">the Auto-Assignment page</a>.
+algorithm) by going to <a href="autoAssign.php">the Auto-Assignment page</a>.
 The Auto-Assignment page includes also a form for specifying the <a
-href="auto-assign.php#chairPrefs">chair-preferences</a>, and these
+href="autoAssign.php#chairPrefs">chair-preferences</a>, and these
 preferences are used in the automatic assignment algorithm. Also, the
 check-boxes in the <a href="#matrix">matrix interface</a> below will
 be colored <span style="color: green;">green</span> when you indicate

@@ -81,17 +81,18 @@ will still be able to view the reviews and discussions but not to modify
 them or insert new ones.)
 
 <h3>Instructions for camera-ready version</h3>
-<form name="cameraInstructions" action="act-recustomize.php"
+<form name="cameraInstructions" action="doActivateCamera.php"
       enctype="multipart/form-data" method="post">
 
 Use the text area below to customize the instructions for authors of
 accepted papers. These instructions will be sent to the authors, and
 will also be available off the final-version submission site. <br />
 
-<textarea cols=80 rows=23 name="finalVersionInstructions">$cameraInstructions</textarea>
-<br /><br />
-Camera-ready deadline: <input type="text" name="cameraDeadline" value="$cmrDdline" size="50">
-<br /><br />
+<textarea cols=80 rows=23 name="finalVersionInstructions">$cameraInstructions</textarea><br/>
+<br />
+Camera-ready deadline:
+<input type=text name=cameraDeadline value="$cmrDdline" size=50>
+<br/><br/>
 <input type="submit" value="Activate Final-Version Submissions">
 </form>
 <hr />

@@ -165,27 +165,44 @@ if (is_array($criteria) && count($criteria)>0) $writingReviews .=
 $writingReviews.="Please use the scale below when completing the review form.\n\n";
 
 
-if (MAX_GRADE==6) $gradeSemantics = array(
+if (MAX_GRADE==3) {
+  $gradeSemantics = array(
+  1 => "Weak submission, should be rejected",
+  3 => "Strong submission, should be accepted"
+  );
+} else if (MAX_GRADE==4 || MAX_GRADE==5) {
+  $gradeSemantics = array(
+  1 => "Very weak submission, would be an embarrassment to accept",
+  2 => "Weak submission, I lean toward rejection",
+  (MAX_GRADE-1) => "Solid submission, I lean toward acceptance",
+  MAX_GRADE => "Strong submission, would be a shame to reject"
+  );
+} else if (MAX_GRADE==6 || MAX_GRADE==7) {
+  $gradeSemantics = array(
   1 => "Very weak submission, would be an embarrassment to accept",
   2 => "Weak submission, should be rejected",
   3 => "Rather neutral, but I lean toward rejection",
-  4 => "Rather neutral, but I lean toward acceptance",
-  5 => "Solid submission, should be accepted",
-  6 => "Strong submission, would be a shame to reject"
-);
-else if (MAX_GRADE==9) $gradeSemantics = array(
+  (MAX_GRADE-2) => "Rather neutral, but I lean toward acceptance",
+  (MAX_GRADE-1) => "Solid submission, should be accepted",
+  MAX_GRADE => "Strong submission, would be a shame to reject"
+  );
+} else if (MAX_GRADE==8 || MAX_GRADE==9) {
+  $gradeSemantics = array(
   1 => "Devoid of any content/known result/wrong conference",
   2 => "Very weak submission, would be an embarrassment to accept",
   3 => "Weak submission, should be rejected",
   4 => "Rather neutral, but I lean toward rejection",
-  5 => "Neutral: I cannot make up my mind about this submission",
-  6 => "Rather neutral, but I lean toward acceptance",
-  7 => "Solid submission, should be accepted",
-  8 => "Strong submission, would be a shame to reject",
-  9 => "Very strong submission, one of the best in this conference"
-);
-else $gradeSemantics = array();
+  (MAX_GRADE-3) => "Rather neutral, but I lean toward acceptance",
+  (MAX_GRADE-2) => "Solid submission, should be accepted",
+  (MAX_GRADE-1) => "Strong submission, would be a shame to reject",
+  MAX_GRADE => "Very strong submission, one of the best in this conference"
+  );
+} else $gradeSemantics = array();
 
+if (MAX_GRADE & 1) {
+  $middle = (MAX_GRADE+1)/2;
+  $gradeSemantics[$middle]="Neutral: I cannot make up my mind about this submission";
+}
 
 if (MAX_CONFIDENCE==3) $confSemantics = array(
   1 => "An educated guess",

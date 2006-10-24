@@ -196,7 +196,7 @@ print <<<EndMark
 </tbody></table>
 
 <h3>List of submissions</h3>
-<form action="auto-assign.php" enctype="multipart/form-data" method="post" autocomplete="off">
+<form action="autoAssign.php" enctype="multipart/form-data" method="post" autocomplete="off">
 <ol>
 EndMark;
 foreach ($subArray as $sub) { 

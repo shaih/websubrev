@@ -7,7 +7,7 @@
  */
 $needsAuthentication=true;
 require 'showReviews.php';
-require 'ascii-showReviews.php';
+require 'showReviewsAscii.php';
 require 'header.php';  // defines $pcMember=array(id, name, email, ...)
 
 $bigNumber = 1000000;  // some stupid upper bound on the number of posts
@@ -56,13 +56,9 @@ $qry = "SELECT s.subId subId, s.title title,
        a.assign assign, a.watch watch,\n";
 
 // Next the reviwe details
-$qry .="       r.revId revId, r.confidence conf, r.score grade, 
+$qry .="       r.revId revId, r.confidence conf, r.score score, 
        UNIX_TIMESTAMP(r.lastModified) modified, c.name PCmember,
        r.subReviewer subReviewer";
-for ($i=0; $i<count($criteria); $i++) {
-  $qry .= ",\n       r.grade_{$i} grade_{$i}";
-}
-
 if (isset($_GET['withReviews'])) { // get also the comments
   $flags |= 64;
   $qry .= ",\n       r.comments2authors cmnts2athr,
@@ -87,9 +83,25 @@ if (isset($_GET['ignoreWatch'])) {
 }
 $qry .= "  ORDER BY $order";
 
-$res = db_query($qry, $cnnct);
+// Get also the auxiliary grades
+$qry2 = "SELECT z.subId, z.revId, z.gradeId, z.grade"
+     . " FROM auxGrades z, submissions s"
+     . " WHERE s.subId=z.subId AND s.status!='Withdrawn' "
+     . " ORDER BY z.subId, z.revId, z.gradeId";
 
-// Store the reviews in
+$res = db_query($qry, $cnnct);
+$auxRes = db_query($qry2, $cnnct);
+
+// store aux grades in a more convenient array
+$auxGrades = array();
+while ($row = mysql_fetch_row($auxRes)) {
+  $sId = (int) $row[0];
+  $rId = (int) $row[1];
+  $gId = (int) $row[2];
+  $auxGrades[$sId][$rId][$gId] = isset($row[3]) ? ((int) $row[3]) : NULL;
+}
+     
+// Store the reviews in a tables
 $subs = array();
 $watch = array();
 $others = array();
@@ -126,15 +138,17 @@ while ($row = mysql_fetch_assoc($res)) {
 
   // Record the details of the current review in the submission's review list
   if (isset($row['PCmember'])) {
-    $review = array('subId'       => $row['subId'],
-		    'revId'       => $row['revId'],
+    $sId = $row['subId'];
+    $rId = $row['revId'];
+    $review = array('subId'       => $sId, 
+		    'revId'       => $rId, 
 		    'PCmember'    => $row['PCmember'],
 		    'subReviewer' => $row['subReviewer'],
 		    'modified'    => $row['modified'],
 		    'conf'        => $row['conf'],
-		    'grade'       => $row['grade']);
+		    'score'       => $row['score']);
     for ($i=0; $i<count($criteria); $i++)
-      $review["grade_{$i}"] = $row["grade_{$i}"];
+      $review["grade_{$i}"] = $auxGrades[$sId][$rId][$i];
 
     if (isset($_GET['withReviews'])) { // get also the comments
       $review["cmnts2athr"] = $row["cmnts2athr"];

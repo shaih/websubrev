@@ -152,6 +152,7 @@ $prmsString = "<?php\n"
   . "LOG_FILE=$logFile\n"
   . "ADMIN_EMAIL=$adminEmail\n"
   . "CONF_SALT=$salt\n"
+  . "BASE_URL=$baseURL\n"
   . " ********************************************************************/\n"
   . "?>\n";
 if (!fwrite($fd, $prmsString)) {

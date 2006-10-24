@@ -112,9 +112,11 @@ foreach($subArray as $subId => $sb) {
 
 EndMark;
 }
+$submit = '<input type="submit" name="noAnchor" value="Set Status">';
+if (PERIOD==PERIOD_FINAL) $submit="<!-- $submit -->";
 print <<<EndMark
 </tbody></table>
-<input type="submit" name="noAnchor" value="Set Status">
+$submit
 </form>
 <hr />
 {$links}

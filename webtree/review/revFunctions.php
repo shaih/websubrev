@@ -204,6 +204,7 @@ EndMark;
 
 function setFlags_table($subId, $status)
 {
+  if (PERIOD==PERIOD_FINAL) return;
   $params = implode_assoc('&amp;', $_GET);
   if (!empty($params)) $params = '?'.$params;
   else                 $params = ''; // make sure it's not NULL

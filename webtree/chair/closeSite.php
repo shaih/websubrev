@@ -33,7 +33,7 @@ $links
 </tbody></table>
 
 <h2>Are you sure you want to close the submission site?</h2>
-<form action="act-recustomize.php"  enctype="multipart/form-data" method="post">
+<form action="doCloseSite.php"  enctype="multipart/form-data" method="post">
 <input type="hidden" name="shutdown" value="yes">
 <input type="submit" value="Yes, Shutdown Final-Version Submission Site">
 </form>

@@ -153,7 +153,7 @@ if (isset($_POST['notifySubmitters'])) {
 
   print <<<EndMark
 <br/>
-Total of $count messages sent. Check the <a href="view-log.php">log file</a>
+Total of $count messages sent. Check the <a href="viewLog.php">log file</a>
 for any errors.
 
 <hr />

@@ -25,7 +25,29 @@
    */
 CREATE TABLE IF NOT EXISTS parameters (
     version     smallint(3) NOT NULL auto_increment,
-    isCurrent   tinyint(1) NOT NULL DEFAULT 0,
+    longName    text NOT NULL,
+    shortName   varchar(20) NOT NULL,
+    confYear    smallint(4) NOT NULL,
+    confURL     text,
+    subDeadline int NOT NULL, $updates
+    cmrDeadline int NOT NULL, 
+    maxGrade    tinyint(2) NOT NULL DEFAULT 6,
+    maxConfidence tinyint(1) NOT NULL DEFAULT 3,
+    flags       int NOT NULL DEFAULT 1, 
+    emlSender   text,
+    period      tinyint(1) NOT NULL DEFAULT 0,
+    formats     text NOT NULL,
+    categories  text,
+    extraCriteria text,
+    cmrInstrct text,
+    acceptLtr text,
+    rejectLtr text,
+    PRIMARY KEY (version)
+);
+
+/* A table to backup parameter-sets */
+CREATE TABLE IF NOT EXISTS paramsBckp (
+    version     smallint(3) NOT NULL,
     longName    text NOT NULL,
     shortName   varchar(20) NOT NULL,
     confYear    smallint(4) NOT NULL,
@@ -36,7 +58,6 @@ CREATE TABLE IF NOT EXISTS parameters (
     maxConfidence tinyint(1) NOT NULL DEFAULT 3,
     flags       int NOT NULL DEFAULT 1, 
     emlSender   text,
-    baseURL     text NOT NULL,
     period      tinyint(1) NOT NULL DEFAULT 0,
     formats     text NOT NULL,
     categories  text,
@@ -115,11 +136,6 @@ CREATE TABLE IF NOT EXISTS reports (
     subReviewer varchar(255),
     confidence tinyint(1),
     score tinyint(2),
-    grade_0 tinyint(2),
-    grade_1 tinyint(2),
-    grade_2 tinyint(2),
-    grade_3 tinyint(2),
-    grade_4 tinyint(2),
     comments2authors text,
     comments2committee text,
     comments2chair text,
@@ -135,11 +151,6 @@ CREATE TABLE IF NOT EXISTS reportBckp (
     subReviewer varchar(255),
     confidence tinyint(1),
     score tinyint(2),
-    grade_0 tinyint(2),
-    grade_1 tinyint(2),
-    grade_2 tinyint(2),
-    grade_3 tinyint(2),
-    grade_4 tinyint(2),
     comments2authors text,
     comments2committee text,
     comments2chair text,
@@ -148,23 +159,42 @@ CREATE TABLE IF NOT EXISTS reportBckp (
     PRIMARY KEY (subId, revId, version)
 );
 
-  /* The assignments table, relating PC members to submissions.
-   *
-   * The pref column is the reviewer's preferences, ranging from 0 
-   * (conflict) and 1 (don't want to review) through 5 (want to review). 
-   *
-   * the compatible field is the extent to which the chair thinks that
-   * this reviewer is a good reviewer for that submission, and it can be
-   * either -1 (not compatible) 0 (default) or 1 (should review this).
-   *
-   * The sktchAssgn field can be -1 (conflict), 1 (assigned) or 0 (neither).
-   * This is used in the process of assigning submissions to reviewers.
-   *
-   * The assign field can be either -1 (conflict), 1 (assigned) or 0 (neither).
-   *
-   * The watch field (0/1) is used to let reviewers specify a list of
-   * papers that they want to watch during the discussion phase.
-   */
+/* Table for additional evaluation criteria */
+CREATE TABLE IF NOT EXISTS auxGrades (
+    subId smallint(5) NOT NULL,
+    revId smallint(3) NOT NULL,
+    gradeId smallint(3) NOT NULL,
+    grade tinyint,
+    PRIMARY KEY (subId, revId, gradeId)
+);
+  
+/* Backup of additional evaluation criteria */
+CREATE TABLE IF NOT EXISTS gradeBckp (
+    subId smallint(5) NOT NULL,
+    revId smallint(3) NOT NULL,
+    gradeId smallint(3) NOT NULL,
+    grade tinyint,
+    version smallint(3) NOT NULL DEFAULT 0,
+    PRIMARY KEY (subId, revId, gradeId, version)
+);
+
+/* The assignments table, relating PC members to submissions.
+ *
+ * The pref column is the reviewer's preferences, ranging from 0 
+ * (conflict) and 1 (don't want to review) through 5 (want to review). 
+ *
+ * the compatible field is the extent to which the chair thinks that
+ * this reviewer is a good reviewer for that submission, and it can be
+ * either -1 (not compatible) 0 (default) or 1 (should review this).
+ *
+ * The sktchAssgn field can be -1 (conflict), 1 (assigned) or 0 (neither).
+ * This is used in the process of assigning submissions to reviewers.
+ *
+ * The assign field can be either -1 (conflict), 1 (assigned) or 0 (neither).
+ *
+ * The watch field (0/1) is used to let reviewers specify a list of
+ * papers that they want to watch during the discussion phase.
+ */
 CREATE TABLE IF NOT EXISTS assignments (
     subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL, 

@@ -9,7 +9,8 @@
 
 function create_tabels($cnnct)
 {
-  /* flags is a bit-flag field, currently supporting the following fields
+  /* The conference parameters table.
+   * The field flags is for bit-flags, currently supporting the following flags
    *     1 - PC members can specify their reviewing preferences
    *     2 - submissions are anonymous
    *     4 - submitters should supply affiliations
@@ -27,7 +28,6 @@ function create_tabels($cnnct)
    */
   $qry = "CREATE TABLE IF NOT EXISTS parameters (
     version     smallint(3) NOT NULL auto_increment,
-    isCurrent   tinyint(1) NOT NULL DEFAULT 0,
     longName    text NOT NULL,
     shortName   varchar(20) NOT NULL,
     confYear    smallint(4) NOT NULL,
@@ -38,7 +38,6 @@ function create_tabels($cnnct)
     maxConfidence tinyint(1) NOT NULL DEFAULT 3,
     flags       int NOT NULL DEFAULT 1, 
     emlSender   text,
-    baseURL     text NOT NULL,
     period      tinyint(1) NOT NULL DEFAULT 0,
     formats     text NOT NULL,
     categories  text,
@@ -50,14 +49,39 @@ function create_tabels($cnnct)
   )";
   db_query($qry, $cnnct, "Cannot CREATE parameter table: ");
 
-  // The submission table. The numReviewers lets the chair specify how many
-  // reviewers should be assigned to review the submission initally (to be
-  // used by the "matching" algorithm). The revisionOf and oldVersionOf are
-  // meant to deal with revisions (e.g., if this is used for jounral reviews)
-  //
-  // The status titles were chosen so that alphabetical order coninsides
-  // with logical order, to overcome this "feature" of MySQL that only lets
-  // you sort by alphabetical order.
+  /* A table to backup parameter-sets */
+  $qry = "CREATE TABLE IF NOT EXISTS paramsBckp (
+    version     smallint(3) NOT NULL,
+    longName    text NOT NULL,
+    shortName   varchar(20) NOT NULL,
+    confYear    smallint(4) NOT NULL,
+    confURL     text,
+    subDeadline int NOT NULL, 
+    cmrDeadline int NOT NULL, 
+    maxGrade    tinyint(2) NOT NULL DEFAULT 6,
+    maxConfidence tinyint(1) NOT NULL DEFAULT 3,
+    flags       int NOT NULL DEFAULT 1, 
+    emlSender   text,
+    period      tinyint(1) NOT NULL DEFAULT 0,
+    formats     text NOT NULL,
+    categories  text,
+    extraCriteria text,
+    cmrInstrct text,
+    acceptLtr text,
+    rejectLtr text,
+    PRIMARY KEY (version)
+  )";
+  db_query($qry, $cnnct, "Cannot CREATE parameter backup table: ");  
+  
+  /* The submission table. The numReviewers lets the chair specify how many
+   * reviewers should be assigned to review the submission initally (to be
+   * used by the "matching" algorithm). The revisionOf and oldVersionOf are
+   * meant to deal with revisions (e.g., if this is used for jounral reviews)
+   *
+   * The status titles were chosen so that alphabetical order coninsides
+   * with logical order, to overcome this "feature" of MySQL that only lets
+   * you sort by alphabetical order.
+   */
   $qry = "CREATE TABLE IF NOT EXISTS submissions (
     subId smallint(5) NOT NULL auto_increment,
     title varchar(255) NOT NULL,
@@ -120,11 +144,6 @@ function create_tabels($cnnct)
     subReviewer varchar(255),
     confidence tinyint(1),
     score tinyint(2),
-    grade_0 tinyint(2),
-    grade_1 tinyint(2),
-    grade_2 tinyint(2),
-    grade_3 tinyint(2),
-    grade_4 tinyint(2),
     comments2authors text,
     comments2committee text,
     comments2chair text,
@@ -146,7 +165,29 @@ function create_tabels($cnnct)
   )";
   db_query($qry, $cnnct, "Cannot CREATE report backup table: ");
 
+  // Table for additional evaluation criteria
+  $qry = "CREATE TABLE IF NOT EXISTS auxGrades (
+    subId smallint(5) NOT NULL,
+    revId smallint(3) NOT NULL,
+    gradeId smallint(3) NOT NULL,
+    grade tinyint,
+    PRIMARY KEY (subId, revId, gradeId)
+  )";
+  db_query($qry, $cnnct, "Cannot CREATE auxGrades table: ");
 
+  
+  // Backup of additional evaluation criteria
+  $qry = "CREATE TABLE IF NOT EXISTS gradeBckp (
+    subId smallint(5) NOT NULL,
+    revId smallint(3) NOT NULL,
+    gradeId smallint(3) NOT NULL,
+    grade tinyint,
+    version smallint(3) NOT NULL DEFAULT 0,
+    PRIMARY KEY (subId, revId, gradeId, version)
+  )";
+  db_query($qry, $cnnct, "Cannot CREATE auxGrades table: ");
+
+  
   // The assignments table, relating PC members to submissions.
   //
   // The pref column is the reviewer's preferences, ranging from 0 

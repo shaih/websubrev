@@ -8,7 +8,7 @@
 $needsAuthentication = true; // Just a precaution
 require 'header.php';
 
-if (defined('CAMERA_PERIOD')) { exit("<h1>Review Site is Closed</h1>"); }
+if (PERIOD > SUBMIT_PERIOD) { exit("<h1>Review Site is Closed</h1>"); }
 
 $maxGrade = MAX_GRADE;
 
@@ -85,7 +85,7 @@ the range of grades, etc. These parameters cannot be modified after the
 review site is activated.<br/>
 <br/>
 
-<form name="reviewPrms" action="act-recustomize.php"
+<form name="reviewPrms" action="doCloseSubmissions.php"
       enctype="multipart/form-data" method="post">
 
 <input name="reviewPrms" value="on" type="hidden">

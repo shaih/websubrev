@@ -49,7 +49,7 @@ You can also correct the titles and author list of papers (for example
 to add LaTeX accent commands for European characters).<br/>
 <br/>
 
-<form action="act-makeTOC.php"  enctype="multipart/form-data" method="post">
+<form action="doMakeTOC.php"  enctype="multipart/form-data" method="post">
 <table cellspacing=3><tbody>
 <tr><th>subId</th><th>nPages</th><th>order</th>
   <th>title &amp; authors (separate authors by semi-colon)</th>

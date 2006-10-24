@@ -9,7 +9,7 @@ $needsAuthentication = true;
 require 'header.php';
 
 $cnnct = db_connect();
-$qry = "SELECT flags, emlSender from parameters WHERE isCurrent=1 AND version=".PARAMS_VERSION;
+$qry = "SELECT flags, emlSender from parameters WHERE version=".PARAMS_VERSION;
 $res = db_query($qry, $cnnct, "Cannot load parameters: ");
 $row = mysql_fetch_row($res) or die("No parameters are specified");
 $oldFlags = $newFlags = (int) $row[0];

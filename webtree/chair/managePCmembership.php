@@ -98,8 +98,7 @@ correct any errors</i>. Note the following:
   address will be CCed on all these emails.</li>
 </ul>
 
-<form name="committee" action="act-recustomize.php"
-      enctype="multipart/form-data" method="post">
+<form action=doManagePCmembership.php enctype="multipart/form-data" method=post>
 
 <input name="reviewSite" value="on" type="hidden">
 <table cellpadding="3" cellspacing="0"><tbody>

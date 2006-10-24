@@ -148,7 +148,7 @@ foreach ($subArray as $sub) {
 	  $img = '../common/check2.GIF';
 	  $committee[$j][4]++;
 	}
-	$img = "<a href=\"../review/receipt-report.php?subId={$subId}&amp;revId={$revId}\" target=\"_blank\">\n"
+	$img = "<a href=\"../review/receiptReport.php?subId={$subId}&amp;revId={$revId}\" target=\"_blank\">\n"
 	  . '      <img src="'.$img.'" alt="(+)" height=20 border=0></a>';
       }
       else if ($assgn==1) {    // assigned but not reviewed
