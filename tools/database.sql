@@ -29,8 +29,8 @@ CREATE TABLE IF NOT EXISTS parameters (
     shortName   varchar(20) NOT NULL,
     confYear    smallint(4) NOT NULL,
     confURL     text,
-    subDeadline int NOT NULL, $updates
-    cmrDeadline int NOT NULL, 
+    subDeadline int NOT NULL,
+    cmrDeadline int NOT NULL,
     maxGrade    tinyint(2) NOT NULL DEFAULT 6,
     maxConfidence tinyint(1) NOT NULL DEFAULT 3,
     flags       int NOT NULL DEFAULT 1, 
@@ -269,7 +269,7 @@ CREATE TABLE IF NOT EXISTS votes (
     voteId smallint(3) NOT NULL default 1, 
     revId smallint(3) NOT NULL, 
     subId smallint(5) NOT NULL,
-    vote tinyint,
+    vote tinyint NOT NULL,
     PRIMARY KEY (voteId, revId, subId)
 );
 

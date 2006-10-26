@@ -48,19 +48,6 @@ $res = db_query($qry, $cnnct);
 $committee = array();
 while ($row = mysql_fetch_row($res)) { $committee[] = $row; }
 
-// Make user-indicated changes before displaying the matrix
-if (isset($_POST["setDiscussFlags"])) foreach ($committee as $j => $pcm) {
-  $revId = (int) $pcm[0];
-  if (isset($_POST["dscs"][$revId])) {
-    $qry = "UPDATE committee SET canDiscuss=1 WHERE revId={$revId}";
-    $committee[$j][5] = 1;
-  } else {
-    $qry = "UPDATE committee SET canDiscuss=0 WHERE revId={$revId}";
-    $committee[$j][5] = 0;
-  }
-  db_query($qry, $cnnct);
-}
-
 /*********************************************************************/
 /******* Now we can display the assignments matrix to the user *******/
 /*********************************************************************/
@@ -176,7 +163,7 @@ print <<<EndMark
 </tbody></table>
 <br /><br />
 <h2><a name="progress">Program Committee Progress Summary</a></h2>
-<form action="overview.php" enctype="multipart/form-data" method="post">
+<form action=setDiscussFlags.php enctype="multipart/form-data" method=post>
 <table><tbody>
 <tr style="font-weight: bold;"><td>Reviewer</td>
   <td>Can discuss &nbsp; </td>

@@ -1,8 +1,30 @@
 #!/bin/sh
 #
+if [ $# -ne 1 ]; then 
+  echo
+  echo "Usage: $0 confname"
+  echo
+  echo "  where confname is the conference short name, e.g. xyz2007, etc."
+  echo 
+  echo "confname must consists of only alphanumeric characters. It would be"
+  echo "used also as the database name and a suffix for the directory names."
+  echo
+  exit
+fi
 # abort this script on first error
 set -e
 #
+# Aliases for generating random strings: choose whatever works on your system
+# ---------------------------------------------------------------------------
+# alias makepasswd="head -c9 /dev/urandom | b64encode - | tail -2 | head -1"
+alias makepasswd="head -c8 /dev/urandom | od -t x8 | awk '{ print \$2 }'"
+# alias makepasswd='echo $RANDOM$RANDOM$RANDOM'
+#
+# Default values for the directories: modify these
+# ------------------------------------------------
+defBaseDir="/var/www/secure/websubrev/0.6"
+defUpldDir="/var/www/data/0.6"
+defBaseURL="ornavella.watson.ibm.com/websubrev/0.6/"
 echo
 echo "Creating a New Submission-and-Review Site:"
 echo "============================================================="
@@ -21,18 +43,28 @@ echo
 echo "Make sure that the directory names are absolute (i.e., they must"
 echo "start with '/') and that they DO NOT end with '/'."
 echo
-read -p "BASE directory: " baseDir
+read -p "BASE directory[$defBaseDir]: " baseDir
 if [ -z $baseDir ]; then
-  echo
-  echo "You must specify the BASE directory for the site"
-  exit
+  baseDir=$defBaseDir
 fi
-read -p "UPLOAD directory: " subDir
+baseDir=$baseDir/$1
+read -p "UPLOAD directory [$defUpldDir]: " subDir
 if [ -z $subDir ]; then
-  echo
-  echo "You must specify the UPLOAD directory"
-  exit
+  subDir=$defUpldDir
 fi
+subDir=$subDir/$1
+echo
+echo
+echo "Specify now the URL of the base directory where the new site will"
+echo "be available (caled the BASE URL, e.g., www.eaxmple.com/myConf/)."
+echo "This should NOT include the protocol (http or https) and should end"
+echo "with '/'"
+echo 
+read -p "BASE URL [$defBaseURL]: " baseURL
+if [ -z $baseURL ]; then
+  baseURL=$defBaseURL
+fi
+baseURL=${baseURL}$1/
 echo
 echo
 echo "Now you need to specify some other system parameters, specifically"
@@ -69,11 +101,9 @@ echo "The chair email address that you specify below can be later changed"
 echo "by the program chair from the web interface."
 echo
 
-# Get a short random number (always handy to have)
-nm="Conf$RANDOM"
-read -p "A name for the conference database (e.g., STOC08) [$nm]: " dbName
+read -p "A name for the conference database (e.g., stoc08) [$1]: " dbName
 if [ -z $dbName ]; then
-  dbName=$nm
+  dbName=$1
 fi
 read -p "The program chair's email address [$adm]: " chrEml
 if [ -z $chrEml ]; then
@@ -85,6 +115,7 @@ echo "PLEASE CONFIRM YOUR SELECTIONS BEFORE WE CONTINUE"
 echo "================================================="
 echo "BASE directory:        $baseDir" 
 echo "UPLOAD directory:      $subDir" 
+echo "BASE URL:              $baseURL" 
 echo "MySQL admin usrname:   $rootName"
 echo "MySQL database:        $dbName"
 echo "Web-servre group name: $webSrv"
@@ -101,10 +132,10 @@ fi
 
 # get some passwords: an initial pssword for the chair, a pasword for
 # the database, the log file name and a "salt" value
-chrPwd=$(head -c4 /dev/urandom | od -t x4 | awk '{ print $2 }')
-dbPwd=$(head -c8 /dev/urandom | od -t x8 | awk '{ print $2 }')
-logFile=$(head -c2 /dev/urandom | od -t x2 | awk '{ print $2 }')
-salt=$(head -c8 /dev/urandom | od -t x8 | awk '{ print $2 }')
+chrPwd=$(makepasswd | head -c8)
+dbPwd=$(makepasswd | head -c16)
+logFile=$(makepasswd | head -c4)
+salt=$(makepasswd)
 
 # ===========================================================================
 # We now have all the info that we need, let's create the new site
@@ -140,6 +171,7 @@ echo "SUBMIT_DIR=$subDir"                   >> $baseDir/init/confParams.php
 echo "LOG_FILE=$subDir/log$logFile"         >> $baseDir/init/confParams.php
 echo "ADMIN_EMAIL=$adm"                     >> $baseDir/init/confParams.php
 echo "CONF_SALT=$salt"                      >> $baseDir/init/confParams.php
+echo "BASE_URL=$baseURL"                    >> $baseDir/init/confParams.php
 echo " ********************************************************************/" >> $baseDir/init/confParams.php
 echo "?>"                                   >> $baseDir/init/confParams.php
 # ---------------
@@ -163,11 +195,13 @@ echo
 echo "************************************************************************"
 echo "                     NEW SITE CREATED SUCCESSFULLY"
 echo "************************************************************************"
-echo "To complete the installation, direct the chair to the web-page"
-echo "chair/customize.php under the BASE directory. To access that page, the"
-echo "chair must use username $chrEml and password $chrPwd"
-echo "               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-echo "               NOTICE    NOTICE    NOTICE    NOTICE    NOTICE    NOTICE"
+echo "To complete the installation, direct the chair to the web-page at"
+echo
+echo "  ${baseURL}chair/customize.php."
+echo 
+echo "To access that page use username $chrEml and password $chrPwd"
+echo "                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+echo "                         NOTICE    NOTICE    NOTICE    NOTICE    NOTICE"
 echo 
 echo "You may want to consider modifying ownership/permissions on the BASE"
 echo "and UPLOAD directories, to comply with the security policy of your site."

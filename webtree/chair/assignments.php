@@ -44,81 +44,7 @@ while ($row = mysql_fetch_row($res)) {
   $prefs[$subId][$revId] = array($pref, $compatible, $assign);
 }
 
-// Make user-indicated changes before displaying the matrix
-if (isset($_POST["saveAssign"])) { // input from matrix interface
-  foreach($subArray as $sub) foreach($cmteIds as $revId) {
-    $subId = (int) $sub[0];
-    $assgn = isset($_POST["a_{$subId}_{$revId}"]) ? 1 : 0;
-
-    // do not override a conflict
-    if (isset($prefs[$subId][$revId][2])
-	&& $prefs[$subId][$revId][2] == -1) $assgn=-1;
-
-    if (isset($prefs[$subId][$revId])                 // modify existing entry
-	&& (isset($_POST["visible"]) || $prefs[$subId][$revId][2]!=$assgn)) {
-      $prefs[$subId][$revId][2] = $assgn;
-      $qry = "UPDATE assignments SET sktchAssgn={$assgn}";
-      if (isset($_POST["visible"])) $qry .= ", assign={$assgn}";
-      $qry .= " WHERE revId='{$revId}' AND subId='{$subId}'";
-      db_query($qry, $cnnct);
-    }
-
-    if (!isset($prefs[$subId][$revId]) && $assgn!=0) {// inser a new entry
-      if (!isset($prefs[$subId])) { $prefs[$subId] = array(); }
-      $prefs[$subId][$revId] = array(3, 0, $assgn);
-      $qry = "INSERT INTO assignments SET revId={$revId}, subId={$subId}, sktchAssgn={$assgn}";
-      if (isset($_POST["visible"])) $qry .= ", assign={$assgn}";
-      db_query($qry, $cnnct);
-    }
-  }
-}
-else if (isset($_POST["manualAssign"])) { // input from list interface
-  $newAssignment = array();
-  foreach($subArray as $sub) {
-    $subId = (int) $sub[0];
-    if (!isset($_POST["cList{$subId}"])) continue;
-    $newAssignment[$subId] = array();
-
-    $nameList = explode(';', $_POST["cList{$subId}"]);
-    $list = '';
-    foreach ($nameList as $revName) {
-      $revName = trim($revName); if (empty($revName)) continue;
-      $revId = match_PCM_by_name($revName, $committee);
-
-      if ($revId==-1 || $prefs[$subId][$revId][2]==-1) continue;
-      $newAssignment[$subId][$revId]=1;
-
-      $list .= $revId . ', ';
-      if (!isset($prefs[$subId][$revId])) { // insert new entry
-	$prefs[$subId][$revId] = array(3, 0, 1);
-	$qry = "INSERT INTO assignments SET revId={$revId}, subId={$subId}, sktchAssgn=1";
-	if (isset($_POST["visible"])) $qry .= ", assign=1";
-	db_query($qry, $cnnct);
-      }
-      else if (isset($_POST["visible"]) || $prefs[$subId][$revId][2] != 1) { // update existing entry
-	$prefs[$subId][$revId][2] = 1;
-	$qry = "UPDATE assignments SET sktchAssgn=1";
-	if (isset($_POST["visible"])) $qry .= ", assign=1";
-	$qry .= " WHERE revId='{$revId}' AND subId='{$subId}'";
-	db_query($qry, $cnnct);
-      }
-    }
-
-    // Remove all other assignments to $subId from database and $prefs
-    $qry = "UPDATE assignments SET sktchAssgn=0";
-    if (isset($_POST["visible"])) $qry .= ", assign=0";
-    $qry .= " WHERE subId={$subId} AND revId NOT IN ({$list}0) AND sktchAssgn=1";
-    db_query($qry, $cnnct);
-    foreach ($prefs[$subId] as $revId => $p) {
-      if ($p[2]==1 && !isset($newAssignment[$subId][$revId]))
-	$prefs[$subId][$revId][2] = 0;
-    }
-  }
-}
-
-/*********************************************************************/
-/******* Now we can display the assignments matrix to the user *******/
-/*********************************************************************/
+/* Display the assignments matrix to the user */
 $classes = array('zero', 'one', 'two', 'three', 'four', 'five');
 $links = show_chr_links();
 print <<<EndMark
@@ -185,8 +111,8 @@ reset the form to the assignments that are currently visible to the
 reviewers.
 <input type="submit" name="clearAll" value="Clear All Assignments"> or 
 <input type="submit" name="reset2visible" value="Reset to Visible Assignments">
-Note: this only effects the scratch copy of the assignments and is not
-visible to the reviewers. (<a target=_blank
+Note: these two buttons only effect the scratch copy of the assignments and
+not the assignments that are visible to reviewers. (<a target=_blank
 href="../documentation/chair.html#scratchAssign">explain this</a>)
 </form>
 
@@ -212,7 +138,7 @@ EndMark;
 
 print <<<EndMark
 <a name="matrix"></a><h2>Matrix Interface</h2>
-<form action="assignments.php" enctype="multipart/form-data" method="post">
+<form action="doAssignments.php" enctype="multipart/form-data" method="post">
 <table cellspacing=0 cellpadding=0 border=1><tbody>
 
 EndMark;
@@ -319,7 +245,7 @@ print <<<EndMark
 </tbody></table>
 
 <h3>List of submissions</h3>
-<form action="assignments.php" enctype="multipart/form-data" method="post" autocomplete="off">
+<form action=doAssignments.php enctype="multipart/form-data" method=post autocomplete=off>
 <ol>
 
 EndMark;

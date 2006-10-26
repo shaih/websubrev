@@ -284,7 +284,7 @@ function create_tabels($cnnct)
     voteId smallint(3) NOT NULL default 1, 
     revId smallint(3) NOT NULL, 
     subId smallint(5) NOT NULL,
-    vote tinyint,
+    vote tinyint NOT NULL,
     PRIMARY KEY (voteId, revId, subId)
   )";
   db_query($qry, $cnnct, "Cannot CREATE votes table: ");

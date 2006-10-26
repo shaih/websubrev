@@ -83,7 +83,7 @@ $listSubmissions = listSubmissionsBox($disFlag,$pcmFlags);
 
 $showReviews = $allReviews = $uploadScores= '';
 if ($disFlag) {         // Reviewer in the discussion phase
-  $watchedSubs = discussion_phase($cnnct, $revId);
+  $watchedSubs = discussion_phase($cnnct, $revId, empty($ballotsText));
   if ($watchedSubs) {
     $legend = show_legend(); // defined in confUtils.php
   }
@@ -189,7 +189,7 @@ function individual_review($cnnct, $revId)
   else print "<br/>\n";
 }
 
-function discussion_phase($cnnct, $revId)
+function discussion_phase($cnnct, $revId, $extraSpace)
 {
   global $discussIcon1, $discussIcon2;
 
@@ -235,9 +235,9 @@ function discussion_phase($cnnct, $revId)
       else { $require = "require"; }
 
       print "The chair indicated that $needsDiscussion of the submissions"
-	. " on your watch list $require additional discussion.\n";
+	. " on your watch list $require additional discussion.<br/><br/>\n";
     }
-    print "<br/>\n";
+    else if ($extraSpace) print "<br/><br/>\n";
     print_sub_list($subs, "Submissions on your watch list", $reviewed, true);
     return true;
   }

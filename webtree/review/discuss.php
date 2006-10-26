@@ -248,6 +248,7 @@ function depth_first_search($idx, $depth, &$rows, &$graph, &$posts)
   }
 
   $node = $graph[$idx];
+  $d = 0;
   if ($node->childIdx > 0) {
     $d = depth_first_search($node->childIdx, 
 				$depth+1, $rows, $graph, $posts);

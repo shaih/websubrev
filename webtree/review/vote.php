@@ -110,37 +110,7 @@ else {                           // voting on "other things"
     $voteItems[$itemId][1] = (int) $row[1];
   }
 }
-
-// If user has cast a vote - record it
-if (isset($_POST["votes"]) && is_array($_POST["votes"])) {
-  $voteSum = array_sum($_POST["votes"]);
-  if ($voteBudget > 0 && $voteSum > $voteBudget) {
-    if ($voteType=='Grade')
-      exit ("<h1>Sum of all gardes cannot exceed $voteBudget</h1>");
-    else
-      exit ("<h1>Cannot choose more than $voteBudget items</h1>");
-  }
-  
-  foreach($voteItems as $itemId => $vItem) {
-    $itemId = (int) $itemId;
-    $theVote = isset($_POST["votes"][$itemId]) ? intval($_POST["votes"][$itemId]) : 0;
-    if ($theVote<0) $theVote = 0;
-    else if ($theVote>$voteMaxGrade) $theVote = $voteMaxGrade;
-
-    if ($theVote!==$vItem[1]) {
-      if (!isset($vItem[1])) { // insert a new entry
-	$qry = "INSERT INTO votes SET voteId=$voteId, revId=$revId, subId=$itemId, vote=$theVote";
-      } else {                // modify existing entry
-	$qry = "UPDATE votes SET vote=$theVote WHERE voteId=$voteId AND revId=$revId AND subId=$itemId";
-      }
-      db_query($qry, $cnnct);
-      $voteItems[$itemId][1] = $theVote;
-    }
-  }
-  $voteRecorded = "Your vote was recorded.";
-}
-else $voteRecorded = "";
-
+$voteRecorded = isset($_GET['voteRecorded'])? 'Your vote was recorded.' : '';
 
 if ($voteType=='Grade') {  // reviewrs grade the submissions
   $voteHdr = "";
@@ -164,7 +134,7 @@ tr { vertical-align: top; }
 </head>
 <body>
 $links
-<hr />
+<hr/>
 $voteRecorded
 
 <h1>Voting Page: $voteTtl</h1> 
@@ -172,7 +142,7 @@ $vInstructions<br/>
 <br/>
 $vDeadline<br/>
 <br/>
-<form action="vote.php?voteId=$voteId" enctype="multipart/form-data" method=post>
+<form action=castVote.php?voteId=$voteId enctype="multipart/form-data" method=post>
 <input type=reset>
 <table><tbody>
 <tr>
@@ -203,7 +173,7 @@ foreach ($voteItems as $itemId => $vItem) {
 }
 print <<<EndMark
 </tbody></table>
-<input type="submit" value="Submit Vote">
+<input name="castVote" type="submit" value="Submit Vote">
 </form>
 Vote early, vote often: if you change your mind you can return to this page
 anytime before the vote closes to change your vote. PC members can't see each
