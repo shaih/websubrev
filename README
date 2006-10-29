@@ -72,7 +72,11 @@ An alternative method of installation (in Unix systems) is to change
 directory to the directory where you unzipped this software (above the
 "webtree" and "tools" directories) and from the command prompt do
 
-  % ./tools/mkNewConf.sh
+  % ./tools/mkNewConf.sh confname
+
+where confname is a short-name for the conference (e.g., xyz2007). It is
+recommended that you read this script before running it, and you can
+optionally modify it to set some default values.
 
 This shell script will ask you for the locations of the BASE and UPLOAD
 directories (and other parameters) and then it will install the software
@@ -85,7 +89,7 @@ Customizing the site:
 ---------------------
 Before it can be used, the site still needs to be customized for the
 conference. This is done from the page chair/customize.php under the
-BASE directory. In his page the program chair can specify the conference
+BASE directory. In this page the program chair can specify the conference
 name, deadlines, program-committee members and many other parameters.
 Links are provided from this page to the documentation page, where you can
 find some additional explanations about the role of different parameters.
