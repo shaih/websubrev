@@ -435,7 +435,7 @@ function show_status($status)
 }
 
 // Each entry in the PCMs array is $revId => array(name, ...)
-function match_PCM_by_name($name, &$PCMs)
+function match_PCM_by_name($name, $PCMs)
 {
   $name = trim(strtolower($name));
   $len = strlen($name);
@@ -448,7 +448,7 @@ function match_PCM_by_name($name, &$PCMs)
       return (int) $revId;
   }
 
-  if ($len < 2) return -1; // a single char must match exactly
+  if ($len < 2) return -1; // a single char must be an exact prefix
 
   // If not, see if the given name is at edit distance one from a PCM name
   foreach ($PCMs as $revId => $member) {

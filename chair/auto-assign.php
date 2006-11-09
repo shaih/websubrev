@@ -57,6 +57,8 @@ if (isset($_POST["saveChairPrefs"])) {
       $compatible = -1;
       $subId = (int) substr($nm, 7);
     }
+    else continue;
+
     if (($subId <= 0) || empty($val)) continue;
     if (!isset($prefs[$subId])) { $prefs[$subId] = array(); }
 

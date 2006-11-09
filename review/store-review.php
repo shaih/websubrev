@@ -110,7 +110,7 @@ function storeReview($subId, $revId, $subReviewer, $conf, $grade, $auxGrades,
       $qry = "UPDATE assignments SET watch=1 WHERE subId=$subId AND revId=$revId";
       db_query($qry, $cnnct);
       if (mysql_affected_rows()==0) { // insert a new entry to table
-	$qry = "INSERT INTO assignments SET subId=$subId,revId=$revId,watch=1";
+	$qry = "INSERT IGNORE INTO assignments SET subId=$subId,revId=$revId,watch=1";
 	db_query($qry, $cnnct);
       }
     }
