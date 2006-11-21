@@ -77,9 +77,9 @@ EndMark;
 	print $criteria[$i][0].": ".(isset($review["grade_{$i}"])?$review["grade_{$i}"]:'')."\n";
       }
     }
-    $cmnt2athr = isset($review['cmnt']) ? wordwrap($review['cmnt']) : '';
-    $cmnt2PC   = isset($review['pcCmnt']) ? wordwrap($review['pcCmnt']) : '';
-    $cmnt2chr  = isset($review['chrCmnt']) ? wordwrap($review['chrCmnt']) : '';
+    $cmnt2athr = isset($review['cmnt']) ? ("\n".wordwrap($review['cmnt'])) : '';
+    $cmnt2PC   = isset($review['pcCmnt']) ? ("\n".wordwrap($review['pcCmnt'])) : '';
+    $cmnt2chr  = isset($review['chrCmnt']) ? ("\n".wordwrap($review['chrCmnt'])) : '';
     print "AUTHOR-COMMENTS: ".$cmnt2athr."\n";
     print "PC-COMMENTS: ".$cmnt2PC."\n";
     print "CHAIR-COMMENTS: ".$cmnt2chr."\n";
