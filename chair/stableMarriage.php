@@ -64,7 +64,13 @@ if (isset($_POST['cListExclude'])) {
   for ($i=0; $i<count($exRevs); $i++) {
     $name = trim($exRevs[$i]);
     $revId = match_PCM_by_name($name, $committee);
-    if ($revId != -1) unset($revs[$revId]);
+    if ($revId != -1) {
+      unset($revs[$revId]);
+      if (!isset($_POST['keepAssignments'])) {
+        $qry = "UPDATE assignments SET sktchAssgn=0 WHERE revId=$revId AND sktchAssgn=1";
+        db_query($qry, $cnnct);
+      }
+    }
   }
 }
 
