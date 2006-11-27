@@ -248,8 +248,8 @@ modify a few parameters of this algorithm:
 <li><a href="../documentation/chair.html#exRevs"
      title="Click for more information">Excluded reviewers</a>:
      <input type="text" size=85 name="cListExclude"><br/>
-(a <b>semi-colon-separated</b> list of reviewer names). Reviewers to be excluded from consideration by the algorithm (e.g., the chair). They will not be assigned any submissions (and their assignments will not be cleared even if the "keep existing assignments" checkbox below is cleared).<br/>
-<br />
+(a <b>semi-colon-separated</b> list of reviewer names). Reviewers to be excluded from consideration by the algorithm (e.g., the chair). They will not be assigned any submissions and their assignments (if any) will be cleared.<br/>
+<br/>
 </li>
 <li>The number of reviewers that are assigned to each submission is: <input type="text" value="3" size=1 name="subCoverage">.<br /><br />
 </li>
@@ -258,7 +258,7 @@ modify a few parameters of this algorithm:
 <li>The number of reviewers that are assigned to "special" submissions is: <input type="text" value="4" size=1 name="specialCoverage">.<br /><br />
 </li>
 <li>
-<input type="checkbox" name="keepAssignments" checked="checked"> keep
+<input type="checkbox" name="keepAssignments"> keep
 existing assignments. Check the box if you already made some assignments
 and you want to keep them. <b>Clearing the checkbox means that we start
 from scratch.</b><br /><br />

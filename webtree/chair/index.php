@@ -158,6 +158,7 @@ EndMark;
 print <<<EndMark
 <b><big>&nbsp;Review Site is Closed</big></b><br />
 &nbsp;&nbsp;o&nbsp;&nbsp;<a href="../review/listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on&amp;format=ascii">List all reviews/discussions (text)</a>&nbsp;&nbsp;<br />
+&nbsp;&nbsp;o&nbsp;&nbsp;<a href="voting.php">Manage PC votes</a><br />
 
 EndMark;
  
