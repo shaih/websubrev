@@ -29,7 +29,7 @@ print <<<EndMark
 
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="../review.css" />
+<link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 body { width: 818px; }
 h1, h2 { text-align: center; }
