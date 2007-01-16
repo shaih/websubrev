@@ -8,6 +8,13 @@
  $needsAuthentication = true;
 require 'header.php';
 
+// a basic "node" class to be able to do Depth-First-Search
+class matrixEntry {
+  var $assigned = 0; // -1 is conflict, +1 is assigned, 0 is neither
+  var $reviewed = false;
+  var $posts    = false;
+}
+
 if (defined('CAMERA_PERIOD')) exit("<h1>Review Site is Closed</h1>");
 
 // Get assignments and reviews
@@ -22,9 +29,19 @@ $res = db_query($qry, $cnnct);
 $subRevs = array();
 while ($row = mysql_fetch_row($res)) { 
   list($subId, $revId, $whenEntered, $assign) = $row; 
-  if (!isset($subRevs[$subId])) 
-    $subRevs[$subId] = array();
-  $subRevs[$subId][$revId] = array(isset($whenEntered), $assign);
+  if (!isset($subRevs[$subId])) $subRevs[$subId] = array();
+  $subRevs[$subId][$revId] = new matrixEntry();
+  $subRevs[$subId][$revId]->assigned = (isset($assign) ? $assign : 0);
+  $subRevs[$subId][$revId]->reviewed = isset($whenEntered);
+}
+
+$qry = "SELECT subId,revId,COUNT(postId) FROM posts GROUP BY subId,revId";
+$res = db_query($qry, $cnnct);
+while ($row = mysql_fetch_row($res)) {
+  list($subId, $revId, $nPosts) = $row; 
+  if ($nPosts==0) continue; // no posts
+  if (!isset($subRevs[$subId])) $subRevs[$subId] = array();
+  $subRevs[$subId][$revId]->posts = true;
 }
 
 // Prepare an array of submissions and an array of PC members
@@ -87,9 +104,9 @@ for PC members.
 <!-- <h2>Review Details</h2> -->
 <span style="vertical-align: bottom;">
 <b>Legend:</b> &nbsp;&nbsp;
-<img src="../common/check3.GIF" alt="(+)" height=20> Assigned,&nbsp;&nbsp; 
+<img src="../common/check4.GIF" alt="(+)" height=20> Assigned,&nbsp;&nbsp; 
 <img src="../common/check2.GIF" alt="(+)" height=20> Reviewed,&nbsp;&nbsp; 
-<img src="../common/check1.GIF" alt="(+)" height=20> Assigned and reviewed,&nbsp;&nbsp;
+<img src="../common/check1.GIF" alt="(+)" height=22> Participates in discussion,&nbsp;&nbsp;
 <img src="../common/stop.GIF" alt="(+)" height=16> Conflict
 </span>
 <br /><br />
@@ -122,29 +139,51 @@ foreach ($subArray as $sub) {
   print "<tr><td>{$subId}</td>\n";
   foreach ($committee as $j => $pcm) {
     $revId = $pcm[0];
-    $img = '&nbsp;';
+    $entry = '&nbsp;';
     if (isset($subRevs[$subId][$revId])) {
-      $assgn = $subRevs[$subId][$revId][1];
-      if ($subRevs[$subId][$revId][0]) { // review entered
-	$nRevs++;
-	if ($assgn==1) {       // assigned and reviewed 
-	  $img = '../common/check1.GIF';
-	  $committee[$j][2]++;
-	  $committee[$j][3]++;
-	} else {               // reviewed but not assigned
-	  $img = '../common/check2.GIF';
-	  $committee[$j][4]++;
+      $assgn = $subRevs[$subId][$revId]->assigned;
+      $rvewd = $subRevs[$subId][$revId]->reviewed;
+      $posts = $subRevs[$subId][$revId]->posts;
+      if ($assgn==-1)   // conflict
+	$entry = '<img src="../common/stop.GIF" alt="(X)" height=18>';
+      else {
+	// Compute the symbol to display (check1.GIF through check7.GIF)
+	$chkSign = 0;
+	if ($assgn) $chkSign += 4;
+	if ($rvewd) $chkSign += 2;
+	if ($posts) $chkSign += 1;
+
+	// Set the alternative text
+	if ($rvewd || $posts) $alt = '(+)';
+	else if ($assgn) $alt = '(-)';
+
+	// Set the link to follow when clicking on the check symbol
+	if ($posts) 
+	  $lnk="../review/discuss.php?subId={$subId}#start";
+	else if ($rvewd)
+	  $lnk="../review/receiptReport.php?subId={$subId}&amp;revId={$revId}";
+	else $lnk = NULL;
+
+	// Set the entry HTML
+	if ($chkSign) {
+	  $entry = '<img src="../common/check'.$chkSign.'.GIF" alt="'.$alt
+	    .'" height=20 border=0>';
+	  if (isset($lnk))
+	    $entry = '<a href="'.$lnk.'" target=_blank>'.$entry.'</a>';
 	}
-	$img = "<a href=\"../review/receiptReport.php?subId={$subId}&amp;revId={$revId}\" target=\"_blank\">\n"
-	  . '      <img src="'.$img.'" alt="(+)" height=20 border=0></a>';
       }
-      else if ($assgn==1) {    // assigned but not reviewed
-	$img = "<img src=\"../common/check3.GIF\" alt=\"(-)\" height=20>";
-	$committee[$j][2]++;
-      } else if ($assgn==-1)   // conflict
-	$img = "<img src=\"../common/stop.GIF\" alt=\"(X)\" height=18>";
+
+      // Update the statistics
+      if ($assgn==1) $committee[$j][2]++;   // PCM assigned to this submission
+	
+
+      if ($rvewd) { // review entered
+	$nRevs++;
+	if ($assgn==1) $committee[$j][3]++; // assigned and reviewed 
+	else           $committee[$j][4]++; // reviewed but not assigned
+      }
     }
-    print "  <td>$img</td>\n";
+    print "  <td>$entry</td>\n";
   }
   print "  <td>{$subId}</td>\n";
   print "  <td style=\"text-align: left; font: italic 14px ariel;\">\n";
