@@ -1,4 +1,4 @@
-WebSubRev v0.52 (beta): Web-software for Conference Submission and Review
+WebSubRev v0.6 (beta): Web-software for Conference Submission and Review
 
   Written by Shai Halevi <shaih@alum.mit.edu> from IBM Research
   Distributed under the Common Public License (CPL v1.0)
@@ -8,26 +8,24 @@ WebSubRev v0.52 (beta): Web-software for Conference Submission and Review
 Installing the software:
 ========================
 One of the goals of this software was to make administration as easy as
-possible. In particular, you never need to run scripts etc. In principle,
-to install this software you just unpack it in some directory in your web
-tree (call it the BASE directory), point your browser at that directory
-and off you go.
+possible. In principle, it should be possible to just unpack the software
+in some directory in your web tree (call it the BASE directory), point
+your browser at that directory and off you go. 
 
-Some caveats:
--------------
+However, that method of installation requires the web-server to be able
+to write files in the web-tree, which sometimes may be considered a
+security risk. I therefore provide also a non-web-based installation
+method, as explained below. 
+
+Prerequisites:
+--------------
 This software is currently a PHP/MySQL software, which means that to
 use it you must have a MySQL server and a PHP engine (and your web-server
-must supports PHP and MySQL). I tested the software with PHP 4.3.2 and
-MySQL 3.23 (both quite old now), as well as PHP 5.0.4 and MySQL 4.1.12.
-It may work with even older versions (but it may not). Also, the proper 
-functioning of this software depend on "proper" functioning of you web-server.
-In particular, two issues that I came across are:
-
-* The scripts must be able to write and create sub-directories in the
-  BASE directory. When using this software on Linux with an Apache
-  server (running as user "apache"), I had to chdir to the BASE directory
-  and make sure the directory and all the files in it are owned by user
-  "apache".
+must supports PHP and MySQL). I tested the software with PHP 4.3.9 and
+MySQL 4.1.20 (and earlier versions of it were tested with PHP 4.3.2 and
+MySQL 3.23). It may work even with older versions but I cannot test it.
+Also, proper functioning of this software depends on "proper" functioning
+of you web-server. In particular, some issues that I came across are:
 
 * The web-server (and the PHP engine) must be willing to upload files.
   For example, in one system that I used to test it, the PHP engine was
@@ -36,31 +34,89 @@ In particular, two issues that I came across are:
   my case it turned out that I had to change the parameter LimitRequestBody
   in php.conf (which on that system was somewhere under /etc/httpd/).
 
+* The web-server must be able to send email. For example, if this is a
+  Windows machine then the variable SMTP in php.ini should be set correctly. 
+
+* If the server is set-up with PHP in safe mode, then everything under the
+  BASE directory must have same owner. (Also everything under the UPLOAD
+  directory -- see below.) If safe_mode_gid is set in php.ini then instead
+  of having the same owner they need to have the same group. 
+
+Web-based installation:
+-----------------------
+To use this method, simply copy the contents of the webtree directory
+to somewhere in your web tree (call it the BASE directory), making sure
+that the web-server has permission to write in the "init" sub-directory
+of the BASE directory.
+
+During the installation process you would need to specify another local
+directory where the uploaded submissions would be stored, called the
+UPLOAD directory. If you don't specify anything, the UPLOAD directory
+defaults to the subdirectory "subs" under the BASE directory. The UPLOAD
+directory need not be in the web-tree, but the web server must be able to
+read and write in that directory. 
+
+After copying the files to the BASE directory (and setting the permissions),
+point your browser to the page chair/initialize.php under the BASE directory.
+You will be asked to provide various details (including the UPLOAD directory
+and the MySQL access details), and these values will be used to initialize
+the site. You will then be taken directly to the customization page in order
+to customize the site for the conference (see below). (At this point the web
+server no longer needs to write to the "init" subdirectory, so you can change
+the permissions to make that directory read-only.)
+
+
+Non-web-based installation:
+---------------------------
+An alternative method of installation (in Unix systems) is to change
+directory to the directory where you unzipped this software (above the
+"webtree" and "tools" directories) and from the command prompt do
+
+  % ./tools/mkNewConf.sh confname
+
+where confname is a short-name for the conference (e.g., xyz2007). It is
+recommended that you read this script before running it, and you can
+optionally modify it to set some default values.
+
+This shell script will ask you for the locations of the BASE and UPLOAD
+directories (and other parameters) and then it will install the software
+in the BASE directory, setting the permissions as needed. The script will
+then print out the username and password that are needed in order to access
+the customization page. 
+
+
+Customizing the site:
+---------------------
+Before it can be used, the site still needs to be customized for the
+conference. This is done from the page chair/customize.php under the
+BASE directory. In this page the program chair can specify the conference
+name, deadlines, program-committee members and many other parameters.
+Links are provided from this page to the documentation page, where you can
+find some additional explanations about the role of different parameters.
+All the parameters that are specified in this page can be modified later
+from the administration page. 
+
+Once the customization is done, the site is ready to accept submissions.
+You are shown a receipt page that includes links to the submissions
+page and the administration page, as well as the username and password
+that you need in order to access the administration page. Also, an email
+message with the same information is sent to the program chair.
+
+
 Experimenting with the software:
 --------------------------------
 I wrote a small testing package for the purpose of experimenting with
-the software. To use this package, you just need to unpack it in the
-same BASE directory as the software package itself (*before* you
-customize the installation). This testing package adds 53 dummy
-submissions and 17 dummy PC members to the conference database.
+the software. To use this package, copy the contents of the "testOnly"
+subdirectory to the BASE directory where you installed the software
+itself *before* you customize the installation. This testing package
+adds 53 dummy submissions and 17 dummy PC members to the conference
+database.
+
 
 Troubleshooting:
 ----------------
-Most of the parameters of the software are stored in the file
-"includes/confConstants.php" under the BASE directory. (This file is
-generated by the customize page which is discussed below.) If you have
-problems with the software, looking at this file may provide some hints
-as to the source of the problem.
-
-
-2. First-time customization:
-============================
-When you first point your browser to a virgin copy of the software, it
-takes you to a "customization page" where you customize this copy for
-your conference. In this page you specify things like the conference
-name, the PC chair email address, whether or not submissions are anonymous,
-and many other parameters. Nearly all the parameters that you specify in
-this page can later by modified from the conference administration page.
-Links are provided from this page to the documentation page, where you can
-find some additional explanations about the role of different parameters.
-
+Most of the parameters of the software are stored in the "parameters"
+table in the database. The details of the database itself are stored
+in the file init/confParams.php under the BASE directory. If you have
+problems with the software, looking at these parameters may provide
+some hints as to the source of the problem.
