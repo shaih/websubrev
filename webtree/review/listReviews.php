@@ -41,7 +41,7 @@ $qry = "SELECT s.subId FROM submissions s, lastPost lp WHERE lp.revId=$revId AND
 $res = db_query($qry, $cnnct);
 while ($row = mysql_fetch_row($res)) { $seenSubs[$row[0]] = true; }
 
-// Prepare the ORDER BY clause
+// Prepare the ORDER BY clause (order_clause() defined in revFunctions.php)
 list($order, $heading,$flags) = order_clause();
 
 // The default order is by number, and we also use the same to break

@@ -39,23 +39,27 @@ function order_clause()
 
   $ord = isset($_GET['sortOrder']) ? trim($_GET['sortOrder']) : NULL;
   if (isset($ord)) {
+    $dir = substr($ord, -4);
+    if (strcasecmp($dir, " ASC")==0)
+         $ord = substr($ord, 0, strlen($ord)-4);
+    else $dir = "DESC";
     if ($ord=='num') {
       $order .= $comma . 's.subId';
       $heading .= $comma . 'number';
     } else if ($ord=='mod') {
-      $order .= $comma . 'lastModif DESC, s.subId';
+      $order .= $comma . "lastModif $dir, s.subId";
       $heading .= $comma . 'modified';
       $flags |= 1;
     } else if ($ord=='wAvg') {
-      $order .= $comma . 's.wAvg DESC, s.subId';
+      $order .= $comma . "s.wAvg $dir, s.subId";
       $heading .= $comma . 'weighted average';
       $flags |= 2;
     } else if ($ord=='avg')  {
-      $order .= $comma . 's.avg DESC, s.subId';
+      $order .= $comma . "s.avg $dir, s.subId";
       $heading .= $comma . 'average';
       $flags |= 3;
     } else if ($ord=='delta'){
-      $order .= $comma . 'delta DESC, s.subId'; 
+      $order .= $comma . "delta $dir, s.subId"; 
       $heading .= $comma . 'max-min grade';
       $flags |= 4;
     }
