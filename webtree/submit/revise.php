@@ -12,8 +12,10 @@ require 'header.php'; // brings in the contacts file and utils file
 if (defined('CAMERA_PERIOD')) exit("<h1>Submission Deadline Expired</h1>");
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
-$deadline = show_deadline(SUBMIT_DEADLINE);
 $h1text = "<h1>Revise a Submission to $confName</h1>";
+$timeleft = show_deadline(SUBMIT_DEADLINE);
+$subDdline = 'Deadline is '
+           . utcDate('r (T)', SUBMIT_DEADLINE); // when is the deadline
 
 $subId = isset($_GET['subId']) ? trim($_GET['subId']) : '';
 $subPwd = isset($_GET['subPwd']) ? trim($_GET['subPwd']) : '';
@@ -117,7 +119,8 @@ function checkform( form )
 $links
 <hr />
 $h1text
-<h3 class=timeleft>$deadline</h3>
+<h3 class=timeleft>$subDdline<br/>
+$timeleft</h3>
 <form name="revise" onsubmit="return checkform(this);" action="act-revise.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
 <input type="hidden" name="referer" value="revise.php">

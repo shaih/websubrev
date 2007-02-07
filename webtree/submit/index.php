@@ -25,12 +25,15 @@ EndMark;
 
 // Final-version submissions
 if (defined('CAMERA_PERIOD')) { 
-  $deadline = show_deadline(CAMERA_DEADLINE);
+  $timeleft = show_deadline(CAMERA_DEADLINE);
+  $deadline = 'Deadline is '
+             . utcDate('r (T)', CAMERA_DEADLINE); // when is the deadline
   $cameraInstructions = htmlspecialchars(CAMERA_INSTRUCTIONS);
 
   print <<<EndMark
 <h1>Final-Version Submission Instructions, $confName</h1>
-<h3 class=timeleft>$deadline</h3>
+<h3 class=timeleft>$deadline<br/>
+$timeleft</h3>
 
 Use the <a href="cameraready.php">camera-ready revision form</a> (with
 the password that you got when you submitted the paper) to submit the
@@ -50,11 +53,14 @@ EndMark;
 
 
 // Initial submission period
-$deadline = show_deadline(SUBMIT_DEADLINE);
+$timeleft = show_deadline(SUBMIT_DEADLINE);
+$deadline = 'Deadline is '
+           . utcDate('r (T)', SUBMIT_DEADLINE); // when is the deadline
 
 print <<<EndMark
 <h1>Submission/Revision Instructions, $confName</h1>
-<h3 class=timeleft>$deadline</h3>
+<h3 class=timeleft>$deadline<br/>
+$timeleft</h3>
 
 The following forms are available:
 <ul>

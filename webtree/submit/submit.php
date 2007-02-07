@@ -11,7 +11,9 @@ require 'header.php'; // brings in the contacts file and utils file
 if (defined('CAMERA_PERIOD')) exit("<h1>Submission Deadline Expired</h1>");
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
-$deadline = show_deadline(SUBMIT_DEADLINE);
+$timeleft = show_deadline(SUBMIT_DEADLINE);     // how much time is left
+$subDdline = 'Deadline is '
+           . utcDate('r (T)', SUBMIT_DEADLINE); // when is the deadline
 
 if (is_array($confFormats) && count($confFormats)>0) {
   $supportedFormats = '';
@@ -86,7 +88,8 @@ function checkform( form )
 $links
 <hr />
 <h1>New Submission to $confName</h1>
-<h3 class=timeleft>$deadline</h3>
+<h3 class=timeleft>$subDdline<br/>
+$timeleft</h3>
 
 <form name="submit" onsubmit="return checkform(this);" action="act-submit.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">

@@ -22,8 +22,10 @@ if (defined('CAMERA_PERIOD')) {
     exit("<h1>Contact the chair to withdraw the submission</h1>");
   }
 }
+$timeleft = show_deadline(SUBMIT_DEADLINE);
+$subDdline = 'Deadline is '
+           . utcDate('r (T)', SUBMIT_DEADLINE); // when is the deadline
 
-$deadline = show_deadline(SUBMIT_DEADLINE);
 $links = show_sub_links(5);
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -52,12 +54,14 @@ function checkform( form )
 </script>
 
 <title>Revise a Submission to $confName</title>
+<link rel="stylesheet" type="text/css" href="../common/submission.css"/>
 </head>
 <body>
 $links
 <hr />
 <h1 style="text-align: center;">Withdraw a Submission from $confName</h1>
-<h3 style="text-align: center; color: blue;">$deadline</h3>
+<h3 class=timeleft>$subDdline<br/>
+$timeleft</h3>
 
 <form name="withdraw" onsubmit="return checkform(this);" action="act-withdraw.php" enctype="multipart/form-data" method="post">
 

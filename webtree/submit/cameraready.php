@@ -12,7 +12,8 @@ if (CAMERA_PERIOD!==true)
      die("<h1>Final-version submission site for $confName is closed</h1>");
 
 $h1text = "<h1>Camera-Ready Revision for $confName</h1>";
-$deadline = show_deadline(CAMERA_DEADLINE);
+$timeleft = show_deadline(CAMERA_DEADLINE);
+$deadline = 'Deadline is '. utcDate('r (T)', CAMERA_DEADLINE);
 
 $subId = isset($_GET['subId']) ? trim($_GET['subId']) : '';
 $subPwd = isset($_GET['subPwd']) ? trim($_GET['subPwd']) : '';
@@ -97,7 +98,8 @@ function checkform( form )
 $links
 <hr />
 $h1text
-<h3 class=timeleft>$deadline</h3>
+<h3 class=timeleft>$deadline<br/>
+$timeleft</h3>
 
 <form name="cameraready" onsubmit="return checkform(this);" action="act-revise.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
