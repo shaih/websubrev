@@ -72,9 +72,9 @@ the deadline.</li>
 before the deadline.</li>
 </ul>
 These forms are fairly self-explanatory, and additional documentation can
-be found <a target="documentation" href="documentation/submitter.html">here
-</a>. When submitting a new paper, you get a submission-ID and a password
-that you can then use with the revision and withdrawal forms.
+be found <a target="documentation" href="../documentation/submitter.html">
+here</a>. When submitting a new paper, you get a submission-ID and a
+password that you can then use with the revision and withdrawal forms.
 <i>Please save the submission-ID and password also after the deadline.</i>
 You will need them to submit the final version of your paper, should
 it be accepted to the conference.
