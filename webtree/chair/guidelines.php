@@ -30,7 +30,7 @@ if (isset($_POST["setGuidelines"])) {
     $writingReviews= "<h2>Writing a Report</h2>\n".nl2br($writingReviews)."\n";
 
   $grades = showSemantics("Overall grades", $_POST["grade"], MAX_GRADE, false);
-  $confLvls = showSemantics("Confidence leveles",
+  $confLvls = showSemantics("Confidence levels",
 			    $_POST["conf"], MAX_CONFIDENCE, false);
   if (is_array($criteria)) {
     $auxGrades = "";

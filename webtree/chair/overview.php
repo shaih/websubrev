@@ -190,7 +190,7 @@ foreach ($subArray as $sub) {
   print "    <a href=\"../review/submission.php?subId={$subId}\">{$sub[1]}</a></td>\n";
   print "  <td><center>{$nRevs}</center></td>\n";
   print "</tr>\n";
-  if ($count >= 6) {
+  if ($count >= 5) {
     print $header;
     $count = 0;
   }
