@@ -238,7 +238,8 @@ function discussion_phase($cnnct, $revId, $extraSpace)
 	. " on your watch list $require additional discussion.<br/><br/>\n";
     }
     else if ($extraSpace) print "<br/><br/>\n";
-    print_sub_list($subs, "Submissions on your watch list", $reviewed, true);
+    print_sub_list($subs, "Submissions on your watch list",
+		   $reviewed, true, false, true);
     return true;
   }
   return false;

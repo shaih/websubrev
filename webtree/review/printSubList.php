@@ -7,7 +7,7 @@
  */
 
 function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
-			$showAbst=false)
+			$showAbst=false, $noIndex=false)
 {
   global $reviewIcon, $reviseIcon, $discussIcon1, $discussIcon2;
 
@@ -16,7 +16,9 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
   }
   print "    <table><tbody>\n";
 
+  $idx = 0;
   foreach ($sbList as $sb) {
+    $idx++;
     $subId = (int) $sb['subId']; 
     $title = $sb['title']; 
     if (strlen($title)>70) $title = substr($title, 0, 68).'...';
@@ -58,13 +60,16 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
 
     if (!empty($avg)) $avg="($avg)";
 
+    if ($disFlag && !$noIndex) $index = "<td><small>$idx.</small><td>";
+    else          $index = "";
+
     // If this member can discuss - show more details
     if ($disFlag == 1) {
       // The text contants are defiend in confUtils.php
       $disText = ($sb['hasNew']) ? $discussIcon2 : $discussIcon1;
 
       print <<<EndMark
-   <tr><td style="width:20px;"><a href="toggleWatch.php?subId={$subId}">
+   <tr>$index<td style="width:20px;"><a href="toggleWatch.php?subId={$subId}">
      <img src="$src" alt="$alt" title="$tooltip" border="0"></a>
    </td>
    <td style="width:$width;"><span class="Discuss"><a target="_blank" href="discuss.php?subId=$subId#start{$subId}">$disText</a></span> <span class=$revStyle><a href="review.php?subId=$subId" target="_blank">$revText</a></span>
@@ -78,7 +83,7 @@ EndMark;
     }  // end if ($disFlag == 1) 
 
     else { print <<<EndMark
-    <tr><td style="width:20px;"><a href="download.php?subId=$subId" title="download">
+    <tr>$index<td style="width:20px;"><a href="download.php?subId=$subId" title="download">
 	<img src="../common/download.gif" alt="download" border=0></a>
     </td>
     <td style="width:60px;"><span class=$revStyle><a href="review.php?subId=$subId" target="_blank">$revText</a></span>
