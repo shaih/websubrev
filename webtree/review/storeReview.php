@@ -133,12 +133,21 @@ function backup_existing_review($subId, $revId, $nCrit, $cnnct)
   $row = mysql_fetch_row($res);
   $nextVersion = (($row && $row[0])? $row[0] : 0) + 1;
 
+  /* The loop below is guarding against an extremely unlikely race
+     condition, and it was reported to cause problems in some cases
+     (maybe due to a buggy implementation of mysql_affected_rows?),
+     so I removed it.
+  ********************************************************************
   while (true) { // keep trying until you manage to insert to database
    $qry = "INSERT IGNORE INTO reportBckp SELECT subId, revId, subReviewer, confidence, score, comments2authors, comments2committee, comments2chair, lastModified, $nextVersion FROM reports WHERE subId=$subId AND revId=$revId";
     $res = mysql_query($qry, $cnnct);
     if ($res && mysql_affected_rows()>0) break; // success
     else $nextVersion++;                        // try again
   }
+  *******************************************************************/
+  $qry = "INSERT IGNORE INTO reportBckp SELECT subId, revId, subReviewer, confidence, score, comments2authors, comments2committee, comments2chair, lastModified, $nextVersion FROM reports WHERE subId=$subId AND revId=$revId";
+  mysql_query($qry, $cnnct);
+
   $qry = "INSERT IGNORE INTO gradeBckp SELECT subId, revId, gradeId, grade, $nextVersion FROM auxGrades WHERE subId=$subId AND revId=$revId";
   mysql_query($qry, $cnnct);
 }
