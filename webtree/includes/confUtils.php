@@ -519,4 +519,28 @@ function show_deadline($when)
   $delta = $when-time();
   return deltaTime($delta);
 }
+
+// Common solution to the problem of readfile reading entire file into memory
+function readfile_chunked($filename)
+{
+  $chunksize = 1*(1024*1024); // how many bytes per chunk
+  $buffer = '';
+  $cnt =0;
+  $handle = fopen($filename, 'rb');
+  if ($handle === false) {
+    return false;
+  }
+  while (!feof($handle)) {
+    $buffer = fread($handle, $chunksize);
+    echo $buffer;
+    ob_flush();
+    flush();
+    $cnt += strlen($buffer);
+  }
+  $status = fclose($handle);
+  if ($status) {
+    return $cnt; // return num. bytes delivered like readfile() does.
+  }
+  return $status;
+}
 ?>

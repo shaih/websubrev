@@ -30,17 +30,24 @@ else if ($fmt=='tar.gz') $mimeType = 'application/x-tar-gz';
 else if ($fmt=='tgz') $mimeType = 'application/x-compressed-tar';
 else if ($fmt=='zip') $mimeType = 'application/x-zip';
 
-if (isset($mimeType))  header("Content-Type: $mimeType");
-
-
-header("Content-Disposition: inline; filename=\"$subId.$fmt\"");
-
 if (isset($_GET['final'])&&(PERIOD>=PERIOD_CAMERA)&&($pcMember[0]==CHAIR_ID)){
   $fileName = SUBMIT_DIR."/final/$subId.$fmt";
 } else {
   $fileName = SUBMIT_DIR."/$subId.$fmt";
 }
-if (!file_exists($fileName) || !readfile($fileName)) {
-  exit("<h1>Submission not found</h1>");
+if (!file_exists($fileName)) {
+  exit("<h1>File not found</h1>");
+}
+
+if (isset($mimeType))  header("Content-Type: $mimeType");
+header("Content-Disposition: inline; filename=\"$subId.$fmt\"");
+
+/* If you cannot download large files, try replacing the call to
+ * readfile by readfile_chunked. Namely, use the line:
+ *
+ *   if (!readfile_chunked($fileName)) {
+ */
+if (!readfile($fileName)) {
+  exit("<h1>Error readng file</h1>");
 }
 ?>
