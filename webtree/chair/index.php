@@ -70,9 +70,9 @@ function manage_submissions($period)
 <b><big>&nbsp;Submission Site is Closed</big></b><br/>
 &nbsp;&nbsp;o&nbsp;&nbsp;Submission list by <a href="listSubmissions.php">number</a>, $catLink<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="listSubmissions.php?subOrder=status">status</a>, <a href="listSubmissions.php?subOrder=format">format</a>&nbsp;
-(use to revise<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or withdraw submissions)&nbsp;<br/>
-&nbsp;&nbsp;o&nbsp;&nbsp;<a href="tweakSite.php">Tweak site settings</a>,
-
+(use to revise&nbsp;or<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;withdraw submissions),&nbsp;<br/>
+&nbsp;&nbsp;o&nbsp;&nbsp;<a href="tweakSite.php">Tweak site settings</a>,<br/>
+&nbsp;&nbsp;o&nbsp;&nbsp;<a href="emailAuthors.php">Send email to authors</a>
 EndMark;
     return; 
   }
@@ -206,6 +206,7 @@ $hdr
 
 <ul>
 <li><a href="listSubmissions.php">List of accepted submissions</a></li>
+<li><a href="emailAuthors.php">Send email to authors of accepted papers</a></li>
 <li><a href="cameraArchive.php">Create one tar file with all the camera-ready files</a>
 </li>
 $allSubFile
