@@ -46,7 +46,7 @@ if (isset($_GET['onlyAssigned'])) {
 
 $qry ="SELECT s.subId subId, title, authors, abstract, s.format format,
        status, UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
-       a.watch watch, s.avg avg, (s.maxGrade-s.minGrade) delta
+       a.watch watch, s.avg avg, (s.maxGrade-s.minGrade) delta, category
     FROM submissions s
          LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId
     WHERE status!='Withdrawn' {$assignedOnly}
@@ -90,17 +90,24 @@ if ($disFlag) {
   print "Note: You can click on the eye icons on the left to add/remove submissions from your <a href=\"../documentation/reviewer.html#watch\">watch list</a><br/><br/>\n";
 }
 
-if ($showAbst = isset($_GET['abstract'])) $flags |= 64;
+if (isset($_GET['abstract'])) {
+  $flags |= 64;
+  $showMore |= 1;
+}
+if (isset($_GET['category'])) {
+  $flags |= 128;
+  $showMore |= 2;
+}
 
 if (count($assigned)>0) {
   print_sub_list($assigned, "Submissions assigned to $revName", 
-		 $reviewed, $disFlag, $showAbst);
+		 $reviewed, $disFlag, $showMore);
   print "\n<br />\n";
   $otherName = "Other submissions";
 } else { $otherName = ""; }
 
 if (count($others)>0) {
-  print_sub_list($others, $otherName, $reviewed, $disFlag, $showAbst);
+  print_sub_list($others, $otherName, $reviewed, $disFlag, $showMore);
 }
 
 if ($disFlag && (count($assigned)>0 || count($others)>0))

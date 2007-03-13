@@ -159,6 +159,7 @@ function listSubmissionsBox($canDiscuss, $flags=0)
   $asgnChk  = ($flags & 16) ? ' checked="checked"' : '';
   $noAsgnChk= ($flags & 32) ? ' checked="checked"' : '';
   $abstChk  = ($flags & 64) ? ' checked="checked"' : '';
+  $catChk  = ($flags & 128) ? ' checked="checked"' : '';
   if ($canDiscuss) {
     $stts = '<input type="checkbox" name="sortByStatus"'.$sttsChk.'> Status+';
   } else { $stts = '&nbsp;'; }
@@ -197,7 +198,8 @@ EndMark;
   or <input type="checkbox" name="ignoreAssign"{$noAsgnChk}>Show all submissions in one list</td>
 </tr>
 <tr><td colspan=2><hr/>
-    <input type="checkbox" name="abstract"{$abstChk}>Show with abstracts</td>
+   <input type="checkbox" name="abstract"{$abstChk}>Show with abstracts<br/>
+   <input type="checkbox" name="category"{$catChk}>Show with category</td>
 </tr>
 </tbody></table>\n</div></form>
 EndMark;

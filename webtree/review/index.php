@@ -239,7 +239,7 @@ function discussion_phase($cnnct, $revId, $extraSpace)
     }
     else if ($extraSpace) print "<br/><br/>\n";
     print_sub_list($subs, "Submissions on your watch list",
-		   $reviewed, true, false, true);
+		   $reviewed, true, 0, true);
     return true;
   }
   return false;

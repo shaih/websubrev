@@ -7,9 +7,11 @@
  */
 
 function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
-			$showAbst=false, $noIndex=false)
+			$showMore=0, $noIndex=false)
 {
   global $reviewIcon, $reviseIcon, $discussIcon1, $discussIcon2;
+  $showAbst = ($showMore & 1);
+  $showCat = ($showMore & 2);
 
   if (!empty($title)) {
     print "    <big><b>$title</b></big>\n<br/>\n";
@@ -23,6 +25,12 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
     $title = $sb['title']; 
     if (strlen($title)>70) $title = substr($title, 0, 68).'...';
     $title = htmlspecialchars($title);
+
+    if ($showCat) {
+      $catgry = empty($sb['category'])? '*' :htmlspecialchars($sb['category']);
+      $catgry = "<td><i>($catgry)</i></td>";
+    }
+    else $catgry = '';
 
     $authors = isset($sb['authors']) ? htmlspecialchars($sb['authors']) : ''; 
     $abstract = isset($sb['abstract'])? htmlspecialchars($sb['abstract']):''; 
@@ -75,7 +83,7 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
    <td style="width:$width;"><span class="Discuss"><a target="_blank" href="discuss.php?subId=$subId#start{$subId}">$disText</a></span> <span class=$revStyle><a href="review.php?subId=$subId" target="_blank">$revText</a></span>
    </td>
    <td style="text-align: right;"><b>$subId.</b></td>
-   <td><a href="submission.php?subId=$subId">$title</a></td>
+   <td><a href="submission.php?subId=$subId">$title</a></td>$catgry
    <td><small>$lastMod</small></td><td>$status</td><td>$avg</td>
    </tr>
 
