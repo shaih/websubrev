@@ -187,7 +187,7 @@ print <<<EndMark
   </tr>
   <tr>
     <td></td>
-    <td><input value="Submit camera-ready devision" type="submit">
+    <td><input value="Submit camera-ready revision" type="submit">
     </td>
   </tr>
 </tbody>

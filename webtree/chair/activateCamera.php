@@ -22,7 +22,7 @@ $baseURL = $prot.'://'.BASE_URL;
 $cameraInstructions =
 "The proceedings of $cName will be published in Springer-Verlag's
 Lecture Notes in Computer Science (LNCS). Authors must prepare their
-camera-ready version in LaTeT2e. You should obtain the LNCS LaTeX2e
+camera-ready version in LaTeX2e. You should obtain the LNCS LaTeX2e
 class file (llncs.cls), which can be obtained off Springer's site at:
 
   http://www.springer.de/comp/lncs/authors.html
