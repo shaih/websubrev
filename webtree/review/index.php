@@ -79,6 +79,12 @@ if (REVPREFS && !$disFlag) {
 }
 else $indicatePrefs = '';
 
+if ($disFlag) {
+  $watchList = '&nbsp;o&nbsp;&nbsp;<a href="watchList.php">Work with watch list</a><br />';
+}
+else $watchList = '';
+
+
 $listSubmissions = listSubmissionsBox($disFlag,$pcmFlags);
 
 $showReviews = $allReviews = $uploadScores= '';
@@ -117,7 +123,7 @@ $listSubmissions
 
 <td><strong>Some other links:</strong><br />
 $allSubFile
-$indicatePrefs
+{$indicatePrefs}{$watchList}
 &nbsp;o&nbsp;&nbsp;<a target=_blank href="scorecard.php">Work with scorecard files</a><br />
 &nbsp;o&nbsp;&nbsp;<a href="password.php">Change password</a><br />
 $allReviews
