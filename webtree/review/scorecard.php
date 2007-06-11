@@ -15,9 +15,10 @@ if (isset($_GET['download'])) { // Display current scorecard
   $cnnct = db_connect();
 
   // get all the reviews that this reviewer submitted
-  $qry = "SELECT subReviewer, confidence conf, score, comments2authors cmnt,"
-    ." comments2committee pcCmnt, r.comments2chair chrCmnt, title, authors,"
-    ." s.subId subId FROM submissions s, reports r"
+  $qry = "SELECT subReviewer, confidence conf, score, r.comments2authors cmnt,"
+    ." r.comments2committee pcCmnt, r.comments2chair chrCmnt,"
+    ." r.comments2self slfCmnt, title, authors, s.subId subId"
+    ." FROM submissions s, reports r"
     ." WHERE r.subId=s.subId AND r.revId=$revId ORDER BY subId";
 
   $qry2 = "SELECT subId, gradeId, grade FROM auxGrades WHERE revId=$revId ORDER BY subId, gradeId";
@@ -84,9 +85,11 @@ EndMark;
     $cmnt2athr= isset($review['cmnt']) ? ("\n".wordwrap($review['cmnt'])) : '';
     $cmnt2PC  = isset($review['pcCmnt']) ? ("\n".wordwrap($review['pcCmnt'])) : '';
     $cmnt2chr = isset($review['chrCmnt']) ? ("\n".wordwrap($review['chrCmnt'])) : '';
+    $cmnt2slf = isset($review['slfCmnt']) ? ("\n".wordwrap($review['slfCmnt'])) : '';
     print "AUTHOR-COMMENTS: ".$cmnt2athr."\n";
     print "PC-COMMENTS: ".$cmnt2PC."\n";
     print "CHAIR-COMMENTS: ".$cmnt2chr."\n";
+    if (!empty($cmnt2slf)) print "SELF-COMMENTS: ".$cmnt2slf."\n";
     print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
   }
 
@@ -110,6 +113,8 @@ EndMark;
 #       the program committee
 #     CHAIR-COMMENTS: anything here is considered comments
 #       to the program chair
+#     SELF-COMMENTS: anything here is considered notes to yourself,
+#       no one else can see these comments
 #     +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #  
 # Different reviews in the same file are separated with a line of '+'

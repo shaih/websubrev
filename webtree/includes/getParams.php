@@ -97,47 +97,6 @@ switch($row['period']) {
     define('SETUP_PERIOD', true);
 }
 
-/*
-print "MYSQL_HOST='".MYSQL_HOST."'<br/>
-MYSQL_DB='".MYSQL_DB."'<br/>
-MYSQL_USR='".MYSQL_USR."'<br/>
-MYSQL_PWD='".MYSQL_PWD."'<br/>
-SUBMIT_DIR='".SUBMIT_DIR."'<br/>
-LOG_FILE='".LOG_FILE."'<br/>
-ADMIN_EMAIL='".ADMIN_EMAIL."'<br/>
-CONF_SALT='".CONF_SALT."'<br/>\n";
-
-print "PARAMS_VERSION='".PARAMS_VERSION."'<br/>
-BASE_URL='".BASE_URL."'<br/>
-CONF_NAME='".CONF_NAME."'<br/>
-CONF_SHORT='".CONF_SHORT."'<br/>
-CONF_YEAR='".CONF_YEAR."'<br/>
-CONF_HOME='".CONF_HOME."'<br/>
-CONF_FLAGS='".CONF_FLAGS."'<br/>\n";
-
-$emlCRLF = str_replace("\n","\\n",EML_CRLF);
-$emlCRLF = str_replace("\r","\\r",$emlCRLF);
-print "EML_CRLF='$emlCRLF'<br/>
-EML_EXTRA_PRM='".EML_EXTRA_PRM."'<br/>
-SUBMIT_DEADLINE='".SUBMIT_DEADLINE."'<br/>
-CAMERA_DEADLINE='".CAMERA_DEADLINE."'<br/>
-REVPREFS='".REVPREFS."'<br/>
-ANONYMOUS='".ANONYMOUS."'<br/>
-USE_AFFILIATIONS='".USE_AFFILIATIONS."'<br/>
-HTTPS_ON=".(defined('HTTPS_ON')?'true':'NULL')."<br/>
-MAX_GRADE='".MAX_GRADE."'<br/>
-MAX_CONFIDENCE='".MAX_CONFIDENCE."'<br/>
-CAMERA_INSTRUCTIONS='".CAMERA_INSTRUCTIONS."'<br/>
-ACCEPT_LTR='".ACCEPT_LTR."'<br/>
-REJECT_LTR='".REJECT_LTR."'<br/>
-CHAIR_EMAIL='".CHAIR_EMAIL."'<br/>
-PERIOD='".PERIOD."'<br/>\n";
-
-print "<br/>\n\$confFormats = ".print_r($confFormats,true)."<br/>\n";
-print "<br/>\n\$categories = ".print_r($categories,true)."<br/>\n";
-print "<br/>\n\$criteria = ".print_r($criteria,true)."<br/>\n";
-*/
-
 $footer = <<<EndMark
 <br />
 This is a version 0.60 (beta) of the <a href="http://alum.mit.edu/www/shaih/websubrev">Web-Submission-and-Review software</a>, written by Shai Halevi from <a href="http://www.research.ibm.com"><img src="../common/ibm-research-logo.jpg" alt="IBM Research"></a>
@@ -146,6 +105,7 @@ Shai would love to hear your comments and suggestions regarding this software.
 EndMark;
 
 $reviewIcon = '<img alt="[Review]" title="Write a report about this submission" src="../common/Review.gif" border=1>';
+$revise2Icon = '<img alt="[Revise]" title="Continue your work-in-progress report" src="../common/Revise2.gif" border=1>';
 $reviseIcon = '<img alt="[Revise]" title="Revise your report on this submission" src="../common/Revise.gif" border=1>';
 $discussIcon1 = '<img alt="[Discuss ]" title="See reports and discussion board" src="../common/Discuss1.gif" border=1>';
 $discussIcon2 = '<img alt="[Discuss*]" title="See reports and discussion board (some new items)" src="../common/Discuss2.gif" border=1>';
@@ -166,6 +126,7 @@ define('VOTE_ON_DI',  32);
 define('VOTE_ON_MA',  64);
 define('VOTE_ON_AC', 128);
 
+define('REPORT_NOT_DRAFT', 1);
 
 function formatTable($fmtString)
 {

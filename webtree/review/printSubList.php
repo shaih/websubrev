@@ -9,7 +9,8 @@
 function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
 			$showMore=0, $noIndex=false)
 {
-  global $reviewIcon, $reviseIcon, $discussIcon1, $discussIcon2;
+  // icons are defined in includes/getParams.php
+  global $reviewIcon, $revise2Icon, $reviseIcon, $discussIcon1, $discussIcon2;
   $showAbst = ($showMore & 1);
   $showCat = ($showMore & 2);
 
@@ -50,7 +51,7 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
       $tooltip = "Click to add to watch list";
     }
 
-    // Styles defined in ../common/review.css, text constants in confUtils.php
+    // Styles defined in ../common/review.css, text constants in ../includes/getParams.php
     if (defined('CAMERA_PERIOD')) {
       $width = "70px";
       $revStyle = "none";
@@ -59,7 +60,7 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
     else if (isset($reviewed[$subId])) {
       $width = "130px";
       $revStyle = "Revise";
-      $revText = $reviseIcon;
+      $revText = (($reviewed[$subId]==REPORT_NOT_DRAFT)? $reviseIcon : $revise2Icon);
     } else {
       $width = "130px";
       $revStyle = "Review";

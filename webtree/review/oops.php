@@ -7,7 +7,7 @@
  */
 $needsAuthentication=true;
 require 'header.php';   // defines $pcMember=array(id, name, ...)
-require 'storeReview.php';
+// require 'storeReview.php';
 $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
 $disFlag= (int) $pcMember[3];

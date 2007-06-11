@@ -1,7 +1,8 @@
 <?php
 // returns 0 when all is well, otherwise an error code
 function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
-		     $authCmnt, $pcCmnt, $chrCmnt, $watch=false, $noUpdt=false)
+		     $authCmnt, $pcCmnt, $chrCmnt, $slfCmnt,
+		     $watch=false, $noUpdt=false, $saveDraft=false)
 {
   global $criteria;
   $nCrit = count($criteria);
@@ -22,10 +23,16 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
   if (!($row = mysql_fetch_row($res)) || $row[1]==-1)
     return -3; // no such submission or reviewer has conflict
 
-  if (!empty($subReviewer)) {
-    $qry = " subReviewer='" .my_addslashes($subReviewer, $cnnct)."',\n";
+  if ($saveDraft) {
+    $qry = " flags=0,";
   } else {
-    $qry = " subReviewer=NULL,\n";
+    $qry = " flags=1,";
+  }
+
+  if (!empty($subReviewer)) {
+    $qry .= " subReviewer='" .my_addslashes($subReviewer, $cnnct)."',\n";
+  } else {
+    $qry .= " subReviewer=NULL,\n";
   }
 
   $conf = (int) trim($conf);
@@ -61,6 +68,13 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
     $qry .= "    comments2chair='" .my_addslashes($cmnts, $cnnct) ."',\n";
   } else {
     $qry .= "    comments2chair=NULL,\n";
+  }
+
+  $cmnts = trim($slfCmnt);
+  if (!empty($cmnts)) {
+    $qry .= "    comments2self='" .my_addslashes($cmnts, $cnnct) ."',\n";
+  } else {
+    $qry .= "    comments2self=NULL,\n";
   }
 
   if (isset($row[2])) {  // existing entry
@@ -145,7 +159,7 @@ function backup_existing_review($subId, $revId, $nCrit, $cnnct)
     else $nextVersion++;                        // try again
   }
   *******************************************************************/
-  $qry = "INSERT IGNORE INTO reportBckp SELECT subId, revId, subReviewer, confidence, score, comments2authors, comments2committee, comments2chair, lastModified, $nextVersion FROM reports WHERE subId=$subId AND revId=$revId";
+  $qry = "INSERT IGNORE INTO reportBckp SELECT subId, revId, flags, subReviewer, confidence, score, comments2authors, comments2committee, comments2chair, comments2self, lastModified, $nextVersion FROM reports WHERE subId=$subId AND revId=$revId";
   mysql_query($qry, $cnnct);
 
   $qry = "INSERT IGNORE INTO gradeBckp SELECT subId, revId, gradeId, grade, $nextVersion FROM auxGrades WHERE subId=$subId AND revId=$revId";

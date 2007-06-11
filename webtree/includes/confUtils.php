@@ -8,15 +8,28 @@
 
 function show_legend()
 {
+  // icons are defined in includes/getParams.php
   global $WDicon, $NOicon, $REicon, $MRicon, $DIicon, $MAicon, $ACicon;
-  global $reviseIcon, $reviewIcon, $discussIcon1, $discussIcon2;
+  global $reviseIcon, $reviewIcon, $revise2Icon, $discussIcon1, $discussIcon2;
 
   $legend = <<<EndMark
 <hr/>
 <table><tbody>
-<tr><td>Legend:</td><td>$NOicon, $REicon, $MRicon, $DIicon, $MAicon, $ACicon: Status marks (None, [Maybe-]Reject, Discuss, [Maybe-]Accept)</td>
-<tr><td></td><td>$reviewIcon, $reviseIcon: Submit a new/revised report about a submissoin</td></tr>
-<tr><td></td><td>$discussIcon1, $discussIcon2: See reports and discussion boards (all read / some unread)</td></tr>
+<tr><td>Legend:</td>
+<td>$NOicon, $REicon, $MRicon, $DIicon, $MAicon, $ACicon:
+    Status marks (None, [Maybe-]Reject, Discuss, [Maybe-]Accept)</td>
+</tr>
+<tr><td></td>
+<td>$reviewIcon,
+    $revise2Icon,
+    $reviseIcon:
+    Submit a new/revised report about a submissoin</td>
+</tr>
+<tr><td></td>
+<td>$discussIcon1,
+    $discussIcon2:
+    See reports and discussion boards (all read / some unread)</td>
+</tr>
 </tbody></table>
 EndMark;
 

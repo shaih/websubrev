@@ -13,9 +13,9 @@ if (isset($_GET['subId'])) { $subId = (int) trim($_GET['subId']); }
 else exit("<h1>No Submission specified</h1>");
 
 // The chair is allowed to see the reciept of other people's reviews
-if ($revId==CHAIR_ID && isset($_GET['revId'])) {
-  $revId = (int) trim($_GET['revId']);
-}
+$isChair = ($revId==CHAIR_ID
+	    && isset($_GET['revId']) && $revId!=$_GET['revId']);
+if  ($isChair)  $revId = (int) trim($_GET['revId']);
 
 if (isset($_GET['bckpVersion']) && $_GET['bckpVersion']>0) {
   $table = "reportBckp";
@@ -29,7 +29,7 @@ if (isset($_GET['bckpVersion']) && $_GET['bckpVersion']>0) {
 }
 $cnnct = db_connect();
 $qry = "SELECT s.title, c.name, r.subReviewer, r.confidence, r.score,\n"
-     . "    r.comments2authors, r.comments2committee, r.comments2chair\n"
+     . "    r.comments2authors, r.comments2committee, r.comments2chair, r.comments2self\n"
      . "  FROM submissions s, committee c, $table r\n"
      . "  WHERE s.subId=$subId AND c.revId=$revId AND r.subId=$subId AND r.revId=$revId{$version}";
 $qry2 = "SELECT gradeId, grade FROM $ztable WHERE subId=$subId AND revId=$revId{$version}";
@@ -51,6 +51,7 @@ $score      = isset($row[4]) ? ((int) $row[4]) : '*';
 $comments2authors  = htmlspecialchars($row[5]);
 $comments2committee= htmlspecialchars($row[6]);
 $comments2chair    = htmlspecialchars($row[7]);
+$comments2self    = htmlspecialchars($row[8]);
 
 $zGrades = array();
 while ($row=mysql_fetch_row($auxRes)) {
@@ -99,6 +100,10 @@ print '<div class="fixed">'.nl2br($comments2committee).'</div>';
 print "<h3>Comments to Chair</h3>\n";
 print '<div class="fixed">'.nl2br($comments2chair).'</div>';
 
+if (!$isChair) {
+  print "<h3>Notes to myself</h3>\n";
+  print '<div class="fixed">'.nl2br($comments2self).'</div>';
+}
 print <<<EndMark
 <hr />
 $links

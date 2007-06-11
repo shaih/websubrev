@@ -25,7 +25,8 @@ $cnnct = db_connect();
 $qry= "SELECT s.title ttl, a.assign assign, r.subReviewer subRev,
       r.lastModified lastModif, r.confidence conf, r.score score,
       r.comments2authors cmnts2athr, r.comments2committee cmnts2PC,
-      r.comments2chair cmnts2chair, a.watch watch
+      r.comments2chair cmnts2chair, r.comments2self cmnts2self,
+      a.watch watch, r.flags revFlags
       FROM submissions s
         LEFT JOIN assignments a ON a.revId=$revId AND a.subId=$subId
         LEFT JOIN reports r     ON r.revId=$revId AND r.subId=$subId
@@ -60,12 +61,17 @@ $title      = isset($row['ttl']) ? htmlspecialchars($row['ttl']) : '';
 $subRev     = isset($row['subRev']) ? htmlspecialchars($row['subRev']) : '';
 $conf  = (int) $row['conf'];  if ($conf<1 || $conf>3)           $conf=NULL;
 $score = (int) $row['score']; if ($score<1 || $score>MAX_GRADE) $score=NULL;
-$cmnts2athr = isset($row['cmnts2athr']) ? htmlspecialchars($row['cmnts2athr']) : '';
-$cmnts2PC   = isset($row['cmnts2PC'])   ? htmlspecialchars($row['cmnts2PC'])   : '';
-$cmnts2chair= isset($row['cmnts2chair'])? htmlspecialchars($row['cmnts2chair']): '';
+$cmnts2athr= isset($row['cmnts2athr'])?htmlspecialchars($row['cmnts2athr']):'';
+$cmnts2PC  = isset($row['cmnts2PC'])  ?htmlspecialchars($row['cmnts2PC']): '';
+$cmnts2chair=isset($row['cmnts2chair'])?htmlspecialchars($row['cmnts2chair']):'';
+$cmnts2self= isset($row['cmnts2self'])?htmlspecialchars($row['cmnts2self']):'';
+
+$pcCmmntsInitStyle = empty($cmnts2PC) ? 'hidden' : 'shown';
+$chrCmmntsInitStyle = empty($cmnts2chair) ? 'hidden' : 'shown';
+$slfCmmntsInitStyle = empty($cmnts2self) ? 'hidden' : 'shown';
 
 if (isset($row['lastModif'])) // revision 
-     $update = ' (updated)';
+     $update = (($row['revFlags']==REPORT_NOT_DRAFT)?' (updated)':' (in progress)');
 else $update = '';
 $watch = $row['watch'];
 
@@ -74,6 +80,12 @@ if ($disFlag && !$watch) { // put a checkbox to add to watch list
 }
 else $watchHtml = '';
 
+if (isset($row['revFlags']) && $row['revFlags']==REPORT_NOT_DRAFT) {
+  $saveDraft = '';
+} else {
+  $saveDraft = ' or <input name="draft" type="submit" value="Work in progress"> (<a href="../documentation/reviewer.html#draftReview">what&#39;s this?</a>)';
+}
+
 $colors = array('lightgrey', 'rgb(240, 240, 240)');
 $links = show_rev_links();
 print <<<EndMark
@@ -81,18 +93,40 @@ print <<<EndMark
   "http://www.w3.org/TR/html4/loose.dtd">
 
 <html><head>
+<link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 h1 { text-align: center; }
 h2 { text-align: center; }
 tr { vertical-align: top; }
 </style>
 
+<script type="text/javascript" language="javascript">
+<!--
+  function expandCollapse(fld) {
+    var f = document.getElementById(fld);
+    if (f.className=="shown") { f.className="hidden"; }
+    else { f.className="shown"; f.focus(); }
+    return false;
+}
+  function hideAreas() {
+    document.getElementById("cmnt2PC").className="$pcCmmntsInitStyle";
+    document.getElementById("cmnt2chr").className="$chrCmmntsInitStyle";
+    document.getElementById("cmnt2slf").className="$slfCmmntsInitStyle";
+    document.getElementById("openCmnt2PC").className="shown";
+    document.getElementById("openCmnt2chr").className="shown";
+    document.getElementById("openCmnt2slf").className="shown";
+    return true;
+}
+
+// -->
+</script>
+
 <title>Review of Submission $subId{$update}</title></head>
-<body>
+<body onload="hideAreas();">
 $links
 <hr />
 <h1>Review of Submission $subId{$update}</h1>
-<h2>$title</h2>
+<h2><a target=_blank href="submission.php?subId=$subId">$title</a></h2>
 
 <form action="doReview.php" enctype="multipart/form-data" method=post>
 
@@ -108,7 +142,7 @@ $links
 
 <!-- A header line with the numbers -->
 <tr style="text-align: center; background: $colors[0];">
-  <th style="text-align: left;"><small><a href="guidelines.php#grades">Score&nbsp;semantics</a></small>&nbsp;&nbsp;&nbsp;&nbsp;</th> 
+  <th style="text-align: left;"><small><a target=_blank href="guidelines.php#grades">Score&nbsp;semantics</a></small>&nbsp;&nbsp;&nbsp;&nbsp;</th> 
 
 EndMark;
 print "  <th>ignore</th>\n  <th style=\"width:50px;\">1<br/><small>(low)</small></th>\n";
@@ -153,7 +187,7 @@ if (MAX_CONFIDENCE<$mxGrades) {
   $cspan = $mxGrades - MAX_CONFIDENCE; 
   print "  <td colspan=\"$cspan\"></td>\n";
 }
-print "</tr><tr></tr>\n\n";
+print "</tr>\n\n";
 
 if (is_array($criteria) && count($criteria)>0) {
   $parity = 0;
@@ -191,21 +225,34 @@ print <<<EndMark
 </tbody></table>
 
 <h3>Comments to the Authors:</h3>
-<textarea name="comments2authors" rows="15" cols="80">$cmnts2athr</textarea>
+<div ID="cmnt2athr">
+<textarea name="comments2authors" rows=15 cols=80>$cmnts2athr</textarea>
 <br />The authors, program-committee members, and chair see these comments.
+</div>
 
-<h3>Comments to the Committee:</h3>
-<textarea name="comments2PC" rows="5" cols="80">$cmnts2PC</textarea>
+<h3>Comments to the Committee <a class="hidden" href="#" ID="openCmnt2PC" onclick="return expandCollapse('cmnt2PC');">(click to expand/collapse)</a></h3>
+<div ID="cmnt2PC">
+<textarea class="shown" name="comments2PC" rows=15 cols=80>$cmnts2PC</textarea>
 <br />Only the program-committee members and chair see these comments.
+</div>
 
-<h3>Comments to the Chair:</h3>
-<textarea name="comments2chair" rows="5" cols="80">$cmnts2chair</textarea>
+<h3>Comments to the Chair <a class="hidden" href="#" ID="openCmnt2chr" onclick="return expandCollapse('cmnt2chr');">(click to expand/collapse)</a></h3>
+<div ID="cmnt2chr">
+<textarea name="comments2chair" rows=15 cols=80>$cmnts2chair</textarea>
 <br />Only the program chair sees these comments.
-<br /><br />
+</div>
+
+<h3>Notes to yourself <a class="hidden" href="#" ID="openCmnt2slf" onclick="return expandCollapse('cmnt2slf');">(click to expand/collapse)</a></h3>
+<div ID="cmnt2slf">
+<textarea name="comments2self" rows=15 cols=80>$cmnts2self</textarea><br/>
+No one else can see these comments
+</div>
+<br/>
 
 <input type="hidden" name="subId" value="$subId">
-<center><input style="width: 100px;" type="submit" value="Submit">
-$watchHtml</center>
+<center><input type="submit" value="Submit">
+$saveDraft $watchHtml</center>
+
 </form>
 <hr />
 $links

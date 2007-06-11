@@ -17,10 +17,14 @@ $pcmFlags= (int) $pcMember[5];
 
 // Prepare a list of submissions that the current member reviewed
 $cnnct = db_connect();
-$qry = "SELECT subId FROM reports WHERE revId='$revId'";
+$qry = "SELECT subId, flags FROM reports WHERE revId='$revId'";
 $res = db_query($qry, $cnnct);
 $reviewed = array();
-while ($row = mysql_fetch_row($res)) { $reviewed[$row[0]] = true; }
+while ($row = mysql_fetch_row($res)) {
+  $subId = (int) $row[0];
+  $notDraft = (int) $row[1];
+  $reviewed[$subId] = $notDraft;
+}
 
 // Get a list of submissions for which this reviewer already saw all
 // the discussions/reviews. Everything else is considered "new"

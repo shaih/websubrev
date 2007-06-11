@@ -139,14 +139,17 @@ function create_tabels($cnnct)
   db_query($qry, $cnnct, "Cannot CREATE committee table: ");
 
   // The reports table(s)
+  // The only flag currently is status (0 - draft, 1- "final")
   $reports = "subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL,
+    flags tinyint(1) NOT NULL DEFAULT 1,
     subReviewer varchar(255),
     confidence tinyint(1),
     score tinyint(2),
     comments2authors text,
     comments2committee text,
     comments2chair text,
+    comments2self text,
     whenEntered datetime NOT NULL,";
 
   // The main table for reports

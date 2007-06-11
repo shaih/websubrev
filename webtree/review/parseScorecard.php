@@ -68,12 +68,12 @@ function nextReview($fd) {
   $comments=0;
   $subId=$title=$authors = NULL;
   $score=$conf=$subrev = NULL;
-  $cmnt=$pcCmnt=$chrCmnt ='';
+  $cmnt=$pcCmnt=$chrCmnt=$slfCmnt ='';
   $auxGrades = array();
   while (true) {
     if (feof($fd) || ($line=fgets($fd))===false) {
       saveReview($subId,$title,$subrev,
-		  $score,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt);
+		  $score,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt,$slfCmnt);
       return false; // last review in file
     }
 
@@ -81,8 +81,8 @@ function nextReview($fd) {
 
     // look for record separation: a line of at least 20 '+'s and nothing else
     if (preg_match('/\+{20,}$/', $line)) {
-      return saveReview($subId,$title,$subrev,
-			 $score,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt);
+      return saveReview($subId,$title,$subrev,$score,$conf,
+			$auxGrades,$cmnt,$pcCmnt,$chrCmnt,$slfCmnt);
     }
 
     if ($skip || ($comments==0 && (empty($line) || $line[0]=='#')))
@@ -120,6 +120,10 @@ function nextReview($fd) {
 	$comments=3;
 	$chrCmnt=trim(substr($line,15));
       }
+      else if (strncmp($line,"SELF-COMMENTS:",14)==0) {
+	$comments=4;
+	$slfCmnt=trim(substr($line,14));
+      }
       else getAuxGrade($auxGrades,$line);
 
       continue;
@@ -138,6 +142,10 @@ function nextReview($fd) {
       $comments=3;
       $chrCmnt.=trim(substr($line,15));
     }
+    else if (strncmp($line,"SELF-COMMENTS:",14)==0) {
+      $comments=4;
+      $slfCmnt.=trim(substr($line,14));
+    }
     else switch($comments) { // continue with current comments
       case 1:
 	$cmnt .= "\n".$line;
@@ -147,6 +155,9 @@ function nextReview($fd) {
 	break;
       case 3:
 	$chrCmnt .= "\n".$line;
+	break;
+      case 4:
+	$slfCmnt .= "\n".$line;
       default:
 	break;
     }
@@ -175,7 +186,7 @@ function getAuxGrade(&$auxGrades, $line)
 }
 
 function saveReview($subId,$title,$subrev,
-		     $score,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt)
+		     $score,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt,$slfCmnt)
 {
   global $revId;
   global $criteria;
@@ -203,8 +214,9 @@ function saveReview($subId,$title,$subrev,
   $cmnt = trim($cmnt);
   $pcCmnt = trim($pcCmnt);
   $chrCmnt = trim($chrCmnt);
-  if (empty($score) && empty($conf) && !$foundAuxGrades
-      && empty($cmnt) && empty($pcCmnt) && empty($chrCmnt)) {
+  $slfCmnt = trim($slfCmnt);
+  if (empty($score) && empty($conf) && !$foundAuxGrades && empty($cmnt) 
+      && empty($pcCmnt) && empty($chrCmnt) && empty($slfCmnt)) {
     print "<b>Notice:</b> ignoring empty review for submission $subId: <tt>"
       .htmlspecialchars($title)."</tt><br/>\n";
     return true;
@@ -212,8 +224,8 @@ function saveReview($subId,$title,$subrev,
 
   $add2watch = !$disFlag;
   $noUpdtModTime = $disFlag;
-  $ret = storeReview($subId, $revId, $subrev, $conf, $score, $grades,
-		     $cmnt, $pcCmnt, $chrCmnt, $add2watch, $noUpdtModTime);
+  $ret = storeReview($subId, $revId, $subrev, $conf, $score, $grades, $cmnt,
+		     $pcCmnt, $chrCmnt, $slfCmnt, $add2watch, $noUpdtModTime);
 
   if ($ret==-1 || $ret==-2) return false; // unspecified subId or revId? something is wrong here..
   else if ($ret==-3) {

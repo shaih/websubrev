@@ -160,7 +160,7 @@ function individual_review($cnnct, $revId)
 
   $qry ="SELECT s.subId subId, title, s.format format, status, 
       UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
-      a.watch watch, r.revId revId
+      a.watch watch, r.revId revId, r.flags revFlags
     FROM submissions s
       INNER JOIN assignments a ON a.revId={$revId} AND a.subId=s.subId
       LEFT JOIN reports r ON r.subId=s.subId AND r.revId={$revId}
@@ -171,8 +171,9 @@ function individual_review($cnnct, $revId)
   while ($row = mysql_fetch_assoc($res)) {
     if (isset($row["revId"])) { // already reviewed
       $subId = (int) $row["subId"];
-      $reviewed[$subId] = true;
-      $nReviewed++;
+      $notDraft = (int) $row["revFlags"];
+      $reviewed[$subId] = $notDraft;
+      $nReviewed += $notDraft;
     }
     $subs[] = $row;
     $total++;
@@ -208,10 +209,14 @@ function discussion_phase($cnnct, $revId, $extraSpace)
 
   // a list of submissions that this reviewer reviewed
   $reviewed = array();
-  $qry = "SELECT subId FROM reports WHERE revId={$revId}";
+  $qry = "SELECT subId, flags FROM reports WHERE revId={$revId}";
   $res = db_query($qry, $cnnct);
   $reviewed = array();
-  while ($row = mysql_fetch_row($res)) { $reviewed[$row[0]] = true; }
+  while ($row = mysql_fetch_row($res)) {
+    $subId = (int) $row[0];
+    $notDraft = (int) $row[1];
+    $reviewed[$subId] = $notDraft;
+  }
 
   $qry ="SELECT s.subId subId, title, s.format format, status,
       UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
