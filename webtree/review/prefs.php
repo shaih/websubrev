@@ -107,7 +107,7 @@ while ($row = mysql_fetch_row($res)) {
   }
 
   print "  <td>{$subId}.</td>
-  <td style=\"text-align: left;\"><a href=\"submission.php?subId=$subId\">{$title}</a></td>
+  <td style=\"text-align: left;\"><a href=\"submission.php?subId=$subId\" target=_blank>{$title}</a></td>
 </tr>\n";
 }
 

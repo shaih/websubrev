@@ -124,7 +124,34 @@ function create_tabels($cnnct)
   )";
   db_query($qry, $cnnct, "Cannot CREATE acceptedPapers table: ");
 
-  // The committee table
+  /* The committee table.
+   * The field flags is for bit-flags, currently supporting the following flags
+   * First byte: first three bits reserved for order of submission list:
+   *     0 - by number
+   *     1 - by modification date
+   *     2 - by weighted average
+   *     3 - by average
+   *     4 - by max-grade minus min-grade
+   *   Other bits:
+   *     8 - List submissions ordered by status
+   *    16 - List only submissions assigned to me
+   *    32 - Display all submissions in one list
+   *    64 - Display abstract with submissions
+   * Second byte: first three bits reserved for order of review list:
+   *     0 - by number
+   *     1 - by modification date
+   *     2 - by weighted average
+   *     3 - by average
+   *     4 - by max-grade minus min-grade
+   *   Other bits:
+   *     8 - List reviews ordered by status
+   *    16 - List only reviews on my watch list
+   *    32 - Display all reviews in one list, ignoring watch list designation
+   *    64 - Show with reviews
+   *   128 - Show with discussions
+   * Fourth byte:
+   *     1 - Send uploaded reviews back to reviewer by email
+   */
   $qry ="CREATE TABLE IF NOT EXISTS committee (
     revId smallint(3) NOT NULL auto_increment,
     revPwd varchar(255) BINARY NOT NULL,

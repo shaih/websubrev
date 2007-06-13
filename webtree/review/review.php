@@ -10,6 +10,9 @@ require 'header.php'; // defines $pcMember=array(id, name, ...)
 $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
 $disFlag = (int) $pcMember[3];
+$pcmFlags= (int) $pcMember[5];
+
+$chkEml = ($pcmFlags & 0x01000000)? ' checked="checked"' : '';
 
 if (defined('CAMERA_PERIOD'))
    exit("<h1>Site closed: cannot post new reviews</h1>");
@@ -76,7 +79,7 @@ else $update = '';
 $watch = $row['watch'];
 
 if ($disFlag && !$watch) { // put a checkbox to add to watch list
-  $watchHtml = '<input type=checkbox name=add2watch> Also add this submission to my watch list';
+  $watchHtml = '<input type=checkbox name=add2watch> Add this submission to my watch list<br/>';
 }
 else $watchHtml = '';
 
@@ -250,8 +253,13 @@ No one else can see these comments
 <br/>
 
 <input type="hidden" name="subId" value="$subId">
-<center><input type="submit" value="Submit">
-$saveDraft $watchHtml</center>
+<center>
+<input type="submit" value="Submit">
+$saveDraft
+</center>
+
+$watchHtml
+<input type=checkbox name=emilReview{$chkEml}> Send my review back to me via email
 
 </form>
 <hr />
