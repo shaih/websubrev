@@ -98,7 +98,7 @@ EndMark;
     <td style="width:60px;"><span class=$revStyle><a href="review.php?subId=$subId" target="_blank">$revText</a></span>
     </td>
     <td style="text-align: right;"><b>$subId.</b></td>
-    <td><a href="submission.php?subId=$subId">$title</a></td>
+    <td><a href="submission.php?subId=$subId">$title</a></td>$catgry
     </tr>
 
 EndMark;
