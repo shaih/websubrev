@@ -117,6 +117,35 @@ CREATE TABLE IF NOT EXISTS acceptedPapers (
     INDEX (pOrder)
 );
 
+  /* The committee table.
+   * The field flags is for bit-flags, currently supporting the following flags
+   * First byte: first three bits reserved for order of submission list:
+   *     0 - by number
+   *     1 - by modification date
+   *     2 - by weighted average
+   *     3 - by average
+   *     4 - by max-grade minus min-grade
+   *   Other bits:
+   *     8 - List submissions ordered by status
+   *    16 - List only submissions assigned to me
+   *    32 - Display all submissions in one list
+   *    64 - Display abstract with submissions
+   *   128 - Display category with submissions
+   * Second byte: first three bits reserved for order of review list:
+   *     0 - by number
+   *     1 - by modification date
+   *     2 - by weighted average
+   *     3 - by average
+   *     4 - by max-grade minus min-grade
+   *   Other bits:
+   *     8 - List reviews ordered by status
+   *    16 - List only reviews on my watch list
+   *    32 - Display all reviews in one list, ignoring watch list designation
+   *    64 - Show with reviews
+   *   128 - Show with discussions
+   * Fourth byte:
+   *     1 - Send uploaded reviews back to reviewer by email
+   */
 CREATE TABLE IF NOT EXISTS committee (
     revId smallint(3) NOT NULL auto_increment,
     revPwd varchar(255) BINARY NOT NULL,
@@ -133,12 +162,14 @@ CREATE TABLE IF NOT EXISTS committee (
 CREATE TABLE IF NOT EXISTS reports (
     subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL,
+    flags tinyint(1) NOT NULL DEFAULT 1,
     subReviewer varchar(255),
     confidence tinyint(1),
     score tinyint(2),
     comments2authors text,
     comments2committee text,
     comments2chair text,
+    comments2self text,
     whenEntered datetime NOT NULL,
     lastModified datetime NOT NULL,
     PRIMARY KEY (subId, revId)
@@ -148,12 +179,14 @@ CREATE TABLE IF NOT EXISTS reports (
 CREATE TABLE IF NOT EXISTS reportBckp (
     subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL,
+    flags tinyint(1) NOT NULL DEFAULT 1,
     subReviewer varchar(255),
     confidence tinyint(1),
     score tinyint(2),
     comments2authors text,
     comments2committee text,
     comments2chair text,
+    comments2self text,
     whenEntered datetime NOT NULL,
     version smallint(3) NOT NULL DEFAULT 0,
     PRIMARY KEY (subId, revId, version)

@@ -137,6 +137,7 @@ function create_tabels($cnnct)
    *    16 - List only submissions assigned to me
    *    32 - Display all submissions in one list
    *    64 - Display abstract with submissions
+   *   128 - Display category with submissions
    * Second byte: first three bits reserved for order of review list:
    *     0 - by number
    *     1 - by modification date
