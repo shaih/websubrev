@@ -183,7 +183,7 @@ function individual_review($cnnct, $revId)
     . " submissions that were assigned to you.\n";
 
   // Show reviewer his/her total, just to make him/her happy
-  $qry = "SELECT COUNT(1) FROM reports WHERE revId={$revId}";
+  $qry = "SELECT COUNT(1) FROM reports WHERE revId={$revId} AND flags>0";
   $res = db_query($qry, $cnnct);
   $row = mysql_fetch_row($res);
   $extra = ((int) $row[0]) - $nReviewed;
