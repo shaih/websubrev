@@ -36,7 +36,10 @@ EndMark;
   return $legend;
 }
 
-function my_send_mail($sendTo, $subject, $msg, $cc=NULL, $errMsg='')
+// The $attachments parameter is an array of (path,filename) pairs,
+// $msg is assumed to be a text-message (in utf-8 encoding)
+function my_send_mail($sendTo, $subject, $msg,
+		      $cc=NULL, $errMsg='', $attachments=NULL)
 {
   $php_errormsg = ''; // avoid notices in case it isn't defined 
 
@@ -58,6 +61,33 @@ function my_send_mail($sendTo, $subject, $msg, $cc=NULL, $errMsg='')
   if (!empty($cc))     $hdr .= $emlCRLF."Cc: $cc";
   if (!empty($sender)) $hdr .= $emlCRLF."Sender: ".EML_SENDER;
   if ($xMailer)        $hdr .= $emlCRLF."X-Mailer: PHP/".phpversion();
+
+  // If there are attachments, prepare a MIME email
+  if (is_array($attachments) && count($attachments)>0) {
+    $boundary = '===WebSubRev_email_boundary_dKp9hcAr6===';
+    $mime='';
+    foreach($attachments as $a) {
+      $content = file_get_contents($a[0].$a[1]);
+      if (!$content) continue;
+      $mime.= '--'.$boundary.$emlCRLF;
+      $mime.= "Content-Type: application/octet-stream; name=\"{$a[1]}\""
+	.$emlCRLF;
+      $mime.= "Content-Transfer-Encoding: base64".$emlCRLF;
+      $mime.= "Content-Disposition: attachment; filename=\"{$a[1]}\"".$emlCRLF;
+      $mime.= $emlCRLF. chunk_split(base64_encode($content)) .$emlCRLF;
+    }
+    if (!empty($mime)) {
+      $msg = "This is a multi-part message in MIME format.\r\n"
+	. "--{$boundary}\r\n"
+	. "Content-type:text/plain; charset=utf-8\r\n"
+	. "Content-Transfer-Encoding: 7bit\r\n\r\n"
+	. $msg."\r\n"
+	. $mime
+	. "--{$boundary}--\r\n";
+      $hdr .= $emlCRLF."MIME-Version: 1.0"
+	. $emlCRLF."Content-Type: multipart/mixed; boundary=\"$boundary\"";
+    }
+  }
 
   if ($xParam && !empty($chrEml) && !ini_get('safe_mode'))
     $success = mail($sendTo, $subject, $msg, $hdr, "-f $chrEml");
