@@ -1743,5 +1743,5 @@ while ($row = mysql_fetch_row($res)) {
   if (!file_exists(SUBMIT_DIR."/$subId.$fmt"))
     copy("../subs/$subId.$fmt", SUBMIT_DIR."/$subId.$fmt");
 }
-header("Location: receipt-customize.php?testOnly=yes{$urlParams}");
+header("Location: receiptCustomize.php?testOnly=yes{$urlParams}");
 ?>
