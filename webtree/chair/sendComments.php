@@ -54,7 +54,7 @@ if (isset($_POST['sendComments2Submitters'])) {
 
   $cnnct = db_connect();
   $qry = "SELECT s.subId, title, authors, contact, comments2authors, status,
-    confidence, score
+    confidence, score, attachment
   FROM submissions s LEFT JOIN reports r USING(subId)
   WHERE s.status!='Withdrawn'";
 
@@ -73,8 +73,8 @@ if (isset($_POST['sendComments2Submitters'])) {
     if ($subId<=0) continue;
 
     if (!isset($submissions[$subId])) { // a new submission
-      $submissions[$subId] = array($row[1], $row[2],
-				   $row[3], array(), trim($row[5]));
+      $submissions[$subId] = array($row[1], $row[2], $row[3], 
+				   array(), NULL, trim($row[5]));
     }
     $comment = trim($row[4]);
     if (!empty($comment)) {
@@ -83,15 +83,23 @@ if (isset($_POST['sendComments2Submitters'])) {
         if ($row[6]>0) $grade .= "\nConfidence: ".$row[6];
         $comment = $grade."\n\n".$comment;
       }
+     if (!empty($row[8])) {
+       $comment .= "\n\nSee attached file ".$row[8]."\n";
+     }
       array_push($submissions[$subId][3], wordwrap($comment, 78));
+    }
+    if (!empty($row[8])) {
+      if (!isset($submissions[$subId][4])) $submissions[$subId][4] = array();
+      $attachment = array(SUBMIT_DIR."/attachments/", $row[8]);
+      array_push($submissions[$subId][4], $attachment);
     }
   }
   print "<h3>Sending comments...</h3>\n";
 
   $count=0;
   foreach ($submissions as $subId => $sb) {
-    if (($sb[4]=="Accept") || ($sb[4]=="Reject")) {
-      sendComments($subId, $sb[0], $sb[1], $sb[2], $sb[3], $ltr);
+    if (($sb[5]=="Accept") || ($sb[5]=="Reject")) {
+      sendComments($subId, $sb[0], $sb[1], $sb[2], $sb[3], $sb[4], $ltr);
     }
     else continue;
 
@@ -159,7 +167,8 @@ $links
 EndMark;
 exit();
 
-function sendComments($subId, $title, $authors, $contact, $cmnts, $text)
+function sendComments($subId, $title, $authors, $contact,
+		      $cmnts, $attachments, $text)
 {
   $subject = "Reviewer comments for ".CONF_SHORT.' '.CONF_YEAR." submission";
   $errMsg = "comments for submission {$subId} to {$contact}";
@@ -170,6 +179,6 @@ function sendComments($subId, $title, $authors, $contact, $cmnts, $text)
     $text = str_replace('<$comments>', implode("\n\n========================================================================\n\n", $cmnts), $text);
   else $text = str_replace('<$comments>', "\nNo Reviewer Comments\n", $text);
 
-  my_send_mail($contact, $subject, $text, CHAIR_EMAIL, $errMsg);
+  my_send_mail($contact, $subject, $text, CHAIR_EMAIL, $errMsg, $attachments);
 }
 ?>

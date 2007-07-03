@@ -178,6 +178,7 @@ function create_tabels($cnnct)
     comments2committee text,
     comments2chair text,
     comments2self text,
+    attachment text,
     whenEntered datetime NOT NULL,";
 
   // The main table for reports

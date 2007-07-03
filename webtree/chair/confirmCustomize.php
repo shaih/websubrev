@@ -48,6 +48,9 @@ $anonymous = isset($_POST['anonymous']) ?
 $revPrefs  = isset($_POST['revPrefs']) ?
   'PC members can specify reviewing preferences' :
   'Reviewing preferences and automatic assignments are disabled';
+$revAttach  = isset($_POST['revAttach']) ?
+  'Reviewers can upload attachments with their reviews' :
+  'Reviewers can NOT upload attachments with their reviews';
 
 $maxGrade  = isset($_POST['maxGrade']) ? (int) trim($_POST['maxGrade']) : 6;
 if (($maxGrade < 2) || ($maxGrade > 9)) { $maxGrade =6; }
@@ -263,6 +266,7 @@ print <<<EndMark
 <tbody>
 <tr><td colspan="2">$anonymous</td></tr>
 <tr><td colspan="2">$revPrefs</td></tr>
+<tr><td colspan="2">$revAttach</td></tr>
 <tr><td class=rjust>Overall Grades:</td><td><b>From 1 to $maxGrade</b></td>
 </tr>
 <tr><td class=rjust>Confidence&nbsp;Level:</td><td><b>From 1 to 3</b></td>
@@ -349,6 +353,9 @@ if (isset($_POST['anonymous'])) {
 
 if (isset($_POST['revPrefs'])) {
   print "<input name=\"revPrefs\" type=\"hidden\" value=\"on\">\n";
+}
+if (isset($_POST['revAttach'])) {
+  print "<input name=\"revAttach\" type=\"hidden\" value=\"on\">\n";
 }
 
 print "<input name=\"maxGrade\" type=\"hidden\" value=\"$maxGrade\">\n";

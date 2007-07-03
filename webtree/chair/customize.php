@@ -26,6 +26,7 @@ if ($year == 0) { // guess the year of the conference
 
 $chkAff = (CONF_FLAGS & FLAG_AFFILIATIONS) ? ' checked="checked"' : '';
 $chkRevPrf = (CONF_FLAGS & FLAG_PCPREFS) ? ' checked="checked"' : '';
+$chkRevAtt = (CONF_FLAGS & FLAG_REV_ATTACH)? ' checked="checked"' : '';
 $chkAnon = (CONF_FLAGS & FLAG_ANON_SUBS) ? ' checked="checked"' : '';
 
 if (CHAIR_NAME=='') $chrEml = CHAIR_EMAIL;
@@ -195,6 +196,10 @@ Jordan, Michael &lt;Air-Jordan@nike.com&gt;</textarea><br/>
 <tr><td class=rjust><a href="../documentation/chair.html#revPrefs" target="documentation" title="click for more help">Reviewer&nbsp;Preferences:</a></td>
   <td><input name="revPrefs" type="checkbox"{$chkRevPrf}>
     Check to let PC members specify their reviewing preferences.</td>
+</tr>
+<tr><td class=rjust><a href="../documentation/reviewer.html#revAttach" target="documentation" title="click for more help">Review&nbsp;Attachments:</a></td>
+  <td><input name="revAttach" type="checkbox"{$chkRevAtt}>
+    Check to allow attachments with the reviews.</td>
 </tr>
 <tr><td class=rjust>Overall&nbsp;Score:</td>
   <td>Min: <input disabled size="1" type="text" value="1"> , &nbsp;

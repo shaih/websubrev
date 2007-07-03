@@ -170,6 +170,7 @@ CREATE TABLE IF NOT EXISTS reports (
     comments2committee text,
     comments2chair text,
     comments2self text,
+    attachment text,
     whenEntered datetime NOT NULL,
     lastModified datetime NOT NULL,
     PRIMARY KEY (subId, revId)
@@ -187,6 +188,7 @@ CREATE TABLE IF NOT EXISTS reportBckp (
     comments2committee text,
     comments2chair text,
     comments2self text,
+    attachment text,
     whenEntered datetime NOT NULL,
     version smallint(3) NOT NULL DEFAULT 0,
     PRIMARY KEY (subId, revId, version)

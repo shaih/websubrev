@@ -182,10 +182,12 @@ echo
 echo -n "Preparing the UPLOAD directory ... "
 mkdir -p $subDir/backup
 mkdir -p $subDir/final
+mkdir -p $subDir/attachments
 cp $baseDir/init/.htaccess  $subDir
 cp $baseDir/init/index.html $subDir
 cp $baseDir/init/index.html $subDir/backup
 cp $baseDir/init/index.html $subDir/final
+cp $baseDir/init/index.html $subDir/attachments
 now=$(date)
 echo "$now, Log file created" >> $subDir/log$logFile
 chgrp -R $webSrv $subDir

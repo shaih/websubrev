@@ -1,8 +1,8 @@
 <?php
 // returns 0 when all is well, otherwise an error code
 function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
-		     $authCmnt, $pcCmnt, $chrCmnt, $slfCmnt,
-		     $watch=false, $noUpdt=false, $saveDraft=false)
+		     $authCmnt, $pcCmnt, $chrCmnt, $slfCmnt, $watch=false, 
+		     $noUpdt=false, $saveDraft=false)
 {
   global $criteria;
   $nCrit = count($criteria);
@@ -13,7 +13,7 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
   // Make sure that this submission exists and the reviewer does not have
   // a conflict with it, and check if this is a new review or an update.
   $cnnct = db_connect();
-  $qry= "SELECT s.subId, a.assign, r.revId
+  $qry= "SELECT s.subId, a.assign, r.revId, r.attachment
        FROM submissions s
             LEFT JOIN assignments a ON a.revId=$revId AND a.subId=s.subId
             LEFT JOIN reports r ON r.subId=s.subId AND r.revId=$revId
@@ -22,6 +22,37 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
   $res = db_query($qry, $cnnct);
   if (!($row = mysql_fetch_row($res)) || $row[1]==-1)
     return -3; // no such submission or reviewer has conflict
+
+  // Store the attachment (if any)
+  $fileName = NULL;
+  if (isset($_FILES["attach{$subId}"])
+      && $_FILES["attach{$subId}"]['error']==0) {
+    $fileName = trim($_FILES["attach{$subId}"]['name']);
+    $ext = file_extension($fileName);
+
+    $fileName = md5(uniqid(CONF_SALT . $subId . $revId));
+    $fileName = "R{$subId}" . alphanum_encode(substr($fileName, 0, 12));
+    if (!empty($ext)) $fileName .= ".$ext";
+    $tmpFile = $_FILES["attach{$subId}"]['tmp_name'];
+    $fullName = SUBMIT_DIR."/attachments/$fileName";
+
+    if (!move_uploaded_file($tmpFile, $fullName)) {
+      error_log(date('Ymd-His: ')."move_uploaded_file($tmpFile, $fullName) failed\n", 3, LOG_FILE);
+      $fileName = NULL;
+    }
+
+    // special case: a text attachment is stored inline
+    if ($ext=='txt' && filesize($fullName)<10000){ // filesize is sanity check
+      $content = file_get_contents($fullName);
+      if (empty($authCmnt)) $authCmnt = $content;
+      else $authCmnt .= "\n=============================================\n\n"
+	  .$content;
+
+      $fileName = NULL;
+    }
+  } else if (isset($_POST["keepAttach{$subId}"])) { // use existing attachment
+    $fileName = $row[3];
+  }
 
   if ($saveDraft) {
     $qry = " flags=0,";
@@ -77,15 +108,24 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
     $qry .= "    comments2self=NULL,\n";
   }
 
+  if (isset($fileName)) { // 
+   $qry .= "    attachment='$fileName',\n";
+   $ret = "$fileName";
+  } else {
+   $qry .= "    attachment=NULL,\n";
+   $ret = NULL;
+  }
+
   if (isset($row[2])) {  // existing entry
     $qry .= "    lastModified=NOW()";
     $qry = "UPDATE reports SET $qry WHERE revId=$revId AND subId=$subId";
 
-    backup_existing_review($subId, $revId, $nCrit, $cnnct);
+    $version = backup_existing_review($subId, $revId, $nCrit, $cnnct);
   } else {
     $noUpdt = false;
     $qry .= "    lastModified=NOW(), whenEntered=NOW()";
     $qry = "INSERT into reports SET revId=$revId, subId=$subId,\n   $qry";
+    $version = 1;
   }
   $vals = $comma = '';
   for ($i=0; $i<$nCrit; $i++) {
@@ -95,6 +135,7 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
     $vals .= $comma . "($subId, $revId, $i, $grade)";
     $comma = ',';
   }
+
   // finally, insert or update the report
   mysql_query("BEGIN", $cnnct);
           // same as "START TRANSCTION" but works with older versions of MySQL
@@ -103,7 +144,6 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
   if (!empty($vals))
     db_query("INSERT INTO auxGrades VALUES $vals", $cnnct);
   mysql_query("COMMIT", $cnnct); // commit changes
-
 
   // Update the statistics in the submissions table
   $qry = "SELECT AVG(score), MIN(score), MAX(score),
@@ -136,7 +176,7 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
     }
   }
 
-  return 0;
+  return $ret;
 }
 
 function backup_existing_review($subId, $revId, $nCrit, $cnnct)
@@ -159,10 +199,12 @@ function backup_existing_review($subId, $revId, $nCrit, $cnnct)
     else $nextVersion++;                        // try again
   }
   *******************************************************************/
-  $qry = "INSERT IGNORE INTO reportBckp SELECT subId, revId, flags, subReviewer, confidence, score, comments2authors, comments2committee, comments2chair, comments2self, lastModified, $nextVersion FROM reports WHERE subId=$subId AND revId=$revId";
+  $qry = "INSERT IGNORE INTO reportBckp SELECT subId, revId, flags, subReviewer, confidence, score, comments2authors, comments2committee, comments2chair, comments2self, attachment, lastModified, $nextVersion FROM reports WHERE subId=$subId AND revId=$revId";
   mysql_query($qry, $cnnct);
 
   $qry = "INSERT IGNORE INTO gradeBckp SELECT subId, revId, gradeId, grade, $nextVersion FROM auxGrades WHERE subId=$subId AND revId=$revId";
   mysql_query($qry, $cnnct);
+
+  return $nextVersion;
 }
 ?>

@@ -23,21 +23,23 @@ $saveDraft = isset($_POST['draft']);
 
 $add2watch = (!$disFlag || isset($_POST['add2watch']));
 $noUpdtModTime = $disFlag;
+
+// Returns either an error code, the attachment name (if any), or NULL
 $ret = storeReview($subId, $revId, $_POST['subRev'], $_POST['conf'],
 		   $_POST['score'], $_POST, $_POST['comments2authors'],
 		   $_POST['comments2PC'], $_POST['comments2chair'],
 		   $_POST['comments2self'], $add2watch, $noUpdtModTime,
 		   $saveDraft);
 
-if ($ret==-1) exit("<h1>No Submission specified</h1>");
-if ($ret==-3) exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
+if ($ret===-1) exit("<h1>No Submission specified</h1>");
+if ($ret===-3) exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 
 if (isset($_POST['emilReview'])) {
   sendReviewByEmail($revEmail, $subId, $_POST['subRev'], 
 		    $_POST['conf'], $_POST['score'], $_POST,
 		    $_POST['comments2authors'], $_POST['comments2PC'],
 		    $_POST['comments2chair'], $_POST['comments2self'], 
-		    $saveDraft);
+		    $saveDraft, $ret);
   $flags = $pcmFlags | 0x01000000;  
 }
 else $flags = $pcmFlags & 0xfeffffff;  
@@ -53,7 +55,7 @@ exit();
 function sendReviewByEmail($revEmail, $subId,
 			   $subRev, $conf, $score, $auxGrades,
 			   $athrCmnts, $PCCmnts, $chrCmnts, $slfCmnts, 
-			   $saveDraft)
+			   $saveDraft, $attachment)
 {
   global $criteria;
   $confName = CONF_SHORT.' '.CONF_YEAR;
@@ -79,6 +81,9 @@ function sendReviewByEmail($revEmail, $subId,
     $msg .= "\nComments to authors:\n\n";
     $msg .= wordwrap($athrCmnts, 78);
   }
+  if (isset($attachment) && !empty($attachment)) {
+    $msg .= "\n\nAttachment $attachment stored with the review";
+  }
   if (isset($PCCmnts) && !empty($PCCmnts)) {
     $msg .= "\n\nComments to committee:\n\n";
     $msg .= wordwrap($PCCmnts, 78);
@@ -91,6 +96,7 @@ function sendReviewByEmail($revEmail, $subId,
     $msg .= "\n\nNotes to myself:\n\n";
     $msg .= wordwrap($slfCmnts, 78);
   }
+
   my_send_mail($revEmail, $subject, $msg, NULL, $errMsg); 
 }
 ?>

@@ -29,7 +29,7 @@ $qry= "SELECT s.title ttl, a.assign assign, r.subReviewer subRev,
       r.lastModified lastModif, r.confidence conf, r.score score,
       r.comments2authors cmnts2athr, r.comments2committee cmnts2PC,
       r.comments2chair cmnts2chair, r.comments2self cmnts2self,
-      a.watch watch, r.flags revFlags
+      a.watch watch, r.flags revFlags, r.attachment attachment
       FROM submissions s
         LEFT JOIN assignments a ON a.revId=$revId AND a.subId=$subId
         LEFT JOIN reports r     ON r.revId=$revId AND r.subId=$subId
@@ -69,6 +69,17 @@ $cmnts2PC  = isset($row['cmnts2PC'])  ?htmlspecialchars($row['cmnts2PC']): '';
 $cmnts2chair=isset($row['cmnts2chair'])?htmlspecialchars($row['cmnts2chair']):'';
 $cmnts2self= isset($row['cmnts2self'])?htmlspecialchars($row['cmnts2self']):'';
 
+$attachmentLine = '';
+if (CONF_FLAGS & FLAG_REV_ATTACH) {
+  $attachmentLine = 'Attach a file with your review (<a target=documentation href="../documentation/reviewer.html#revAttach"><b>read this!</b></a>): <input type=file name=attach'.$subId.' size=49><br/>';
+
+  if (isset($row['attachment'])) {
+    $ext = strtoupper(file_extension($row['attachment']));
+    $attachment = $row['attachment'];
+    $attachmentLine .= "\n or <input type=checkbox name=keepAttach{$subId} checked=checked> keep current <a target=_blank href=\"download.php?attachment=$attachment\">$ext attachment</a> (clear checkbox or attach a new file to discard existing attachment)<br/>";
+  }
+}
+
 $pcCmmntsInitStyle = empty($cmnts2PC) ? 'hidden' : 'shown';
 $chrCmmntsInitStyle = empty($cmnts2chair) ? 'hidden' : 'shown';
 $slfCmmntsInitStyle = empty($cmnts2self) ? 'hidden' : 'shown';
@@ -86,7 +97,7 @@ else $watchHtml = '';
 if (isset($row['revFlags']) && $row['revFlags']==REPORT_NOT_DRAFT) {
   $saveDraft = '';
 } else {
-  $saveDraft = ' or <input name="draft" type="submit" value="Work in progress"> (<a href="../documentation/reviewer.html#draftReview">what&#39;s this?</a>)';
+  $saveDraft = ' or <input name="draft" type="submit" value="Work in progress"> (<a target=documentation href="../documentation/reviewer.html#draftReview">what&#39;s this?</a>)';
 }
 
 $colors = array('lightgrey', 'rgb(240, 240, 240)');
@@ -229,8 +240,9 @@ print <<<EndMark
 
 <h3>Comments to the Authors:</h3>
 <div ID="cmnt2athr">
+$attachmentLine
 <textarea name="comments2authors" rows=15 cols=80>$cmnts2athr</textarea>
-<br />The authors, program-committee members, and chair see these comments.
+<br/>The authors, program-committee members, and chair see these comments.
 </div>
 
 <h3>Comments to the Committee <a class="hidden" href="#" ID="openCmnt2PC" onclick="return expandCollapse('cmnt2PC');">(click to expand/collapse)</a></h3>
@@ -260,7 +272,6 @@ $saveDraft
 
 $watchHtml
 <input type=checkbox name=emilReview{$chkEml}> Send my review back to me via email
-
 </form>
 <hr />
 $links

@@ -13,6 +13,7 @@ define('FLAG_EML_HDR_CRLF', 8);
 define('FLAG_EML_HDR_X_MAILER', 16);
 define('FLAG_EML_EXTRA_PRM', 32);
 define('FLAG_SSL', 64);
+define('FLAG_REV_ATTACH', 128);
 
 define('PERIOD_SETUP', 0);
 define('PERIOD_SUBMIT', 1);

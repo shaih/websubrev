@@ -49,7 +49,7 @@ $chrCmnts = ($revId == CHAIR_ID) ? "r.comments2chair cmnts2chr, " : "";
 $qry = "SELECT r.subId subId, r.revId revId, c.name PCmember,
        r.subReviewer subReviewer, r.confidence conf, r.score score,
        r.comments2authors cmnts2athr, r.comments2committee cmnts2PC, $chrCmnts
-       UNIX_TIMESTAMP(r.lastModified) modified
+       UNIX_TIMESTAMP(r.lastModified) modified, r.attachment
     FROM reports r, committee c WHERE  r.revId=c.revId AND r.subId=$subId
     ORDER BY modified";
 

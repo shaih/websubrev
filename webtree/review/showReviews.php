@@ -151,6 +151,13 @@ function show_reviews_with_comments(&$reviews, $revId)
     $subRev = isset($rev['subReviewer']) ?
       " (".htmlspecialchars($rev['subReviewer']).")" : "";
 
+    if (isset($rev['attachment'])) {
+      $attachment = $rev['attachment'];
+      $ext = strtoupper(file_extension($attachment));
+      $attachment = "<br/><br/><a target=_blank href=\"download.php?attachment=$attachment\">$ext attachment</a>\n";
+    }
+    else $attachment = '';
+
     print <<<EndMark
 <table class="lightbg" style="text-align: center;" cellspacing=0 cellpadding=5>
 <tbody>
@@ -176,20 +183,20 @@ EndMark;
     $reviewsShown = false;
     if ($revId==CHAIR_ID && !empty($cmnt2chr)) {
       $reviewsShown = true;
-      print "<br /><b>Comments to Chair:</b><br />\n";
+      print "<br/><b>Comments to Chair:</b><br />\n";
       print '<div class="fixed">'.nl2br($cmnt2chr).'</div>';
     }
     if (!empty($cmnt2PC)) {
       $reviewsShown = true;
-      print "\n<br /><b>Comments to Comittee:</b><br />\n";
+      print "\n<br/><b>Comments to Comittee:</b><br />\n";
       print '<div class="fixed">'.nl2br($cmnt2PC).'</div>';
     }
-    if (!empty($cmnt2athr)) {
+    if (!empty($cmnt2athr) || !empty($attachment)) {
       $reviewsShown = true;
-      print "\n<br /><b>Comments to Authors:</b>\n";
-      print '<div class="fixed">'.nl2br($cmnt2athr).'</div>';
+      print "\n<br/><b>Comments to Authors:</b>\n";
+      print '<div class="fixed">'.nl2br($cmnt2athr).$attachment.'</div>';
     }
-    if ($reviewsShown) print "<br />\n";
+    if ($reviewsShown) print "<br/>\n";
     else print "\n";
   }
 }

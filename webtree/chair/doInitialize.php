@@ -168,10 +168,14 @@ if (!mkdir("$subDir/backup", 0775)) {
 if (!mkdir("$subDir/final", 0775)) { 
   exit ("<h1>Cannot create camera-ready submission directory $subDir/final</h1>\n");
 }
+if (!mkdir("$subDir/attachments", 0775)) { 
+  exit ("<h1>Cannot create attachments directory $subDir/attachments</h1>\n");
+}
 copy('../init/.htaccess', $subDir.'/.htaccess');
 copy('../init/index.html', $subDir.'/index.html');
 copy('../init/index.html', $subDir.'/backup/index.html');
 copy('../init/index.html', $subDir.'/final/index.html');
+copy('../init/index.html', $subDir.'/attachments/index.html');
 
 // Insert the PC chair into the committee table. Also generates password
 // for the chair and send it by email. Initialy, the password is written

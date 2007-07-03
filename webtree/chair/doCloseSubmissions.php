@@ -16,6 +16,8 @@ $updates = "version=version+1";
 if (isset($_POST['revPrefsFlag'])) {
   if (isset($_POST['revPrefs'])) $confFlags = CONF_FLAGS | FLAG_PCPREFS;
   else                           $confFlags = CONF_FLAGS & (~FLAG_PCPREFS);
+  if (isset($_POST['revAttach'])) $confFlags= CONF_FLAGS | FLAG_REV_ATTACH;
+  else                           $confFlags = CONF_FLAGS & (~FLAG_REV_ATTACH);
   $updates .= ", flags=$confFlags";
 }
 

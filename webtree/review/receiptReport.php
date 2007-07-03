@@ -17,29 +17,39 @@ $isChair = ($revId==CHAIR_ID
 	    && isset($_GET['revId']) && $revId!=$_GET['revId']);
 if  ($isChair)  $revId = (int) trim($_GET['revId']);
 
+$cnnct = db_connect();
 if (isset($_GET['bckpVersion']) && $_GET['bckpVersion']>0) {
   $table = "reportBckp";
   $ztable = "gradeBckp";
-  $version = " AND version=".((int)$_GET['bckpVersion']);
-  $old = "(old version)";
+  $version = (int) $_GET['bckpVersion'];
 } else {
   $table = "reports";
   $ztable = "auxGrades";
-  $old = $version = "";
+  $qry = "SELECT MAX(version) FROM reportBckp WHERE subId=$subId AND revId=$revId";
+  $res=db_query($qry, $cnnct);
+  $row = mysql_fetch_row($res);
+  $version = (($row && $row[0])? $row[0] : 0) + 1;
 }
-$cnnct = db_connect();
-$qry = "SELECT s.title, c.name, r.subReviewer, r.confidence, r.score,\n"
-     . "    r.comments2authors, r.comments2committee, r.comments2chair, r.comments2self\n"
-     . "  FROM submissions s, committee c, $table r\n"
-     . "  WHERE s.subId=$subId AND c.revId=$revId AND r.subId=$subId AND r.revId=$revId{$version}";
-$qry2 = "SELECT gradeId, grade FROM $ztable WHERE subId=$subId AND revId=$revId{$version}";
+
+$qry = "SELECT s.title, c.name, r.subReviewer, r.confidence, r.score,
+   r.comments2authors, r.comments2committee, r.comments2chair,
+   r.comments2self, r.attachment
+FROM submissions s, committee c, $table r
+WHERE s.subId=$subId AND c.revId=$revId AND r.subId=$subId AND r.revId=$revId";
+
+$qry2 = "SELECT gradeId, grade FROM $ztable WHERE subId=$subId AND revId=$revId";
+
+if (isset($_GET['bckpVersion']) && $_GET['bckpVersion']>0) {
+  $qry .= " AND version=$version";
+  $qry2 .= " AND version=$version";
+}
+
 $res = db_query($qry, $cnnct);
 $auxRes = db_query($qry2, $cnnct);
 
 if (!($row=mysql_fetch_row($res))) {
   exit("<h1>Review Not Found in Database</h1>");
 }
-
 $title             = htmlspecialchars($row[0]);
 $name              = htmlspecialchars($row[1]);
 $subReviewer       = trim($row[2]);
@@ -52,12 +62,19 @@ $comments2authors  = htmlspecialchars($row[5]);
 $comments2committee= htmlspecialchars($row[6]);
 $comments2chair    = htmlspecialchars($row[7]);
 $comments2self    = htmlspecialchars($row[8]);
+$attachment = $row[9];
+$ext = strtoupper(file_extension($attachment));
 
 $zGrades = array();
 while ($row=mysql_fetch_row($auxRes)) {
   $gId = (int) $row[0];
   $zGrades[$gId] = $row[1]; // no cast to int, NULL remains NULL
 }
+
+if (isset($attachment)) {
+  $attachment = "<br/><br/><a href=\"download.php?attachment=$attachment\">$ext attachment</a>\n";
+}
+else $attachment = '';
 
 $links = show_rev_links();
 print <<<EndMark
@@ -92,7 +109,7 @@ for ($i=0; $i<$nCrit; $i++) {
 }
 
 print "\n<h3>Comments to Authors</h3>\n";
-print '<div class="fixed">'.nl2br($comments2authors).'</div>';
+print '<div class="fixed">'.nl2br($comments2authors).$attachment.'</div>';
 
 print "\n<h3>Comments to Committee</h3>\n";
 print '<div class="fixed">'.nl2br($comments2committee).'</div>';

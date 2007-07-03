@@ -21,7 +21,8 @@ if (is_array($criteria) && count($criteria)>0) {
   // Remove the last semi-colon
   $crList = substr($crList, 0, strrpos($crList, ';'));
 }
-$revPrefs = REVPREFS ? 'checked="checked"' : '';
+$revPrefs = (CONF_FLAGS & FLAG_PCPREFS) ? 'checked="checked"' : '';
+$revAttach= (CONF_FLAGS & FLAG_REV_ATTACH) ? 'checked="checked"' : '';
 
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -91,8 +92,12 @@ review site is activated.<br/>
 <input name="reviewPrms" value="on" type="hidden">
 <input name="closeSubmissions" value="on" type="hidden">
 <table><tbody>
-<tr class="darkbg">
+<tr class="lightbg">
   <th style="text-align: center;" colspan="2"><big>Review Parameters</big></th>
+</tr>
+<tr class="darkbg">
+  <td style="text-align: center;"><a href="../documentation/reviewer.html#revAttach" target="documentation" title="click for more help">Review&nbsp;Attachments:</a></td>
+  <td colspan="4"><input name="revAttach" type="checkbox" $revAttach> Check to allow attachments with the reviews.</td>
 </tr>
 <tr class="lightbg">
   <td style="text-align: center;"><a href="../documentation/chair.html#revPrefs" target="documentation" title="click for more help">Reviewer&nbsp;Preferences:</a>

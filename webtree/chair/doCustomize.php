@@ -61,8 +61,10 @@ for ($i=0; $i<$nCmmtee; $i++) {
 /* We are ready to start customizing the installation */
 
 $flags = CONF_FLAGS;
-$flags &= ~(FLAG_PCPREFS | FLAG_ANON_SUBS | FLAG_AFFILIATIONS | FLAG_SSL);
+$flags &= ~(FLAG_PCPREFS | FLAG_ANON_SUBS
+	    | FLAG_AFFILIATIONS | FLAG_SSL | FLAG_REV_ATTACH);
 if (isset($_POST['revPrefs']))  $flags |= FLAG_PCPREFS;
+if (isset($_POST['revAttach']))  $flags |= FLAG_REV_ATTACH;
 if (isset($_POST['anonymous'])) $flags |= FLAG_ANON_SUBS;
 if (isset($_POST['affiliations'])) $flags |= FLAG_AFFILIATIONS;
 if (isset($_SERVER['HTTPS']))   $flags |= FLAG_SSL;

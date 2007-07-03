@@ -74,14 +74,14 @@ function my_send_mail($sendTo, $subject, $msg,
 	.$emlCRLF;
       $mime.= "Content-Transfer-Encoding: base64".$emlCRLF;
       $mime.= "Content-Disposition: attachment; filename=\"{$a[1]}\"".$emlCRLF;
-      $mime.= $emlCRLF. chunk_split(base64_encode($content)) .$emlCRLF;
+      $mime.= $emlCRLF. chunk_split(base64_encode($content)).$emlCRLF.$emlCRLF;
     }
     if (!empty($mime)) {
       $msg = "This is a multi-part message in MIME format.\r\n"
 	. "--{$boundary}\r\n"
 	. "Content-type:text/plain; charset=utf-8\r\n"
 	. "Content-Transfer-Encoding: 7bit\r\n\r\n"
-	. $msg."\r\n"
+	. $msg.$emlCRLF.$emlCRLF
 	. $mime
 	. "--{$boundary}--\r\n";
       $hdr .= $emlCRLF."MIME-Version: 1.0"
@@ -273,6 +273,20 @@ function determine_format($fType, $fName, $fLocation)
   // Unsupported format
   $ext = strtolower(substr(strrchr($fName, '.'), 1));
   return substr($ext, 0, 20) . '.unsupported';
+}
+
+// Find the extension part of a filename
+function file_extension($filename)
+{
+  $exts = explode('.', $filename);
+  $n = count($exts);
+  if ($n <= 1) return ''; // no extension found
+
+  $ext = $exts[$n-1];
+  if ($n>2 && ($ext=='gz' || $ext=='Z')) // look for the preceeding extension
+    $ext = $exts[$n-2] . ".$ext";
+
+  return $ext;
 }
 
 /* "Compress" a hexa-decimal string by encoding using the 64 letters
