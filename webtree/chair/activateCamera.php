@@ -41,7 +41,7 @@ includes the following files:
 
 Use the final-version submission form at
 
-  ${baseURL}cameraready.php
+  ${baseURL}/submit/cameraready.php
 
 to upload your archive file. (*NOTE: you will need the submission-ID and
 password that were given to you when you first submitted the paper. Contact
