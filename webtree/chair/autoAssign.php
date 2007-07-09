@@ -156,7 +156,7 @@ The assignments that are computed here can be modified from the
 For each submission you may provide a <b>semi-colon-separated</b> list
 of PC members that you would like to review that submission, and another
 list of members that you prefer will <i>not</i> review that submission
-(<a href="../documentation/chair.html#chairPrefs">more info</a>).
+(<a target=documentation href="../documentation/chair.html#chairPrefs">more info</a>).
 
 <br/>
 <br/>
@@ -245,7 +245,7 @@ above</a> will be used to compute an assignment of reviewers to
 submissions, using a stable-marriage algorithm. You can use this form to
 modify a few parameters of this algorithm:
 <ul>
-<li><a href="../documentation/chair.html#exRevs"
+<li><a target=documentation href="../documentation/chair.html#exRevs"
      title="Click for more information">Excluded reviewers</a>:
      <input type="text" size=85 name="cListExclude"><br/>
 (a <b>semi-colon-separated</b> list of reviewer names). Reviewers to be excluded from consideration by the algorithm (e.g., the chair). They will not be assigned any submissions and their assignments (if any) will be cleared.<br/>
@@ -270,8 +270,7 @@ The algorithm never assigns a submission to a reviewer if a conflict-of-interest
 <input type="submit" value="Compute Assignments">
 </form>
 <b>Note:</b> The computed assignments will not be visible to the reviewers;
-you can make them visible from the manual assignment page. (<a target=_blank
-href="../documentation/chair.html#scratchAssign">explain this</a>)
+you can make them visible from the manual assignment page. (<a target=documentation href="../documentation/chair.html#scratchAssign">explain this</a>)
 <hr />
 $links
 </body>

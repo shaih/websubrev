@@ -111,7 +111,7 @@ reviewers.
 <input type="submit" name="clearAll" value="Clear All Assignments"> or 
 <input type="submit" name="reset2visible" value="Reset to Visible Assignments">
 Note: these two buttons only effect the scratch copy of the assignments and
-not the assignments that are visible to reviewers. (<a target=_blank
+not the assignments that are visible to reviewers. (<a target=documentation
 href="../documentation/chair.html#scratchAssign">explain this</a>)
 </form>
 

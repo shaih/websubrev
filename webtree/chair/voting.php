@@ -170,7 +170,7 @@ Include all submissions.
 <br/>
 <input type="radio" name="voteOnWhat" value="some" $chkSome>
 Include only the submissions that are specified below
-(<a href="../documentation/chair.html#votes" target="_blank">more info</a>):
+(<a href="../documentation/chair.html#votes" target=documentation>more info</a>):
 <br/>
 <table><tbody>
 <tr><td></td>

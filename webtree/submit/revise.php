@@ -6,7 +6,7 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
  
-require 'header.php'; // brings in the contacts file and utils file
+require 'header.php'; // brings in the constants and utils files
 
 // Camera-ready revisions are now done from cameraready.php
 if (defined('CAMERA_PERIOD')) exit("<h1>Submission Deadline Expired</h1>");
