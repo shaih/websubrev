@@ -38,8 +38,9 @@ $nPages  = isset($_POST['nPages'])   ? ((int) trim($_POST['nPages'])) : 0;
 if (isset($_FILES['sub_file'])) {
   $sbFileName = trim($_FILES['sub_file']['name']);
   $tmpFile = $_FILES['sub_file']['tmp_name'];
+  $fileSize = $_FILES['sub_file']['size'];
 }
-else $tmpFile = $sbFileName = NULL;
+else $fileSize = $tmpFile = $sbFileName = NULL;
 
 // Check that contact has valid format user@domain (if specified)
 if (!empty($contact) &&
@@ -161,7 +162,8 @@ if (!empty($sbFileName)) {
   if (file_exists("$directory/$oldName"))
     rename("$directory/$oldName", SUBMIT_DIR."/backup/$oldName");
 
-  if (file_exists("$directory/$newName")) unlink("$directory/$newName");
+  if ($newName!=$oldName && file_exists("$directory/$newName"))
+    unlink("$directory/$newName");
   if (!rename($fileName, "$directory/$newName")) {
     error_log(date('Ymd-His: ')."rename($fileName, $directory/$newName) failed\n", 3, LOG_FILE);
     email_submission_details($oldCntct, -2, $subId, $subPwd, $title, 
@@ -181,6 +183,7 @@ if (defined('CAMERA_PERIOD') && $nPages>0) {
 // All went well, tell the client that we got the revised submission.
 
 email_submission_details($oldCntct, 2, $subId, $subPwd, $title, $author,
-      $contact, $abstract, $category, $keywords, $comment, $fileFormat);
+      $contact, $abstract, $category, $keywords, $comment, $fileFormat,
+      $fileSize);
 header("Location: receipt.php?subId={$subId}&subPwd={$subPwd}");
 ?>

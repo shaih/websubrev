@@ -198,7 +198,7 @@ function make_link($linkto, $text, $notLink=false)
 function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL, 
 	                          $athr = NULL, $cntct = NULL, $abs = NULL,
 				  $cat = NULL, $kwrd = NULL, $cmnt = NULL,
-				  $fileFormat = NULL)
+				  $fileFormat = NULL, $fileSize=NULL)
 {
   // During review process, don't send email to authors, only to chair
   if (defined('REVIEW_PERIOD') && REVIEW_PERIOD==true) {
@@ -233,8 +233,16 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
   if (!empty($pwd))  { $msg .= "Submission password:\t{$pwd}\n\n"; }
   if ($sid != 0 && !empty($pwd)) {
     $prot = (defined('HTTPS_ON')||isset($_SERVER['HTTPS']))? 'https' : 'http';
-    $revURL = "$prot://".BASE_URL."submit/revise.php?subId=$sid&subPwd=$pwd";
-    $msg .= "You can still revise this submission by going to\n\n  $revURL\n\n";
+    $revise = (PERIOD>=PERIOD_CAMERA) ? 'cameraready.php' : 'revise.php';
+    $msg .= "You can still revise this submission by going to\n\n  ";
+    $msg .= "$prot://".BASE_URL."submit/{$revise}?subId=$sid&subPwd=$pwd\n\n";
+
+    $msg .= "Make sure that you uploaded the right file to the server. ";
+    if (isset($fileSize) && $fileSize>0) {
+      $msg .= "\nThe file that we received contains $fileSize bytes. ";
+    }
+    $msg.="You can download\nyour file back by going to\n\n  ";
+    $msg.="$prot://".BASE_URL."submit/download.php?subId=$sid&subPwd=$pwd\n\n";
   }
 
   if (!empty($ttl))  { $msg .= "Title:    \t{$ttl}\n"; }
@@ -243,7 +251,7 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
   if (!empty($cat))  { $msg .= "Category: \t{$cat}\n"; }
   if (!empty($kwrd)) { $msg .= "Key words:\t{$kwrd}\n"; }
   if (!empty($cmnt)) { $msg .= "Comments: \t{$cmnt}\n"; }
-  if (!empty($abs))  { $msg .= "\nAbstract:\n" . wordwrap($abs, 78) . "\n"; }
+  if (!empty($abs))  { $msg .= "\nAbstract:\n" .wordwrap($abs, 78) ."\n"; }
 
   $success = my_send_mail($sndto, $sbjct, $msg, $cc, "receipt to $sndto");
 }

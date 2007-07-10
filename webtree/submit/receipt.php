@@ -150,7 +150,7 @@ print <<<EndMark
     </tr>
     <tr>
       <td style="text-align: right;">File format:</td>
-      <td>$frmt</td>
+      <td><a href="download.php?subId=$subId&amp;subPwd=$subPwd">$frmt</a> (click to download)</td>
     </tr>
     <tr>
       <td style="text-align: right;"></td>

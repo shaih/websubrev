@@ -149,6 +149,7 @@ if (!rename($fileName, $sbFileName)) {  // problems with the file system?
 // All went well, tell the client that we got the new submission.
 
 email_submission_details($contact, 1, $subId, $subPwd, $title, $author, 
-      $contact, $abstract, $category, $keywords, $comment, $fileFormat);
+      $contact, $abstract, $category, $keywords, $comment, $fileFormat,
+      $_FILES['sub_file']['size']);
 header("Location: receipt.php?subId=$subId&subPwd=$subPwd");
 ?>
