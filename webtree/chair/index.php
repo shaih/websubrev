@@ -70,8 +70,9 @@ function manage_submissions($period)
 <b><big>&nbsp;Submission Site is Closed</big></b><br/>
 &nbsp;&nbsp;o&nbsp;&nbsp;Submission list by <a href="listSubmissions.php">number</a>, $catLink<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="listSubmissions.php?subOrder=status">status</a>, <a href="listSubmissions.php?subOrder=format">format</a>&nbsp;
-(use to revise&nbsp;or<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;withdraw submissions),&nbsp;<br/>
-&nbsp;&nbsp;o&nbsp;&nbsp;<a href="tweakSite.php">Tweak site settings</a>,<br/>
+(use to revise&nbsp;or<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;withdraw submissions)&nbsp;<br/>
+&nbsp;&nbsp;o&nbsp;&nbsp;<a href="../submit/submit.php">Submit a paper</a> (after the deadline)<br/>
+&nbsp;&nbsp;o&nbsp;&nbsp;<a href="tweakSite.php">Tweak site settings</a><br/>
 &nbsp;&nbsp;o&nbsp;&nbsp;<a href="emailAuthors.php">Send email to authors</a>
 EndMark;
     return; 

@@ -7,40 +7,44 @@ WebSubRev v0.6 (beta): Web-software for Conference Submission and Review
 
 Installing the software:
 ========================
-One of the goals of this software was to make administration as easy as
-possible. In principle, it should be possible to just unpack the software
-in some directory in your web tree (call it the BASE directory), point
-your browser at that directory and off you go. 
+One of the goals of this software was to make administration as easy
+as possible. In particular, you never need to run scripts etc. In
+principle, to install this software you just unpack the zip file in
+some directory in your web tree (call it the BASE directory), point
+your browser at that directory and off you go.
 
-However, that method of installation requires the web-server to be able
-to write files in the web-tree, which sometimes may be considered a
-security risk. I therefore provide also a non-web-based installation
-method, as explained below. 
+However, that method of installation requires the web-server to be
+able to write files in the web-tree, which in some cases is considered
+a security risk. I therefore provide also a non-web-based installation
+method, as explained below.
 
 Prerequisites:
 --------------
-This software is currently a PHP/MySQL software, which means that to
-use it you must have a MySQL server and a PHP engine (and your web-server
-must supports PHP and MySQL). I tested the software with PHP 4.3.9 and
-MySQL 4.1.20 (and earlier versions of it were tested with PHP 4.3.2 and
-MySQL 3.23). It may work even with older versions but I cannot test it.
-Also, proper functioning of this software depends on "proper" functioning
-of you web-server. In particular, some issues that I came across are:
+This is a PHP/MySQL software, which means that to use it you must have
+a MySQL server and a PHP engine (and your web-server must supports PHP
+and MySQL). I tested the software with PHP 4.3.9 and MySQL 4.1.20 (and
+earlier versions of it were tested with PHP 4.3.2 and MySQL 3.23). It
+may work even with older versions but I cannot test it. Also, proper
+functioning of this software depends on "proper" functioning of you
+web-server. In particular, some issues that I came across are:
 
-* The web-server (and the PHP engine) must be willing to upload files.
-  For example, in one system that I used to test it, the PHP engine was
-  configured to only allow uploads of files upto 500KB (and I was wrecking
-  my brains as to why I can only upload pdf and not postscript files..) In
-  my case it turned out that I had to change the parameter LimitRequestBody
-  in php.conf (which on that system was somewhere under /etc/httpd/).
+* The web-server (and the PHP engine) must be willing to upload
+  files. For example, in one system that I used to test it, the PHP
+  engine was configured to only allow uploads of files upto 500KB (and
+  I was wrecking my brains as to why I can only upload pdf and not
+  postscript files..) In my case it turned out that I had to change
+  the parameter LimitRequestBody in php.conf (which on that system was
+  somewhere under /etc/httpd/).
 
 * The web-server must be able to send email. For example, if this is a
-  Windows machine then the variable SMTP in php.ini should be set correctly. 
+  Windows machine then the variable SMTP in php.ini should be set
+  correctly.
 
-* If the server is set-up with PHP in safe mode, then everything under the
-  BASE directory must have same owner. (Also everything under the UPLOAD
-  directory -- see below.) If safe_mode_gid is set in php.ini then instead
-  of having the same owner they need to have the same group. 
+* If the server is set-up with PHP in safe mode, then everything under
+  the BASE directory must have same owner. (Also everything under the
+  UPLOAD directory -- see below.) If safe_mode_gid is set in php.ini
+  then instead of having the same owner they need to have the same
+  group.
 
 Web-based installation:
 -----------------------
@@ -61,9 +65,9 @@ point your browser to the page chair/initialize.php under the BASE directory.
 You will be asked to provide various details (including the UPLOAD directory
 and the MySQL access details), and these values will be used to initialize
 the site. You will then be taken directly to the customization page in order
-to customize the site for the conference (see below). (At this point the web
+to customize the site for the conference (see below). At this point the web
 server no longer needs to write to the "init" subdirectory, so you can change
-the permissions to make that directory read-only.)
+the permissions to make that directory read-only.
 
 
 Non-web-based installation:

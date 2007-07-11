@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<head>
 <style type="text/css">
 h1 {text-align: center;}
 </style>
@@ -9,14 +9,21 @@ h1 {text-align: center;}
 
 <body>
 <h1>Web Submission and Review, Chair Documentation</h1>
-<h2 style="text-align: center;">Version 0.53 - September 2006</h2>
+<h2 style="text-align: center;">Version 0.6 - September 2007</h2>
 
 <a name="TOC"></a><h2>Table of Contents</h2>
 <ol>
 <li><a href="#insall">Installing the software</a></li>
+<ol type="a">
+<li><a href="#webBased">Web-based installation</a></li>
+<li><a href="#noWebBased">Non-web-based installation</a></li>
+</ol>
 <li><a href="#customize">First-time customization</a></li>
 <li><a href="#adminPage">The administration page</a></li>
 <li><a href="#manageSubmissions">Managing the submission site</a></li>
+<ol type="a">
+<li><a href="#emailSettings">Tweaking Email Settings</a></li>
+</ol>
 <li><a href="#manageReview">Managing the review site</a>
 <ol type="a">
 <li><a href="#revSetUp">Initial set-up</a></li>
@@ -33,57 +40,64 @@ One of the goals of this software was to make administration as easy as
 possible. In particular, you never need to run scripts etc. In principle,
 to install this software you just unpack the zip file in some directory
 in your web tree (call it the BASE directory), point your browser at that
-directory and off you go.
-
-<h3>Some caveats</h3>
-This software is currently a PHP/MySQL software, which means that to
-use it you must have a MySQL server and a PHP engine (and your web-server
-must supports PHP and MySQL). I tested the software with PHP 4.3.2 and
-MySQL 3.23 (both quite old now). It may work with even older versions
-(but it may not). Also, the proper functioning of this software depend
-on "proper" functioning of you web-server. In particular, two issues that
-I came across are:
+directory and off you go.<br/>
+<br/>
+However, that method of installation requires the web-server to be able
+to write files in the web-tree, which in some cases is considered a
+security risk. I therefore provide also a non-web-based installation
+method, as explained below.<br/>
+<br/>
+<b>Prerequisites.</b>
+This is a PHP/MySQL software, which means that to use it you must have
+a MySQL server and a PHP engine (and your web-server must supports PHP
+and MySQL). I tested the software with PHP 4.3.9 and MySQL 4.1.20 (and
+earlier versions of it were tested with PHP 4.3.2 and MySQL 3.23). It
+may work even with older versions but I cannot test it.  Also, proper
+functioning of this software depends on "proper" functioning of you
+web-server. In particular, some issues that I came across are:
 <ul>
-<li> The scripts must be able to write and create sub-directories in the
-  BASE directory. When using this software on Linux with an Apache
-  server (running as user <tt>apache</tt>), I had to chdir to the BASE
-  directory and make sure the directory and all the files in it are owned
-  by user <tt>apache</tt>.
-</li>
-
-<li> The web-server (and the PHP engine) must be willing to upload files.
+<li>The web-server (and the PHP engine) must be willing to upload files.
   For example, in one system that I used to test it, the PHP engine was
   configured to only allow uploads of files upto 500KB (and I was wrecking
-  my brains as to why I can only upload pdf and not postscript files..)
-  In my case it turned out that I had to change the parameter
-  <tt>LimitRequestBody</tt> in php.conf (which on that system was somewhere
-  under <tt>/etc/httpd/</tt>).
+  my brains as to why I can only upload pdf and not postscript files..) In
+  my case it turned out that I had to change the parameter LimitRequestBody
+  in php.conf (which on that system was somewhere under /etc/httpd/).<br/>
+</li>
+
+<li>The web-server must be able to send email. For example, if this is a
+  Windows machine then the variable SMTP in php.ini should be set correctly.
+<br/></li>
+
+<li>If the server is set-up with PHP in safe mode, then everything under the
+  BASE directory must have same owner. (Also everything under the UPLOAD
+  directory -- see below.) If safe_mode_gid is set in php.ini then instead
+  of having the same owner they need to have the same group.<br/> 
 </li>
 </ul>
+
 <b>Experimenting with the software.</b>
-I wrote a small testing package for the purpose
-of experimenting with the software. To use this package, you just need
-to unpack it in the same BASE directory as the software package itself
-(<i>before</i> you customize the installation). This testing package adds
-53 dummy submissions and 17 dummy PC members to the conference database.<br/>
+I wrote a small testing package for the purpose of experimenting with the
+software. To use this package, copy the contents of the <tt>"testOnly"</tt>
+subdirectory to the BASE directory where you installed the software itself
+<i>before</i> you customize the installation. This testing package adds 53
+dummy submissions and 17 dummy PC members to the conference database.<br/>
 <br/>
-<b>Troubleshooting.</b> Most of the parameters of the software are stored 
-in the file <tt>includes/confConstants.php</tt> under the BASE directory.
-(This file is generated by the customize page which is discussed below.)
-If you have problems with the software, looking at this file may provide
+<b>Troubleshooting.</b>
+Most of the parameters of the software are stored in the <tt>"parameters"</tt>
+table in the database. The details of the database itself are stored in the
+file <tt>init/confParams.php</tt> under the BASE directory. If you have
+problems with the software, looking at these parameters may provide
 some hints as to the source of the problem.
 
-
-<a name="customize"></a><h2>2. First-time customization</h2>
-When you first point your browser to a virgin copy of the software, it
-takes you to a "customization page" where you customize this copy for
-your conference. In this page you specify things like the conference name,
-the PC chair email address, whether or not submissions are anonymous, and
-many other parameters. Nearly all the parameters that you specify in this
-page can later by modified from the conference administration page. Some
-fields in the customization form that require more explanation are described
-below:
-
+<a name="webBased"></a><h3>1a. Web-based installation</h3>
+To use this method, simply copy the contents of the webtree directory
+to somewhere in your web tree (call it the BASE directory), making sure
+that the web-server has permission to write in the <tt>"init"</tt>
+sub-directory of the BASE directory. After copying the files to the BASE
+directory (and setting the permissions), point your browser to the page
+<tt>chair/initialize.php</tt> under the BASE directory. In this form you
+need to specify various details that are neeed for initializing the new
+site:
 <dl>
 <dt><a name="webServer"></a><b>Web Server.</b> 
 The DNS name or IP address of the web server, as accessed by the users of
@@ -91,7 +105,8 @@ this software. This parameter is used when the software sends emails and
 needs to specify the address where some pages can be found. (Note that
 in some cases the administrator may use a different address. For example,
 the administrator uses "<tt>http://localhost/confName/</tt>" while everybody
-else uses "<tt>http://www.severName.org/confName/</tt>").
+else uses "<tt>http://www.severName.org/confName/</tt>". In this case
+the chair needs to enter the latter address on the customization page.)
 <br/><br/> 
 </dt>
 
@@ -130,50 +145,83 @@ MySQL username/password that are needed to access it.</li>
 <br/><br/> 
 </dd>
 
-<dt><a name="emailSettings"></a>
-<b>Email Settings.</b> This section is meant to provide some workarounds 
-common bugs and configuration errors in email systems. It currently consists
-of two fields:<br/>
+<dt><a name="UploadDir"></a>
+<b>UPLOAD directory.</b> This is the local directory where the uploaded
+submissions would be stored. If you do not specify anything in this field,
+the UPLOAD directory defaults to the subdirectory <tt>"subs"</tt> under the
+BASE directory. The UPLOAD directory need not be in the web-tree, but the web
+server must be able to read and write in that directory.<br/><br/> 
 </dt>
-<dd><b>Email header-line separation:</b> RFC 2822 specifies that different
-lines in the email header should be separated using the two characters 
-<tt>\r\n</tt> (CRLF). However, the documentation for the
-<a href="http://www.php.net/function.mail">PHP mail function</a>
-contains  the following comment:
-<blockquote>
-<b>Note:</b>If messages are not received, try using a LF (\n) only. Some poor
-quality Unix mail transfer agents replace LF by CRLF automatically (which
-leads to doubling CR if CRLF is used). This should be a last resort, as it
-does not comply with RFC 2822.
-</blockquote>
-Accordingly, the default setting that is used in the software is CRLF, but
-you have the option to override that default.<br/><br/> 
-</dd>
-
-<dd><b>Extra parameters for sendmail:</b> It was observed that some ISP's
-filter as spam email messages where the <tt>From</tt> line does not match
-the "envelope sender". When email messages are sent from the web-server,
-the <tt>From</tt> line is set to the PC chair email address but the "envelope
-sender" is the web-server itself (e.g., <tt>apache@local-machine</tt>). 
-This situation leads to loss of email messages in some cases. 
-A counter-measure that sometimes helps is to explicitly tell the 
-mail-transport-agent to set also the "envelope sender" to the chair's email
-address, using the extra parameter <tt>-f &lt;chair-email&gt;</tt>. 
-<!-- (As far as I know, this only works on Unix systems that are
-configured to have the mail-trasport-agent running on the local machine.) -->
-The <a href="http://www.php.net/function.mail">PHP documentation</a>
-has the following comment about this method:
-<blockquote>
-The user that the web server runs as should be added as a trusted user to
-the sendmail configuration to prevent a 'X-Warning' header from being added
-to the message when the envelope sender (-f) is set using this method. For
-sendmail users, this file is <tt>/etc/mail/trusted-users</tt>.
-</blockquote>
-Also, this method does not work with PHP in "safe mode", so this parameter is
-ignored when the web-server is configured to use "safe mode" PHP.<br/>
+<dt><a name="chairEmail"></a><b>Program Chair email.</b>
+In this field you can specify either just an email address or also the name
+(in the form <tt>Name &lt;email&gt;</tt>). If you do not specify the chair's
+name, it will default to something like <tt>"&lt;conf-name&gt; Chair"</tt>.
+The email addresses that you specify here will be used as the program chair's
+username for the purpose of accessing the review site.<br/>
 <br/>
-</dd>
-<dt><a name="PCemail"></a><b>Program Chair and Program Committee email.</b>
+The chair's email will also be CC'ed on every email that is sent to authors
+of submitted papers, including submission/revision confirmations, the final
+decision notifications and the comments for authors. The address that you
+specify here can be modified from the <a href="#PCemail">customization
+page</a>, and also from the PC membership page.<br/><br/>
+</dt>
+</dt>
+<dt><a name="adminEmail"></a><b>Administrator email.</b>
+The administrator's email is rarly used by the software: it's main purpose
+is to serve as a backup address for the chai'r email. For example, if the
+need arise to reset the chair's password, then an email with the new password
+will be sent to both the chair and the adminsitator email addresses. Also,
+there are some rare error situations where the software would sends an email
+to the administrator. After it is set, the administrator email can only be
+changed by manually editing the file <tt>init/confParams.php</tt> under the
+BASE directory.
+</dt>
+</dl>
+<h4>After Initialization</h4>
+Once you hit the Submit button at the bottom of the initialization form,
+you are taken directly to the customization page in order to customize the
+site for the conference (<a href="#customize">see below</a>). At this point
+the web server no longer needs to write to the <tt>"init"</tt> subdirectory,
+so you can change the permissions to make that directory read-only.
+
+<a name="noWebBased"></a><h3>1b. Non-web-based installation</h3>
+An alternative method of installation (in Unix systems) is to change
+directory to where you unzipped this software (above the <tt>"webtree"</tt>
+and <tt>"tools"</tt> directories) and from the command prompt do
+<pre>
+  % ./tools/mkNewConf.sh confname
+</pre>
+where confname is a short-name for the conference (e.g., <tt>xyz2007</tt>).
+It is recommended that you read the script <tt>"mkNewConf.sh"</tt> before
+running it, and you can optionally modify it to set some default values.<br/>
+<br/>
+This shell script will ask you for the locations of the BASE and UPLOAD
+directories (and other parameters) and then it will install the software
+in the BASE directory, setting the permissions as needed. The script will
+then print out the username and password that are needed in order to access
+the customization page. 
+
+
+<a name="customize"></a><h2>2. First-time customization</h2>
+Before it can be used, the site still needs to be customized for the
+conference. This is done from the page <tt>chair/customize.php</tt> under the
+BASE directory. This form lets the program chair specify the conference
+name, deadlines, program-committee members and many other parameters.
+Links are provided from this form to this documentation page, where you can
+find some additional explanations about the role of different parameters.
+All the parameters that are specified in this form can be modified later
+from the administration page. Some fields in the customization form that
+require more explanation are described below:
+
+<dl>
+<dt><a name="formats"></a><b>Supported Formats.</b> The software is very
+permissive in terms of handling formats other than the ones that you specify
+here. If a submitter uploads a file in an unsupported format, the only
+thing that happens is that the extension <tt>unsupported</tt> is added
+to the file name. (For example, uploading a file <tt>xyz.txt</tt>, the
+file will be stored as <tt>xyz.txt.unsupported</tt>.<br/><br/>
+</dt>
+<dt><a name="PCemail"></a><b>Program Committee.</b>
 In this section you must enter the PC chair's email address, and you can
 optionally also specify the names and email addresses of the program
 committee members. For each PC member (or chair) you can specify either just
@@ -188,13 +236,6 @@ on the reviews and discussion boards. All the names and addresses that
 you supply here can later be modified (or added or removed) from the
 administration page. <br/><br/>
 </dt>
-<dt><a name="formats"></a><b>Supported Formats.</b> The software is very
-permissive in terms of handling formats other than the ones that you specify
-here. If a submitter uploads a file in an unsupported format, the only
-thing that happens is that the extension <tt>unsupported</tt> is added
-to the file name. (For example, uploading a file <tt>xyz.txt</tt>, the
-file will be stored as <tt>xyz.txt.unsupported</tt>.<br/><br/>
-</dt>
 <dt><a name="revPrefs"></a><b>Reviewer Preferences.</b> If you check this
 box, PC members will see a link on the review page asking them to specify
 their reviewing preferences. The chair will then be able to see all these
@@ -203,50 +244,61 @@ reviewers. Moreover, the chair will be given the option to let the software
 automatically compute an assignment or submissions to reviewers based on
 these preferences.
 UNchecking this box will turn off reviewer preferences, and also disable
-the automatic assignment option.
+the automatic assignment option.<br/><br/>
 </dt>
+<dt><a name="revAttach"></a><b>Reviewer Attachments.</b> Check this box to
+allow the reviewers to upload a file as an attachment to their review. This
+file is considered part of the comments to authors, and will be attached to
+the comments that are emailed to the authors at the end of the review process.
+<a href="reviewer.html#revAttach">Click here</a> for some considerations for
+and against allowing this option.
 </dl>
 
-<h3>After Customization</h3>
+<h4>After Customization</h4>
 Once you hit the Submit button at the bottom of the customization page,
 you are taken to a confirmation page where you can once again verify all
-the parameters. Then the software is customized with these parameters, 
-and (if all goes well) you are presented with a receipt page. That page
-includes the chair's initial password and links to the submission page
-and the administration page. The submission site is now ready to receive
-submissions, and you can use the administration page to manage it.
+the parameters. Then the software is customized with these parameters
+and you are presented with a receipt page. That page includes the chair's
+password and links to the submission page and the administration page. The
+submission site is now ready to receive submissions, and you can use the
+administration page to manage it.
+
+
 
 <a name="adminPage"></a><h2>3. The Administration Page</h2>
 The administration page is what you use the manage the site and the entire
-submission and review process. The links on that page change according to
-the different phases of the process. You have one set of links during
+submission and review process. The links on that page change according
+to the different phases of the process. You have one set of links during
 the submission phase, another during the review phase, and yet others
 during and after the final-version submission phase. You also have some
 "general purpose" links there for changing your password, looking at the
-error-log file, reading the documentation etc.<br/>
+error-log file, reading the documentation, etc.<br/>
 <br/> 
 You also have an "Undo/Redo" link that lets you either undo the last
 change that you did from the administration page, or redo the last
 change that you undid. For example, if you closed the submission site
 and the decided to reopen it, you can use the Undo link to do that.
-Note, however, that only the last change that you made is kept, so 
-you cannot undo multiple operations.
+
+
 
 <a name="manageSubmissions"></a><h2>4. Managing the submission site</h2>
-The administration page for the submission site is fairly simple. There are
-three things that you can do from that page:
+The administration page for the submission site is fairly simple. The
+main things that you can do from that page are:
 <ul>
 <li>You can see a list of all the (non-withdrawn) submissions.</li>
 
 <li>You can review and modify many of the submission-site parameters that
 you specified during customization, including the conference submission
-deadline and the web-site <a href="#emailSettings">email settings</a>. 
+deadline.</li>
 
-<li>Finally, when the submission deadline passes you can close the
-submission site and activate the review site. Clicking this last link
-will take you to a confirmation page, where you can confirm that you really
-want to close the submissions. The same page also lets you modify some of
-the review parameters that you specified during customization.</li>
+<li>You can tweak some parameters of the web-site (mainly email settings)
+as <a href="#emailSettings">described below</a>.</li> 
+
+<li>Finally, when the submission deadline passes you can close the submission
+site and activate the review site. Clicking this last link will take you to
+a confirmation page, where you can confirm that you really want to close the
+submissions. The same page also lets you modify some of the review parameters
+that you specified during customization.</li>
 </ul>
 
 You will also see on the administration phase links to some pages that
@@ -254,27 +306,81 @@ deal with review-period activities, such as setting the review guidelines,
 managing PC membership and setting up PC votes. These are described
 in more details below.
 
+<a name="emailSettings"></a><h3>4a. Tweaking Email Settings</h3>
+This form is meant to provide some workarounds common bugs and
+configuration errors in email systems. It currently consists
+of the following options:<br/><br/>
+</dt>
+<b>Email header-line separation.</b> RFC 2822 specifies that different
+lines in the email header should be separated using the two characters 
+<tt>\r\n</tt> (CRLF). However, the documentation for the
+<a href="http://www.php.net/function.mail">PHP mail function</a>
+contains  the following comment:
+<blockquote>
+<b>Note:</b>If messages are not received, try using a LF (\n) only. Some poor
+quality Unix mail transfer agents replace LF by CRLF automatically (which
+leads to doubling CR if CRLF is used). This should be a last resort, as it
+does not comply with RFC 2822.
+</blockquote>
+Accordingly, the default setting that is used in the software is CRLF, but
+you have the option to override that default.<br/><br/> 
+
+<b>X-Mailer Header Line.</b> 
+Sending this header line is considered standard net etiquette, but some
+spam-filters out there mark as spam anything that has this header line.
+UNcheck this box if this causes email loss.<br/><br/>
+
+<b>Sender Header Line.</b>
+If you know how the web-server is calling itself on email messages that
+it sends, you can specify it here. This is often something like
+<tt>userName@machineName</tt> where <tt>userName</tt> is the username of the
+web-server (e.g., <tt>www</tt>, <tt>apache</tt>, <tt>admin</tt>, etc.) and
+<tt>machineName</tt> is either the DNS name of the machine (e.g.,
+<tt>www.mit.edu</tt>) or sometimes just <tt>localhost</tt>.<br/><br/>
+
+When the web-server sends email, the name of the web-server itself is set
+as the "envelope sender" of this message. It was observed that some ISPs
+filter as spam email messages where the <tt>From:</tt> header line does not
+match the "envelope sender". Hopefully specifying a matching <tt>"Sender:"</tt>
+line would prevent these emails from being discarded.<br/><br/>
+
+<b>Specify "envelope sender".</b>
+Sometimes you can explicitly specify the "envelope sender" to be used, by
+supplying the parameter <tt>"-f name-to-use"</tt> to the PHP mail function.
+This only works on (some) Unix systems, and does not work when PHP is in "safe
+mode". Also, using this option typically adds an <tt>"X-Warning:"</tt> header
+line to the message, which can again increase the odds of this message being
+discarded en-route. The <a href="http://www.php.net/function.mail">PHP
+documentation</a> has the following comment about this method:
+<blockquote>
+The user that the web server runs as should be added as a trusted user to
+the sendmail configuration to prevent a 'X-Warning' header from being added
+to the message when the envelope sender (-f) is set using this method. For
+sendmail users, this file is <tt>/etc/mail/trusted-users</tt>.
+</blockquote>
+
 <a name="manageReview"></a><h2>5. Managing the review site</h2>
-Once you close the submission site, your are taken back to the administration
+Once you close the submission site, you are taken back to the administration
 page, where you can now administer the review site. At the top-right corner
-you still have a "Submission-site" box, now consisting only of one link 
-that lets you revise or withdraw submissions if need be. (Note that you
-can also have submit new papers, just in case you want to accept a
-submission that arrived after the deadline.)
+you still have a "Submission-site" box, now consisting only of a few links 
+that let you list the submissions is various orders (and also revise or
+withdraw submissions if need be). You can even submit a new papers (just in
+case you want to accept for consideration a submission that arrived after
+the deadline.) 
 
 <a name="revSetUp"></a><h3>5a. Initial set-up</h3>
-One of the first things that you would want to do after the deadline is
-letting the PC members access the review site. This is done from the
-"Manage PC membership" page. On that page you can add or remove PC members,
-reset the password of a PC member and modify the email address or the name 
-that is recorded in the database for each member.
-The PC members can login to the site using their email address and 
-password. When you reset the password of a PC member, an email message is
-sent to that member with the new password. (Also, changing the email address
-of a PC member automatically resets his/her password.) Note that it is
-possible for several people to use the same email address as long as
-they use different passwords (but all the passwords will be sent to that
-one email address).<br/>
+One of the first things that you would want to do after the deadline
+(if not before) is letting the PC members access the review site. This
+is done from the "Manage PC membership" page. On that page you can add
+or remove PC members, reset the password of a PC member and modify the
+email address or the name  that is recorded in the database for each
+member. The PC members can login to the site using their email address
+and password. When you reset the password of a PC member, an email
+message is sent to that member with the new password. (Also, changing
+the email address of a PC member automatically resets his/her
+password.) Note that it is possible for several people to use the same
+email address as long as they use different passwords (but all the
+passwords will be sent to that one email address).<br/>
 <br/>
 Other things that you can do from the administration page is to create
 an archive file with all the submissions (so that reviewers do not need
@@ -460,7 +566,7 @@ progrress and otherwise) with a link to the result page for each one.<br/>
 You can det up a ballot to vote either on submissions or on "other
 things" (that you need to specify explicitly). Note that PC members can
 only vote on submissions when they are in the public-discussion phase of
-the review. Before that they can only vote on "ther things" (e.g.,
+the review. Before that they can only vote on "other things" (e.g.,
 invited speakers).<br/>
 <br/>
 When voting on submissions, you can either include all the submissions
@@ -517,9 +623,10 @@ After you activated the final-version submission site, you still see a
 "Review site" box at the top right corner of the administration page, that
 lets you send emails to authors or change the status of submissions if
 need be. Other than that, you can see a list of accepted papers (with
-links to the final version when it is uploaded), and you can create (and
-then download) an archive file containing the final versions of all the
-accepted papers.<br/>
+links to the final version when it is uploaded), create (and then download)
+an archive file containing the final versions of all the accepted papers,
+or send email to the authors of all the accepted papers (e.g., to remind
+everyone that the deadline is in three days).<br/>
 <br/>
 When the camera-ready deadline arrives, you can shutdown the final-version
 submission site. After you do that, you are given yet another link that

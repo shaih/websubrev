@@ -121,17 +121,17 @@ kept, etc.<br/>
      and password above), or the<br/>name for the newly created database
      (if you specified the administrator name and password above).</td>
 </tr>
-<tr><td class=rjust>Submission&nbsp;Directory:</td>
+<tr><td class=rjust><a href="../documentation/chair.html#UploadDir" target="documentation" title="click for more help">UPLOAD&nbsp;Directory:</a></td>
   <td><input name="subDir" size="90" type="text"><br/>
     A directory on the server where the submissions would be stored, must
     be writable by the <br/>web-server. If this field is left empty, it
     defaults to the <tt>subs</tt> subdirectory under the BASE directory.
 </tr>
-<tr><td class=rjust><a href="../documentation/chair.html#PCemail" target="documentation" title="click for more help">Chair&nbsp;Email:</a></td>
+<tr><td class=rjust><a href="../documentation/chair.html#chairEmail" target="documentation" title="click for more help">Chair&nbsp;Email:</a></td>
   <td><input name="chair" size="90" type="text" onchange="return checkEmail(this)"><br/>
      Only one address (e.g., <tt>My Name &lt;chair@myConf.org&gt;</tt> or <tt>My.Email@company.com</tt>)</td>
 </tr>
-<tr><td class=rjust>Administrator&nbsp;Email:</td>
+<tr><td class=rjust><a href="../documentation/chair.html#adminEmail" target="documentation" title="click for more help">Administrator&nbsp;Email:</a></td>
   <td><input name="admin" size="90" type="text" onchange="return checkEmail(this)"><br/>
     Who should get the angry emails when there are problems with the site?</td>
 </tr>
