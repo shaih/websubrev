@@ -26,7 +26,7 @@ $committee = array();
 $nameList = $sep = '';
 while ($row = mysql_fetch_row($res)) {
   $revId = (int) $row[0];
-  $committee[$revId] = array(trim($row[1]), 0);
+  $committee[$revId] = array(trim($row[1]), 0, 0, 0);
   $nameList .= $sep . '"'.htmlspecialchars(trim($row[1])).'"';
   $sep = ",\n    ";
 }
@@ -38,11 +38,11 @@ $res = db_query($qry, $cnnct);
 $prefs = array();
 while ($row = mysql_fetch_row($res)) { 
   list($revId, $subId, $pref, $compatible, $assign) = $row; 
-  if (!isset($prefs[$subId]))
-    $prefs[$subId] = array();
+  if (!isset($prefs[$subId]))  $prefs[$subId] = array();
 
   $prefs[$subId][$revId] = array($pref, $compatible, $assign);
 }
+
 
 /* Display the assignments matrix to the user */
 $classes = array('zero', 'one', 'two', 'three', 'four', 'five');
@@ -172,7 +172,10 @@ foreach ($subArray as $sub) {
       if ($assgn==1) { // update num of assignments for submission, reviewer
         $sub[2]++;
 	$committee[$revId][1]++;
+	if ($prf>3) $committee[$revId][2]++;
+	else if ($prf<3) $committee[$revId][2]--;
       }
+      if ($prf>3) $committee[$revId][3]++;
     }
     else { $prf = 3; $cmpt = $assgn = 0;
     }
@@ -195,6 +198,33 @@ foreach ($subArray as $sub) {
 if ($count > 1) print $header;
 print "<tr><td> </td></tr><tr><td>#:</td>\n";
 foreach ($committee as $pcm) { print "  <td>{$pcm[1]}</td>\n"; }
+print "  <td colspan=3> &nbsp;</td>\n";
+print "</tr>\n";
+
+print '<tr><td><a target=documentation href="../documentation/chair.html#happy"><img border=1 src="../common/smile.gif" alt=":)" title="Satisfaction level"></a></td>'."\n";
+foreach ($committee as $pcm) {
+  $avg1 = ($pcm[1]>0) ?  // average pref of assigned submissions
+          (((float)$pcm[2]) / $pcm[1]) : NULL;
+  $avg2 = ($pcm[3]>0) ?  // average assign of prefrd submissions
+          (((float)$pcm[2]) / $pcm[3]) : NULL;
+  if (isset($avg1) && isset($avg2)) {
+     $happy = round(max($avg1,$avg2)*100);
+     if ($happy<0) $happy=0;
+     else if ($happy>100) $happy=100;
+     if ($happy<25) {
+       $src= '../common/angry.gif'; $title= "Angry: $happy%";
+     } else if ($happy<50) {
+       $src = '../common/sad.gif'; $title= "Sad: $happy%";
+     } else if ($happy<75) {
+       $src = '../common/ok.gif'; $title= "Satisfied: $happy%";
+     } else {
+       $src = '../common/laugh.gif'; $title= "Happy: $happy%";
+     }
+     $happy= "<img border=0 src=\"$src\" alt=$happy title=\"$title\">";
+  }
+  else $happy = '&nbsp;';
+  print "  <td>$happy</td>\n";
+}
 print "  <td colspan=3> &nbsp;</td>\n";
 print "</tr>\n";
 
