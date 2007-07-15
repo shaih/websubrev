@@ -25,6 +25,25 @@ $semantics = array(
 );
 
 $links = show_rev_links(4);
+
+// Display a warning if too many submissions are marked 0, 1, or 5
+$cnnct = db_connect();
+$qry = "SELECT COUNT(*) FROM assignments WHERE revId=$revId AND pref<=1";
+$res = db_query($qry, $cnnct);
+$row = mysql_fetch_row($res);
+$nExtreme = $row[0];
+
+$qry = "SELECT COUNT(*) FROM submissions WHERE status!='Withdrawn'";
+$res = db_query($qry, $cnnct);
+$row = mysql_fetch_row($res);
+$nSubmisions = $row[0];
+
+if ($nSubmisions>20 && $nExtreme > $nSubmisions/2) {
+  $warningHtml = '<blockquote  style="border: solid red; color: red">'."\n"
+    . 'NOTICE: You have '.$nExtreme.' submissions in the 0 and 1 categories. This is an unusually high number, and it may make the chair&#39;s task of assigning submissions to everyone so much harder. Are you sure that you really have so many submissions in these "extreme" categories?'."\n</blockquote>\n";
+}
+else $warningHtml = "<br/><br/>\n";
+
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -61,8 +80,7 @@ for ($i=0; $i<6; $i++) {
 
 print <<<EndMark
 </tbody></table>
-
-<br /><br />
+$warningHtml
 <form action="doPrefs.php" enctype="multipart/form-data" method="post">
 <table><tbody>
 <tr><th><small>pref</small></th>
@@ -76,7 +94,6 @@ print <<<EndMark
 
 EndMark;
 
-$cnnct = db_connect();
 $qry = "SELECT s.subId, s.title, a.pref, a.assign
   FROM submissions s LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId
   WHERE s.status!='Withdrawn'
