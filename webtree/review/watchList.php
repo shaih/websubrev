@@ -42,13 +42,14 @@ $links
 <table><tbody>
 <tr><th><small>rev&#39;ed</small></th>$prfHdr
   <th><small>w.avg</small></th>
+  <th><small>status</small></th>
   <th><small>watch</small></th>
 </tr>
 
 EndMark;
 
 $cnnct = db_connect();
-$qry = "SELECT s.subId, s.title, s.wAvg,
+$qry = "SELECT s.subId, s.title, s.wAvg, s.status,
                a.pref, a.assign, a.watch, r.whenEntered
   FROM submissions s
   LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId
@@ -57,31 +58,32 @@ $qry = "SELECT s.subId, s.title, s.wAvg,
   ORDER BY s.subId";
 $res = db_query($qry, $cnnct, "Cannot retrieve submission list: ");
 while ($row = mysql_fetch_row($res)) {
-
-  if ($row[4]==-1) continue; // conflict
+  list($subId,$title,$wAvg,$status,$pref,$assign,$watch,$revwed) = $row;
+  if ($assign==-1) continue; // conflict
   // Get the submission details
-  $subId = (int) $row[0];
-  $title = htmlspecialchars($row[1]);
-  $wAvg = isset($row[2]) ? round($row[2],1) : '*';
-
+  $subId = (int) $subId;
+  $title = htmlspecialchars($title);
+  $wAvg = isset($wAvg) ? round($wAvg,1) : '*';
+  $status = show_status($status);  // show_status in confUtils.php
   if (REVPREFS) { // show preferences
-    $pref = isset($row[3]) ? ((int) $row[3]) : 3;
+    $pref = isset($pref) ? ((int) $pref) : 3;
     if ($pref < 0 || $pref > 5) $pref = 3;
     $cls = $classes[$pref];
     $prefLine = "\n  <td class=$cls>$pref</td>";
   }
   else $prefLine = '';
 
-  if (isset($row[5]) && $row[5]>0) $checked = ' checked="checked"';
+  if (isset($watch) && $watch>0) $checked = ' checked="checked"';
   else $checked = '';
 
-  if (isset($row[6])) $revwed = '<img src="../common/smallChk.GIF" alt=x />';
+  if (isset($revwed)) $revwed = '<img src="../common/smallChk.GIF" alt=x />';
   else $revwed = '';
 
 print <<<EndMark
 <tr>
   <td>$revwed</td>$prefLine
   <td>($wAvg)</td>
+  <td><small>$status</small></td>
   <td><input type=checkbox name=watch[$subId]{$checked}></td>
   <td>$subId.</td>
   <td style="text-align: left;"><a href="submission.php?subId=$subId">$title</a></td>
