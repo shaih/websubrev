@@ -27,7 +27,7 @@ function checkEmailList( fld )
   for(i=0; i<emlList.length; i++) {
     var address = emlList[i];
     address = address.replace(/^\s+/g,'').replace(/\s+$/g,''); // trim
-    if (!checkEmail(address)) {
+    if (!matchEmlPattern(address)) {
       alert("Not a valid mailing-list format");
       fld.focus();
       fld.select();
