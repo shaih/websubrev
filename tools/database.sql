@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS submissions (
     title varchar(255) NOT NULL,
     authors text NOT NULL,
     affiliations text,
-    contact varchar(255) NOT NULL,
+    contact text NOT NULL,
     abstract text,
     category varchar(255),
     keyWords varchar(255),
@@ -145,6 +145,7 @@ CREATE TABLE IF NOT EXISTS acceptedPapers (
    *   128 - Show with discussions
    * Fourth byte:
    *     1 - Send uploaded reviews back to reviewer by email
+   *     2 - Send email when reviews/posts are made to submission on watch list
    */
 CREATE TABLE IF NOT EXISTS committee (
     revId smallint(3) NOT NULL auto_increment,

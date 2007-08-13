@@ -59,20 +59,9 @@ tr { vertical-align: top; }
 </style>
 <link rel="stylesheet" type="text/css" href="../common/submission.css"/>
 
+<script type="text/javascript" src="../common/validate.js"></script>
 <script language="Javascript" type="text/javascript">
 <!--
-function check_email( fld )
-{
-  fld.value = fld.value.replace(/^\s+/g,'').replace(/\s+$/g,''); // trim
-  var pat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/;
-  if ((fld.value != "") && (pat.test(fld.value)==false)) {
-    alert("Not a valid email format");
-    fld.focus();
-    fld.select();
-    return false ;
-  }
-  return true ;
-}
 function checkform( form )
 {
   var pat = /^\s*$/;
@@ -163,12 +152,9 @@ print <<<EndMark
         <td><input name="affiliations" size="70" type="text" value="$affiliations">
   </tr>
   <tr>
-    <td style="text-align: right;">Contact Email:</td>
-    <td><input name="contact" size="70" type="text" value="$contact"
-         onchange="return check_email(this)"><br />
-        Must be <b>one valid email address</b> of the form user@domain;
-        <b>make sure that this is a valid address</b>, it will be used
-        for communication with the publisher. <br /><br />
+    <td style="text-align: right;">Contact Email(s):</td>
+    <td><input name="contact" size="70" type="text" value="$contact" onchange="return checkEmailList(this)"><br />
+    <u><b>Make sure that these are valid addresses</b></u>, they will be used for communication with the publisher.<br/><br/>
     </td>
   </tr>
   <tr>

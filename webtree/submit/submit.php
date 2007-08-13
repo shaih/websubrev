@@ -42,20 +42,9 @@ print <<<EndMark
 tr { vertical-align: top; }
 </style>
 
+<script type="text/javascript" src="../common/validate.js"></script>
 <script language="Javascript" type="text/javascript">
 <!--
-function check_email( fld )
-{
-  fld.value = fld.value.replace(/^\s+/g,'').replace(/\s+$/g,''); // trim
-  var pat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/;
-  if ((fld.value != "") && (pat.test(fld.value)==false)) {
-    alert("Not a valid email format");
-    fld.focus();
-    fld.select();
-    return false ;
-  }
-  return true ;
-}
 function checkform( form )
 {
   var pat = /^\s*$/;
@@ -126,11 +115,10 @@ EndMark;
 
 print <<<EndMark
   <tr>
-    <td style="text-align: right;"><small>(*)</small> Contact Email:</td>
-    <td><input name="contact" size="70" type="string"
-         onchange="return check_email(this)"><br />
-        Must be <b>one valid email address</b> of the form user@domain;
-        will be used for communication. <br />
+    <td style="text-align: right;"><small>(*)</small> Contact Email(s):</td>
+    <td><input name="contact" size="70" type="string" onchange="return checkEmailList(this)"><br/>
+    Comma-separated list with <b>at least one valid email address</b> of the form user@domain; for example:<br/>
+    <tt>first-author@university.edu, secondAuthor@company.com, third.one@somewhere.org</tt><br/>
     </td>
   </tr>
   <tr>

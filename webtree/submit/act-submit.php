@@ -36,10 +36,12 @@ if (empty($title) || empty($author)
 { exit ("<h1>Submission Failed</h1>Some required fields are missing."); }
 
 // Test that the contact has a valid format user@domain
-if ((strlen($contact) > 255)
-    || !preg_match('/^[A-Z0-9._%-]+@[A-Z0-9._%-]+\.[A-Z]{2,4}$/i', $contact))
-{ exit("<h1>Submission Failed</h1>
-        Contact must be an email address in the format user@domain.");
+$addresses = explode(",", $contact);
+foreach($addresses as $addr) {
+  $addr = trim($addr);
+  if (!preg_match('/^[A-Z0-9._%-]+@[A-Z0-9._%-]+\.[A-Z]{2,4}$/i', $addr))
+    exit("<h1>Revision Failed</h1>
+Contact(s) must be a list of email addressed in the format user@domain.");
 }
 
 // Test that a file was uploaded
@@ -61,7 +63,7 @@ $cnnct = db_connect();
 $qry = "INSERT INTO submissions SET title='"
   . my_addslashes(substr($title, 0, 255), $cnnct)
   . "', authors='". my_addslashes($author, $cnnct)
-  . "', contact='". my_addslashes(substr($contact, 0, 255), $cnnct)
+  . "', contact='". my_addslashes($contact, $cnnct)
   . "', abstract='". my_addslashes($abstract, $cnnct)
   . "', ";
 

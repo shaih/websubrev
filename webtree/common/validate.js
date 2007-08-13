@@ -1,19 +1,40 @@
 /** validate.js functions to validate user input in forms
  **/
 
+function matchEmlPattern(txt)
+{
+  var pat1 = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/;
+  var pat2 = /^[^@<>]*<\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+>$/;
+  return ((txt=="") || pat1.test(txt) || pat2.test(txt));
+}
+
 function checkEmail( fld )
 {
   fld.value = fld.value.replace(/^\s+/g,'').replace(/\s+$/g,''); // trim
   var pat1 = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/;
   var pat2 = /^[^@<>]*<\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+>$/;
-  if((fld.value != "") && (pat1.test(fld.value)==false)
-     && (pat2.test(fld.value)==false)) {
-    alert("Not a valid email format");
-    fld.focus();
-    fld.select();
-    return false ;
+  if (matchEmlPattern(fld.value)) return true;
+
+  alert("Not a valid email format");
+  fld.focus();
+  fld.select();
+  return false;
+}
+
+function checkEmailList( fld )
+{
+  var emlList = fld.value.split(",");
+  for(i=0; i<emlList.length; i++) {
+    var address = emlList[i];
+    address = address.replace(/^\s+/g,'').replace(/\s+$/g,''); // trim
+    if (!checkEmail(address)) {
+      alert("Not a valid mailing-list format");
+      fld.focus();
+      fld.select();
+      return false;
+    }
   }
-  return true ;
+  return true;
 }
 
 function checkInt( fld, mn, mx )

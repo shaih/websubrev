@@ -43,12 +43,16 @@ if (isset($_FILES['sub_file'])) {
 else $fileSize = $tmpFile = $sbFileName = NULL;
 
 // Check that contact has valid format user@domain (if specified)
-if (!empty($contact) &&
-    ((strlen($contact) > 255) ||
-     !preg_match('/^[A-Z0-9._%-]+@[A-Z0-9._%-]+\.[A-Z]{2,4}$/i', $contact))) {
-     exit("<h1>Revision Failed</h1>
-           Contact must be an email address in the format user@domain.");
+if (!empty($contact)) {
+  $addresses = explode(",", $contact);
+  foreach($addresses as $addr) {
+    $addr = trim($addr);
+    if (!preg_match('/^[A-Z0-9._%-]+@[A-Z0-9._%-]+\.[A-Z]{2,4}$/i', $addr))
+      exit("<h1>Revision Failed</h1>
+Contact(s) must be a list of email addressed in the format user@domain.");
+  }
 }
+
 // Test that file was uploaded (if specified)
 if (!empty($sbFileName)) {
   if ($_FILES['sub_file']['size'] == 0)
@@ -92,7 +96,6 @@ if (!empty($affiliations)) {
 else $affiliations = $row['affiliations'];
 
 if (!empty($contact) && strcasecmp($contact, $oldCntct)!=0) {
-  $contact = substr($contact, 0, 255);
   $oldCntct .= ", $contact";  // send email to both old and new contacts
   $updts .= "  contact='" . my_addslashes($contact, $cnnct)."',\n";
 }
