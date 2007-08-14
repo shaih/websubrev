@@ -8,6 +8,7 @@
  $needsAuthentication=true;
 require 'header.php';  // defines $pcMember=array(id, name, ...)
 $revId = (int) $pcMember[0];
+$pcmFlags= (int) $pcMember[5];
 
 if (isset($_POST['updateWatchList'])) {
   $cnnct = db_connect();
@@ -32,6 +33,14 @@ if (isset($_POST['updateWatchList'])) {
   }
   else {  // No submissions to be watched
     $qry = "UPDATE assignments SET watch=0 WHERE revId=$revId";
+    db_query($qry, $cnnct);
+  }
+
+  $newPCMflags = $pcmFlags;
+  if (isset($_POST['emlNewPosts'])) $newPCMflags |= FLAG_EML_WATCH_EVENT;
+  else $newPCMflags &= (~FLAG_EML_WATCH_EVENT);
+  if ($newPCMflags != $pcmFlags) {
+    $qry = "UPDATE committee SET flags=$newPCMflags WHERE revId=$revId";
     db_query($qry, $cnnct);
   }
 }

@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-  $needsAuthentication=true;
+$needsAuthentication=true;
 require 'header.php'; // defines $pcMember=array(id, name, email, discussFlag)
 $revId = (int) $pcMember[0];
 $revName = htmlspecialchars($pcMember[1]);
@@ -20,6 +20,8 @@ if (defined('CAMERA_PERIOD'))
 
 if (isset($_POST['subId'])) { $subId = (int) trim($_POST['subId']); }
 else exit("<h1>No Submission specified</h1>");
+
+
 
 // Make sure that this submission exists and the reviewer does not have
 // a conflict with it. 
@@ -51,6 +53,27 @@ if (!empty($_POST['subject']) || !empty($_POST['comments'])) {
   // Touch the entry to update the 'lastModified' timestamp
   $qry = "UPDATE submissions SET lastModified=NOW() WHERE subId='$subId'";
   db_query($qry, $cnnct);
+
+  // Send the new post by email to reviewers that have this submission
+  // on their watch list and asked to be notified by email of new posts
+
+  $qry = "SELECT c.email, c.flags FROM assignments a, committee c
+  WHERE c.revId=a.revId AND a.subId=$subId AND a.revId!=$revId AND a.assign!=-1 AND a.watch=1";
+  $res = db_query($qry, $cnnct);
+  $notify = $comma = '';
+  while ($row = mysql_fetch_row($res)) {
+    $flags = $row[1];
+    if ($flags & FLAG_EML_WATCH_EVENT) {
+      $notify .= $comma . $row[0];
+      $comma = ', ';
+    }
+  }
+  if (!empty($notify)) {
+    $msg = $pcMember[1] . ": " . trim($_POST['subject'])
+           . "\n\n" . trim($_POST['comments']);
+    $sbjct = "New post for submission $subId to ".CONF_SHORT.' '.CONF_YEAR;
+    my_send_mail($notify, $sbjct, $msg);
+  }
 }
 
 // if this was reply to a previous post, return to that post

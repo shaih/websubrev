@@ -9,6 +9,9 @@ $needsAuthentication=true;
 require 'header.php';  // defines $pcMember=array(revId, name, ...)
 
 $revId = (int) $pcMember[0];
+$pcmFlags= (int) $pcMember[5];
+$chkEmlNewPosts= ($pcmFlags & FLAG_EML_WATCH_EVENT)? ' checked="checked"': '';
+
 $classes = array('zero', 'one', 'two', 'three', 'four', 'five');
 
 // A header for the prefs column (if needed)
@@ -97,6 +100,8 @@ print <<<EndMark
 </table>
 <br />
 <input value="Update Watch List" type="submit" name="updateWatchList">
+<input type=checkbox name=emlNewPosts{$chkEmlNewPosts}> Send me email
+whenever a new message is posted to any submission on my watch list
 </form>
 <hr />
 $links

@@ -15,6 +15,9 @@ define('FLAG_EML_EXTRA_PRM', 32);
 define('FLAG_SSL', 64);
 define('FLAG_REV_ATTACH', 128);
 
+define('FLAGS_EML_MY_REPORT', 0x01000000);
+define('FLAG_EML_WATCH_EVENT', 0x02000000);
+
 define('PERIOD_SETUP', 0);
 define('PERIOD_SUBMIT', 1);
 define('PERIOD_REVIEW', 2);

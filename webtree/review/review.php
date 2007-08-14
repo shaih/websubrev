@@ -12,7 +12,7 @@ $revName= htmlspecialchars($pcMember[1]);
 $disFlag = (int) $pcMember[3];
 $pcmFlags= (int) $pcMember[5];
 
-$chkEml = ($pcmFlags & 0x01000000)? ' checked="checked"' : '';
+$chkEml = ($pcmFlags & FLAGS_EML_MY_REPORT)? ' checked="checked"' : '';
 
 if (defined('CAMERA_PERIOD'))
    exit("<h1>Site closed: cannot post new reviews</h1>");
