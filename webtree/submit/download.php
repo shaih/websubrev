@@ -17,8 +17,8 @@ if ($subId<=0 || empty($subPwd)) {
 
 $cnnct = db_connect();
 $qry= "SELECT format, nPages
-  FROM submissions LEFT JOIN acceptedPapers USING(subId)
-  WHERE subId=$subId AND subPwd='$subPwd'";
+  FROM submissions s LEFT JOIN acceptedPapers a ON a.subId=s.subId
+  WHERE s.subId=$subId AND s.subPwd='$subPwd'";
 $res = db_query($qry, $cnnct);
 if (!$res || mysql_num_rows($res)==0) {
   die("<h1>Wrong Submission-ID or password</h1>");
