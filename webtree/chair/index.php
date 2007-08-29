@@ -212,6 +212,8 @@ $hdr
 </li>
 $allSubFile
 $mkTOC
+<li><a href="invitedTalks.php">Add an invited talk to the program</a>
+</li>
 </ul>
 $closeIt
 EndMark;
