@@ -12,13 +12,9 @@ if (!file_exists('../init/confParams.php')) { // Not yet customized
 }
 require_once('../includes/getParams.php'); 
 
-$confShortName = CONF_SHORT.' '.CONF_YEAR;
-
-if (defined('SHUTDOWN')) exit("<h1>Site is Closed</h1>");
-
-if (defined('REVIEW_PERIOD') && REVIEW_PERIOD===true) {
-  // only the chair is allowed access to submissions pages after the deadline
-  $chair = false;
+// Only the chair can use these scripts outside the submission periods
+$chair = false;
+if ((PERIOD!=PERIOD_SUBMIT)&&(PERIOD!=PERIOD_CAMERA)) {
   if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
     $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
 			    $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
@@ -29,13 +25,14 @@ if (defined('REVIEW_PERIOD') && REVIEW_PERIOD===true) {
   }
 }
 
+$confShortName = CONF_SHORT.' '.CONF_YEAR;
+$php_errormsg = ''; // just so we don't get notices when it is not defined.
+
 // If 'magic quotes' are on, get rid of them
 if (get_magic_quotes_gpc()) {
   $_GET  = array_map('stripslashes_deep', $_GET);
   $_POST  = array_map('stripslashes_deep', $_POST);
 }
-
-$php_errormsg = ''; // just so we don't get notices when it is not defined.
 
 function show_sub_links($current=0, $prt=false) 
 {

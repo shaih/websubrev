@@ -8,7 +8,7 @@
 require 'header.php'; // brings in the constants file and utils file
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
-if (CAMERA_PERIOD!==true)
+if ((PERIOD < PERIOD_CAMERA) || (PERIOD>PERIOD_CAMERA && !$chair))
      die("<h1>Final-version submission site for $confName is closed</h1>");
 
 $h1text = "<h1>Camera-Ready Revision for $confName</h1>";
