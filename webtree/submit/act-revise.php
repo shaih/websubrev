@@ -49,7 +49,7 @@ if (!empty($contact)) {
     $addr = trim($addr);
     if (!preg_match('/^[A-Z0-9._%-]+@[A-Z0-9._%-]+\.[A-Z]{2,4}$/i', $addr))
       exit("<h1>Revision Failed</h1>
-Contact(s) must be a list of email addressed in the format user@domain.");
+Contact(s) must be a list of email addresses in the format user@domain.");
   }
 }
 
