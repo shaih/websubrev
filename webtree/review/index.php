@@ -18,6 +18,7 @@ $confName = CONF_SHORT . ' ' . CONF_YEAR;
 $links = show_rev_links(2);
 $message = show_message();
 $phase = $disFlag ? 'Discussion Phase' : 'Individual Review Phase';
+if ($revId==CHAIR_ID) $phase .= ' (Program Chair)';
 if (defined('CAMERA_PERIOD')) $phase = 'Read Only';
 $legend = '';
 $cnnct = db_connect();

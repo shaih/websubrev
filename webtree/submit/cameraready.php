@@ -8,8 +8,12 @@
 require 'header.php'; // brings in the constants file and utils file
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
-if ((PERIOD < PERIOD_CAMERA) || (PERIOD>PERIOD_CAMERA && !$chair))
-     die("<h1>Final-version submission site for $confName is closed</h1>");
+if (PERIOD<PERIOD_CAMERA)
+     die("<h1>Final-version submission site for $confName is not open</h1>");
+
+$chairNotice = '';
+if (PERIOD>PERIOD_CAMERA)
+  $chairNotice = "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n";
 
 $h1text = "<h1>Camera-Ready Revision for $confName</h1>";
 $timeleft = show_deadline(CAMERA_DEADLINE);
@@ -86,6 +90,7 @@ function checkform( form )
 <body>
 $links
 <hr />
+$chairNotice
 $h1text
 <h3 class=timeleft>$deadline<br/>
 $timeleft</h3>

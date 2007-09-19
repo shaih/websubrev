@@ -8,8 +8,6 @@
  
 require 'header.php'; // brings in the contacts file and utils file
 
-if (defined('CAMERA_PERIOD')) exit("<h1>Submission Deadline Expired</h1>");
-
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 $timeleft = show_deadline(SUBMIT_DEADLINE);     // how much time is left
 $subDdline = 'Deadline is '
@@ -30,6 +28,11 @@ if (is_array($confFormats) && count($confFormats)>0) {
 } else { // no formats were specified
   $supportedFormats = 'none specified';
 }
+
+$chairNotice = '';
+if (PERIOD>PERIOD_SUBMIT)
+     $chairNotice = "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n";
+
 
 $links = show_sub_links(3);
 print <<<EndMark
@@ -75,7 +78,8 @@ function checkform( form )
 
 <body>
 $links
-<hr />
+<hr/>
+$chairNotice
 <h1>New Submission to $confName</h1>
 <h3 class=timeleft>$subDdline<br/>
 $timeleft</h3>

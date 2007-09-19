@@ -9,7 +9,9 @@
 require 'header.php'; // brings in the constants and utils files
 
 // Camera-ready revisions are now done from cameraready.php
-if (defined('CAMERA_PERIOD')) exit("<h1>Submission Deadline Expired</h1>");
+$chairNotice = '';
+if (PERIOD>PERIOD_SUBMIT)
+  $chairNotice = "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n";
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 $h1text = "<h1>Revise a Submission to $confName</h1>";
@@ -107,6 +109,7 @@ function checkform( form )
 <body>
 $links
 <hr />
+$chairNotice
 $h1text
 <h3 class=timeleft>$subDdline<br/>
 $timeleft</h3>

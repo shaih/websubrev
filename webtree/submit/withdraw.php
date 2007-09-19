@@ -26,6 +26,10 @@ $timeleft = show_deadline(SUBMIT_DEADLINE);
 $subDdline = 'Deadline is '
            . utcDate('r (T)', SUBMIT_DEADLINE); // when is the deadline
 
+$chairNotice = '';
+if (PERIOD>PERIOD_SUBMIT)
+  $chairNotice = "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n";
+
 $links = show_sub_links(5);
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -59,6 +63,7 @@ function checkform( form )
 <body>
 $links
 <hr />
+$chairNotice
 <h1 style="text-align: center;">Withdraw a Submission from $confName</h1>
 <h3 class=timeleft>$subDdline<br/>
 $timeleft</h3>
