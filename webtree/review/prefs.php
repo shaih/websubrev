@@ -26,7 +26,7 @@ $semantics = array(
 
 $links = show_rev_links(4);
 
-// Display a warning if too many submissions are marked 0, 1, or 5
+// Display a warning if too many submissions are marked 0 or 1
 $cnnct = db_connect();
 $qry = "SELECT COUNT(*) FROM assignments WHERE revId=$revId AND pref<=1";
 $res = db_query($qry, $cnnct);
@@ -94,6 +94,7 @@ $warningHtml
 
 EndMark;
 
+$prefCount = array(0, 0, 0, 0, 0, 0);
 $qry = "SELECT s.subId, s.title, a.pref, a.assign
   FROM submissions s LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId
   WHERE s.status!='Withdrawn'
@@ -107,6 +108,7 @@ while ($row = mysql_fetch_row($res)) {
 
   $pref = isset($row[2]) ? ((int) $row[2]) : 3;
   if ($pref < 0 || $pref > 5) $pref = 3;
+  $prefCount[$pref]++;
 
   $checked = array('', '', '', '', '', '');
   $checked[$pref] = ' checked="checked"';
@@ -131,9 +133,24 @@ while ($row = mysql_fetch_row($res)) {
 print <<<EndMark
 </tbody>
 </table>
-<br />
+<br/>
 <input value="Submit My Preferences" type="submit">
 </form>
+<br/>
+Total preference count: 
+<table><tbody>
+
+EndMark;
+
+// Display a count of how many submissions are marked at each level
+for ($i=0; $i<6; $i++) {
+  print "<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td class=\"{$classes[$i]}\">$i</td>
+  <td style=\"text-align: right;\">{$prefCount[$i]} submissions</td>\n</tr>\n";
+}
+
+print <<<EndMark
+</tbody></table>
 <hr />
 $links
 </body>
