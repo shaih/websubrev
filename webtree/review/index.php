@@ -106,8 +106,8 @@ href="listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on">h
   individual_review($cnnct, $revId);
   $uploadScores = '<form target=_blank action="parseScorecard.php"
 enctype="multipart/form-data" method=POST>
-<input type=submit value="Upload scorecard file:">
-<input type=file size=40 name=scorecard>
+Scorecard file: <input type=file size=40 name=scorecard>
+<input type=submit value="Upload">
 (<a target=_blank href="scorecard.php">what\'s that?</a>)<br/>
 <b>Warning:</b> <i>Check that the file does not contain out-of-date
 reviews!</i> Upload will overwrite previous reviews. 

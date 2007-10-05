@@ -186,8 +186,8 @@ here a file that includes an old version of that review, then that "old
 version" will overwrite the "newer version" that was uploaded before.<br/>
 <br/>
 <form action="parseScorecard.php" enctype="multipart/form-data" method=post>
-<input type=submit value="Upload scorecard file:">
-<input type=file size=60 name=scorecard>
+Scorecard file: <input type=file size=60 name=scorecard>
+<input type=submit value="Upload">
 </form>
 
 EndMark;
