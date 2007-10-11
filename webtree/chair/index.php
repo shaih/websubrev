@@ -136,8 +136,10 @@ print <<<EndMark
 
 <dt><strong>Paper assignments</strong>
 <dd>Download the submission-list as an <a href="submissionSpreadsheet.php">Excel spreadsheet</a>
-<dd><a href="conflicts.php">Edit conflicts</a> (Use to block access to
-  submissions due to conflict-of-interests, etc.)
+<dd><a href="conflicts.php">Edit conflicts</a> (block access to
+  submissions due to conflict-of-interests).
+  <b>Access is NOT blocked by default</b>
+  (<a href="../documentation/chair.html#block">what&prime;s this?</a>)
 <dd>$assignHTML
 <br/><br/>
 
