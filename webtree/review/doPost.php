@@ -69,8 +69,16 @@ if (!empty($_POST['subject']) || !empty($_POST['comments'])) {
     }
   }
   if (!empty($notify)) {
-    $msg = $pcMember[1] . ": " . trim($_POST['subject'])
-           . "\n\n" . trim($_POST['comments']);
+    $qry = "SELECT title from submissions WHERE subId=$subId";
+    $res = db_query($qry, $cnnct);
+    $row = mysql_fetch_row($res); // $row[0] is the submissions title
+    $prot = (defined('HTTPS_ON')||isset($_SERVER['HTTPS']))? 'https' : 'http';
+    $msg = $row[0]."\n";
+    $msg .= "===============================================================\n"
+           . $pcMember[1] . ": " . trim($_POST['subject'])
+           . "\n\n" . trim($_POST['comments']) . "\n\n";
+    $msg .= "---------------------------------------------------------------\n"
+      . "$prot://".BASE_URL."review/discuss.php?subId=$subId\n";
     $sbjct = "New post for submission $subId to ".CONF_SHORT.' '.CONF_YEAR;
     my_send_mail($notify, $sbjct, $msg);
   }
