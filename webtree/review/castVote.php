@@ -37,19 +37,12 @@ $voteType = isset($row['voteType'])
      ? htmlspecialchars($row['voteType']) : 'Choose';
 $voteFlags = isset($row['voteFlags']) ? intval($row['voteFlags']) : 0;
 $voteBudget= isset($row['voteBudget'])? intval($row['voteBudget']): 0;
+$voteOnThese = isset($row['voteOnThese'])? $row['voteOnThese'] : '';
 $voteMaxGrade= isset($row['voteMaxGrade'])? intval($row['voteMaxGrade']): 1;
 
-/* Handle the (easy) case of clear-all */
-$newVotes = isset($_POST['votes'])? $_POST['votes'] : NULL;
-if (!isset($newVotes) || !is_array($newVotes) || count($newVotes)==0) {
-  $qry = "DELETE FROM votes WHERE voteId=$voteId AND revId=$revId";
-  db_query($qry, $cnnct);
-  header("Location: vote.php?voteId=$voteId&voteRecorded=yes");
-  exit();
-}
-
 // Check that user vote did not exceed budget
-$voteSum = array_sum($newVotes);
+$newVotes = isset($_POST['votes'])? $_POST['votes'] : NULL;
+$voteSum = is_array($newVotes) ? array_sum($newVotes) : 0;
 if ($voteBudget > 0 && $voteSum > $voteBudget) {
   if ($voteType=='Grade')
     exit ("<h1>Sum of all gardes cannot exceed $voteBudget</h1>");
@@ -57,52 +50,80 @@ if ($voteBudget > 0 && $voteSum > $voteBudget) {
     exit ("<h1>Cannot choose more than $voteBudget items</h1>");
 }
 
-// Don't record votes on submissions where there is a conflict
-$forbidden = array();
-if ($voteFlags & VOTE_ON_SUBS) {
+// Get the items to vote on
+$voteItems = array();
+if ($voteFlags & VOTE_ON_SUBS) { // voting on submissions
+
+  // Don't record votes on submissions where there is a conflict
+  $forbidden = array();
   $qry = "SELECT subId from assignments WHERE revId=$revId and assign=-1";
   $res = db_query($qry, $cnnct);
   while ($row=mysql_fetch_row($res)) {
     $subId = (int) $row[0];
     $forbidden[$subId] = true;
   }
-}
 
-$voteItems = array(); // represents the current state of the databse
+  if ($voteFlags & VOTE_ON_ALL)
+    $where = "s.status!='Withdrawn'";
+  else 
+    $where = "false";
 
-// Insert dummy items for options that the user voted on
-foreach ($newVotes as $itemId => $vote) {
-  $itemId = (int) $itemId;
-  if (!isset($forbidden[$itemId]))
-    $voteItems[$itemId] = NULL;
-}
-  
-// Get the votes that are currently recorded in the database
-$qry = "SELECT subId, vote FROM votes WHERE voteId=$voteId AND revId=$revId ORDER by subId";
-$res = db_query($qry, $cnnct);
-while ($row=mysql_fetch_row($res)) {
-  $itemId = (int) $row[0];
-  if (!isset($forbidden[$itemId]))
-    $voteItems[$itemId] = $row[1];
-}
+  if ($voteFlags & VOTE_ON_RE) {
+    $where .= " OR status='Reject'"; }
+  if ($voteFlags & VOTE_ON_MR) {
+    $where .= " OR status='Perhaps Reject'"; }
+  if ($voteFlags & VOTE_ON_NO) {
+    $where .= " OR status='None'"; }
+  if ($voteFlags & VOTE_ON_DI) {
+    $where .= " OR status='Needs Discussion'"; }
+  if ($voteFlags & VOTE_ON_MA) {
+    $where .= " OR status='Maybe Accept'"; }
+  if ($voteFlags & VOTE_ON_AC) {
+    $where .= " OR status='Accept'"; }
+  if (!empty($voteOnThese)) {
+    $where .= " OR s.subId IN (".numberlist($voteOnThese).")"; }
 
-foreach($voteItems as $itemId => $vItem) {
-  $itemId = (int) $itemId;
-  $theVote = NULL;
-  if (isset($newVotes[$itemId])) {
-    $theVote = intval($newVotes[$itemId]);
-    if ($theVote<0) $theVote = 0;
-    else if ($theVote>$voteMaxGrade) $theVote = $voteMaxGrade;
+  $qry = "SELECT s.subId FROM submissions s
+  WHERE $where
+  ORDER by s.subId";
+  $res = db_query($qry, $cnnct);
+  while ($row=mysql_fetch_row($res)) {
+    $subId = (int) $row[0];
+    if (!isset($forbidden[$subId])) $voteItems[$subId] = 0;
   }
-  if ($theVote!==$vItem){
-    if (!isset($vItem))      // insert a new entry (uses REPLACE rather than INSERT just for safety)
-      $qry = "REPLACE votes VALUES ($voteId,$revId,$itemId,$theVote)";
-    else if (isset($theVote))// modify existing entry
-      $qry = "UPDATE votes SET vote=$theVote WHERE voteId=$voteId AND revId=$revId AND subId=$itemId";
-    else                     // delete existing entry
-      $qry = "DELETE FROM votes WHERE voteId=$voteId AND revId=$revId AND subId=$itemId";
-    db_query($qry, $cnnct);
+}
+else {                           // voting on "other things"
+  $voteTitles = explode(';', $voteOnThese);
+  $i = 1;
+  foreach ($voteTitles as $title) {
+    $title = trim($title);
+    if (!empty($title)) 
+    $voteItems[$i] = 0;
+    $i++;
   }
+}
+
+// Update the voteItems with the actual votes that we got from the user
+if (is_array($newVotes)) foreach ($newVotes as $itemId => $vote) {
+  $itemId = (int) $itemId;
+  if (isset($voteItems[$itemId])) $voteItems[$itemId] = (int) $vote;
+}
+
+// Prepare a list of votes
+$values = '';
+foreach ($voteItems as $itemId => $vote) {
+  $values .= "($voteId,$revId,$itemId,$vote),";
+}
+if (!empty($values)) $values = substr($values, 0, -1); // remove last comma
+
+// Remove all prior votes (if any) and insert the new ones
+if (!empty($values)) { // What is the right behaviour is $values is empty?
+  $qry = "DELETE FROM votes WHERE voteId=$voteId AND revId=$revId";
+  db_query($qry, $cnnct);
+
+  $qry = "INSERT INTO votes (voteId,revId,subId,vote)
+  VALUES $values";
+  db_query($qry, $cnnct);
 }
 header("Location: vote.php?voteId=$voteId&voteRecorded=yes");
 ?>
