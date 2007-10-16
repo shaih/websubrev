@@ -163,7 +163,10 @@ is the sum of all grades that this PC member can assign.
 <b>Note:</b> PC members can only vote on submissions after you set their
 "discuss" flags from the <a href="overview.php#progress">progress overview
 page</a>. Until then they can only participate in "votes on other things"
-as per the third option below.<br/>
+as per the third option below. Also, PC members will not see entries for
+submissions that are blocked for them, even if you include these submissions
+in the vote. (In other words, the lists that are presented to PC members
+are filtered against the submissions that they are not allowed to see.)<br/>
 <br/>
 <input type="radio" name="voteOnWhat" value="all" $chkAll>
 Include all submissions.
