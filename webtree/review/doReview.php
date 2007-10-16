@@ -20,26 +20,24 @@ if (defined('CAMERA_PERIOD')) {
 }
 
 $saveDraft = isset($_POST['draft']);
-
 $add2watch = (!$disFlag || isset($_POST['add2watch']));
-$noUpdtModTime = $disFlag;
 
 // Returns either an error code, the attachment name (if any), or NULL
 $ret = storeReview($subId, $revId, $_POST['subRev'], $_POST['conf'],
 		   $_POST['score'], $_POST, $_POST['comments2authors'],
 		   $_POST['comments2PC'], $_POST['comments2chair'],
-		   $_POST['comments2self'], $add2watch, $noUpdtModTime,
-		   $saveDraft);
+		   $_POST['comments2self'], $add2watch, $saveDraft);
 
 if ($ret===-1) exit("<h1>No Submission specified</h1>");
 if ($ret===-3) exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 
+$attachment = ($ret < 0) ? NULL : $ret;
 if (isset($_POST['emilReview'])) {
   sendReviewByEmail($revEmail, $subId, $_POST['subRev'], 
 		    $_POST['conf'], $_POST['score'], $_POST,
 		    $_POST['comments2authors'], $_POST['comments2PC'],
 		    $_POST['comments2chair'], $_POST['comments2self'], 
-		    $saveDraft, $ret);
+		    $saveDraft, $attachment);
   $flags = $pcmFlags | 0x01000000;  
 }
 else $flags = $pcmFlags & 0xfeffffff;  

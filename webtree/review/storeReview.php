@@ -2,8 +2,9 @@
 // returns 0 when all is well, otherwise an error code
 function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
 		     $authCmnt, $pcCmnt, $chrCmnt, $slfCmnt, $watch=false, 
-		     $noUpdt=false, $saveDraft=false)
+		     $saveDraft=false)
 {
+  global $pcMember;
   global $criteria;
   $nCrit = count($criteria);
 
@@ -13,16 +14,37 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
   // Make sure that this submission exists and the reviewer does not have
   // a conflict with it, and check if this is a new review or an update.
   $cnnct = db_connect();
-  $qry= "SELECT s.subId, a.assign, r.revId, r.attachment
-       FROM submissions s
-            LEFT JOIN assignments a ON a.revId=$revId AND a.subId=s.subId
-            LEFT JOIN reports r ON r.subId=s.subId AND r.revId=$revId
-       WHERE s.subId=$subId";
+  $qry= "SELECT s.subId, a.assign FROM submissions s
+  LEFT JOIN assignments a ON a.revId=$revId AND a.subId=s.subId
+  WHERE s.subId=$subId";
 
   $res = db_query($qry, $cnnct);
   if (!($row = mysql_fetch_row($res)) || $row[1]==-1)
-    return -3; // no such submission or reviewer has conflict
+    return -3;  // no such submission or reviewer has conflict
 
+  if ($watch) { // add the submission to reviewer's watch list
+    $qry ="UPDATE assignments SET watch=1 WHERE subId=$subId AND revId=$revId";
+    db_query($qry, $cnnct);
+    if (mysql_affected_rows()==0) { // insert a new entry to table
+      $qry = "INSERT IGNORE INTO assignments SET subId=$subId,revId=$revId,watch=1";
+      db_query($qry, $cnnct);
+    }
+  }
+
+  // Get the details of the existing review (if any)
+  $qry = "SELECT * FROM reports WHERE subId=$subId AND revId=$revId";
+  $res = db_query($qry, $cnnct);
+  $oldReview = mysql_fetch_assoc($res);
+
+  $qry = "SELECT gradeId,grade FROM auxGrades
+  WHERE subId=$subId AND revId=$revId ORDER BY gradeId";
+  $res = db_query($qry, $cnnct);
+  $oldAuxGrades = array();
+  while ($row=mysql_fetch_row($res)) {
+    $gId = (int) $row[0];
+    $oldAuxGrades[$gId] = (int) $row[1];
+  }
+  
   // Store the attachment (if any)
   $fileName = NULL;
   if (isset($_FILES["attach{$subId}"])
@@ -50,15 +72,40 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
 
       $fileName = NULL;
     }
+
   } else if (isset($_POST["keepAttach{$subId}"])) { // use existing attachment
-    $fileName = $row[3];
+    $fileName = is_array($oldReview) ? $oldReview['attachment'] : NULL;
   }
 
-  if ($saveDraft) {
-    $qry = " flags=0,";
-  } else {
-    $qry = " flags=1,";
+  $flags = $saveDraft ? 0 : 1;
+
+  $conf = (int) trim($conf);
+  if ($conf<=0 || $conf>MAX_CONFIDENCE) $conf = NULL;
+
+  $score = (int) trim($score);
+  if ($score<=0 || $score>MAX_GRADE)   $score = NULL;
+
+  $authCmnt = trim($authCmnt);
+  $pcCmnt = trim($pcCmnt);
+  $chrCmnt = trim($chrCmnt);
+  $slfCmnt = trim($slfCmnt);
+
+  $newAuxGrades = array();
+  for ($i=0; $i<$nCrit; $i++) {
+    $grade = isset($auxGrades["grade_{$i}"])?((int)$auxGrades["grade_{$i}"]):0;
+    if ($grade<=0 || $grade>$criteria[$i][1]) $grade=NULL;
+    $newAuxGrades[$i]=$grade;
   }
+  
+  // Check if anything changed vs. the stored review (if any)
+  if (!compareReview($oldReview,$subReviewer,$conf,$score,
+		     $authCmnt,$pcCmnt,$chrCmnt,$slfCmnt,
+		     $flags,$fileName,$oldAuxGrades,$newAuxGrades)) {
+    return -4; // review is identical to what's already stored in database
+  }
+
+  // Prepare the query to update the review
+  $qry = " flags=$flags,";
 
   if (!empty($subReviewer)) {
     $qry .= " subReviewer='" .my_addslashes($subReviewer, $cnnct)."',\n";
@@ -66,44 +113,32 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
     $qry .= " subReviewer=NULL,\n";
   }
 
-  $conf = (int) trim($conf);
-  if ($conf>0 && $conf<=MAX_CONFIDENCE) {
-    $qry .= "    confidence={$conf},\n";
-  } else {
-    $qry .= "    confidence=NULL,\n";
-  }
+  if (isset($conf)) $qry .= "    confidence={$conf},\n";
+  else              $qry .= "    confidence=NULL,\n";
 
-  $score = (int) trim($score);
-  if ($score>0 && $score<=MAX_GRADE) {
-    $qry .= "    score={$score},\n";
-  } else {
-    $qry .= "    score=NULL,\n";
-  }
+  if (isset($score)) $qry .= "    score={$score},\n";
+  else               $qry .= "    score=NULL,\n";
 
-  $cmnts = trim($authCmnt);
-  if (!empty($cmnts)) {
-    $qry .= "    comments2authors='" .my_addslashes($cmnts, $cnnct) ."',\n";
+  if (!empty($authCmnt)) {
+    $qry .= "    comments2authors='" .my_addslashes($authCmnt, $cnnct)."',\n";
   } else {
     $qry .= "    comments2authors=NULL,\n";
   }
 
-  $cmnts = trim($pcCmnt);
-  if (!empty($cmnts)) {
-    $qry .= "    comments2committee='" .my_addslashes($cmnts, $cnnct) ."',\n";
+  if (!empty($pcCmnt)) {
+    $qry .= "    comments2committee='" .my_addslashes($pcCmnt, $cnnct)."',\n";
   } else {
     $qry .= "    comments2committee=NULL,\n";
   }
 
-  $cmnts = trim($chrCmnt);
-  if (!empty($cmnts)) {
-    $qry .= "    comments2chair='" .my_addslashes($cmnts, $cnnct) ."',\n";
+  if (!empty($chrCmnt)) {
+    $qry .= "    comments2chair='" .my_addslashes($chrCmnt, $cnnct) ."',\n";
   } else {
     $qry .= "    comments2chair=NULL,\n";
   }
 
-  $cmnts = trim($slfCmnt);
-  if (!empty($cmnts)) {
-    $qry .= "    comments2self='" .my_addslashes($cmnts, $cnnct) ."',\n";
+  if (!empty($slfCmnt)) {
+    $qry .= "    comments2self='" .my_addslashes($slfCmnt, $cnnct) ."',\n";
   } else {
     $qry .= "    comments2self=NULL,\n";
   }
@@ -116,33 +151,34 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
    $ret = NULL;
   }
 
-  if (isset($row[2])) {  // existing entry
+  if ($oldReview) {  // existing entry
     $qry .= "    lastModified=NOW()";
     $qry = "UPDATE reports SET $qry WHERE revId=$revId AND subId=$subId";
 
     $version = backup_existing_review($subId, $revId, $nCrit, $cnnct);
   } else {
-    $noUpdt = false;
     $qry .= "    lastModified=NOW(), whenEntered=NOW()";
     $qry = "INSERT into reports SET revId=$revId, subId=$subId,\n   $qry";
     $version = 1;
   }
+
+  // prepare the query to update auxiliary grades
   $vals = $comma = '';
-  for ($i=0; $i<$nCrit; $i++) {
-    $grade = isset($auxGrades["grade_{$i}"])?((int)$auxGrades["grade_{$i}"]):0;
-    $mx = $criteria[$i][1];
-    if ($grade<=0 || $grade>$mx) $grade='NULL';
-    $vals .= $comma . "($subId, $revId, $i, $grade)";
+  foreach ($newAuxGrades as $i => $grade) {
+    if (!isset($grade)) $grade='NULL';
+    $vals .= $comma . "($subId,$revId,$i,$grade)";
     $comma = ',';
   }
 
   // finally, insert or update the report
+
+  // "BEGIN" is "START TRANSCTION" but works with older versions of MySQL
   mysql_query("BEGIN", $cnnct);
-          // same as "START TRANSCTION" but works with older versions of MySQL
-  db_query($qry, $cnnct);
+  db_query($qry, $cnnct);      // insert/update the review itself
   db_query("DELETE FROM auxGrades WHERE subId=$subId AND revId=$revId",$cnnct);
   if (!empty($vals))
-    db_query("INSERT INTO auxGrades VALUES $vals", $cnnct);
+    db_query("INSERT INTO auxGrades (subId,revId,gradeId,grade) VALUES $vals",
+	     $cnnct);
   mysql_query("COMMIT", $cnnct); // commit changes
 
   // Update the statistics in the submissions table
@@ -160,20 +196,8 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
       ($row[3] / ((float)$row[4])) : "NULL"; 
     if (!isset($wAvg)) $wAvg = "NULL";
 
-    $qry = "UPDATE submissions SET avg={$avg}, wAvg={$wAvg}, minGrade={$min}, maxGrade={$max}, ";
-    if ($noUpdt) $qry .= "lastModified=lastModified WHERE subId=$subId";
-    else         $qry .= "lastModified=NOW() WHERE subId=$subId";
+    $qry = "UPDATE submissions SET avg={$avg},wAvg={$wAvg},minGrade={$min},maxGrade={$max},lastModified=NOW() WHERE subId=$subId";
     db_query($qry, $cnnct);
-
-    // also add the submission to reviewer's watch list is asked to
-    if ($watch) {
-      $qry = "UPDATE assignments SET watch=1 WHERE subId=$subId AND revId=$revId";
-      db_query($qry, $cnnct);
-      if (mysql_affected_rows()==0) { // insert a new entry to table
-	$qry = "INSERT IGNORE INTO assignments SET subId=$subId,revId=$revId,watch=1";
-	db_query($qry, $cnnct);
-      }
-    }
   }
 
   return $ret;
@@ -206,5 +230,24 @@ function backup_existing_review($subId, $revId, $nCrit, $cnnct)
   mysql_query($qry, $cnnct);
 
   return $nextVersion;
+}
+
+function compareReview($oldReview,$subReviewer,$conf,$score,
+		       $authCmnt,$pcCmnt,$chrCmnt,$slfCmnt,
+		       $flags,$attach,$oldAuxGrades,$newAuxGrades)
+{
+  if (!isset($oldReview) || !is_array($oldReview)) return true;
+  if (strcmp($oldReview['subReviewer'], $subReviewer)) return true;
+  if ($oldReview['confidence']!=$conf
+      || $oldReview['score']  !=$score
+      || $oldReview['flags']  !=$flags) return true;
+  if (strcmp($oldReview['comments2authors'],  $authCmnt)) return true;
+  if (strcmp($oldReview['comments2committee'],$pcCmnt))   return true;
+  if (strcmp($oldReview['comments2chair'],    $chrCmnt))  return true;
+  if (strcmp($oldReview['comments2self'],     $slfCmnt))  return true;
+  if (strcmp($oldReview['attachment'],        $attach))   return true;
+  if ($oldAuxGrades != $newAuxGrades) return true;
+
+  return false;
 }
 ?>

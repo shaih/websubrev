@@ -223,9 +223,8 @@ function saveReview($subId,$title,$subrev,
   }
 
   $add2watch = !$disFlag;
-  $noUpdtModTime = $disFlag;
   $ret = storeReview($subId, $revId, $subrev, $conf, $score, $grades, $cmnt,
-		     $pcCmnt, $chrCmnt, $slfCmnt, $add2watch, $noUpdtModTime);
+		     $pcCmnt, $chrCmnt, $slfCmnt, $add2watch);
 
   if ($ret==-1 || $ret==-2) return false; // unspecified subId or revId? something is wrong here..
   else if ($ret==-3) {
