@@ -18,10 +18,12 @@ $isChair = ($revId==CHAIR_ID
 if  ($isChair)  $revId = (int) trim($_GET['revId']);
 
 $cnnct = db_connect();
+$old = '';
 if (isset($_GET['bckpVersion']) && $_GET['bckpVersion']>0) {
   $table = "reportBckp";
   $ztable = "gradeBckp";
   $version = (int) $_GET['bckpVersion'];
+  $old = '(old version)';
 } else {
   $table = "reports";
   $ztable = "auxGrades";

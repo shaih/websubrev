@@ -12,6 +12,7 @@ if (isset($_GET['all_in_one'])) {
   $subId='all_in_one';
   $fmt = trim($_GET['all_in_one']);
 } else if (isset($_GET['attachment'])) {
+  $subId='attachment';
   $fileName = trim($_GET['attachment']);
   $fmt = file_extension($fileName);
 } else {
