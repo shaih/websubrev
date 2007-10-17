@@ -11,6 +11,8 @@ if (!file_exists('../init/confParams.php')) { // Not yet customized
   exit();
 }
 require_once('../includes/getParams.php'); 
+$confShortName = CONF_SHORT.' '.CONF_YEAR;
+$php_errormsg = ''; // just so we don't get notices when it is not defined.
 
 // Only the chair can use these scripts outside the submission periods
 $chair = false;
@@ -24,9 +26,6 @@ if ((PERIOD!=PERIOD_SUBMIT)&&(PERIOD!=PERIOD_CAMERA)) {
     exit("<h1>Submission Deadline Expired</h1>Please contact the chair.");
   }
 }
-
-$confShortName = CONF_SHORT.' '.CONF_YEAR;
-$php_errormsg = ''; // just so we don't get notices when it is not defined.
 
 // If 'magic quotes' are on, get rid of them
 if (get_magic_quotes_gpc()) {
