@@ -115,10 +115,12 @@ print <<<EndMark
 <title>Discussion of Submission $subId</title>
 
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
+<link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
 <style type="text/css">
 body { width : {$pageWidth}px; }
 h1, h2 {text-align: center;}
 table { width: 100%; }
+a.tooltips:hover span { width: 300px;}
 </style>
 
 <script type="text/javascript" language="javascript">

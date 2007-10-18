@@ -30,9 +30,28 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0)
 
   print "<br />\n<div class=\"darkbg\">\n";
   // If this is the chair: allow setting the status of this submission
+  // and also provide a list of reviewers that have conflict.
   if ($revId==CHAIR_ID) {
-    print "<a name=\"stts{$subId}\"> </a>";
+    $cnnct = db_connect();
+    $qry = "SELECT c.name FROM assignments a, committee c WHERE a.subId=$subId AND a.assign=-1 AND c.revId=a.revId";
+    $res = db_query($qry, $cnnct);
+    $conflictList = '';
+    while ($row = mysql_fetch_row($res)) {
+      $conflictList .= '<br/>&nbsp;&nbsp;'.$row[0];
+    }
+    print "<table><tbody><tr><td valign=middle>";
+    if (!empty($conflictList)) {
+      $zIx = 2000 - $subId;
+      print "<a name=\"stts{$subId}"
+	. '" class=tooltips href="#" onclick="return false;" style="z-index:'
+	. "$zIx; border: none;\">\n";
+      print '<img alt="X" title="" height=16 src="../common/stop.GIF" border=0/><span>Conflicts:'.$conflictList."</span></a></td><td>\n";
+    }
+    else {
+      print "&nbsp;&nbsp;&nbsp;&nbsp;</td><td>\n";
+    }
     print setFlags_table($subId, $sub['status']); // setFlags_table in revFunctions.php
+    print "</td></tr></tbody></table>";
   }
 
   print "<table style=\"width: 100%;\"><tbody><tr style=\"vertical-align: middle;\">\n";

@@ -189,6 +189,7 @@ print <<<EndMark
 
 <html><head>
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
+<link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
 <style type="text/css">
 h1 {text-align: center; }
 tr { vertical-align: top; }
@@ -198,6 +199,7 @@ tr { vertical-align: top; }
 .shown {display:inline;}
 td.ctr { text-align: center;} 
 div.fixed { font: 14px monospace; width: 90%;}
+a.tooltips:hover span { width: 300px;}
 </style>
 
 <title>Review List (by $heading)</title>
