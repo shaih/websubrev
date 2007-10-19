@@ -28,7 +28,7 @@ $cnnct = db_connect();
 $qry = "SELECT s.subId subId, s.title title, 
       UNIX_TIMESTAMP(s.lastModified) lastModif, s.status status,
       s.avg avg, s.wAvg wAvg, (s.maxGrade-s.minGrade) delta,
-      lp.lastSaw lastSaw, a.assign assign
+      lp.lastSaw lastSaw, a.assign assign, lp.lastVisited lastVisited
     FROM submissions s 
       LEFT JOIN assignments a ON a.revId='$revId' AND a.subId='$subId'
       LEFT JOIN lastPost lp ON lp.revId='$revId' AND lp.subId='$subId'
@@ -40,6 +40,7 @@ if (!($submission = mysql_fetch_assoc($res))
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 $lastSaw = isset($submission['lastSaw']) ? (int)$submission['lastSaw'] : 0;
+$lastVisited = $submission['lastVisited'];
 $title = htmlspecialchars($submission['title']);
 
 // Get the reviews for this subsmission
@@ -104,6 +105,19 @@ if (isset($submission['lastSaw'])) {
 }
 db_query($qry, $cnnct);
 
+// If this is not the first time we visit this page, get a list
+// of everything that changed since we last visited
+
+$changeLog = array();
+if (isset($submission['lastSaw'])) {
+  $qry = "SELECT UNIX_TIMESTAMP(entered), description FROM changeLog
+  WHERE subId=$subId AND ((entered > (NOW() - INTERVAL 10 DAY))
+                          OR (entered > '$lastVisited'))
+  ORDER BY entered DESC";
+  $res = db_query($qry, $cnnct);
+  while ($row = mysql_fetch_row($res)) $changeLog[] = $row;
+}
+
 // Now we can display the results to the user
 $pageWidth = 725;
 $links = show_rev_links();
@@ -120,7 +134,7 @@ print <<<EndMark
 body { width : {$pageWidth}px; }
 h1, h2 {text-align: center;}
 table { width: 100%; }
-a.tooltips:hover span { width: 300px;}
+a.tooltips:hover span { width: 400px;}
 </style>
 
 <script type="text/javascript" language="javascript">
@@ -143,17 +157,29 @@ EndMark;
 
 subDetailedHeader($submission, $revId, false);
 
+if (count($changeLog)>0) {
+  $chngeLogHtml = '<a class=tooltips href="#" onclick="return false;" style="border: 1px blue solid;">' . "Recent activity<span>\n";
+  foreach ($changeLog as $line) {
+    $when = utcDate('M-d H:i ', $line[0]);
+    $chngeLogHtml .= $when . $line[1] . "<br/>\n";
+  }
+  $chngeLogHtml .= "</span></a>\n";
+}
+else $chngeLogHtml = '';
+
 if (is_array($posts) && count($posts)>0) {
   $altview = ($threaded) ? 'UNthreaded' : 'threaded';
   print <<<EndMark
 <div style="float: right;">
     <a href="toggleThreaded.php">Switch to $altview view</a>
 </div>
+$chngeLogHtml
 <h2 style="text-align: left;"><a name="discuss">Discussion</a></h2>
 
 EndMark;
   show_posts($posts, $subId, $threaded, $lastSaw, $pageWidth);
 }
+else print $chngeLogHtml . "<br/>\n";
 
 if (!defined('CAMERA_PERIOD')) print <<<EndMark
 <a name="endDiscuss"> </a>
