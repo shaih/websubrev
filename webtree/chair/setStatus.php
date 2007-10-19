@@ -8,7 +8,7 @@
 $needsAuthentication = true;
 require 'header.php';
 $subId=0;
-$revId = (int) $pcMember[0];
+$revId = (int) $chair[0];
 $sttsCodes = array("None"=>"NO",
 		   "Reject"=>"RE",
 		   "Perhaps Reject"=>"MR",
@@ -16,7 +16,18 @@ $sttsCodes = array("None"=>"NO",
 		   "Maybe Accept"=>"MA",
 		   "Accept"=>"AC");
 
+// Read the current status before changing it
 $cnnct = db_connect();
+$qry = "SELECT subId, status FROM submissions WHERE status!='Withdrawn' ORDER BY subId";
+$res = db_query($qry,$cnnct);
+
+$oldStts = array();
+while ($row = mysql_fetch_row($res)) {
+  $subId = $row[0];
+  $oldStts[$subId] = $row[1];
+}
+
+
 foreach ($_POST as $key => $val) {
   if (strncmp($key, 'subStts', 7)!=0 || empty($val))
     continue;
@@ -25,6 +36,10 @@ foreach ($_POST as $key => $val) {
   if ($subId<=0) continue;
 
   $status = my_addslashes(trim($val), $cnnct);
+  if ($status==$oldStts[$subId]) continue;
+  $stCode = $sttsCodes[$status];
+  $oldStCode = $sttsCodes[$oldStts[$subId]];
+
   $qry = "UPDATE submissions SET status='$status', lastModified=NOW() WHERE subId={$subId} AND status!='$status'";
   db_query($qry, $cnnct);
 
@@ -43,12 +58,19 @@ foreach ($_POST as $key => $val) {
     }
     if (!empty($notify)) {
       $sbjct = "Submission $subId to ".CONF_SHORT.' '.CONF_YEAR
-	.': moved to '.$sttsCodes[$status];
+	.': moved to '.$stCode;
       my_send_mail($notify, $sbjct, '');
     }
+
+    // Add a change-log record
+    $qry = "INSERT INTO changeLog (subId,revId,changeType,description,entered)
+  VALUES ($subId,$revId,'Status','$oldStCode => $stCode',NOW())";
+    db_query($qry, $cnnct);
   }
 
-  // insert an entry to the acceptedPapers table if needed
+  // Insert an entry to the acceptedPapers table if needed (note: there
+  // is no real need to remove from that table if status changes back to
+  // something other than accept).
   if ($status='Accept') {
     $qry = "SELECT 1 from acceptedPapers where subId={$subId}";
     $res = db_query($qry, $cnnct);

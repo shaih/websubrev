@@ -200,6 +200,11 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
     db_query($qry, $cnnct);
   }
 
+  // Add this review to change-log for this submission
+  $qry = "INSERT INTO changeLog (subId,revId,changeType,description,entered)
+  VALUES ($subId,$revId,'Review','{$pcMember[1]} uploaded a review',NOW())";
+  db_query($qry, $cnnct);
+
   return $ret;
 }
 

@@ -309,5 +309,17 @@ CREATE TABLE IF NOT EXISTS votes (
     PRIMARY KEY (voteId, revId, subId)
 );
 
+CREATE TABLE IF NOT EXISTS changeLog (
+    changeId smallint(5) NOT NULL auto_increment,
+    subId smallint(5) NOT NULL,
+    revId smallint(3) NOT NULL, 
+    changeType enum ('Post','Review','Status') NOT NULL,
+    description text,
+    entered datetime NOT NULL,
+    PRIMARY KEY (changeId),
+    INDEX (subId),
+    INDEX (changeType)
+);
+
 -- Insert a row for the chair into the committee table
 INSERT INTO committee SET revId=1, revPwd='', name='', email='', canDiscuss=1;

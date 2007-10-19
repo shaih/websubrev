@@ -54,6 +54,11 @@ if (!empty($_POST['subject']) || !empty($_POST['comments'])) {
   $qry = "UPDATE submissions SET lastModified=NOW() WHERE subId='$subId'";
   db_query($qry, $cnnct);
 
+  // Add this post to list of changes for this submission
+  $qry = "INSERT INTO changeLog (subId,revId,changeType,description,entered)
+  VALUES ($subId,$revId,'Post','{$pcMember[1]} posted a message',NOW())";
+  db_query($qry, $cnnct);
+
   // Send the new post by email to reviewers that have this submission
   // on their watch list and asked to be notified by email of new posts
 

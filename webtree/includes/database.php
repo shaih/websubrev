@@ -321,5 +321,19 @@ function create_tabels($cnnct)
     PRIMARY KEY (voteId, revId, subId)
   )";
   db_query($qry, $cnnct, "Cannot CREATE votes table: ");
+
+  // Keep a list of all the modifications for any submission
+  $qry = "CREATE TABLE IF NOT EXISTS changeLog (
+    changeId smallint(5) NOT NULL auto_increment,
+    subId smallint(5) NOT NULL,
+    revId smallint(3) NOT NULL, 
+    changeType enum ('Post','Review','Status') NOT NULL,
+    description text,
+    entered datetime NOT NULL,
+    PRIMARY KEY (changeId),
+    INDEX (subId),
+    INDEX (changeType)
+  )";
+  db_query($qry, $cnnct, "Cannot CREATE changeLog table: ");
 }
 ?>
