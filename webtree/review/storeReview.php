@@ -201,8 +201,9 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
   }
 
   // Add this review to change-log for this submission
+  $name = mysql_real_escape_string($pcMember[1],$cnnct);
   $qry = "INSERT INTO changeLog (subId,revId,changeType,description,entered)
-  VALUES ($subId,$revId,'Review','{$pcMember[1]} uploaded a review',NOW())";
+  VALUES ($subId,$revId,'Review','$name uploaded a review',NOW())";
   db_query($qry, $cnnct);
 
   return $ret;

@@ -55,8 +55,9 @@ if (!empty($_POST['subject']) || !empty($_POST['comments'])) {
   db_query($qry, $cnnct);
 
   // Add this post to list of changes for this submission
+  $name =  mysql_real_escape_string($pcMember[1],$cnnct);
   $qry = "INSERT INTO changeLog (subId,revId,changeType,description,entered)
-  VALUES ($subId,$revId,'Post','{$pcMember[1]} posted a message',NOW())";
+  VALUES ($subId,$revId,'Post','{$name} posted a message',NOW())";
   db_query($qry, $cnnct);
 
   // Send the new post by email to reviewers that have this submission
