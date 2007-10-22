@@ -15,7 +15,7 @@ if (isset($_GET['subId'])) { $subId = (int) trim($_GET['subId']); }
 else exit("<h1>No Submission specified</h1>");
 
 $qry ="SELECT s.title, s.authors, s.abstract, s.category, s.keyWords,
-       s.format, a.assign, a.watch, r.revId
+       s.format, a.assign, a.watch, r.revId, s.affiliations
     FROM submissions s
        LEFT JOIN assignments a ON a.revId=$revId AND a.subId=s.subId
        LEFT JOIN reports r ON r.revId='$revId' AND r.subId=s.subId
@@ -27,9 +27,16 @@ if (!($submission = mysql_fetch_assoc($res))
     || $submission['assign']==-1) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
+
 $title    = htmlspecialchars($submission['title']);
-$authors  = ANONYMOUS ? '' :
-       '<h3>'.htmlspecialchars($submission['authors']).'</h3>';
+if (ANONYMOUS) { $authors = ''; }
+else {
+  $affiliations = htmlspecialchars($submission['affiliations']);
+  $authors = htmlspecialchars($submission['authors']);
+
+  if (empty($affiliations)) $authors = "<h3>$authors</h3>";
+  else $authors = "<h3>$authors<br/><small>$affiliations</small></h3>";
+}
 $abstract = nl2br(htmlspecialchars($submission['abstract']));
 $category = htmlspecialchars($submission['category']);
 if (empty($category)) $category = '*';
