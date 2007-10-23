@@ -44,7 +44,7 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0)
       $zIx = 2000 - $subId;
       print "<a name=\"stts{$subId}"
 	. '" class=tooltips href="#" onclick="return false;" style="z-index:'
-	. "$zIx; border: none;\">\n";
+	. "$zIx;\">\n";
       print '<img alt="X" title="" height=16 src="../common/stop.GIF" border=0/><span>Conflicts:'.$conflictList."</span></a></td><td>\n";
     }
     else {

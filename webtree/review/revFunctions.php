@@ -147,13 +147,13 @@ function listSubmissionsBox($canDiscuss, $flags=0)
   $srt0=$srt1=$srt2='';
   switch ($flags % 8) {
   case 1:
-    $srt1=' checked="checked"';
+    $srt1=' checked="checked"'; // sorted by modification date
     break;
   case 2:
-    $srt2=' checked="checked"';
+    $srt2=' checked="checked"'; // sorted by weighted average
     break;
   default:
-    $srt0=' checked="checked"';
+    $srt0=' checked="checked"'; // sorted by submission number
   }
   $sttsChk  = ($flags &  8) ? ' checked="checked"' : '';
   $asgnChk  = ($flags & 16) ? ' checked="checked"' : '';

@@ -48,6 +48,7 @@ print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
 <style type="text/css">
 tr { vertical-align: top; }
 td { text-align: center; }
@@ -58,6 +59,7 @@ h1 { text-align: center; }
 .three { background: lightgrey; }
 .four { background: lightgreen; }
 .five { background: green; }
+a.tooltips { text-align:left; }
 </style>
 <title>Review Preferences for $pcMember[1]</title>
 </head>
@@ -72,15 +74,8 @@ you can specify one of the following options: <br /><br />
 <table><tbody>
 
 EndMark;
-for ($i=0; $i<6; $i++) {
-  print "<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-  <td class=\"{$classes[$i]}\">$i</td>
-  <td style=\"text-align: left;\">{$semantics[$i]}</td>\n</tr>\n";
-}
 
-print <<<EndMark
-</tbody></table>
-$warningHtml
+$bodyHTML =<<<EndMark
 <form action="doPrefs.php" enctype="multipart/form-data" method="post">
 <table><tbody>
 <tr><th><small>pref</small></th>
@@ -90,23 +85,39 @@ $warningHtml
   <th class="three">3</th>
   <th class="four">4</th>
   <th class="five">5</th>
+  <th><small>detail</small></th>
 </tr>
 
 EndMark;
 
 $prefCount = array(0, 0, 0, 0, 0, 0);
-$qry = "SELECT s.subId, s.title, a.pref, a.assign
-  FROM submissions s LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId
-  WHERE s.status!='Withdrawn'
-  ORDER BY s.subId";
+$qry = "SELECT s.subId,s.title,s.authors,s.affiliations,s.abstract,s.category,
+  s.keyWords,a.pref,a.assign FROM submissions s LEFT JOIN assignments a
+  ON a.revId=$revId AND a.subId=s.subId
+  WHERE s.status!='Withdrawn' ORDER BY s.subId";
 $res = db_query($qry, $cnnct, "Cannot retrieve submission list: ");
-while ($row = mysql_fetch_row($res)) {
-  if ($row[3]==-1) continue; // conflict
+$zIdx = 2000;
+while ($row = mysql_fetch_assoc($res)) {
+  if ($row['assign']==-1) continue; // conflict
   // Get the submission details
-  $subId = (int) $row[0];
-  $title = htmlspecialchars($row[1]);
+  $subId = (int) $row['subId'];
+  $zIdx--;
+  $title = htmlspecialchars($row['title']);
+  if (ANONYMOUS) $authors = $affiliations = '';
+  else {
+    $authors = htmlspecialchars($row['authors']);
+    $affiliations = htmlspecialchars($row['affiliations']);
+    if (empty($affiliations)) $authors .= "<br/>";
+    else $authors .= " ($affiliations)<br/>";
+  }
+  $abstract = $row['abstract'];
+  if (strlen($abstract)>1000) $abstract = substr($abstract,0,997) . ' [...]';
+  $abstract = '<br/><br/><b>Abstract:</b> ' . htmlspecialchars($abstract);
+  $abstract = nl2br($abstract);
+  $category = empty($row['category'])? 'None' : htmlspecialchars($row['category']);
+  $category .= "/" . htmlspecialchars($row['keyWords']);
 
-  $pref = isset($row[2]) ? ((int) $row[2]) : 3;
+  $pref = isset($row['pref']) ? ((int) $row['pref']) : 3;
   if ($pref < 0 || $pref > 5) $pref = 3;
   $prefCount[$pref]++;
 
@@ -114,31 +125,36 @@ while ($row = mysql_fetch_row($res)) {
   $checked[$pref] = ' checked="checked"';
   $cls = $classes[$pref];
 
-  print "<tr>
-  <td class=\"$cls\">$pref</td>\n";
+  $bodyHTML .= "<tr><td class=\"$cls\">$pref</td>\n";
 
   for ($i=0; $i<6; $i++) {
     $cls = $classes[$i];
     $chk = $checked[$i];
-    print "  <td class=\"{$cls}\">
+    $bodyHTML .= "  <td class=\"{$cls}\">
     <input type=\"radio\" name=\"sub{$subId}\" value=$i{$chk}>
   </td>\n";
   }
 
-  print "  <td>{$subId}.</td>
-  <td style=\"text-align: left;\"><a href=\"submission.php?subId=$subId\" target=_blank>{$title}</a></td>
-</tr>\n";
+  $bodyHTML .=<<<EndMark
+  <td><a class=tooltips href="submission.php?subId=$subId" target=_blank style="z-index:$zIdx;">&nbsp;<img title="" alt="abs" src="../common/smalleye.gif"/><span>
+<b>$title</b><br/>
+$authors
+$category
+$abstract
+</span></a></td>
+  <td>{$subId}.</td>
+  <td style="text-align: left;">$title</td>
+</tr>
+
+EndMark;
 }
 
-print <<<EndMark
+$bodyHTML .=<<<EndMark
 </tbody>
 </table>
 <br/>
 <input value="Submit My Preferences" type="submit">
 </form>
-<br/>
-Total preference count: 
-<table><tbody>
 
 EndMark;
 
@@ -146,11 +162,14 @@ EndMark;
 for ($i=0; $i<6; $i++) {
   print "<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
   <td class=\"{$classes[$i]}\">$i</td>
-  <td style=\"text-align: right;\">{$prefCount[$i]} submissions</td>\n</tr>\n";
+  <td style=\"text-align: right;\">({$prefCount[$i]} submissions):&nbsp;</td>
+  <td style=\"text-align: left;\">{$semantics[$i]}</td>\n</tr>\n";
 }
+print "</tbody></table>\n";
+print $warningHtml."\n";
 
 print <<<EndMark
-</tbody></table>
+$bodyHTML
 <hr />
 $links
 </body>

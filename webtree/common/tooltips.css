@@ -1,10 +1,6 @@
 a.tooltips { 
 	position: relative; 
-        font-family: Helvetica;
-	font-weight: bold; 
-	background-color: #ffd; 
-	color: blue;
-/*	border: 1px blue solid; */
+	border: none;
 	text-decoration: none;
 }
 a.tooltips:hover {font-size: 100%;} 
@@ -16,7 +12,7 @@ a.tooltips:hover span { /*the span will display just on :hover state*/
 	position: absolute;
 	top: 8px; 
 	left: 15px; 
-	width: 700px;
+	width: 600px;
 	border: 1px solid;
 	background-color: #ffd; 
 	color: #000;
@@ -24,4 +20,5 @@ a.tooltips:hover span { /*the span will display just on :hover state*/
         font-family: Helvetica;
 	font-weight: normal; 
 	font-size: .8em;
+	text-align:left;
 }

@@ -54,7 +54,7 @@ print <<<EndMark
 <link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
 <style type="text/css">
 h1 {text-align: center;}
-a.tooltips { border: none; }
+a.tooltips { color: blue; }
 a.tooltips:hover span { width: 250px; }
 </style>
 
