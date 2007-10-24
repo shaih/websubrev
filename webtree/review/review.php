@@ -97,9 +97,9 @@ else $watchHtml = '';
 if (isset($row['revFlags']) && $row['revFlags']==REPORT_NOT_DRAFT) {
   $saveDraft = '';
 } else {
-  $saveDraft = ' or <input name="draft" type="submit" value="Work in progress"> (<a target=documentation href="../documentation/reviewer.html#draftReview">what&#39;s this?</a>)';
+  $saveDraft = ' or <input name="draft" type="submit" value="Work in progress"> (<i>Work-in-progress reports are NOT hidden from chair/others.</i> <a target=documentation href="../documentation/reviewer.html#draftReview">Read more</a>)<br/><br/>';
 }
-
+ 
 $colors = array('lightgrey', 'rgb(240, 240, 240)');
 $links = show_rev_links();
 print <<<EndMark
