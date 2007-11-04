@@ -62,6 +62,10 @@ $x = empty($row['acceptLtr']) ? NULL : $row['acceptLtr'];
 define('ACCEPT_LTR', $x);
 $x = empty($row['rejectLtr']) ? NULL : $row['rejectLtr'];
 define('REJECT_LTR', $x);
+$x = empty($row['acptSbjct']) ? NULL : $row['acptSbjct'];
+define('ACCEPT_SBJCT', $x);
+$x = empty($row['rjctSbjct']) ? NULL : $row['rjctSbjct'];
+define('REJECT_SBJCT', $x);
 
 $confFormats = formatTable($row['formats']);
 $categories = categoryTable($row['categories']);

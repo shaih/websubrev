@@ -45,6 +45,8 @@ function create_tabels($cnnct)
     cmrInstrct text,
     acceptLtr text,
     rejectLtr text,
+    acptSbjct varchar(80),
+    rjctSbjct varchar(80),
     PRIMARY KEY (version)
   )";
   db_query($qry, $cnnct, "Cannot CREATE parameter table: ");
@@ -69,6 +71,8 @@ function create_tabels($cnnct)
     cmrInstrct text,
     acceptLtr text,
     rejectLtr text,
+    acptSbjct varchar(80),
+    rjctSbjct varchar(80),
     PRIMARY KEY (version)
   )";
   db_query($qry, $cnnct, "Cannot CREATE parameter backup table: ");  

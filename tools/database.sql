@@ -42,6 +42,8 @@ CREATE TABLE IF NOT EXISTS parameters (
     cmrInstrct text,
     acceptLtr text,
     rejectLtr text,
+    acptSbjct varchar(80),
+    rjctSbjct varchar(80),
     PRIMARY KEY (version)
 );
 
@@ -65,6 +67,8 @@ CREATE TABLE IF NOT EXISTS paramsBckp (
     cmrInstrct text,
     acceptLtr text,
     rejectLtr text,
+    acptSbjct varchar(80),
+    rjctSbjct varchar(80),
     PRIMARY KEY (version)
 );
 

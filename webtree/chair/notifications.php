@@ -33,6 +33,9 @@ $links
 EndMark;
 
 // the default accept letter
+$accSbjct = ACCEPT_SBJCT;
+if (empty($accSbjct)) $accSbjct="Your submission was accepted to $cName";
+
 $acc = ACCEPT_LTR;
 if (empty($acc)) $acc = 'Dear <$authors>,
 
@@ -72,6 +75,9 @@ Sincerely,
 $acc = htmlspecialchars($acc);
 
 // the default reject letter
+$rejSbjct = REJECT_SBJCT;
+if (empty($rejSbjct)) $rejSbjct="Your $cName submission";
+
 $rej = REJECT_LTR;
 if (empty($rej)) $rej = 'Dear <$authors>,
 
@@ -104,9 +110,15 @@ $rej = htmlspecialchars($rej);
 
 // If $_POST['notifySubmitters'] is set, send the actual emails
 if (isset($_POST['notifySubmitters']) || isset($_POST['saveText'])) {
+  $x = trim($_POST['accSubject']);
+  if (!empty($x)) $accSbjct = $x;
+
   $x = trim($_POST['accLetter']);
   if (!empty($x)) $acc = $x;
   $acc = str_replace("\r\n", "\n", $acc); // just in case
+
+  $x = trim($_POST['rejSubject']);
+  if (!empty($x)) $rejSbjct = $x;
 
   $x = trim($_POST['rejLetter']);
   if (!empty($x)) $rej = $x;
@@ -115,6 +127,8 @@ if (isset($_POST['notifySubmitters']) || isset($_POST['saveText'])) {
   $cnnct = db_connect();
   $qry = "UPDATE parameters SET acceptLtr='".my_addslashes($acc,$cnnct)
   . "',\n  rejectLtr='".my_addslashes($rej,$cnnct)
+  . "',\n  acptSbjct='".my_addslashes($accSbjct,$cnnct)
+  . "',\n  rjctSbjct='".my_addslashes($rejSbjct,$cnnct)
   . "'\n  WHERE version=".PARAMS_VERSION;
   db_query($qry, $cnnct);
 }
@@ -135,12 +149,12 @@ if (isset($_POST['notifySubmitters'])) {
   while ($row = mysql_fetch_row($res)) {
     if ($row[4]=='Accept') {
       notifySubmitters($row[0], $row[1], $row[2], $row[3], $row[5],
-		       "Your submission was accepted to {$cName}", $acc);
+		       $accSbjct, $acc);
     }
     // Send a rejection letter only when status='Reject'
     else if ($row[4]=='Reject') {
       notifySubmitters($row[0], $row[1], $row[2], $row[3], $row[5],
-		       "Your {$cName} submission", $rej);
+		       $rejSbjct, $rej);
     }
     else continue;
 
@@ -182,9 +196,12 @@ database. To be recognized as keywords, these words MUST include the
 '&lt;' and '&gt;' characters and the dollar-sign.)
 
 <h3>Acceptance letters</h3>
+Subject: <input type=text name=accSubject size=90 maxlength=80 value="$accSbjct">
+<br/>
 <textarea name="accLetter" cols=80 rows=13>$acc</textarea>
 
 <h3>Rejection letters</h3>
+Subject: <input type=text name=rejSubject size=90 maxlength=80 value="$rejSbjct"><br/>
 <textarea name="rejLetter" cols=80 rows=13>$rej</textarea>
 <br /><br />
 
@@ -212,6 +229,11 @@ function notifySubmitters($subId, $title, $authors, $contact, $pwd, $sbjct, $tex
 {
   $errMsg = "notification for submission {$subId} to {$contact}";
   $cName = CONF_SHORT.' '.CONF_YEAR;
+
+  $sbjct = str_replace('<$authors>', $authors, $sbjct);
+  $sbjct = str_replace('<$title>', $title, $sbjct);
+  $sbjct = str_replace('<$subId>', $subId, $sbjct);
+  $sbjct = str_replace('<$subPwd>', $pwd, $sbjct);
 
   $text = str_replace('<$authors>', $authors, $text);
   $text = str_replace('<$title>', $title, $text);
