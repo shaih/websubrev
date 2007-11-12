@@ -158,7 +158,7 @@ EndMark;
 subDetailedHeader($submission, $revId, false);
 
 if (count($changeLog)>0) {
-  $chngeLogHtml = '<a class=tooltips href="#" onclick="return false;" style="  font-family: Helvetica; font-weight: bold; background-color: #ffd; color: blue; border: 1px blue solid;">' . "Recent activity<span>\n";
+  $chngeLogHtml = '<a class=tooltips href="#" onclick="return false;" style="  font-family: Helvetica; font-weight: bold; background-color: #ffd; color: blue; border: 1px blue solid; z-index:1;">' . "Recent activity<span>\n";
   foreach ($changeLog as $line) {
     $when = utcDate('M-d H:i ', $line[0]);
     $chngeLogHtml .= $when . $line[1] . "<br/>\n";
