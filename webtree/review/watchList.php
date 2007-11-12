@@ -9,11 +9,15 @@ $needsAuthentication=true;
 require 'header.php';  // defines $pcMember=array(revId, name, ...)
 
 $revId = (int) $pcMember[0];
+$disFlag= (int) $pcMember[3];
 $pcmFlags= (int) $pcMember[5];
 $chkEmlNewPosts= ($pcmFlags & FLAG_EML_WATCH_EVENT)? ' checked="checked"': '';
 $chkWatchOrder= ($pcmFlags & FLAG_ORDER_REVIEW_HOME)? ' checked="checked"': '';
 
 $classes = array('zero', 'one', 'two', 'three', 'four', 'five');
+
+// Check that this reviewer is allowed to discuss submissions
+if ($disFlag != 1) exit("<h1>$revName cannot discuss submissions yet</h1>");
 
 // A header for the prefs column (if needed)
 $prfHdr = (REVPREFS) ? "\n  <th><small>pref</small></th>" : "";
