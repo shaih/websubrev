@@ -34,4 +34,16 @@ define('FLAG_VOTE_ON_MA', 64);
 define('FLAG_VOTE_ON_AC', 128);
 
 define('CHAIR_ID', 1);
+
+define('VOTE_ON_SUBS', 1);
+define('VOTE_ON_ALL',  2);
+define('VOTE_ON_RE',   4);
+define('VOTE_ON_MR',   8);
+define('VOTE_ON_NO',  16);
+define('VOTE_ON_DI',  32);
+define('VOTE_ON_MA',  64);
+define('VOTE_ON_AC', 128);
+
+define('REPORT_NOT_DRAFT', 1);
+
 ?>

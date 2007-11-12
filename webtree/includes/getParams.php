@@ -121,17 +121,6 @@ $REicon = '<img alt="[RE]" title="Status: reject" src="../common/RE.gif" border=
 $NOicon = '<img alt="[NO]" title="Status: none" src="../common/NO.gif" border=0>';
 $WDicon = '<img alt="[WD]" title="Status: Withdrawn" src="../common/WD.gif" border=0>';
 
-define('VOTE_ON_SUBS', 1);
-define('VOTE_ON_ALL',  2);
-define('VOTE_ON_RE',   4);
-define('VOTE_ON_MR',   8);
-define('VOTE_ON_NO',  16);
-define('VOTE_ON_DI',  32);
-define('VOTE_ON_MA',  64);
-define('VOTE_ON_AC', 128);
-
-define('REPORT_NOT_DRAFT', 1);
-
 function formatTable($fmtString)
 {
   if (!isset($fmtString)) return NULL;
