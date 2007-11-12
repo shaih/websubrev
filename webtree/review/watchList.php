@@ -11,6 +11,7 @@ require 'header.php';  // defines $pcMember=array(revId, name, ...)
 $revId = (int) $pcMember[0];
 $pcmFlags= (int) $pcMember[5];
 $chkEmlNewPosts= ($pcmFlags & FLAG_EML_WATCH_EVENT)? ' checked="checked"': '';
+$chkWatchOrder= ($pcmFlags & FLAG_ORDER_REVIEW_HOME)? ' checked="checked"': '';
 
 $classes = array('zero', 'one', 'two', 'three', 'four', 'five');
 
@@ -100,8 +101,12 @@ print <<<EndMark
 </table>
 <br />
 <input value="Update Watch List" type="submit" name="updateWatchList">
-<input type=checkbox name=emlNewPosts{$chkEmlNewPosts}> Send me email
-whenever a new message is posted to any submission on my watch list
+<table><tbody>
+<tr><td><input type=checkbox name=emlNewPosts{$chkEmlNewPosts}></td>
+ <td style="text-align: left;">Send me email whenever a new message is posted to any submission on my watch list</td></tr>
+<tr><td><input type=checkbox name=orderWatchAtHome{$chkWatchOrder}></td>
+ <td style="text-align: left;">Use the same ordering for the watch list on my review homepage as in the submission-list page<br/>(clearing this checkbox means that ordering on the homepage is always by submission number)</td></tr>
+</tbody></table>
 </form>
 <hr />
 $links

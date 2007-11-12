@@ -150,6 +150,9 @@ CREATE TABLE IF NOT EXISTS acceptedPapers (
    * Fourth byte:
    *     1 - Send uploaded reviews back to reviewer by email
    *     2 - Send email when reviews/posts are made to submission on watch list
+   *     4 - Use the same ordering for watch list on the review home as in the
+   *         submission list (when unset then order on review home is always
+   *         by number)
    */
 CREATE TABLE IF NOT EXISTS committee (
     revId smallint(3) NOT NULL auto_increment,

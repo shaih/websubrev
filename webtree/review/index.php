@@ -11,7 +11,7 @@ require 'printSubList.php';
 require 'header.php'; // defines $pcMember=array(id, name, ...)
 $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
-$disFlag= (int) $pcMember[3];
+$disFlag= (int) $pcMember[3];  // Is it discussion phase for this reviewr?
 $pcmFlags= (int) $pcMember[5];
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 
@@ -85,16 +85,17 @@ if ($disFlag) {
 }
 else $watchList = '';
 
-
+// listSubmissionsBox is defined in revFunctions.php
 $listSubmissions = listSubmissionsBox($disFlag,$pcmFlags);
 
 $showReviews = $allReviews = $uploadScores= '';
 if ($disFlag) {         // Reviewer in the discussion phase
-  $watchedSubs = discussion_phase($cnnct, $revId, empty($ballotsText));
+  $watchedSubs = discussion_phase($cnnct, $revId, empty($ballotsText), $pcmFlags);
   if ($watchedSubs) {
     $legend = show_legend(); // defined in confUtils.php
   }
 
+  // showReviewsBox is defined in revFunctions.php
   $showReviews = "<td style=\"width: 270px;\">\n"
     . showReviewsBox($pcmFlags) . "</td>\n";
   $allReviews = '<br/>
@@ -197,7 +198,7 @@ function individual_review($cnnct, $revId)
   else print "<br/>\n";
 }
 
-function discussion_phase($cnnct, $revId, $extraSpace)
+function discussion_phase($cnnct, $revId, $extraSpace, $pcmFlags)
 {
   global $discussIcon1, $discussIcon2;
 
@@ -219,13 +220,27 @@ function discussion_phase($cnnct, $revId, $extraSpace)
     $reviewed[$subId] = $notDraft;
   }
 
+  // Determine ordering of watch-list submissions
+  if ($pcmFlags & FLAG_ORDER_REVIEW_HOME) switch ($pcmFlags % 8) {
+  case 1:
+    $order = 'lastModif DESC, '; // sorted by modification date
+    break;
+  case 2:
+    $order = 's.wAvg DESC, ';    // sorted by weighted average
+    break;
+  default:
+    $order = '';                 // sorted by submission number
+  }
+  else $order = '';              // sorted by submission number
+
+  $order .= 's.subId';
   $qry ="SELECT s.subId subId, title, s.format format, status,
       UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
       a.watch watch, s.wAvg avg
     FROM submissions s, assignments a
     WHERE status!='Withdrawn' AND a.revId={$revId}
       AND a.subId=s.subId AND a.watch=1
-    ORDER BY s.subId";
+    ORDER BY $order";
   $res = db_query($qry, $cnnct);
 
   $needsDiscussion = 0;

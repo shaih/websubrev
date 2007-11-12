@@ -39,6 +39,9 @@ if (isset($_POST['updateWatchList'])) {
   $newPCMflags = $pcmFlags;
   if (isset($_POST['emlNewPosts'])) $newPCMflags |= FLAG_EML_WATCH_EVENT;
   else $newPCMflags &= (~FLAG_EML_WATCH_EVENT);
+  if (isset($_POST['orderWatchAtHome']))
+       $newPCMflags |= FLAG_ORDER_REVIEW_HOME;
+  else $newPCMflags &= (~FLAG_ORDER_REVIEW_HOME);
   if ($newPCMflags != $pcmFlags) {
     $qry = "UPDATE committee SET flags=$newPCMflags WHERE revId=$revId";
     db_query($qry, $cnnct);
