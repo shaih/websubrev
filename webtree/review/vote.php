@@ -110,7 +110,7 @@ else {                           // voting on "other things"
     $voteItems[$itemId][1] = (int) $row[1];
   }
 }
-$voteRecorded = isset($_GET['voteRecorded'])? 'Your vote was recorded.' : '';
+$voteRecorded = isset($_GET['voteRecorded'])? '<span style="color: red;">Your vote was recorded.</span>' : '';
 
 if ($voteType=='Grade') {  // reviewrs grade the submissions
   $voteHdr = "";
