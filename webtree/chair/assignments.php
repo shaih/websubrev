@@ -232,7 +232,7 @@ print <<<EndMark
 </tbody></table>
 <a name="saveMatrix"></a>
 <input type="hidden" name="saveAssign" value="on">
-<input type="submit" value="Save Assignments">
+<input type="submit" value="Save Assignments in Matrix Interface">
 <input type="checkbox" name="visible" value="on">
 Make these assignments visible to the reviewers
 </form>
@@ -302,7 +302,7 @@ EndMark;
 print <<<EndMark
 </ol>
 <input type="hidden" name="manualAssign" value="on">
-<input type="submit" value="Save Assignments">
+<input type="submit" value="Save Assignments in List Interface">
 <input type="checkbox" name="visible" value="on">
 Make these assignments visible to the reviewers
 </form>

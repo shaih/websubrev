@@ -94,9 +94,9 @@ $timeleft</h3>
      Mandatory fields are marked with a (*)</td>
   </tr>
   <tr>
-    <td style="text-align: right;"><small>(*)</small> Title:</td>
+    <td style="text-align: right;"><small>(*)</small>&nbsp;Submission&nbsp;Title:</td>
     <td><input name="title" size="90" type="string"><br/>
-        The title of your submission</td>
+        The title of the paper that you are submitting</td>
   </tr>
   <tr>
     <td style="text-align: right;"><small>(*)</small> Authors:</td>
