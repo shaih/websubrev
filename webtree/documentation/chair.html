@@ -9,7 +9,7 @@ h1 {text-align: center;}
 
 <body>
 <h1>Web Submission and Review, Chair Documentation</h1>
-<h2 style="text-align: center;">Version 0.6 - September 2007</h2>
+<h2 style="text-align: center;">Version 0.61 - December 2007</h2>
 
 <a name="TOC"></a><h2>Table of Contents</h2>
 <ol>
@@ -99,7 +99,7 @@ that the web-server has permission to write in the <tt>"init"</tt>
 sub-directory of the BASE directory. After copying the files to the BASE
 directory (and setting the permissions), point your browser to the page
 <tt>chair/initialize.php</tt> under the BASE directory. In this form you
-need to specify various details that are neeed for initializing the new
+need to specify various details that are needed for initializing the new
 site:
 <dl>
 <dt><a name="webServer"></a><b>Web Server.</b> 
@@ -170,10 +170,10 @@ page</a>, and also from the PC membership page.<br/><br/>
 </dt>
 </dt>
 <dt><a name="adminEmail"></a><b>Administrator email.</b>
-The administrator's email is rarly used by the software: it's main purpose
-is to serve as a backup address for the chai'r email. For example, if the
+The administrator's email is rarely used by the software: it's main purpose
+is to serve as a backup address for the chair's email. For example, if the
 need arise to reset the chair's password, then an email with the new password
-will be sent to both the chair and the adminsitator email addresses. Also,
+will be sent to both the chair and the administrator email addresses. Also,
 there are some rare error situations where the software would sends an email
 to the administrator. After it is set, the administrator email can only be
 changed by manually editing the file <tt>init/confParams.php</tt> under the
@@ -505,12 +505,12 @@ can see how many reviewers are assigned to that submission. <i>Note, however,
 that these counters are only updated when you click the "save assignments"
 button.</i><a name="happy"></a><br/>
 <br/>
-In addition, at the bottom of each column you can find a heiristic
+In addition, at the bottom of each column you can find a heuristic
 indication of "how happy" the PC member will be with the
 assignment. Roughly, the software computes the fraction of requested
 papers from all the assigned ones and the faction of assigned papers
 from all the requested ones, and the "happiness level" is taken as the
-largets of these two fractions.  A level below 25% is "Angry" <img
+largest of these two fractions.  A level below 25% is "Angry" <img
 src="../common/angry.gif">, 25-49% is "Sad"
 <img src="../common/sad.gif">, 50-74% is "Satisfied" <img
 src="../common/ok.gif">, and from 75% and up is "Happy" <img
@@ -535,7 +535,7 @@ you can specify a list of PC members that are assigned to that submission.
 The assignments that are automatically computed by the software or set
 from the manual assignment page are stored as a "scratch copy" that is
 only visible to the chair but not to the reviewers. This allows the
-chair to play around with the assignments before making them publically
+chair to play around with the assignments before making them publicly
 available.<br/>
 <br/>
 To make the assignments visible to the reviewers, the chair must check
@@ -578,11 +578,11 @@ move from 'Discuss' to 'Maybe Accept'", or "which of the accepted papers
 should receive the best paper award", or even "who will give the invited
 talk at the conference".
 Managing the votes is done from the Voting page. On that page you can
-set the parameters for a new ballot, edit the paremeters of the ballots
+set the parameters for a new ballot, edit the parameters of the ballots
 that are currently in progress, and see a list of all the ballots (in
-progrress and otherwise) with a link to the result page for each one.<br/>
+progress and otherwise) with a link to the result page for each one.<br/>
 <br/>
-You can det up a ballot to vote either on submissions or on "other
+You can set up a ballot to vote either on submissions or on "other
 things" (that you need to specify explicitly). Note that PC members can
 only vote on submissions when they are in the public-discussion phase of
 the review. Before that they can only vote on "other things" (e.g.,
