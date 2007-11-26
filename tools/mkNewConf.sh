@@ -22,9 +22,9 @@ alias makepasswd="head -c8 /dev/urandom | od -t x8 | awk '{ print \$2 }'"
 #
 # Default values for the directories: modify these
 # ------------------------------------------------
-defBaseDir="/var/www/html/websubrev/0.6"
-defUpldDir="/var/www/data/websubrev/0.6"
-defBaseURL="myserver.myUniversity.edu/websubrev/0.6/"
+defBaseDir="/var/www/html/websubrev/0.61"
+defUpldDir="/var/www/data/websubrev/0.61"
+defBaseURL="myserver.myUniversity.edu/websubrev/0.61/"
 echo
 echo "Creating a New Submission-and-Review Site:"
 echo "============================================================="
