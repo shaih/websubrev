@@ -207,7 +207,7 @@ EndMark;
     }
     if (!empty($cmnt2PC)) {
       $reviewsShown = true;
-      print "\n<br/><b>Comments to Comittee:</b><br />\n";
+      print "\n<br/><b>Comments to Committee:</b><br />\n";
       print '<div class="fixed">'.nl2br($cmnt2PC).'</div>';
     }
     if (!empty($cmnt2athr) || !empty($attachment)) {
