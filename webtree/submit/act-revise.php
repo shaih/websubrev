@@ -74,6 +74,7 @@ if (defined('CAMERA_PERIOD') && $row['status']!='Accept') {
   exit("<h1>Submission with ID $subId was not accepted to the conference</h1>");
 }
 
+$oldStatus= $row['status'];
 $oldCntct = $row['contact'];
 $oldFrmt = $row['format'];
 
@@ -139,7 +140,7 @@ if (!empty($sbFileName)) {
      
 // If anything changed, insert changes into the database
 if (!empty($updts) || isset($_POST['reinstate'])) {
-  if (!defined('REVIEW_PERIOD') || isset($_POST['reinstate']))
+  if (!defined('REVIEW_PERIOD') || isset($_POST['reinstate']) || $oldStatus='Withdrawn')
     $updts .= "status='None', "; 
   $qry = "UPDATE submissions SET $updts lastModified=NOW()\n"
     . "WHERE subId='{$subId}' AND subPwd='{$subPwd}'";
