@@ -237,14 +237,13 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
     $msg .= "You can still revise this submission by going to\n\n  ";
     $msg .= "$prot://".BASE_URL."submit/{$revise}?subId=$sid&subPwd=$pwd\n\n";
 
-    $msg .= "Make sure that you uploaded the right file to the server. ";
     if (isset($fileSize) && $fileSize>0) {
+      $msg .= "Make sure that you uploaded the right file to the server. ";
       $msg .= "\nThe file that we received contains $fileSize bytes. ";
+      $msg.="You can download\nyour file back by going to\n\n  ";
+      $msg.="$prot://".BASE_URL."submit/download.php?subId=$sid&subPwd=$pwd\n\n";
     }
-    $msg.="You can download\nyour file back by going to\n\n  ";
-    $msg.="$prot://".BASE_URL."submit/download.php?subId=$sid&subPwd=$pwd\n\n";
   }
-
   if (!empty($ttl))  { $msg .= "Title:    \t{$ttl}\n"; }
   if (!empty($athr)) { $msg .= "Authors:  \t{$athr}\n"; }
   if (!empty($cntct)){ $msg .= "Contact:  \t{$cntct}\n"; }
