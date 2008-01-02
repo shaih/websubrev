@@ -147,7 +147,7 @@ $links
 <table cellspacing="3" cellpadding="2"><tbody>
 <tr><td>Reviewer:    </td> <td>$revName</td></tr>
 <tr><td>Sub-reviewer:</td>
-    <td><input name="subRev" type="text" value="$subRev"></td>
+    <td><input name="subRev" type="text" value="$subRev" size=60></td>
 </tr>
 </tbody></table>
 <br />
