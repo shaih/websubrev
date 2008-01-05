@@ -83,10 +83,14 @@ if (isset($_POST['makeTOC'])) {
 		  $cnnct);
   $subRevs = array();
   while ($row = mysql_fetch_row($res)) {
-    $name = trim($row[0]);
-    if (empty($name)) continue;
-    $nameKey = lastNameFirst($name); // use "Last, First M." as key to array
-    $subRevs[$nameKey] = $name;
+    $names = trim($row[0]);
+    if (empty($names)) continue;
+    $names = explode(';', $names);
+    if (is_array($names)) foreach ($names as $nm) {
+      $nm = trim($nm); if (empty($nm)) continue;
+      $nameKey = lastNameFirst($nm); // use "Last, First M." as key to array
+      $subRevs[$nameKey] = $nm;
+    }
   }
 
   $res = db_query("SELECT name from committee WHERE revId!=".CHAIR_ID, $cnnct);
