@@ -80,7 +80,8 @@ while ($row = mysql_fetch_assoc($res)) {
 // to zero and is later set by the logic in make_post_array().)
 
 $qry = "SELECT 0 AS depth, postId, parentId, subject, comments, 
-        UNIX_TIMESTAMP(whenEntered) whenEntered, pc.name name
+        UNIX_TIMESTAMP(whenEntered) whenEntered, pc.name name,
+        pst.revId=$revId mine
     FROM posts pst, committee pc
     WHERE pst.subId='$subId' AND pc.revId=pst.revId
     ORDER BY whenEntered";
