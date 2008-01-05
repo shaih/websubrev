@@ -284,6 +284,10 @@ function show_posts($postsArray, $subId, $threaded=true,
 	$newPosts = true;
       }
     }
+    if (isset($_GET['allowEdit']) && $post['mine']) {
+      $editPostLink = ' <a target=_blank href="editPost.php?postId='.$post['postId'].'"><small>[Edit] </small></a>';
+    }
+    else $editPostLink = '';
     $cmnts = trim($post['comments']);
     $cmnts = (empty($cmnts)) ? '<br/>'
       : nl2br(htmlspecialchars($cmnts)).'<br/><br/>';
@@ -299,7 +303,7 @@ function show_posts($postsArray, $subId, $threaded=true,
 $nameWhen $reply
 </div>
 $startHere<a name="p$pid"> </a>
-&#8722;&nbsp;<span class="sbjct">$sbjct</span>
+&#8722;&nbsp;<span class="sbjct">$sbjct</span>$editPostLink
 
 <div style="position: relative; left: 12px; top:6px;">
 $cmnts
