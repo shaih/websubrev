@@ -30,9 +30,11 @@ else $sbFileName = NULL;
 $subPwd = md5(uniqid(rand()) . mt_rand().$title.$author); // returns hex string
 $subPwd = alphanum_encode(substr($subPwd, 0, 15));          // "compress" a bit
 
-// Test that the mandatory fields are not empty
-if (empty($title) || empty($author)
-    || empty($contact) || empty($abstract) || empty($sbFileName)) 
+// Test that the mandatory fields are not empty (comment out the line
+// with sbFilename to allow submissions without an actual submission file)
+if (empty($title) || empty($author) || empty($contact) || empty($abstract)
+    || empty($sbFileName)
+    ) 
 { exit ("<h1>Submission Failed</h1>Some required fields are missing."); }
 
 // Test that the contact has a valid format user@domain
@@ -45,18 +47,22 @@ Contact(s) must be a list of email addresses in the format user@domain.");
 }
 
 // Test that a file was uploaded
-if ($_FILES['sub_file']['size'] == 0)
-  exit("<h1>Submission Failed</h1>Empty submission file uploaded.");
-if (!is_uploaded_file($tmpFile))
-  exit("<h1>Submission Failed</h1>No file was uploaded.");
+if (!empty($sbFileName)) {
+  if ($_FILES['sub_file']['size'] == 0)
+    exit("<h1>Submission Failed</h1>Empty submission file uploaded.");
+  if (!is_uploaded_file($tmpFile))
+    exit("<h1>Submission Failed</h1>No file was uploaded.");
+
+  /* Try to determine the format of the submission file. The function
+   * returns an extension (e.g., 'ps', 'pdf', 'doc', etc.) If it cannot
+   * find a matching supported formar, it returns "{$ext}.unsupported"
+   */
+  $fileFormat = determine_format($_FILES['sub_file']['type'], $sbFileName, $tmpFile);
+}
+else $fileFormat = '';
 
 /***** User input vaildated. Next prepare the MySQL query *****/
 
-/* Try to determine the format of the submission file. The function
- * returns an extension (e.g., 'ps', 'pdf', 'doc', etc.) If it cannot
- * find a matching supported formar, it returns "{$ext}.unsupported"
- */
-$fileFormat = determine_format($_FILES['sub_file']['type'], $sbFileName, $tmpFile);
 
 // Sanitize user input while preparing the query
 $cnnct = db_connect();
@@ -90,13 +96,15 @@ $qry .= "format='" . my_addslashes($fileFormat, $cnnct)
  */
 
 // Store the submission file under a temporary name
-$fileName = SUBMIT_DIR."/tmp.{$subPwd}" . date('is');
-if (!empty($fileFormat)) $fileName .= ".{$fileFormat}";
+if (!empty($sbFileName)) {
+  $fileName = SUBMIT_DIR."/tmp.{$subPwd}" . date('is');
+  if (!empty($fileFormat)) $fileName .= ".{$fileFormat}";
 
-if (!move_uploaded_file($tmpFile, $fileName)) {
-  error_log(date('Ymd-His: ')."move_uploaded_file($tmpFile, $fileName) failed\n", 3, LOG_FILE);
-  exit("<h1>Submission Failed</h1>
+  if (!move_uploaded_file($tmpFile, $fileName)) {
+    error_log(date('Ymd-His: ')."move_uploaded_file($tmpFile, $fileName) failed\n", 3, LOG_FILE);
+    exit("<h1>Submission Failed</h1>
         Cannot move submission file " . $tmpFile . " to " . $fileName);
+  }
 }
 
 // Insert the new submission to the database 
@@ -136,16 +144,18 @@ if (empty($subId)) { // can't find this submission (transient database problem?)
 
 // Rename the submission file to $subId.$fileFormat
 
-$sbFileName = SUBMIT_DIR."/{$subId}";
-if (!empty($fileFormat)) $sbFileName .= ".{$fileFormat}";
+if (!empty($sbFileName)) {
+  $sbFileName = SUBMIT_DIR."/{$subId}";
+  if (!empty($fileFormat)) $sbFileName .= ".{$fileFormat}";
 
-if (file_exists($sbFileName)) unlink($sbFileName); // just in case
-if (!rename($fileName, $sbFileName)) {  // problems with the file system?
-  error_log(date('Ymd-His: ')."rename($fileName, $sbFileName) failed\n", 3, LOG_FILE);
-  email_submission_details($contact, -1, $subId, $subPwd, $title, 
-        $author, $contact, $abstract, $category, $keywords, $comment);
-  header("Location: receipt.php?subId=$subId&subPwd=$subPwd&warning=1");
-  exit();
+  if (file_exists($sbFileName)) unlink($sbFileName); // just in case
+  if (!rename($fileName, $sbFileName)) {  // problems with the file system?
+    error_log(date('Ymd-His: ')."rename($fileName, $sbFileName) failed\n", 3, LOG_FILE);
+    email_submission_details($contact, -1, $subId, $subPwd, $title, $author, 
+			 $contact, $abstract, $category, $keywords, $comment);
+    header("Location: receipt.php?subId=$subId&subPwd=$subPwd&warning=1");
+    exit();
+  }
 }
 
 // All went well, tell the client that we got the new submission.
