@@ -139,7 +139,7 @@ if (empty($subId) || empty($subPwd)) {// put button to Load submission details
   print '  <tr>
     <td></td>
     <td><input value="Reload Form with Submission Details (Submission-ID and Password must be specified)" type="submit" name="loadDetails">
-    (<a href="documentation/submitter.html#revise" target="documentation" title="this button reloads the revision form with all the submission details filled-in">what\'s this?</a>)
+    (<a href="../documentation/submitter.html#revise" target="documentation" title="this button reloads the revision form with all the submission details filled-in">what\'s this?</a>)
     </td>
   </tr>';
 }
