@@ -78,7 +78,7 @@ EndMark;
 $bodyHTML =<<<EndMark
 <form action="doPrefs.php" enctype="multipart/form-data" method="post">
 <table><tbody>
-<tr><th><small>pref</small></th>
+<tr><th></th><th><small>pref</small></th>
   <th class="zero">0</th> 
   <th class="one">1</th> 
   <th class="two">2</th>
@@ -125,7 +125,7 @@ while ($row = mysql_fetch_assoc($res)) {
   $checked[$pref] = ' checked="checked"';
   $cls = $classes[$pref];
 
-  $bodyHTML .= "<tr><td class=\"$cls\">$pref</td>\n";
+  $bodyHTML .= "<tr><td><a href=\"download.php?subId=$subId\" title=\"download\"><img src=\"../common/download.gif\" alt=\"download\" border=0></a></td><td class=\"$cls\">$pref</td>\n";
 
   for ($i=0; $i<6; $i++) {
     $cls = $classes[$i];
