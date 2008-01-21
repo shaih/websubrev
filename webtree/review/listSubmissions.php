@@ -93,7 +93,7 @@ EndMark;
 if ($disFlag) {
   print "Note: You can click on the eye icons on the left to add/remove submissions from your <a href=\"../documentation/reviewer.html#watch\" target=documentation>watch list</a><br/><br/>\n";
 }
-
+$showMore = 0;
 if (isset($_GET['abstract'])) {
   $flags |= 64;
   $showMore |= 1;

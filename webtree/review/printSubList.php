@@ -69,7 +69,7 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
 
     if (!empty($avg)) $avg="($avg)";
 
-    if ($disFlag && !$noIndex) $index = "<td><small>$idx.</small><td>";
+    if ($disFlag && !$noIndex) $index = "<td><small>$idx.</small></td>";
     else          $index = "";
 
     // If this member can discuss - show more details
