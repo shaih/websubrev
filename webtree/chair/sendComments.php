@@ -63,7 +63,7 @@ if (isset($_POST['sendComments2Submitters'])) {
     $subIds2send = my_addslashes($subIds2send, $cnnct);
     $qry .= " AND s.subId IN ({$subIds2send})";
   }
-  $qry .= " ORDER by s.subId";
+  $qry .= " ORDER by s.subId, r.lastModified";
   $submissions = array();
   $curId = -1;
 
