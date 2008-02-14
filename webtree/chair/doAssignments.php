@@ -82,7 +82,7 @@ else if (isset($_POST["manualAssign"])) { // input from list interface
       $revName = trim($revName); if (empty($revName)) continue;
       $revId = match_PCM_by_name($revName, $committee);
 
-      if ($revId==-1 || $prefs[$subId][$revId][2]==-1) continue;
+      if ($revId==-1 || (isset($prefs[$subId][$revId]) && $prefs[$subId][$revId][2]==-1)) continue;
       $newAssignment[$subId][$revId]=1;
 
       $list .= $revId . ', ';
@@ -106,7 +106,7 @@ else if (isset($_POST["manualAssign"])) { // input from list interface
     if (isset($_POST["visible"])) $qry .= ", assign=0";
     $qry .= " WHERE subId={$subId} AND revId NOT IN ({$list}0) AND sktchAssgn=1";
     db_query($qry, $cnnct);
-    foreach ($prefs[$subId] as $revId => $p) {
+    if (isset($prefs[$subId])) foreach ($prefs[$subId] as $revId => $p) {
       if ($p[2]==1 && !isset($newAssignment[$subId][$revId]))
 	$prefs[$subId][$revId][2] = 0;
     }
