@@ -21,7 +21,7 @@ print <<<EndMark
 
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="../review.css" />
+<link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 h1 { text-align: center; }
 </style>
