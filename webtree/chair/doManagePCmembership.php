@@ -148,8 +148,8 @@ EndMark;
 
   $msg .= <<<EndMark
 
-You can login to the review site using your email address as username,
-and with password $pwd
+You can login to the review site with your email address $emailTo
+as username and with password $pwd
 
 EndMark;
 
