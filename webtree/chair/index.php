@@ -195,7 +195,8 @@ function manage_final_version($period)
 
   if ($period==PERIOD_FINAL) {
     $hdr = '<h3>Final Submission Site is Closed</h3>';
-    $mkTOC = '<li><a href="makeTOC.php">Generate a LeTeX file with TOC and author index</a></li>';
+    $mkTOC = '<li><a href="makeTOC.php">Generate a LeTeX file with TOC and author index</a></li>'."\n"
+      . '<li><a href="uploadPreface.php">Upload Preface/TOC/Author-index to the server</a><br/><br/></li>';
     $closeIt = '';
   }
   else {
@@ -209,13 +210,12 @@ $hdr
 
 <ul>
 <li><a href="listSubmissions.php">List of accepted submissions</a></li>
-<li><a href="emailAuthors.php">Send email to authors of accepted papers</a></li>
-<li><a href="cameraArchive.php">Create one tar file with all the camera-ready files</a>
+<li><a href="emailAuthors.php">Send email to authors of accepted papers</a>
 </li>
-$allSubFile
+<li><a href="invitedTalks.php">Add an invited talk to the program</a></li>
 $mkTOC
-<li><a href="invitedTalks.php">Add an invited talk to the program</a>
-</li>
+<li><a href="cameraArchive.php">Create one tar file with all the camera-ready files</a></li>
+$allSubFile
 </ul>
 $closeIt
 EndMark;
