@@ -18,7 +18,7 @@ if (empty($subId) || empty($subPwd))
 if (isset($_POST['loadDetails'])) {
   $ref = trim($_POST['referer']);
   if (empty($ref)) $ref = trim($_SERVER['HTTP_REFERER']);
-  if (empty($ref)) $ref = 'revise.php';
+  if (empty($ref)) $ref = (PERIOD<PERIOD_CAMERA) ? 'revise.php' : 'cameraready.php';
   header("Location: $ref?subId={$subId}&subPwd={$subPwd}");
   exit();
 }
@@ -67,10 +67,10 @@ $cnnct = db_connect();
 $qry = 'SELECT title, authors, affiliations, contact, abstract, category, keyWords, comments2chair, format, status FROM submissions WHERE'
        . " subId='{$subId}' AND subPwd='{$subPwd}'";
 $res=db_query($qry, $cnnct);
-$row=@mysql_fetch_assoc($res)
+$row=mysql_fetch_assoc($res)
   or exit("<h1>Revision Failed</h1>
            No submission with ID $subId and password $subPwd was found.");
-if (defined('CAMERA_PERIOD') && $row['status']!='Accept') {
+if ((PERIOD>=PERIOD_CAMERA) && $row['status']!='Accept') {
   exit("<h1>Submission with ID $subId was not accepted to the conference</h1>");
 }
 
@@ -140,7 +140,7 @@ if (!empty($sbFileName)) {
      
 // If anything changed, insert changes into the database
 if (!empty($updts) || isset($_POST['reinstate'])) {
-  if (!defined('REVIEW_PERIOD') || isset($_POST['reinstate']) || $oldStatus=='Withdrawn')
+  if ((PERIOD<=PERIOD_SUBMIT) || isset($_POST['reinstate']) || $oldStatus=='Withdrawn')
     $updts .= "status='None', "; 
   $qry = "UPDATE submissions SET $updts lastModified=NOW()\n"
     . "WHERE subId='{$subId}' AND subPwd='{$subPwd}'";
@@ -162,7 +162,7 @@ if (!empty($sbFileName)) {
   if (file_exists(SUBMIT_DIR."/backup/$oldName"))
     unlink(SUBMIT_DIR."/backup/$oldName");  // just in case
 
-  $directory = defined('CAMERA_PERIOD') ? SUBMIT_DIR."/final" : SUBMIT_DIR;
+  $directory = (PERIOD>=PERIOD_CAMERA) ? SUBMIT_DIR."/final" : SUBMIT_DIR;
   if (file_exists("$directory/$oldName"))
     rename("$directory/$oldName", SUBMIT_DIR."/backup/$oldName");
 
@@ -178,7 +178,7 @@ if (!empty($sbFileName)) {
 }
 
 // If submitting camera-ready file: record the number of pages
-if (defined('CAMERA_PERIOD') && $nPages>0) {
+if (PERIOD>=PERIOD_CAMERA) {
   $qry = "UPDATE acceptedPapers SET nPages=$nPages WHERE subId={$subId}";
   db_query($qry, $cnnct,
 	   "Cannot update number of pages for submission $subId: ");

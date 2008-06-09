@@ -25,7 +25,7 @@ if (!$res || mysql_num_rows($res)==0) {
 }
 $row = mysql_fetch_row($res);
 $fmt = strtolower($row[0]);
-$finalVersion = ($row[1] > 0);
+$finalVersion = isset($row[1]);
 
 // Find the MIME type of this format
 $mimeType = NULL;

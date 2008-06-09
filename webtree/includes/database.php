@@ -121,7 +121,7 @@ function create_tabels($cnnct)
 
   $qry = "CREATE TABLE IF NOT EXISTS acceptedPapers (
     subId smallint(5) NOT NULL,
-    nPages smallint(3) DEFAULT 0 NOT NULL,
+    nPages smallint(3),
     pOrder smallint(3) DEFAULT 0 NOT NULL,
     PRIMARY KEY (subId),
     INDEX (pOrder)
