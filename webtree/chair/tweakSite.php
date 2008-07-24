@@ -41,14 +41,20 @@ $links
 $confirm
 <h1>Tweak Site Settings</h1>
 
-This form is used to tweak some settings of the site, which is sometimes
-needed to work around server bugs or environment problems. Currently, only
-some email parameters can be modified from this page. It is recommended that
+This form is used to tweak some settings of the site, which is sometimes needed
+to work around server bugs or environment problems. It is recommended that
 you do not mess with these settings unless you know what you are doing, see
 the <a href="../documentation/chair.html#emailSettings" target="documentation">
 documentation</a>.<br/>
 
 <form action=doTweakSite.php enctype="multipart/form-data" method=POST>
+<h3>Server time</h3>
+<ul>
+<li>Add <input name=timeShift type=number> seconds to the server&prime;s time
+(put a negative number to subtract).<br/>
+If the server&prime;s clock is off, you can specify a time-shift amount that will be added to the dates that are displayed by the software.</li>
+</ul>
+<h3>Email settings</h3>
 <ul>
 <li>Separate header lines by
     <input name="emlCrlf" value=0 type="radio"{$chkCRLF}>

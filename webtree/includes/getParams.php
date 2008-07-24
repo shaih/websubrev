@@ -54,6 +54,7 @@ define('EML_EXTRA_PRM', (($confFlags & FLAG_EML_EXTRA_PRM)?true:false));
 if ($confFlags & FLAG_SSL) define('HTTPS_ON', true);
 
 define('EML_SENDER', (isset($row['emlSender'])?$row['emlSender']:NULL));
+define('TIME_SHIFT', intval($row['timeShift']));
 define('MAX_GRADE', $row['maxGrade']);
 define('MAX_CONFIDENCE', $row['maxConfidence']);
 $x = empty($row['cmrInstrct']) ? NULL : $row['cmrInstrct'];

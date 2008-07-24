@@ -537,11 +537,12 @@ function numberlist($lst)
 // like date(), but returns time in UTC instead of server time
 function utcDate($fmt, $when=NULL)
 {
-  if (!isset($when)) $when=time(); // use current time if none is specified
+  if (!isset($when))             // use current time if none is specified
+    $when = time() + TIME_SHIFT;
 
   if ($fmt=='Z') return date('Z',$when);// who would do such a contrived thing?
 
-  $when -= date('Z',$when);        // add delta between server and UTC
+  $when -= date('Z',$when);      // add delta between server and UTC
   $fmt = str_replace("(T)", "(\U\T\C)", $fmt);
   $ret = date($fmt, $when);
 
@@ -580,7 +581,8 @@ function deltaTime($delta)
 
 function show_deadline($when)
 {
-  $delta = $when-time();
+  $now = time() + TIME_SHIFT;
+  $delta = $when - $now;
   return deltaTime($delta);
 }
 

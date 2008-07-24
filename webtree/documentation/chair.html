@@ -22,7 +22,7 @@ h1 {text-align: center;}
 <li><a href="#adminPage">The administration page</a></li>
 <li><a href="#manageSubmissions">Managing the submission site</a></li>
 <ol type="a">
-<li><a href="#emailSettings">Tweaking Email Settings</a></li>
+<li><a href="#emailSettings">Tweaking Server Settings</a></li>
 </ol>
 <li><a href="#manageReview">Managing the review site</a>
 <ol type="a">
@@ -309,11 +309,13 @@ deal with review-period activities, such as setting the review guidelines,
 managing PC membership and setting up PC votes. These are described
 in more details below.
 
-<a name="emailSettings"></a><h3>4a. Tweaking Email Settings</h3>
+<a name="emailSettings"></a><h3>4a. Tweaking Server Settings</h3>
 This form is meant to provide some workarounds common bugs and
-configuration errors in email systems. It currently consists
+configuration errors (mostly related to email). It currently consists
 of the following options:<br/><br/>
 </dt>
+<b>Modify the server time.</b> This provides a crude work-around in case the server&prime;s internal clock is off. Here you can specify some "time shift" amount that will be added to the server's time.<br/><br/> 
+
 <b>Email header-line separation.</b> RFC 2822 specifies that different
 lines in the email header should be separated using the two characters 
 <tt>\r\n</tt> (CRLF). However, the documentation for the

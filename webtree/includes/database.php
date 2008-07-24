@@ -18,6 +18,7 @@ function create_tabels($cnnct)
    *    16 - drop the "X-Sender: PHP/version" header line
    *    32 - add "-f chairEmail" as an extra parameter to sendmail
    *    64 - site is available over SSL (https vs. http)
+   *   128 - Allow attachments with the reviews
    *
    *  period can assume the following values:
    *     0 - setup: initial setup of the site
@@ -38,6 +39,7 @@ function create_tabels($cnnct)
     maxConfidence tinyint(1) NOT NULL DEFAULT 3,
     flags       int NOT NULL DEFAULT 1, 
     emlSender   text,
+    timeShift   int NOT NULL DEFAULT 0, 
     period      tinyint(1) NOT NULL DEFAULT 0,
     formats     text NOT NULL,
     categories  text,

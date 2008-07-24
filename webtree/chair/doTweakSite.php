@@ -9,13 +9,9 @@ $needsAuthentication = true;
 require 'header.php';
 
 $cnnct = db_connect();
-$qry = "SELECT flags, emlSender from parameters WHERE version=".PARAMS_VERSION;
-$res = db_query($qry, $cnnct, "Cannot load parameters: ");
-$row = mysql_fetch_row($res) or die("No parameters are specified");
-$oldFlags = $newFlags = (int) $row[0];
-$oldSender = $row[1];
-
 if (isset($_POST['tweakSettings'])) {
+  $timeShift = isset($_POST['timeShift'])? intval($_POST['timeShift']): 0;
+
   if (isset($_POST['emlCrlf']) && $_POST['emlCrlf']==1) // use LF
     $newFlags |= FLAG_EML_HDR_CRLF;
   else                                                  // use CRLF
@@ -27,15 +23,15 @@ if (isset($_POST['tweakSettings'])) {
     $newFlags &= ~((int)FLAG_EML_HDR_X_MAILER);
 
   $newSender = trim($_POST['sender']);
-  
+
   if (isset($_POST['emlExtraPrm']))
     $newFlags |= FLAG_EML_EXTRA_PRM;
   else
     $newFlags &= ~((int)FLAG_EML_EXTRA_PRM);
 
-  if ($newFlags!=$oldFlags || $newSender!=$oldSender) {
-    $qry = "UPDATE parameters SET flags=$newFlags, emlSender='$newSender'\n"
-      . "  WHERE version=".PARAMS_VERSION;
+  if ($newFlags!=CONF_FLAGS || $newSender!=EML_SENDER || $timeShift!=TIME_SHIFT) {
+    $newSender = mysql_real_escape_string($newSender,$cnnct);
+    $qry = "UPDATE parameters SET flags=$newFlags, emlSender='$newSender', timeShift=$timeShift WHERE version=".PARAMS_VERSION;
     $res = db_query($qry, $cnnct, "Cannot update settings: ");
   }
 }
