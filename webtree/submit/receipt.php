@@ -38,7 +38,7 @@ $subId = my_addslashes($subId);
 $subPwd = my_addslashes($subPwd);
 $qry = "SELECT *, UNIX_TIMESTAMP(whenSubmitted) sbmtd, UNIX_TIMESTAMP(lastModified) revised FROM submissions WHERE subId = '{$subId}' AND subPwd = '{$subPwd}'";
 
-if (!($res=@mysql_query($qry, $cnnct)) || !($row=@mysql_fetch_array($res)))
+if (!($res=mysql_query($qry, $cnnct)) || !($row=mysql_fetch_array($res)))
   generic_receipt($subId, $subPwd);
 
 $ttl = htmlspecialchars($row['title']);
@@ -138,7 +138,13 @@ if (!empty($cat)) { print '    <tr>
       <td>'.$cat."</td>
     </tr>\n";
 }
+if (!empty($frmt)) print <<<EndMark
+    <tr>
+      <td style="text-align: right;">File format:</td>
+      <td><a href="download.php?subId=$subId&amp;subPwd=$subPwd">$frmt</a> (click to download)</td>
+    </tr>
 
+EndMark;
 print <<<EndMark
     <tr style="vertical-align: top;">
       <td style="text-align: right;">Key words:</td>
@@ -147,10 +153,6 @@ print <<<EndMark
     <tr style="vertical-align: top;">
       <td style="text-align: right;">Comments:</td>
       <td>$cmnt</td>
-    </tr>
-    <tr>
-      <td style="text-align: right;">File format:</td>
-      <td><a href="download.php?subId=$subId&amp;subPwd=$subPwd">$frmt</a> (click to download)</td>
     </tr>
     <tr>
       <td style="text-align: right;"></td>

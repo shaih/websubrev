@@ -40,6 +40,13 @@ define('CONF_NAME', $row['longName']);
 define('CONF_SHORT', $row['shortName']);
 define('CONF_YEAR', $row['confYear']);
 define('CONF_HOME', $row['confURL']);
+if (isset($row['regDeadline'])) {
+  define('USE_PRE_REGISTRATION',true);
+  define('REGISTER_DEADLINE',$row['regDeadline']);
+} else  {
+  define('USE_PRE_REGISTRATION',false);
+  define('REGISTER_DEADLINE',NULL);
+}
 define('SUBMIT_DEADLINE', $row['subDeadline']);
 define('CAMERA_DEADLINE', $row['cmrDeadline']);
 
@@ -81,6 +88,8 @@ switch($row['period']) {
   case PERIOD_REVIEW:
     define('SUBMIT_PERIOD', false);
   case PERIOD_SUBMIT:
+    define('PREREG_PERIOD', false);
+  case PERIOD_PREREG:
     define('SETUP_PERIOD', false);
   default:
     break;
@@ -97,6 +106,9 @@ switch($row['period']) {
     break;
   case PERIOD_SUBMIT:
     define('SUBMIT_PERIOD', true);
+    break;
+  case PERIOD_PREREG:
+    define('PREREG_PERIOD', true);
     break;
   default:
     define('SETUP_PERIOD', true);
@@ -183,11 +195,13 @@ function emptyPrms()
     'shortName'     => '',
     'confYear'      => 0,
     'confURL'       => NULL,
+    'regDeadline'   => NULL,
     'subDeadline'   => 0,
     'cmrDeadline'   => 0,
     'maxGrade'      => 6,
     'maxConfidence' => 3,
     'flags'         => FLAG_PCPREFS| FLAG_AFFILIATIONS| FLAG_EML_HDR_X_MAILER,
+    'timeShift'     => 0,
     'emlSender'     => NULL,
     'period'        => 0,
     'formats'       => '',

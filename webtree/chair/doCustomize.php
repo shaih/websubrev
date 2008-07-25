@@ -8,6 +8,7 @@
 $needsAuthentication = true; 
 $notCustomized = true;
 require 'header.php';
+$cnnct = db_connect();
 
 if (PERIOD>PERIOD_SETUP) die("<h1>Installation Already Customized</h1>");
 
@@ -22,6 +23,14 @@ if (empty($confURL)) $confURL = '.';
 $chrName = isset($_POST['chairName']) ? trim($_POST['chairName']) : NULL;
 $chrEmail= isset($_POST['chairEmail']) ? trim($_POST['chairEmail']) : NULL;
 
+$regDeadline = trim($_POST['regDeadline']);
+if (empty($regDeadline)) { // pre-registration is required
+  $regDeadline = "NULL";
+  $firstPeriod = PERIOD_SUBMIT;
+} else {
+  $regDeadline = intval($regDeadline);
+  $firstPeriod = PERIOD_PREREG;
+}
 $subDeadline = trim($_POST['subDeadline']);
 $cameraDeadline= trim($_POST['cameraDeadline']);
 $nCats = isset($_POST['nCats']) ? ((int) $_POST['nCats']) : 0;
@@ -112,12 +121,13 @@ $qry = "INSERT INTO parameters SET version=1,\n"
    . "  shortName='" .my_addslashes($shortName, $cnnct)."',\n"
    . "  confYear="   .intval($confYear).",\n"
    . "  confURL='"   .my_addslashes($confURL, $cnnct)."',\n"
+   . "  regDeadline=$regDeadline,\n"
    . "  subDeadline=".intval($subDeadline).",\n"
    . "  cmrDeadline=".intval($cameraDeadline).",\n"
    . "  maxGrade="   .intval($maxGrade).",\n"
    . "  maxConfidence=3,\n"
    . "  flags=$flags,\n"
-   . "  period=".PERIOD_SUBMIT.",\n"
+   . "  period=$firstPeriod,\n"
    . "  formats=$confFormats,\n"
    . "  categories=$categories,\n"
    . "  extraCriteria=$criteria";

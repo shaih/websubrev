@@ -9,9 +9,43 @@
 require 'header.php'; // brings in the contacts file and utils file
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
-$timeleft = show_deadline(SUBMIT_DEADLINE);     // how much time is left
-$subDdline = 'Deadline is '
-           . utcDate('r (T)', SUBMIT_DEADLINE); // when is the deadline
+
+// If the conference use pre-registration, then use the current form
+// for registration and do not require to upload a submission file.
+// Otherwise uploading submission file is required
+if (!USE_PRE_REGISTRATION) {
+  $ddline = SUBMIT_DEADLINE;
+  $submitBtn = 'Submit';
+  $testForFile = 'if (pat.test(form.sub_file.value)) { st |= 16; }';
+  $subFileLine =<<<EndMark
+  <tr>
+    <td style="text-align: right;">
+	<small>(*)</small>&nbsp;Submission&nbsp;File: </td>
+    <td><input name="sub_file" size="70" type="file"><br />
+        The submission itself, in one of the supported formats
+	($supportedFormats).
+        <br />
+    </td>
+  </tr>
+EndMark;
+} else {
+  $ddline = REGISTER_DEADLINE;
+  if (PERIOD>PERIOD_PREREG) {
+    if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
+      $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
+			      $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
+    if ($chair === false) {
+      header("WWW-Authenticate: Basic realm=\"$confShortName\"");
+      header("HTTP/1.0 401 Unauthorized");
+      exit("<h1>Pre-registration Deadline Expired</h1>Please contact the chair.");
+    }
+  }
+  $submitBtn = 'Register New Submission';
+  $testForFile = $subFileLine = '';
+}
+
+$timeleft = show_deadline($ddline);                   // how much time is left
+$subDdline = 'Deadline is '.utcDate('r (T)',$ddline); // when is the deadline
 
 if (is_array($confFormats) && count($confFormats)>0) {
   $supportedFormats = '';
@@ -29,10 +63,7 @@ if (is_array($confFormats) && count($confFormats)>0) {
   $supportedFormats = 'none specified';
 }
 
-$chairNotice = '';
-if (PERIOD>PERIOD_SUBMIT)
-     $chairNotice = "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n";
-
+$chairNotice = (PERIOD>PERIOD_SUBMIT || (USE_PRE_REGISTRATION && PERIOD>PERIOD_PREREG))? "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n": '';
 
 $links = show_sub_links(3);
 print <<<EndMark
@@ -57,7 +88,7 @@ function checkform( form )
   if (pat.test(form.authors.value))  { st |= 2; }
   if (pat.test(form.contact.value))  { st |= 4; }
   if (pat.test(form.abstract.value)) { st |= 8; }
-  if (pat.test(form.sub_file.value)) { st |= 16; }
+  $testForFile
 
   if (st != 0) {
     alert( "You must specify all the fields that are marked with (*)" );
@@ -132,15 +163,7 @@ print <<<EndMark
         <br />
     </td>
   </tr>
-  <tr>
-    <td style="text-align: right;">
-	<small>(*)</small>&nbsp;Submission&nbsp;File: </td>
-    <td><input name="sub_file" size="70" type="file"><br />
-        The submission itself, in one of the supported formats
-	($supportedFormats).
-        <br />
-    </td>
-  </tr>
+$subFileLine
 
 EndMark;
 
@@ -168,7 +191,7 @@ print <<<EndMark
   </tr>
   <tr>
     <td></td>
-    <td><input value="Submit" type="submit">
+    <td><input value="$submitBtn" type="submit">
     </td>
   </tr>
 </tbody>

@@ -24,7 +24,7 @@ $links
 EndMark;
 
 // Final-version submissions
-if (defined('CAMERA_PERIOD')) { 
+if (PERIOD >= PERIOD_CAMERA) { 
   $timeleft = show_deadline(CAMERA_DEADLINE);
   $deadline = 'Deadline is '
              . utcDate('r (T)', CAMERA_DEADLINE); // when is the deadline
@@ -49,32 +49,52 @@ $footer
 
 EndMark;
   exit("</body></html>");
-} /********** end if (defined('CAMERA_PERIOD')) ************/
+} /********** end if (PERIOD >= PERIOD_CAMERA) ************/
 
 
-// Initial submission period
-$timeleft = show_deadline(SUBMIT_DEADLINE);
-$deadline = 'Deadline is '
-           . utcDate('r (T)', SUBMIT_DEADLINE); // when is the deadline
+// Initial registration/submission period
+if (USE_PRE_REGISTRATION) { // pre-registration is required
+  if (PERIOD==PERIOD_PREREG) {
+    $subLink = '<a href="submit.php">Registration form</a> to register a new submission.';
+  } else {                         // pre-registration deadline expired
+    $subLink = 'The deadline for registering submissions has expired.';
+  }
+  $submit = "registering";
+  $revise = "submission/revision";
+  $revLink = '<a href="revise.php">Submission/Revision form</a> to submit/revise the actual paper after registering it.';
+}
+else {                          // pre-registration is NOT required
+  $submit = "submitting";
+  $revise = "revision";
+  $subLink = '<a href="submit.php">Submission form</a> to submit a new paper.';
+  $revLink = '<a href="revise.php">Revision form</a> to revise a submission before the deadline.';
+}
+
+if (PERIOD==PERIOD_PREREG) {
+  $ddline = REGISTER_DEADLINE;
+} else {
+  $ddline = SUBMIT_DEADLINE;
+}
+  
+$timeleft = show_deadline($ddline);
+$deadline = 'Deadline is '. utcDate('r (T)', $ddline); // when is the deadline
 
 print <<<EndMark
-<h1>Submission/Revision Instructions, $confName</h1>
+<h1>Submission Instructions, $confName</h1>
 <h3 class=timeleft>$deadline<br/>
 $timeleft</h3>
 
 The following forms are available:
 <ul>
-<li><a href="submit.php">Submission form</a> to submit a new paper.</li>
-
-<li><a href="revise.php">Revision form</a> to revise a submission before 
-the deadline.</li>
+<li>$subLink</li>
+<li>$revLink</li>
 <li><a href="withdraw.php">Withdrawal form</a> to withdraw a submission
 before the deadline.</li>
 </ul>
 These forms are fairly self-explanatory, and additional documentation can
 be found <a target="documentation" href="../documentation/submitter.html">
-here</a>. When submitting a new paper, you get a submission-ID and a
-password that you can then use with the revision and withdrawal forms.
+here</a>. When $submit a new paper, you get a submission-ID and a
+password that you can then use with the $revise and withdrawal forms.
 <i>Please save the submission-ID and password also after the deadline.</i>
 You will need them to submit the final version of your paper, should
 it be accepted to the conference.

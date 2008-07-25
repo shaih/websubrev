@@ -16,7 +16,7 @@ $php_errormsg = ''; // just so we don't get notices when it is not defined.
 
 // Only the chair can use these scripts outside the submission periods
 $chair = false;
-if ((PERIOD!=PERIOD_SUBMIT)&&(PERIOD!=PERIOD_CAMERA)) {
+if ((PERIOD>PERIOD_SUBMIT)&&(PERIOD!=PERIOD_CAMERA)) {
   if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
     $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
 			    $_SERVER['PHP_AUTH_PW'], CHAIR_ID);

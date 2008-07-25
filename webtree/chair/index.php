@@ -34,6 +34,7 @@ $links
 EndMark;
 
 switch (PERIOD) {
+  case PERIOD_PREREG:
   case PERIOD_SUBMIT:
     manage_submissions(PERIOD);
     break;
@@ -78,7 +79,16 @@ EndMark;
     return; 
   }
 
-  $subDdline = utcDate('r (T)', SUBMIT_DEADLINE);
+  // Otherwise: pre-registration/submission period
+  if (($period==PERIOD_PREREG) && USE_PRE_REGISTRATION) {
+    $ddline =  utcDate('r (T)', REGISTER_DEADLINE);
+    $reg = "Registration ";
+    $closeLink = '<a href="closePrereg.php">Close pre-registration...</a>';
+  } else {
+    $ddline = utcDate('r (T)', SUBMIT_DEADLINE);
+    $reg = "";
+    $closeLink = '<a href="closeSubmissions.php">Close Submissions and Activate Review Site...</a>';
+  }
   $cnnct = db_connect();
   $qry = "SELECT count(subId) FROM submissions WHERE status!='Withdrawn'";
   $res = db_query($qry, $cnnct);
@@ -86,7 +96,7 @@ EndMark;
   $nSubs = $row[0];
   print <<<EndMark
 <h3><span style="background-color: red;">Submission Site is Active:</span></h3>
-Deadline is <big>$subDdline</big>
+{$reg}Deadline is <big>$ddline</big>
 <ul>
 <li><a href="tweakSite.php">Tweak Site Settings</a> (email settings, etc.)</li>
 </ul>
@@ -96,8 +106,7 @@ Deadline is <big>$subDdline</big>
     ($nSubs submissions so far)</li>
 <li><a href="manageSubmissions.php">Manage Parameters</a>
     (deadlines, supported formats, categories, etc.)</li>
-<li><a href="closeSubmissions.php">Close Submissions and Activate Review
-     Site...</a> (<b>deadline is not enforced automatically</b>)</li>
+<li>$closeLink (<b>deadline is not enforced automatically</b>)</li>
 </ul>
 <ul>
 <li><a href="guidelines.php">Edit the review guidelines page</a></li>

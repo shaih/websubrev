@@ -19,8 +19,10 @@ $longName    = CONF_NAME;
 $shortName   = CONF_SHORT;
 $confYear    = CONF_YEAR;
 $confURL     = CONF_HOME;
+$regDeadline = REGISTER_DEADLINE;
 $subDeadline = SUBMIT_DEADLINE;
 $cmrDeadline = CAMERA_DEADLINE;
+$period      = PERIOD;
 
 // Read all the fields, stripping spurious white-spaces
 
@@ -35,6 +37,21 @@ if (!empty($x) && $x!=$confYear) { $changeParams = true; $confYear = $x; }
 
 $x  = isset($_POST['confURL'])   ? trim($_POST['confURL'])   : NULL;
 if (!empty($x) && $x!=$confURL) { $changeParams = true; $confURL = $x; }
+
+
+$x = isset($_POST['regDeadline']) ?  trim($_POST['regDeadline']) : NULL;
+if (!empty($x)) {
+  $trg = strtotime($x);
+  if ($trg===false || $trg==-1)
+     die ("<h1>Unrecognized time format for pre-registration deadline</h1>");
+  if ($trg!=$regDeadline) { $changeParams=true; $regDeadline=$trg; }
+  $period = PERIOD_PREREG;
+}
+else if (USE_PRE_REGISTRATION){ // chair decided not to use pre-reg after all
+  $changeParams=true;
+  $regDeadline = "NULL";
+  $period = PERIOD_SUBMIT;
+}
 
 $x = isset($_POST['subDeadline']) ?  trim($_POST['subDeadline']) : NULL;
 if (!empty($x)) {
@@ -105,6 +122,7 @@ if ($changeParams) {
 
   if (empty($confURL)) $confURL = '.';
   $qry .= "  confURL='"   .my_addslashes($confURL, $cnnct)."',\n"
+    . "  regDeadline=$regDeadline,\n"
     . "  subDeadline=".intval($subDeadline).",\n"
     . "  cmrDeadline=".intval($cmrDeadline).",\n";
 
@@ -112,6 +130,8 @@ if ($changeParams) {
   if ($anonymous)      $flags |= FLAG_ANON_SUBS;
   if ($affiliations)   $flags |= FLAG_AFFILIATIONS;
   $qry .= "  flags=$flags,\n";
+
+  if ($period != PERIOD) $qry .= "  period=$period,\n";
 
   if (is_array($confFormats) && count($confFormats)>0) {
     $fmtString = $sc = '';

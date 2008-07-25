@@ -22,10 +22,11 @@ function create_tabels($cnnct)
    *
    *  period can assume the following values:
    *     0 - setup: initial setup of the site
-   *     1 - paper submission
-   *     2 - review period
-   *     3 - final-version submission
-   *     4 - shutdown (read-only), after the final-version submission is over
+   *     1 - pre-registration
+   *     2 - paper submission
+   *     3 - review period
+   *     4 - final-version submission
+   *     5 - shutdown (read-only), after the final-version submission is over
    */
   $qry = "CREATE TABLE IF NOT EXISTS parameters (
     version     smallint(3) NOT NULL auto_increment,
@@ -33,6 +34,7 @@ function create_tabels($cnnct)
     shortName   varchar(20) NOT NULL,
     confYear    smallint(4) NOT NULL,
     confURL     text,
+    regDeadline int,
     subDeadline int NOT NULL, 
     cmrDeadline int NOT NULL, 
     maxGrade    tinyint(2) NOT NULL DEFAULT 6,
@@ -60,12 +62,14 @@ function create_tabels($cnnct)
     shortName   varchar(20) NOT NULL,
     confYear    smallint(4) NOT NULL,
     confURL     text,
+    regDeadline int,
     subDeadline int NOT NULL, 
     cmrDeadline int NOT NULL, 
     maxGrade    tinyint(2) NOT NULL DEFAULT 6,
     maxConfidence tinyint(1) NOT NULL DEFAULT 3,
     flags       int NOT NULL DEFAULT 1, 
     emlSender   text,
+    timeShift   int NOT NULL DEFAULT 0, 
     period      tinyint(1) NOT NULL DEFAULT 0,
     formats     text NOT NULL,
     categories  text,

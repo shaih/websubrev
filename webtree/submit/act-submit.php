@@ -9,6 +9,17 @@ require 'header.php'; // brings in the contacts file and utils file
 
 if (defined('CAMERA_PERIOD')) exit("<h1>Submission Deadline Expired</h1>");
 
+if (USE_PRE_REGISTRATION && PERIOD>PERIOD_PREREG) {
+  if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
+    $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
+			    $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
+  if ($chair === false) {
+    header("WWW-Authenticate: Basic realm=\"$confShortName\"");
+    header("HTTP/1.0 401 Unauthorized");
+    exit("<h1>Pre-registration Deadline Expired</h1>Please contact the chair.");
+  }
+}
+
 // Read all the fields, stripping spurious white-spaces 
 
 $title   = isset($_POST['title']) ? trim($_POST['title']) : NULL;
@@ -30,10 +41,10 @@ else $sbFileName = NULL;
 $subPwd = md5(uniqid(rand()) . mt_rand().$title.$author); // returns hex string
 $subPwd = alphanum_encode(substr($subPwd, 0, 15));          // "compress" a bit
 
-// Test that the mandatory fields are not empty (comment out the line
-// with sbFilename to allow submissions without an actual submission file)
+// Test that the mandatory fields are not empty. Submissions without an
+// actual submission file are allowed if the conference uses pre-registration
 if (empty($title) || empty($author) || empty($contact) || empty($abstract)
-    || empty($sbFileName)
+    || (!USE_PRE_REGISTRATION && empty($sbFileName))
     ) 
 { exit ("<h1>Submission Failed</h1>Some required fields are missing."); }
 
@@ -59,7 +70,7 @@ if (!empty($sbFileName)) {
    */
   $fileFormat = determine_format($_FILES['sub_file']['type'], $sbFileName, $tmpFile);
 }
-else $fileFormat = '';
+else $fileFormat = NULL;
 
 /***** User input vaildated. Next prepare the MySQL query *****/
 
@@ -85,7 +96,8 @@ if (!empty($keywords)) {
 if (!empty($comment)) {
   $qry .=  "comments2chair='" . my_addslashes($comment, $cnnct) . "', ";
 }
-$qry .= "format='" . my_addslashes($fileFormat, $cnnct)
+$qry .= "format='"
+     . (!empty($fileFormat)? my_addslashes($fileFormat, $cnnct): '')
      . "', subPwd='{$subPwd}', whenSubmitted=NOW()";
 
 /* Now we need to record the new submission. Below we try to minimize the
@@ -160,8 +172,10 @@ if (!empty($sbFileName)) {
 
 // All went well, tell the client that we got the new submission.
 
+$filesize = isset($_FILES['sub_file']['size'])?
+            $_FILES['sub_file']['size'] : NULL;
 email_submission_details($contact, 1, $subId, $subPwd, $title, $author, 
       $contact, $abstract, $category, $keywords, $comment, $fileFormat,
-      $_FILES['sub_file']['size']);
+      $filesize);
 header("Location: receipt.php?subId=$subId&subPwd=$subPwd");
 ?>

@@ -20,10 +20,11 @@ define('FLAG_EML_WATCH_EVENT', 0x02000000);
 define('FLAG_ORDER_REVIEW_HOME', 0x04000000);
 
 define('PERIOD_SETUP', 0);
-define('PERIOD_SUBMIT', 1);
-define('PERIOD_REVIEW', 2);
-define('PERIOD_CAMERA', 3);
-define('PERIOD_FINAL', 4);
+define('PERIOD_PREREG', 1);
+define('PERIOD_SUBMIT', 2);
+define('PERIOD_REVIEW', 3);
+define('PERIOD_CAMERA', 4);
+define('PERIOD_FINAL', 5);
 
 define('FLAG_VOTE_ON_SUBS', 1);
 define('FLAG_VOTE_ON_ALL', 2);

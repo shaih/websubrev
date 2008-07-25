@@ -49,8 +49,7 @@ h1 {text-align: center;}
 <script type="text/javascript" src="../common/validate.js"></script>
 <script language="Javascript" type="text/javascript">
 <!--
-function checkform( form )
-{
+function checkform( form ) {
   // Checking that all the mandatory fields are present
   var pat = /^\s*$/;
   var st = 0;
@@ -68,7 +67,7 @@ function checkform( form )
   }
   return true ;
 }
-//-->
+// -->
 </script>
 </head>
 <body>
@@ -111,6 +110,10 @@ program committee</a>, and <a href="#review">reviews</a>.
 <tr><td colspan="2" class=rjust><hr/></td></tr>
 <!-- ================= Submissions =================== -->
 <tr><td class=rjust><big><b><a NAME="submissions">Submissions:</a></b></big></td><td></td>
+</tr>
+<tr><td class=rjust><a href="../documentation/chair.html#prereg" target="documentation" title="click for more help">Pre-Registration&nbsp;Deadline:</a></td>
+  <td><input name="regDeadline" size="55" type="text">
+  leave empty to forgo pre-registration</td>
 </tr>
 <tr><td class=rjust>Submission&nbsp;Deadline:</td>
   <td><input name="subDeadline" size="90" type="text"></td>

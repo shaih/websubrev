@@ -33,6 +33,12 @@ print <<<EndMark
 EndMark;
 
 $cName = CONF_NAME." (".CONF_SHORT." ".CONF_YEAR.")";
+if (USE_PRE_REGISTRATION) {
+  $rgDdline = "<td>Pre-registration deadline:</td>
+      <td><b>".utcDate('r (T)', REGISTER_DEADLINE)."</b></td>";
+} else {
+  $rgDdline = "<td>Pre-registration</td><td><b>NOT required</b></td>";  
+}
 $sbDdline = utcDate('r (T)', SUBMIT_DEADLINE);
 $crDdline = utcDate('r (T)', CAMERA_DEADLINE);
 print "
@@ -47,6 +53,7 @@ print "
   <tr><td>Admin email:</td>
       <td><tt>".ADMIN_EMAIL."</tt></td>
   </tr>
+  <tr>$rgDdline</tr>
   <tr><td>Submission deadline:</td>
       <td><b>$sbDdline</b></td>
   </tr>

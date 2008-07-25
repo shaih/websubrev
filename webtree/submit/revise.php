@@ -9,12 +9,20 @@
 require 'header.php'; // brings in the constants and utils files
 
 // Camera-ready revisions are now done from cameraready.php
-$chairNotice = '';
-if (PERIOD>PERIOD_SUBMIT)
-  $chairNotice = "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n";
+$chairNotice = (PERIOD>PERIOD_SUBMIT)? "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n": '';
+
+if (USE_PRE_REGISTRATION) { // if pre-registration is required
+  $submit = 'Submit/';
+  $submitted = 'registered';
+  $submission = 'registration';
+} else {
+  $submit = '';
+  $submitted = 'submitted';
+  $submission = 'submission';
+}
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
-$h1text = "<h1>Revise a Submission to $confName</h1>";
+$h1text = "<h1>{$submit}Revise a Submission to $confName</h1>";
 $timeleft = show_deadline(SUBMIT_DEADLINE);
 $subDdline = 'Deadline is '
            . utcDate('r (T)', SUBMIT_DEADLINE); // when is the deadline
@@ -103,7 +111,7 @@ function checkform( form )
 //-->
 </script>
 
-<title>Revise a Submission to $confName</title>
+<title>$h1text</title>
 <link rel="stylesheet" type="text/css" href="../common/submission.css"/>
 </head>
 <body>
@@ -123,13 +131,13 @@ $timeleft</h3>
          <small>(*)</small>&nbsp;Submission&nbsp;ID:</td>
     <td> <input name="subId" size="4" type="text"
                 value="$subId">
-         The submission-ID, as returned when the paper was first submitted.
+         The submission-ID, as returned when the paper was first $submitted.
     </td>
   </tr>
   <tr>
     <td style="text-align: right;"><small>(*)</small> Password:</td>
     <td><input name="subPwd" size="11" value="$subPwd" type="text">
-        The password that was returned with the original submission.
+        The password that was returned with the original $submission.
     </td>
   </tr>
 

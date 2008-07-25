@@ -16,6 +16,8 @@ $confYear    = CONF_YEAR;
 $confURL     = CONF_HOME;
 $chairEml    = CHAIR_EMAIL;
 $adminEml    = ADMIN_EMAIL;
+
+$regDeadline = USE_PRE_REGISTRATION? utcDate('r (T)',REGISTER_DEADLINE): '';
 $subDeadline = utcDate('r (T)', SUBMIT_DEADLINE);
 $cmrDeadline = utcDate('r (T)', CAMERA_DEADLINE);
 $emlCrlf = addcslashes(EML_CRLF, "\r\n");
@@ -52,9 +54,13 @@ $links
 </tr>
 <tr><td><big><b>Submission:</b></big></td><td><br></td>
 </tr>
+<tr><td style="text-align: right;">Pre-registraion&nbsp;Deadline:</td>
+  <td><input name=regDeadline size=45 type=text value="$regDeadline">
+  (empty field means pre-registration is not required)</td>
+</tr>
 <tr><td style="text-align: right;">Submission&nbsp;Deadline:</td>
   <td><input name=subDeadline size=90 type=text value="$subDeadline"></td>
-</tr>  
+</tr>
 <tr><td style="text-align: right;">Camera&nbsp;ready&nbsp;Deadline:</td>
   <td><input name=cameraDeadline size=90 type=text value="$cmrDeadline"><br/>
   Remember that <b>the software does not enforce these deadlines automatically.

@@ -13,17 +13,17 @@ h1 {text-align: center;}
 
 <a name="TOC"></a><h2>Table of Contents</h2>
 <ol>
-<li><a href="#insall">Installing the software</a></li>
+<li><a href="#insall">Installing the software</a>
 <ol type="a">
 <li><a href="#webBased">Web-based installation</a></li>
 <li><a href="#noWebBased">Non-web-based installation</a></li>
-</ol>
+</ol></li>
 <li><a href="#customize">First-time customization</a></li>
 <li><a href="#adminPage">The administration page</a></li>
-<li><a href="#manageSubmissions">Managing the submission site</a></li>
+<li><a href="#manageSubmissions">Managing the submission site</a>
 <ol type="a">
 <li><a href="#emailSettings">Tweaking Server Settings</a></li>
-</ol>
+</ol></li>
 <li><a href="#manageReview">Managing the review site</a>
 <ol type="a">
 <li><a href="#revSetUp">Initial set-up</a></li>
@@ -168,7 +168,6 @@ decision notifications and the comments for authors. The address that you
 specify here can be modified from the <a href="#PCemail">customization
 page</a>, and also from the PC membership page.<br/><br/>
 </dt>
-</dt>
 <dt><a name="adminEmail"></a><b>Administrator email.</b>
 The administrator's email is rarely used by the software: it's main purpose
 is to serve as a backup address for the chair's email. For example, if the
@@ -217,6 +216,12 @@ from the administration page. Some fields in the customization form that
 require more explanation are described below:
 
 <dl>
+<dt><a name="prereg"></a><b>Pre-registration.</b> Some conferences require
+authors to register their submission before actually submitting it. Often the
+deadline for registration is 1-2 weeks before the submission deadline. If you
+leave the field for pre-registration deadline empty, then the software will
+assume that pre-registration is not required.<br/><br/></dt>
+
 <dt><a name="formats"></a><b>Supported Formats.</b> The software is very
 permissive in terms of handling formats other than the ones that you specify
 here. If a submitter uploads a file in an unsupported format, the only
@@ -313,7 +318,7 @@ in more details below.
 This form is meant to provide some workarounds common bugs and
 configuration errors (mostly related to email). It currently consists
 of the following options:<br/><br/>
-</dt>
+
 <b>Modify the server time.</b> This provides a crude work-around in case the server&prime;s internal clock is off. Here you can specify some "time shift" amount that will be added to the server's time.<br/><br/> 
 
 <b>Email header-line separation.</b> RFC 2822 specifies that different

@@ -22,7 +22,8 @@ $shortName   = isset($_POST['shortName']) ? trim($_POST['shortName']) : NULL;
 $confYear    = isset($_POST['confYear'])  ? trim($_POST['confYear'])  : NULL;
 $confURL     = trim($_POST['confURL']);
 
-$subDeadline = isset($_POST['cameraDeadline']) ? trim($_POST['subDeadline']) : NULL;
+$regDeadline = isset($_POST['regDeadline']) ? trim($_POST['regDeadline']) : NULL;
+$subDeadline = isset($_POST['subDeadline']) ? trim($_POST['subDeadline']) : NULL;
 $cameraDeadline= isset($_POST['cameraDeadline']) ? trim($_POST['cameraDeadline']) : NULL;
 $categories  = isset($_POST['categories']) ? explode(';', $_POST['categories']) : NULL;
 
@@ -71,6 +72,18 @@ if ($confYear < 1970 || $confYear > 2099) {
 
 // Try to parse the deadlines as some recognized date format
 // The error code from strtotime is -1 for PHP 4 and FALSE for PHP 5
+$trg = empty($regDeadline) ? false : strtotime($regDeadline);
+if ($trg!==false && $trg!=-1) {
+  $regDeadline = $trg; // store as a number (unix time)
+  $regDeadlineHtml = '<tr><td class=rjust>Pre-registration Deadline:</td>
+  <td colspan="3"><b>'.utcDate('r (T)', $trg).'</b></td></tr>';
+}
+else {
+  $regDeadline='';
+  $regDeadlineHtml = '<tr><td class=rjust>Pre-registration:</td>
+  <td colspan="3"><b>NOT required</b></td></tr>';
+}
+
 $tsb = empty($subDeadline) ? false : strtotime($subDeadline);
 if ($tsb!==false && $tsb!=-1) {
   $subDeadline = $tsb; // store as a number (unix time)
@@ -184,6 +197,7 @@ hit the Confirm button below to customize this installation.
 <h2>Submissions:</h2>     
 <table cellspacing=6>
 <tbody>
+$regDeadlineHtml
 <tr><td class=rjust>Submission Deadline:</td>
   <td colspan="3"><b>$subDeadlineHtml</b></td>
 </tr>
@@ -293,6 +307,7 @@ print <<<EndMark
 <input name="shortName" type="hidden" value="$shortName">
 <input name="confYear"  type="hidden" value="$confYear">
 <input name="confURL"    type="hidden" value="$confURL">
+<input name="regDeadline" type="hidden" value="$regDeadline">
 <input name="subDeadline" type="hidden" value="$subDeadline">
 <input name="cameraDeadline" type="hidden" value="$cameraDeadline">
 <input name="chairName"  type="hidden" value="$chair[0]">
