@@ -84,8 +84,7 @@ $pcCmmntsInitStyle = empty($cmnts2PC) ? 'hidden' : 'shown';
 $chrCmmntsInitStyle = empty($cmnts2chair) ? 'hidden' : 'shown';
 $slfCmmntsInitStyle = empty($cmnts2self) ? 'hidden' : 'shown';
 
-if (isset($row['lastModif'])) // revision 
-     $update = (($row['revFlags']==REPORT_NOT_DRAFT)?' (updated)':' (in progress)');
+if (isset($row['lastModif'])) $update = ' (updated)'; // revision
 else $update = '';
 $watch = $row['watch'];
 
@@ -94,12 +93,6 @@ if ($disFlag && !$watch) { // put a checkbox to add to watch list
 }
 else $watchHtml = '';
 
-if (isset($row['revFlags']) && $row['revFlags']==REPORT_NOT_DRAFT) {
-  $saveDraft = '';
-} else {
-  $saveDraft = ' or <input name="draft" type="submit" value="Work in progress"> (<i>Work-in-progress reports are NOT hidden from chair/others.</i> <a target=documentation href="../documentation/reviewer.html#draftReview">Read more</a>)<br/><br/>';
-}
- 
 $colors = array('lightgrey', 'rgb(240, 240, 240)');
 $links = show_rev_links();
 print <<<EndMark
@@ -244,13 +237,13 @@ print <<<EndMark
 <div ID="cmnt2athr">
 $attachmentLine
 <textarea name="comments2authors" rows=15 cols=80>$cmnts2athr</textarea>
-<br/>The authors, program-committee members, and chair see these comments.
+<br/>The authors and program-committee see these comments.
 </div>
 
 <h3>Comments to the Committee <a class="hidden" href="#" ID="openCmnt2PC" onclick="return expandCollapse('cmnt2PC');">(click to expand/collapse)</a></h3>
 <div ID="cmnt2PC">
 <textarea class="shown" name="comments2PC" rows=15 cols=80>$cmnts2PC</textarea>
-<br />Only the program-committee members and chair see these comments.
+<br />Only the program-committee sees these comments.
 </div>
 
 <h3>Comments to the Chair <a class="hidden" href="#" ID="openCmnt2chr" onclick="return expandCollapse('cmnt2chr');">(click to expand/collapse)</a></h3>
@@ -268,12 +261,15 @@ No one else can see these comments
 
 <input type="hidden" name="subId" value="$subId">
 <center>
-<input type="submit" value="Submit">
-$saveDraft
-</center>
-
+<table><tbody>
+<tr><td><input type="submit" value="Submit"></td>
+<td>
 $watchHtml
-<input type=checkbox name=emilReview{$chkEml}> Send my review back to me via email
+<input type=checkbox name=emilReview{$chkEml}> Send my review back to me via email<br/>
+<input name="draft" type="checkbox"> Remind me to go back to this review (<a target=documentation href="../documentation/reviewer.html#draftReview">what&prime;s this?</a>)
+</td>
+</tr></tbody></table>
+</center>
 </form>
 <hr />
 $links
