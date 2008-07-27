@@ -25,11 +25,11 @@ $updates .= ", period=".PERIOD_CAMERA;
 
 $updates .= ",\n formats='tar(tar, application/x-tar);Compressed tar(tar.gz, application/x-tar-gz);Compressed tar(tgz, application/x-compressed-tar);zip(zip, application/x-zip)'";
 
-$cameraInstructions = trim($_POST['finalVersionInstructions']);
-$cameraInstructions = str_replace("\r\n", "\n", $cameraInstructions);
-send_camera_instructions($cnnct, $cameraInstructions);
-$cameraInstructions = "'".my_addslashes($cameraInstructions,$cnnct)."'";
-$updates .= ",\n cmrInstrct=$cameraInstructions";
+$cameraAnnouncement = trim($_POST['finalVersionInstructions']);
+$cameraAnnouncement = str_replace("\r\n", "\n", $cameraAnnouncement);
+$subject = trim($_POST['subject']);
+
+send_camera_instructions($cnnct, $cameraAnnouncement, $subject);
 
 $cnnct = db_connect();
 backup_conf_params($cnnct, PARAMS_VERSION);
@@ -40,10 +40,8 @@ db_query($qry, $cnnct, "Cannot reset parameters: ");
 header("Location: index.php");
 exit();
 
-function send_camera_instructions($cnnct, $text)
+function send_camera_instructions($cnnct, $text, $sbjct)
 {
-  $sbjct = "Final-version instructions for ".CONF_SHORT.' '.CONF_YEAR;
-
   $qry = "SELECT subId, title, authors, contact FROM submissions WHERE status='Accept'";
   $res = db_query($qry, $cnnct);
   $count=0;
@@ -52,7 +50,7 @@ function send_camera_instructions($cnnct, $text)
     $contact = $row[3];
 
     my_send_mail($contact, $sbjct, $text, CHAIR_EMAIL,
-	       "camera-ready instructions for subID $subId, contact $contact");
+	       "camera-ready notification for subID $subId, contact $contact");
 
     $count++;
     if (($count % 25)==0) { // rate-limiting, avoids cutoff

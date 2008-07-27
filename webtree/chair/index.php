@@ -137,32 +137,33 @@ EndMark;
 print <<<EndMark
 <h3><span style="background-color: red;">Review Site is Active</span></h3>
 <dl>
-<dt><strong>Initial set-up</strong>
-<dd><a href="archive.php">Create a tar file with all the submission files</a>
-<dd><a href="guidelines.php">Edit the review guidelines page</a>
-<dd><a href="managePCmembership.php">Manage PC membership</a>
+<dt><strong>Initial set-up</strong></dt>
+<dd><a href="archive.php">Create a tar file with all the submission files</a></dd>
+<dd><a href="guidelines.php">Edit the review guidelines page</a></dd>
+<dd><a href="managePCmembership.php">Manage PC membership</a></dd>
 <br /><br />
 
-<dt><strong>Paper assignments</strong>
-<dd>Download the submission-list as an <a href="submissionSpreadsheet.php">Excel spreadsheet</a>
+<dt><strong>Paper assignments</strong></dt>
+<dd>Download the submission-list as an <a href="submissionSpreadsheet.php">Excel spreadsheet</a></dd>
 <dd><a href="conflicts.php">Edit conflicts</a> (block access to
   submissions due to conflict-of-interests).
   <b>Access is NOT blocked by default</b>
-  (<a href="../documentation/chair.html#block">what&prime;s this?</a>)
-<dd>$assignHTML
+  (<a href="../documentation/chair.html#block">what&prime;s this?</a>)</dd>
+<dd>$assignHTML</dd>
 <br/><br/>
 
-<dt><strong>Reviews and decisions</strong>
-<dd><a href="overview.php">Overview of all submissions and reviews</a>
-<dd><a href="status.php">Set status of submissions</a>
-<dd><a href="voting.php">Set-up and manage PC votes</a>
+<dt><strong>Reviews and decisions</strong></dt>
+<dd><a href="overview.php">Overview of all submissions and reviews</a></dd>
+<dd><a href="status.php">Set status of submissions</a></dd>
+<dd><a href="voting.php">Set-up and manage PC votes</a></dd>
 <br /><br />
 
 <dt><strong>Wrap-up</strong>
 <dd><a href="../review/listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on&amp;format=ascii" target="_blank">A full list of all the reviews and discussions (text)</a>
-<dd><a href="notifications.php">Generate accept/reject letters...</a>
-<dd><a href="sendComments.php">Generate comments letters...</a>
-<dd><a href="activateCamera.php">Activate Final-submission site...</a>
+<dd><a href="notifications.php">Generate accept/reject letters...</a></dd>
+<dd><a href="sendComments.php">Generate comments letters...</a></dd>
+<dd><a href="activateCamera.php">Activate Final-submission site...</a></dd>
+<dd><a href="guidelines.php?what=camera">Edit camera-ready instructions</a></dd>
 </dl>
 
 EndMark;
@@ -204,27 +205,29 @@ function manage_final_version($period)
 
   if ($period==PERIOD_FINAL) {
     $hdr = '<h3>Final Submission Site is Closed</h3>';
-    $mkTOC = '<li><a href="makeTOC.php">Generate a LeTeX file with TOC and author index</a></li>'."\n"
-      . '<li><a href="uploadPreface.php">Upload Preface/TOC/Author-index to the server</a><br/><br/></li>';
-    $closeIt = '';
+    $closeIt = $editInstructions = '';
+    $uploadTOC = '<li><a href="uploadPreface.php">Upload Preface/TOC/Author-index to the server</a></li>';
   }
   else {
-    $hdr = '<h3><span style="background-color: red;">Final Submission Site is Active</span></h3>' . "\nDeadline is <big>$cmrDdline</big>";
-    $mkTOC = '';
+    $hdr = '<h3><span style="background-color: red;">Final Submission Site is Active</span></h3>' . "\nDeadline is <big>$cmrDdline</big> <a href=\"manageSubmissions.php\">change it</a>";
+    $editInstructions = '<li><a href="guidelines.php?what=camera">Edit camera-ready instructions</a></li>';
     $closeIt = '<a href="closeSite.php">Close Final Submission Site</a> (<b>deadline is not enforced automatically</b>)';
+    $uploadTOC = '';
   }
 
   print <<<EndMark
 $hdr
 
 <ul>
+$editInstructions
 <li><a href="listSubmissions.php">List of accepted submissions</a></li>
 <li><a href="emailAuthors.php">Send email to authors of accepted papers</a>
 </li>
 <li><a href="invitedTalks.php">Add an invited talk to the program</a></li>
-$mkTOC
 <li><a href="cameraArchive.php">Create one tar file with all the camera-ready files</a></li>
 $allSubFile
+<li><a href="makeTOC.php">Generate a LeTeX file with TOC and author index</a></li>
+$uploadTOC
 </ul>
 $closeIt
 EndMark;

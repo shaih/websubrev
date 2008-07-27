@@ -8,8 +8,6 @@
 $needsAuthentication = true; // Just a precaution
 require 'header.php';
 
-if (defined('REVIEW_PERIOD')) { exit("<h1>Submission Site is Closed</h1>"); }
-
 $longName    = CONF_NAME;
 $shortName   = CONF_SHORT;
 $confYear    = CONF_YEAR;
@@ -31,7 +29,7 @@ print <<<EndMark
 h1 { text-align: center; }
 tr { vertical-align: top; }
 </style>
-<title>Managing Submissions Site</title></head>
+<title>Managing Submission Site</title></head>
 
 <body>
 $links
@@ -54,28 +52,32 @@ $links
 </tr>
 <tr><td><big><b>Submission:</b></big></td><td><br></td>
 </tr>
-<tr><td style="text-align: right;">Pre-registraion&nbsp;Deadline:</td>
-  <td><input name=regDeadline size=45 type=text value="$regDeadline">
-  (empty field means pre-registration is not required)</td>
-</tr>
+<tr><td style="text-align: right;">Camera&nbsp;ready&nbsp;Deadline:</td>
+  <td><input name=cameraDeadline size=90 type=text value="$cmrDeadline"></td>
+</tr>  
+EndMark;
+
+if (PERIOD<=PERIOD_SUBMIT) {
+  print <<<EndMark
 <tr><td style="text-align: right;">Submission&nbsp;Deadline:</td>
   <td><input name=subDeadline size=90 type=text value="$subDeadline"></td>
 </tr>
-<tr><td style="text-align: right;">Camera&nbsp;ready&nbsp;Deadline:</td>
-  <td><input name=cameraDeadline size=90 type=text value="$cmrDeadline"><br/>
+<tr><td style="text-align: right;">Pre-registraion&nbsp;Deadline:</td>
+  <td><input name=regDeadline size=45 type=text value="$regDeadline">
+  (empty field means pre-registration is not required)<br/>
   Remember that <b>the software does not enforce these deadlines automatically.
   </b></td>
-</tr>  
+</tr>
 
 EndMark;
-$cats = $sc = '';
-if (is_array($categories)) foreach ($categories as $c) {
-  $cats .= "{$sc}{$c}";
-  $sc = '; ';
-}
-$chkaff = USE_AFFILIATIONS ? 'checked="checked"' : '';
-$chkanon = ANONYMOUS ? 'checked="checked"' : '';
-print <<<EndMark
+  $cats = $sc = '';
+  if (is_array($categories)) foreach ($categories as $c) {
+    $cats .= "{$sc}{$c}";
+    $sc = '; ';
+  }
+  $chkaff = USE_AFFILIATIONS ? 'checked="checked"' : '';
+  $chkanon = ANONYMOUS ? 'checked="checked"' : '';
+  print <<<EndMark
 <tr><td style="text-align: right;">Categories:</td>
   <td><textarea name=categories rows=3 cols=70>$cats</textarea><br/>
     A semi-colon-separated list of categories for the submissions
@@ -92,25 +94,24 @@ print <<<EndMark
 </tr>
 
 EndMark;
-	
-if (is_array($confFormats)) {
-  print <<<EndMark
+
+  if (is_array($confFormats)) {
+    print <<<EndMark
 <tr><td style="text-align: right;">
     Supported Formats:<br/>(UNcheck to remove)
     <input type=hidden name=formats value=on></td>
   <td>
 
 EndMark;
-  foreach ($confFormats as $ext => $f) { // one row for each format
-    print <<< EndMark
+    foreach ($confFormats as $ext => $f) { // one row for each format
+      print <<< EndMark
     <input name="keepFormats_{$ext}" type=checkbox checked="checked">
     <b>$f[0]</b> &nbsp;(.$ext, &nbsp;$f[1])<br/>
 
 EndMark;
+    }
   }
-}
-
-print <<<EndMark
+  print <<<EndMark
   </td>
 </tr>
 <tr><td style="text-align: right;">Add supported formats:</td>
@@ -118,6 +119,9 @@ print <<<EndMark
       A semi-colon-separated list of formats "<tt>Name1(ext1,MIME1);
       Name2(ext2, MIME2)...</tt>"</td>
 </tr>
+EndMark;
+}
+print <<<EndMark
 <tr><td colspan=2 style="text-align: center;"> 
   <input value="         Submit         " type="submit"></td>
 </tr>

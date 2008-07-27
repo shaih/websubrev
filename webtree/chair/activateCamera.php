@@ -11,54 +11,11 @@ require 'header.php';
 if (defined('SHUTDOWN')) exit("<h1>Site is Closed</h1>");
 
 $cName = CONF_SHORT.' '.CONF_YEAR;
-$cNameLowCase = strtolower(CONF_SHORT).CONF_YEAR;
 $links = show_chr_links();
 $cmrDdline = utcDate('r (T)', CAMERA_DEADLINE);
 
-
 $prot = (defined('HTTPS_ON') || isset($_SERVER['HTTPS']))? 'https' : 'http';
 $baseURL = $prot.'://'.BASE_URL;
-
-$cameraInstructions =
-"The proceedings of $cName will be published in Springer-Verlag's
-Lecture Notes in Computer Science (LNCS). Authors must prepare their
-camera-ready version in LaTeX2e. You should obtain the LNCS LaTeX2e
-class file (llncs.cls), which can be obtained off Springer's site at:
-
-  http://www.springer.de/comp/lncs/authors.html
-
-(Off that page you will find a zip file that includes the class file as
-well as documentation.)
-
-Please prepare an archive file (either zip, tar, tar.gz, or tgz) that
-includes the following files:
-
-* The source LaTeX file, including any figures, style files, and all
-  other files that are needed to produce the camera ready copy. It
-  would help us if you name the main LaTeX file (i.e., the one
-  with the LaTeX commands \\title and \\author) $cNameLowCase.tex.
-* A PDF file that was created from the source LaTeX file(s).
-
-Use the final-version submission form at
-
-  ${baseURL}submit/cameraready.php
-
-to upload your archive file. (*NOTE: you will need the submission-ID and
-password that were given to you when you first submitted the paper. Contact
-the chair if you lost your submission-ID and password.) The deadline for
-uploading the files is $cmrDdline.
-
-The page limit is 17 pages total, including bibliography and all appendices.
-
-Authors must also download the IACR copyright form from
-
-  http://www.iacr.org/forms/
-
-and mail or FAX a signed copy of this form to the editor, at the address:
-
-[[your-address-here]]
-
-The form should be mailed (postmarked) or FAXed by $cmrDdline.\n";
 
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -74,28 +31,35 @@ $links
 <hr />
 <h1>Activate Final-Version Submission Site for $cName</h1>
 When you hit the "Activate Final-Version Submissions" button at the
-bottom of this page, the authors of accepted papers will be sent emails
-with instructions for preparing the camera-ready version. At the same
+bottom of this page, the authors of accepted papers will be sent emails,
+telling them that the final-version submission site is open. At the same
 time, the review site will switch to a read-only mode. (I.e., PC members
 will still be able to view the reviews and discussions but not to modify
 them or insert new ones.)
+<p>
+You can use the form below to customize the email that is sent to the
+authors, and also if you want to change the camera-ready deadline.
+</p>
 
-<h3>Instructions for camera-ready version</h3>
 <form name="cameraInstructions" action="doActivateCamera.php"
       enctype="multipart/form-data" method="post">
+Subject: <input type=text name=subject size=75 value="Final-version submission site for $cName now open">
+<textarea cols=80 rows=15 name="finalVersionInstructions">The site for uploading the camera-ready papers for $cName is now open at
 
-Use the text area below to customize the instructions for authors of
-accepted papers. These instructions will be sent to the authors, and
-will also be available off the final-version submission site. <br />
+  ${baseURL}submit/
 
-<textarea cols=80 rows=23 name="finalVersionInstructions">$cameraInstructions</textarea><br/>
+Instructions for preparing you camera-ready versions are avialable there. The deadline for uploading your submission to the server, as well as for sending the copyright form, is $cmrDdline.
+
+Regards,
+
+The chair(s)</textarea><br/>
 <br />
 Camera-ready deadline:
 <input type=text name=cameraDeadline value="$cmrDdline" size=50>
 <br/><br/>
 <input type="submit" value="Activate Final-Version Submissions">
 </form>
-<hr />
+<hr/>
 $links
 </body>
 </html>

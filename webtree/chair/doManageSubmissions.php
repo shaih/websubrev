@@ -47,12 +47,13 @@ if (!empty($x)) {
   if ($trg!=$regDeadline) { $changeParams=true; $regDeadline=$trg; }
   $period = PERIOD_PREREG;
 }
-else if (USE_PRE_REGISTRATION){ // chair decided not to use pre-reg after all
+else if (USE_PRE_REGISTRATION && $period <= PERIOD_SUBMIT){ // chair decided not to use pre-reg after all
   $changeParams=true;
   $regDeadline = "NULL";
   $period = PERIOD_SUBMIT;
 }
-
+if (!isset($regDeadline)) $regDeadline = "NULL";
+     
 $x = isset($_POST['subDeadline']) ?  trim($_POST['subDeadline']) : NULL;
 if (!empty($x)) {
   $tsb = strtotime($x);

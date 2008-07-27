@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-require 'header.php'; // brings in the contacts file and utils file
+require 'header.php'; // brings in the constants file and utils file
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 
 $links = show_sub_links(2);
@@ -37,18 +37,16 @@ $timeleft</h3>
 
 Use the <a href="cameraready.php">camera-ready revision form</a> (with
 the password that you got when you submitted the paper) to submit the
-camera-ready version.
-<br /><br />
-
-<big><b>Instructions for preparing the camera-ready version</b></big>
-<pre>$cameraInstructions
-</pre>
+camera-ready version. Instructions for preparing the camera-ready
+version are available <a href="cameraInstructions.php">on this page</a>.
+Don&prime;t forget to sign and return also the copyright form by the
+deadline.
 <hr />
 $links
 $footer
-
+</body></html>
 EndMark;
-  exit("</body></html>");
+  exit();
 } /********** end if (PERIOD >= PERIOD_CAMERA) ************/
 
 

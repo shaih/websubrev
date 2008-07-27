@@ -92,10 +92,10 @@ the customization page.
 A word about web-server configuration:
 --------------------------------------
 The Web server should refuses to serve anything from the sub-directories
-"includes", "init", and "subs" (under the BASE directory): (If the server
+"includes", "init", and "subs" (under the BASE directory): If the server
 agrees to serve content from subs/ and the installation uses the default
 setting of putting the submissions there, then anyone who knows the
-internals of the system would be able to download these submission.)
+internals of the system would be able to download these submission.
 
 There are already .htaccess files for Apache with the appropriate 
 directives in place, but these must be enabled by setting the option
