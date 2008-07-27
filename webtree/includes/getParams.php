@@ -116,7 +116,7 @@ switch($row['period']) {
 
 $footer = <<<EndMark
 <br />
-This is a version 0.61 (beta) of the <a href="http://alum.mit.edu/www/shaih/websubrev">Web-Submission-and-Review software</a>, written by Shai Halevi from <a href="http://www.research.ibm.com"><img src="../common/ibm-research-logo.jpg" alt="IBM Research"></a>
+This is a version 0.62 (beta) of the <a href="http://alum.mit.edu/www/shaih/websubrev">Web-Submission-and-Review software</a>, written by Shai Halevi from <a href="http://www.research.ibm.com"><img src="../common/ibm-research-logo.jpg" alt="IBM Research"></a>
 <br/>
 Shai would love to hear your comments and suggestions regarding this software.
 EndMark;
