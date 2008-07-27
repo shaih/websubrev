@@ -11,9 +11,7 @@ require 'header.php';
 $cName = CONF_SHORT.' '.CONF_YEAR;
 $cNameLowCase = strtolower(CONF_SHORT.CONF_YEAR);
 $cFullName = CONF_NAME;
-if (!defined('CAMERA_PERIOD')) {
-  exit("<h1>Final-versions for $cName not available yet</h1>");
-}
+if (PERIOD<PERIOD_REVIEW) die("<h1>Too early to produce TOC</h1>");
 
 if (isset($_POST['makeTOC'])) {
   // read user input

@@ -10,6 +10,22 @@ require 'header.php'; // brings in the contacts file and utils file
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 
+if (is_array($confFormats) && count($confFormats)>0) {
+  $supportedFormats = '';
+  foreach ($confFormats as $ext => $f) {
+    $supportedFormats .= $ext . ", ";
+  }
+  if (strlen($supportedFormats)>100) { // don't display long lines in the form
+    $supportedFormats = '<a href="index.php#formats" title="'
+      .$supportedFormats.'">click for details</a>';
+  }
+  else {
+    $supportedFormats .= '<a href="index.php#formats">click for details</a>';
+  }
+} else { // no formats were specified
+  $supportedFormats = 'none specified';
+}
+
 // If the conference use pre-registration, then use the current form
 // for registration and do not require to upload a submission file.
 // Otherwise uploading submission file is required
@@ -46,22 +62,6 @@ EndMark;
 
 $timeleft = show_deadline($ddline);                   // how much time is left
 $subDdline = 'Deadline is '.utcDate('r (T)',$ddline); // when is the deadline
-
-if (is_array($confFormats) && count($confFormats)>0) {
-  $supportedFormats = '';
-  foreach ($confFormats as $ext => $f) {
-    $supportedFormats .= $ext . ", ";
-  }
-  if (strlen($supportedFormats)>100) { // don't display long lines in the form
-    $supportedFormats = '<a href="index.php#formats" title="'
-      .$supportedFormats.'">click for details</a>';
-  }
-  else {
-    $supportedFormats .= '<a href="index.php#formats">click for details</a>';
-  }
-} else { // no formats were specified
-  $supportedFormats = 'none specified';
-}
 
 $chairNotice = (PERIOD>PERIOD_SUBMIT || (USE_PRE_REGISTRATION && PERIOD>PERIOD_PREREG))? "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n": '';
 

@@ -263,7 +263,7 @@ No one else can see these comments
 <center>
 <table><tbody>
 <tr><td><input type="submit" value="Submit"></td>
-<td>
+<td align=left>
 $watchHtml
 <input type=checkbox name=emilReview{$chkEml}> Send my review back to me via email<br/>
 <input name="draft" type="checkbox"> Remind me to go back to this review (<a target=documentation href="../documentation/reviewer.html#draftReview">what&prime;s this?</a>)

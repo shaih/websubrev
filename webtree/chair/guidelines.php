@@ -66,8 +66,8 @@ $links
 <hr />
 <h1>Set $gdlines for $cName</h1>
 Use this form to upload the $gdlines to the server. You can start by
-downloading a <a href="$default">default file</a>, saving it to your
-local machine, then editing this default file and uploading it back to
+downloading a <a href="$default">template file</a>, saving it to your
+local machine, then editing this template file and uploading it back to
 the server. You can also see the <a href="$current">last file that
 you uploaded</a> (if any).<br/>
 <br/>
