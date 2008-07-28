@@ -33,7 +33,6 @@ if (get_magic_quotes_gpc())
   $_POST  = array_map('stripslashes_deep', $_POST);
 
 // Read all the fields, stripping spurious white-spaces
-
 $shortName = isset($_POST['shortName']) ? trim($_POST['shortName']) : NULL;
 $year = isset($_POST['confYear']) ? trim($_POST['confYear']) : NULL;
 
@@ -48,8 +47,9 @@ if ($chair) {
 $admin = isset($_POST['admin']) ? parse_email($_POST['admin']) : false;
 $adminEmail = $admin ? $admin[1] : '';
 
-if (isset($_POST['localMySQL'])) { $sqlHost = 'localhost'; }
-else {
+if (isset($_POST['localMySQL']) && $_POST['localMySQL']=='yes') {
+  $sqlHost = 'localhost';
+} else {
   $sqlHost   = trim($_POST['MySQLhost']); // MySQL server as seen by web server
   if (empty($sqlHost)) $sqlHost = 'localhost';
 }
