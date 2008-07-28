@@ -70,12 +70,14 @@ else {                          // pre-registration is NOT required
 
 if (PERIOD==PERIOD_PREREG) {
   $ddline = REGISTER_DEADLINE;
+  $whatDdline = 'Registration';
 } else {
   $ddline = SUBMIT_DEADLINE;
+  $whatDdline = 'Submission';
 }
   
 $timeleft = show_deadline($ddline);
-$deadline = 'Deadline is '. utcDate('r (T)', $ddline); // when is the deadline
+$deadline = "$whatDdline deadline is ". utcDate('r (T)', $ddline); // when is the deadline
 
 print <<<EndMark
 <h1>Submission Instructions, $confName</h1>

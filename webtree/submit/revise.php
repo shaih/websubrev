@@ -22,7 +22,8 @@ if (USE_PRE_REGISTRATION) { // if pre-registration is required
 }
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
-$h1text = "<h1>{$submit}Revise a Submission to $confName</h1>";
+$titleText = "{$submit}Revise a Submission to $confName";
+$h1text = "<h1>$titleText</h1>";
 $timeleft = show_deadline(SUBMIT_DEADLINE);
 $subDdline = 'Deadline is '
            . utcDate('r (T)', SUBMIT_DEADLINE); // when is the deadline
@@ -111,7 +112,7 @@ function checkform( form )
 //-->
 </script>
 
-<title>$h1text</title>
+<title>$titleText</title>
 <link rel="stylesheet" type="text/css" href="../common/submission.css"/>
 </head>
 <body>
@@ -238,7 +239,7 @@ print <<<EndMark
   </tr>
   <tr>
     <td></td>
-    <td><input value="Revise Submission" type="submit" name="reviseSub">
+    <td><input value="{$submit}Revise Submission" type="submit" name="reviseSub">
     </td>
   </tr>
 </tbody>
