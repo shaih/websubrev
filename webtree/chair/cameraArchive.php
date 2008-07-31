@@ -8,30 +8,89 @@
 $needsAuthentication = true; 
 require 'header.php';
 
-if (!defined('CAMERA_PERIOD'))
-  exit('<h1>Final-verions are not available yet</h1>');
+if (PERIOD<PERIOD_CAMERA) exit('<h1>Final-verions are not available yet</h1>');
 
-// Use PEAR is available
+// check if the PEAR package Archive_Tar is available
+$pearAvailable = (($fp=@fopen('Archive/Tar.php', 'r', 1)) && @fclose($fp));
+
+/*********************************************************************
+ If PEAR is not available then try to use the system tar/zip utilities.
+ In this case the archive will have the default format, reflecting the
+ structure of the submit/final directory: all files are in the same
+ directory, and they are named by their submission number. 
+
+ If PEAR is allow also vailable then enable also the LNCS format:
+ Namely, each submission file is in a separate subdirectory XXXXnnnn,
+ where XXXX is the volume number and nnnn is the first page of this
+ submission within the volume. We first ask the chair what format
+ he/she wants to use, and then create the archive file accordingly.
+**********************************************************************/
+
+// Display a page asking the chair what format to use
+if ($pearAvailable && !isset($_GET['format'])) {
+  $links = show_chr_links();
+  print <<<EndMark
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head><title>Create Camera-Ready Archive</title>
+<script type="text/javascript" src="../common/validate.js"></script>
+<script language="Javascript" type="text/javascript">
+<!--
+function checklncs() { // check the radio button for lncs
+  document.getElementById('lncs').checked=true;
+  return true;
+}
+// -->
+</script>
+</head>
+<body>
+$links
+<hr/>
+<h1 align=center>Create Camera-Ready Archive</h1>
+You can create the archive in one of two formats:
+<ul>
+<li><i>Default:</i> All the camera-ready files are in one directory.<br/>
+<br/></li>
+<li><i>LNCS:</i> Each file resides in its own sub-directory, and the
+sub-directory is named <i>XXXXnnnn</i> where <i>XXXX</i> is the volume
+number and <i>nnnn</i> is the first page of that submission.
+(For example, <i>40270015</i> for volume number 4027 and a paper that
+begins on page 15).<br/>
+<br/>
+Page numbers are calculated when you generate the LaTeX preface template.
+Accepted submissions for which the page number is not yet set, as well
+as the preface of the volume (if you uploaded it to the server), will
+be placed in the sub-directory <i>XXXX0000</i>.
+</li>
+</ul>
+
+<form action=cameraArchive.php method=GET>
+<input type=radio name=format value="default" checked> Use the default format<br/>
+<input type=radio name=format value="lncs" id=lncs> Use LNCS format 
+       with volume number <input type=text name=volume size=5 onchange="return checkInt(this,1,99999);" onfocus="return checklncs();"><br/>
+<input type=submit>
+</form>
+<hr/>
+$links
+</body></html>
+EndMark;
+  exit();
+}
+
 $ext = '';
-if (($fp = @fopen('Archive/Tar.php', 'r', 1)) and fclose($fp)) {
-  $ext = PEARmkTar();
-}
+if ($pearAvailable) $ext = PEARmkTar(); // Use PEAR if available
+if (empty($ext)) $ext = SYSmkTar();     // otherwise try the system utilities
+if (empty($ext)) die('Failed to create an archive file');
 
-// Otherwise try to use system programs
-if (empty($ext))
-  $ext = SYSmkTar();
-
-// backup old file (if exist) and rename new tar to premanent name
-if (!empty($ext)) {
-  if (file_exists("all_in_one.$ext.bak")) unlink("all_in_one.$ext.bak");
-  if (file_exists("all_in_one.$ext")) rename("all_in_one.$ext", "all_in_one.$ext.bak");
+// backup old file (if exists) and rename new tar to premanent name
+if (file_exists("all_in_one.$ext.bak")) unlink("all_in_one.$ext.bak");
+if (file_exists("all_in_one.$ext")) rename("all_in_one.$ext", "all_in_one.$ext.bak");
  
-  if (!rename("all_in_one.tmp.$ext", "all_in_one.$ext")) {
-    error_log(date('Ymd-His: ')."rename(all_in_one.tmp.$ext, all_in_one.$ext) failed\n", 3, LOG_FILE);
-    exit("<h1>Cannot rename all_in_one.tmp.$ext to all_in_one.$ext</h1>\nContact the administrator.\n<a href=\".\">Back to main page</a>");
-  }
-  exit("<h1>Archive file all_in_one.$ext created</h1>\n<a href=\".\">Back to main page</a>");
+if (!rename("all_in_one.tmp.$ext", "all_in_one.$ext")) {
+  error_log(date('Ymd-His: ')."rename(all_in_one.tmp.$ext, all_in_one.$ext) failed\n", 3, LOG_FILE);
+  exit("<h1>Cannot rename all_in_one.tmp.$ext to all_in_one.$ext</h1>\nContact the administrator.\n<a href=\".\">Back to main page</a>");
 }
+exit("<h1>Archive file all_in_one.$ext created</h1>\n<a href=\".\">Back to main page</a>");
 
 function SYSmkTar()
 {
@@ -68,23 +127,50 @@ function PEARmkTar()
 {
   require_once 'Archive/Tar.php';
   $cnnct = db_connect();
-  $qry = "SELECT subId, format from submissions WHERE status='Accept'
-  ORDER by subId";
-  $res = db_query($qry, $cnnct);
 
+  // $lncs is defined if we need touse the LNCS format
+  $lncs = (isset($_GET['format']) && $_GET['format']=='lncs')?
+    intval($_GET['volume']) : NULL;
+
+  
+  $qry = "SELECT s.subId,s.format,a.pOrder,a.nPages FROM submissions s, acceptedPapers a WHERE s.status='Accept' AND a.subId=s.subId ORDER by "
+    . (isset($lncs)? "a.pOrder,s.subId" : "s.subId");
+  $res = db_query($qry, $cnnct);
   // create a tar with temporary name
   chdir(SUBMIT_DIR.'/final');
+  if (file_exists("all_in_one.tmp.tar")) unlink("all_in_one.tmp.tar");
   $tar_object = new Archive_Tar("all_in_one.tmp.tar");
-  $tar_object->setErrorHandling(PEAR_ERROR_PRINT, "%s<br />\n");// print errors
+  $tar_object->setErrorHandling(PEAR_ERROR_PRINT,"%s<br/>\n");// print errors
 
-  while ($row=mysql_fetch_row($res)) {
-    $subName = $row[0].'.'.$row[1];
-    if (!($tar_object->addModify($subName, "final"))) {
-      error_log(date('Y.m.d-H:i:s ')."Cannot add $subName to tar file",
+  // Add the preface to the archive file (if available)
+  $dir = isset($lncs)? ($lncs.'0000'): 'final';
+  foreach (array('tar','zip','tgz') as $suffix) {
+    $subName = "preface." . $suffix;
+    if (file_exists($subName) && !($tar_object->addModify($subName,$dir))) {
+      error_log(date('Y.m.d-H:i:s ')."Cannot add file $subName to tar file",
 		3, LOG_FILE);
       return '';
     }
   }
+
+  // Add all the submissions to the tar file
+  $curPage = 1;
+  while ($row=mysql_fetch_assoc($res)) {
+    $subName = $row['subId'].'.'.$row['format'];
+    if (isset($lncs)) { // use lncs convention
+      if ($row['pOrder']>0) { // paper has defined order in the program
+	$dir = $lncs . sprintf("%04d",$curPage);
+	$curPage += $row['nPages'];
+      }
+      else $dir = $lncs . '0000';
+    }
+    if (!($tar_object->addModify($subName,$dir))) {
+      error_log(date('Y.m.d-H:i:s ')."Cannot add file $subName to tar file",
+		3, LOG_FILE);
+      return '';
+    }
+  }
+
   return 'tar';
 }
 ?>

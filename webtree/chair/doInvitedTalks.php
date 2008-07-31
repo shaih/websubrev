@@ -79,7 +79,7 @@ $msg .="  $prot://".BASE_URL."submit/\n\n";
 $msg .="On that page you can find instructions for preparing the writeup\n";
 $msg .="and uploading it to the server. You should use submission-ID $subId\n";
 $msg .="and password $subPwd to upload the file.\n";
-my_send_mail($contact, $subject, $msg, CHAIR_EMAIL);
+my_send_mail($contact, $subject, $msg, CHAIR_EMAIL,"Invited talk with ID $subId and password $subPwd");
 
 header("Location: .");
 ?>
