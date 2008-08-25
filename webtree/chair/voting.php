@@ -72,6 +72,24 @@ h1 { text-align: center;}
 tr { vertical-align: top; }
 </style>
 <title>Setup/Manage Voting</title>
+<script language="Javascript" type="text/javascript">
+<!--
+function voteOnChk(fld,i) {
+  if (fld.value!="") {
+    var prms = document.getElementById("votePrms");
+    prms.voteOnWhat[i].checked=true;
+    return false;
+  }
+}
+function gradeChk(fld) {
+  if (fld.value!="") {
+    var prms = document.getElementById("votePrms");
+    prms.voteType[1].checked=true;
+    return false;
+  }
+}
+//-->
+</script>
 </head>
 <body>
 $links
@@ -95,6 +113,7 @@ if (count($allVotes)>0) {// Generic form: print a list of votes
       $vClose = '<form action="doVoting.php" enctype="multipart/form-data" method=post>
   <input type="hidden" name="voteId" value="'.$vtId.'">
   <input type="submit" name="closeVote" value="Close vote">
+  <input type=checkbox name=hideVote value=on ID=hide{$vtId} title="Check box to prevent PC members from seeing the results of this vote"> Hide tally from PC
   </form>';
     } else {
       $vActive = 'Closed';
@@ -136,7 +155,7 @@ In either type of vote, the tally is the sum of votes that each submission
 received. (In the "Choose vote" this is the number of PC members that chose
 that submission.)<br/>
 <br/>
-<form action="doVoting.php" enctype="multipart/form-data" method=post>
+<form action="doVoting.php" enctype="multipart/form-data" method=post ID=votePrms>
 <b>Title:</b>&nbsp; <input type="text" name="voteTitle" size=60
    value="$voteTitle"> (used to distinguish this ballot from others)<br/>
 <b>Deadline:</b> <input type="text" name="voteDeadline" size=56
@@ -150,7 +169,7 @@ that submission.)<br/>
 A simple "Choose vote"<br/>
 <input type="radio" name="voteType" value="Grade" $gradeVote>
 A "Grade vote" on a scale of 0 to
-<input type="text" name="voteMaxGrade" size=1 value=$voteMaxGrade>
+<input type="text" name="voteMaxGrade" size=1 maxlength=1 value="$voteMaxGrade" onkeyup="return gradeChk(this);">
 (max-grade cannot be more than 9).<br/>
 <br />
 Every PC member has "voting budget" of 
@@ -178,26 +197,26 @@ Include only the submissions that are specified below
 <table><tbody>
 <tr><td></td>
     <td style="text-align: right;">&nbsp; &nbsp;submissions in the:</td>
-    <td><input type="checkbox" name="voteOnAC" $chkAC>'Accept' category,</td>
-    <td><input type="checkbox" name="voteOnMA" $chkMA>'Maybe Accept' category,</td>
+    <td><input type="checkbox" name="voteOnAC" $chkAC onchange="return voteOnChk(this,1);">'Accept' category,</td>
+    <td><input type="checkbox" name="voteOnMA" $chkMA onchange="return voteOnChk(this,1);">'Maybe Accept' category,</td>
 </tr>
 <tr><td></td><td></td>
-    <td><input type="checkbox" name="voteOnDI" $chkDI>'Discuss' category,</td>
-    <td><input type="checkbox" name="voteOnNO" $chkNO>'None' category,</td>
+    <td><input type="checkbox" name="voteOnDI" $chkDI onchange="return voteOnChk(this,1);">'Discuss' category,</td>
+    <td><input type="checkbox" name="voteOnNO" $chkNO onchange="return voteOnChk(this,1);">'None' category,</td>
 </tr>
 <tr><td></td><td></td>
-    <td><input type="checkbox" name="voteOnMR" $chkMR>'Maybe Reject' category,</td>
-    <td><input type="checkbox" name="voteOnRE" $chkRE>'Reject' category</td>
+    <td><input type="checkbox" name="voteOnMR" $chkMR onchange="return voteOnChk(this,1);">'Maybe Reject' category,</td>
+    <td><input type="checkbox" name="voteOnRE" $chkRE onchange="return voteOnChk(this,1);">'Reject' category</td>
 </tr>
 <tr><td> &nbsp; &nbsp; </td>
     <td style="text-align: right;">..and also these submission IDs:</td>
-    <td colspan=2><input type="text" name="voteOnThese" value="$voteOnThese" size=80><br/>comma-separated list of submission-IDs</td>
+    <td colspan=2><input type="text" name="voteOnThese" value="$voteOnThese" size=80 onkeyup="return voteOnChk(this,1);"><br/>comma-separated list of submission-IDs</td>
 </tr>
 </tbody></table>
 <br />
 <input type="radio" name="voteOnWhat" value="other" $chkOther>
 Vote on things other than submissions (e.g., invited speaker):
-<textarea name="voteItems" rows=5 cols=80>$voteItems</textarea><br />
+<textarea name="voteItems" rows=5 cols=80 onkeyup="return voteOnChk(this,2);">$voteItems</textarea><br />
 A <b>semi-colon separated</b> list of items to vote on. For example, to let
 the PC members choose their main course for the PC dinner, you can use a line
 such as <tt>"Maine Lobster; Australian barramundi; Squab breast; Medallions of

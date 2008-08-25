@@ -82,8 +82,9 @@ if (isset($_POST["setup"])) {
  *******************************************************************/
 if (isset($_POST["closeVote"])) {
   $voteId = intval(trim($_POST["voteId"]));
+  $hide = (isset($_POST["hideVote"]) && $_POST["hideVote"]=="on")? -1 :0;
   if ($voteId > 0) {
-    db_query("UPDATE votePrms SET voteActive=0 WHERE voteId=$voteId", $cnnct);
+    db_query("UPDATE votePrms SET voteActive=$hide WHERE voteId=$voteId", $cnnct);
   }
   header("Location: voteDetails.php?voteId=$voteId");
 }

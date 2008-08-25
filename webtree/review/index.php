@@ -22,7 +22,35 @@ if ($revId==CHAIR_ID) $phase .= ' (Program Chair)';
 if (defined('CAMERA_PERIOD')) $phase = 'Read Only';
 $legend = '';
 $cnnct = db_connect();
-$ballotsText = votingText($cnnct, $disFlag);
+
+// A box listing the current active votes
+$qry = "SELECT voteId, voteTitle, deadline FROM votePrms WHERE voteActive=1";
+// Before the discussion phase, cannot vote on submissions
+if (!$disFlag) $qry .= " AND (voteFlags&1)!=1";
+$res = db_query($qry, $cnnct);
+if (mysql_num_rows($res)<= 0) $ballotsText='';
+else {
+  $ballotsText = "You can participate in the current active ballots:\n"
+    . "<blockquote><table border=1><tbody>\n"
+    . "<tr align=left><th>Title</th><th>Deadline</th>\n";
+
+  while ($row=mysql_fetch_row($res)) {
+    $voteId = intval($row[0]);
+    $voteTitle = trim($row[1]);
+    if (empty($voteTitle)) $voteTitle = 'Ballot #'.$voteId;
+    else                   $voteTitle = htmlspecialchars($voteTitle);
+    $ballotsText .= '<tr><td><a href="vote.php?voteId='.$voteId.'" target="_blank">'
+      .$voteTitle.'</a> </td><td>'.htmlspecialchars($row[2])."</td></tr>\n";
+  }
+  $ballotsText = $ballotsText . "</tbody></table></blockquote>\n\n";
+}
+
+// A link to see the results of completed ballots
+$qry = "SELECT COUNT(*) FROM votePrms WHERE voteActive=0";
+$res = db_query($qry, $cnnct);
+$row=mysql_fetch_row($res);
+if ($row[0]>0) $seeVoteRes = '&nbsp;o&nbsp;&nbsp;<a target=_blank href="voteResults.php">See results of completed votes</a><br/>';
+else $seeVoteRes = '';
 
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
@@ -126,7 +154,8 @@ $listSubmissions
 <td><strong>Some other links:</strong><br />
 $allSubFile
 {$indicatePrefs}{$watchList}
-&nbsp;o&nbsp;&nbsp;<a target=_blank href="scorecard.php">Work with scorecard files</a><br />
+&nbsp;o&nbsp;&nbsp;<a target=_blank href="scorecard.php">Work with scorecard files</a><br/>
+$seeVoteRes
 &nbsp;o&nbsp;&nbsp;<a href="password.php">Change password</a><br />
 $allReviews
 <br/>
