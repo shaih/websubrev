@@ -106,6 +106,7 @@ EndMark;
     ($nSubs submissions so far)</li>
 <li><a href="manageSubmissions.php">Manage Parameters</a>
     (deadlines, supported formats, categories, etc.)</li>
+<li><a href="emailAuthors.php">Send email to authors</a></li>
 <li>$closeLink (<b>deadline is not enforced automatically</b>)</li>
 </ul>
 <ul>
