@@ -135,6 +135,16 @@ EndMark;
     } else {
       $assignHTML = '<a href="assignments.php">Assign submissions to reviewers</a>';
     }
+
+    // Check if there are any submissions that needs to be purged
+    $purgeLink = '';
+    if (USE_PRE_REGISTRATION) {
+      $cnnct = db_connect();
+      $qry = "SELECT COUNT(*) FROM submissions WHERE status!='Withdrawn' AND format IS NULL";
+      $res = db_query($qry,$cnnct);
+      $row = mysql_fetch_row($res);
+      if ($row[0]>0) $purgeLink = '<dd><a href="purgeNonSubmissions.php">Purge submissions that did not upload a submission file</a></dd>';
+    }
 print <<<EndMark
 <h3><span style="background-color: red;">Review Site is Active</span></h3>
 <dl>
@@ -142,7 +152,8 @@ print <<<EndMark
 <dd><a href="archive.php">Create a tar file with all the submission files</a></dd>
 <dd><a href="guidelines.php">Edit the review guidelines page</a></dd>
 <dd><a href="managePCmembership.php">Manage PC membership</a></dd>
-<br /><br />
+$purgeLink<br/>
+<br/>
 
 <dt><strong>Paper assignments</strong></dt>
 <dd>Download the submission-list as an <a href="submissionSpreadsheet.php">Excel spreadsheet</a></dd>
