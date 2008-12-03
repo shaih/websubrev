@@ -38,9 +38,10 @@ if ($needsAuthentication !== false) {
 
 // Before the review period: the chair can access everything,
 // but others can only access pages that set $preReview=true
-if (!defined('REVIEW_PERIOD') && 
-    (!isset($preReview) || $preReview!==true) && $pcMember[0]!=CHAIR_ID) {
-  exit("<h1>This area of the review site is not active yet</h1>");
+if (PERIOD<PERIOD_REVIEW && $pcMember[0]!=CHAIR_ID
+    && (!isset($preReview) || $preReview!==true)
+    && (PERIOD<PERIOD_SUBMIT || !USE_PRE_REGISTRATION)) {
+    exit("<h1>This area of the review site is not active yet</h1>");
 }
 
 // If 'magic quotes' are on, get rid of them

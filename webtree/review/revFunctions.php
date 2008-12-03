@@ -15,8 +15,8 @@ function show_rev_links($current = 0)
 
   $html .= make_link('guidelines.php', 'Guidelines', ($current==1))
     . make_link('index.php', 'Review Home', ($current==2));
-  if (defined('REVIEW_PERIOD')) {
-    $html.=make_link('listSubmissions.php', 'List submissions',($current==3));
+  if (PERIOD>=PERIOD_REVIEW ||(PERIOD==PERIOD_SUBMIT &&USE_PRE_REGISTRATION)) {
+    $html.= make_link('listSubmissions.php', 'List submissions',($current==3));
     if (REVPREFS && !$pcMember[3])
       $html .= make_link('prefs.php', 'Preferences', ($current==4));
   }

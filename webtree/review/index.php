@@ -78,7 +78,8 @@ Hello $revName. $ballotsText
 EndMark;
 
 // Before the review period: only chair can sees things.
-if (!defined('REVIEW_PERIOD') && $pcMember[0]!=CHAIR_ID) {
+if ($pcMember[0]!=CHAIR_ID &&
+    (PERIOD<PERIOD_SUBMIT ||(PERIOD==PERIOD_SUBMIT &&!USE_PRE_REGISTRATION))){
   print <<<EndMark
 The review period has not started yet.
 <hr/>
