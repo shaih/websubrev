@@ -48,7 +48,7 @@ Subject: <input type=text name=subject size=75 value="Final-version submission s
 
   ${baseURL}submit/
 
-Instructions for preparing you camera-ready versions are avialable there. The deadline for uploading your submission to the server, as well as for sending the copyright form, is $cmrDdline.
+Instructions for preparing your camera-ready versions are available there. The deadline for uploading your submission to the server, as well as for sending the copyright form, is $cmrDdline.
 
 Regards,
 
