@@ -96,9 +96,10 @@ if (!empty($keywords)) {
 if (!empty($comment)) {
   $qry .=  "comments2chair='" . my_addslashes($comment, $cnnct) . "', ";
 }
-$qry .= "format='"
-     . (!empty($fileFormat)? my_addslashes($fileFormat, $cnnct): '')
-     . "', subPwd='{$subPwd}', whenSubmitted=NOW()";
+if (isset($fileFormat)) {
+  $qry .= "format='".my_addslashes($fileFormat,$cnnct)."', ";
+}     
+$qry .= "subPwd='{$subPwd}', whenSubmitted=NOW()";
 
 /* Now we need to record the new submission. Below we try to minimize the
  * odds of an "inconsistent state": we first move the file to a temporary
