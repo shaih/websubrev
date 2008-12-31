@@ -143,7 +143,7 @@ EndMark;
       $qry = "SELECT COUNT(*) FROM submissions WHERE status!='Withdrawn' AND format IS NULL";
       $res = db_query($qry,$cnnct);
       $row = mysql_fetch_row($res);
-      if ($row[0]>0) $purgeLink = '<dd><a href="purgeNonSubmissions.php">Purge submissions that did not upload a submission file</a></dd>';
+      if ($row[0]>0) $purgeLink = '<a href="purgeNonSubmissions.php">Purge submissions that did not upload a submission file</a><br/>';
     }
 print <<<EndMark
 <h3><span style="background-color: red;">Review Site is Active</span></h3>
@@ -152,8 +152,7 @@ print <<<EndMark
 <dd><a href="archive.php">Create a tar file with all the submission files</a></dd>
 <dd><a href="guidelines.php">Edit the review guidelines page</a></dd>
 <dd><a href="managePCmembership.php">Manage PC membership</a></dd>
-$purgeLink<br/>
-<br/>
+<dd>$purgeLink<br/></dd>
 
 <dt><strong>Paper assignments</strong></dt>
 <dd>Download the submission-list as an <a href="submissionSpreadsheet.php">Excel spreadsheet</a></dd>
@@ -162,13 +161,13 @@ $purgeLink<br/>
   <b>Access is NOT blocked by default</b>
   (<a href="../documentation/chair.html#block">what&prime;s this?</a>)</dd>
 <dd>$assignHTML</dd>
-<br/><br/>
+<dd><br/></dd>
 
 <dt><strong>Reviews and decisions</strong></dt>
 <dd><a href="overview.php">Overview of all submissions and reviews</a></dd>
 <dd><a href="status.php">Set status of submissions</a></dd>
 <dd><a href="voting.php">Set-up and manage PC votes</a></dd>
-<br /><br />
+<dd><br/></dd>
 
 <dt><strong>Wrap-up</strong>
 <dd><a href="../review/listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on&amp;format=ascii" target="_blank">A full list of all the reviews and discussions (text)</a>
