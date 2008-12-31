@@ -162,6 +162,9 @@ fclose($fd);
 chmod($prmsFile, 0440);
 
 // Create the submission sub-directories
+if (!mkdir("$subDir/scratch", 0775)) { 
+  exit ("<h1>Cannot create scratch directory $subDir/scratch</h1>\n");
+}
 if (!mkdir("$subDir/backup", 0775)) { 
   exit ("<h1>Cannot create submission backup directory $subDir/backup</h1>\n");
 }
@@ -173,6 +176,7 @@ if (!mkdir("$subDir/attachments", 0775)) {
 }
 copy('../init/.htaccess', $subDir.'/.htaccess');
 copy('../init/index.html', $subDir.'/index.html');
+copy('../init/index.html', $subDir.'/scratch/index.html');
 copy('../init/index.html', $subDir.'/backup/index.html');
 copy('../init/index.html', $subDir.'/final/index.html');
 copy('../init/index.html', $subDir.'/attachments/index.html');

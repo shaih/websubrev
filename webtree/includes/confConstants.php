@@ -48,4 +48,5 @@ define('VOTE_ON_AC', 128);
 
 define('REPORT_NOT_DRAFT', 1);
 
+define('SUBMISSION_NEEDS_STAMP', 1);
 ?>

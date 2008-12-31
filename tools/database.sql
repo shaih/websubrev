@@ -108,6 +108,7 @@ CREATE TABLE IF NOT EXISTS submissions (
                 'Withdrawn') NOT NULL DEFAULT 'None',
     whenSubmitted datetime NOT NULL,
     lastModified timestamp,
+    flags int NOT NULL DEFAULT 0,
     numReviewers tinyint(1),
     avg float,
     wAvg float,

@@ -169,6 +169,10 @@ if (!empty($sbFileName)) {
     header("Location: receipt.php?subId=$subId&subPwd=$subPwd&warning=1");
     exit();
   }
+  elseif (PERIOD<PERIOD_CAMERA) { // mark new file as needing a stamp
+    $qry = "UPDATE submissions SET flags=(flags|".SUBMISSION_NEEDS_STAMP.") WHERE subId={$subId}";
+    db_query($qry, $cnnct,"Cannot mark file as needing a stamp: ");
+  }
 }
 
 // All went well, tell the client that we got the new submission.

@@ -180,11 +180,13 @@ chmod 640 $baseDir/init/confParams.php
 echo "done"
 echo
 echo -n "Preparing the UPLOAD directory ... "
+mkdir -p $subDir/scratch
 mkdir -p $subDir/backup
 mkdir -p $subDir/final
 mkdir -p $subDir/attachments
 cp $baseDir/init/.htaccess  $subDir
 cp $baseDir/init/index.html $subDir
+cp $baseDir/init/index.html $subDir/scratch
 cp $baseDir/init/index.html $subDir/backup
 cp $baseDir/init/index.html $subDir/final
 cp $baseDir/init/index.html $subDir/attachments

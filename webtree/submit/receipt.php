@@ -55,7 +55,8 @@ $status = $row['status'];
 $sbmtd = (int) $row['sbmtd'];
 $sbmtd = $sbmtd ? utcDate('Y-m-j H:i:s (T)', $sbmtd) : ''; 
 $rvsd = (int) $row['revised'];
-$rvsd = $rvsd ? utcDate('Y-m-j H:i:s (T)', $rvsd) : ''; 
+$rvsd = $rvsd ? utcDate('Y-m-j H:i:s (T)', $rvsd) : '';
+$needsStamp = ($row['flags'] & SUBMISSION_NEEDS_STAMP);
 
 if (defined('CAMERA_PERIOD') && $status=='Accept') {
   $subRev = 'camera-ready revision';
@@ -165,6 +166,14 @@ $links
 </body>
 </html>
 EndMark;
+flush();      // Don't let the user wait while we stamp the file
+if ($needsStamp && PERIOD<PERIOD_CAMERA) {
+  include_once('stampFiles.php');
+  // re-set the "needs stump" flag for this submission
+  $qry = "UPDATE submissions SET flags=(flags&(~".SUBMISSION_NEEDS_STAMP.")) WHERE subId={$subId}";
+  db_query($qry, $cnnct,"Cannot mark file as stamped: ");
+  stampSubmission($subId,$row['format']); // Stump the file (if possible)
+}
 exit();
 
 function generic_receipt($subId, $subPwd)
