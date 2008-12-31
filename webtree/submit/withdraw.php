@@ -57,7 +57,7 @@ function checkform( form )
 //-->
 </script>
 
-<title>Revise a Submission to $confName</title>
+<title>Withdraw a Submission from $confName</title>
 <link rel="stylesheet" type="text/css" href="../common/submission.css"/>
 </head>
 <body>
