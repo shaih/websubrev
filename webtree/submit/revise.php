@@ -5,10 +5,14 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- 
 require 'header.php'; // brings in the constants and utils files
 
 // Camera-ready revisions are now done from cameraready.php
+if (PERIOD>=PERIOD_CAMERA) { // redirect to camera-ready interface
+  header("Location: cameraready.php?".$_SERVER['QUERY_STRING']);
+  exit();
+}
+
 $chairNotice = (PERIOD>PERIOD_SUBMIT)? "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n": '';
 
 if (USE_PRE_REGISTRATION) { // if pre-registration is required
