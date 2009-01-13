@@ -27,6 +27,7 @@ print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 tr { vertical-align: top; }
 td { text-align: center; }
@@ -38,15 +39,39 @@ h1 { text-align: center; }
 .four { background: lightgreen; }
 .five { background: green; }
 </style>
+
+
+<script type="text/javascript" language="javascript">
+<!--
+    function checkall(box) {
+      for(i=0; i<document.watchListForm.elements.length; i++) {
+        var elem=document.watchListForm.elements[i];
+        if(elem.type=="checkbox" && elem.name.substring(0,6)=="watch[")
+          elem.checked=box.checked;
+      }
+      return true;
+    }
+    function selDeselAll() {
+      document.getElementById("SelDeselAll").className="shown";
+      return true;
+    }
+// -->
+</script>
+
 <title>Watch List for $pcMember[1]</title>
 </head>
 
-<body>
+<body onload=selDeselAll();>
 $links
 <hr />
 <h1>Watch List for $pcMember[1]</h1>
-
-<form action="doWatchList.php" enctype="multipart/form-data" method="post">
+<form name="watchListForm" action="doWatchList.php" enctype="multipart/form-data" method="post">
+<div id="SelDeselAll" class=hidden>
+&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;
+<small><b>Select/deselect all</b></small>
+<input type=checkbox onclick=checkall(this);>
+</div>
 <table><tbody>
 <tr><th><small>rev&#39;ed</small></th>$prfHdr
   <th><small>w.avg</small></th>
@@ -92,7 +117,7 @@ print <<<EndMark
   <td>$revwed</td>$prefLine
   <td>($wAvg)</td>
   <td><small>$status</small></td>
-  <td><input type=checkbox name=watch[$subId]{$checked}></td>
+  <td><input type=checkbox name="watch[$subId]"{$checked}></td>
   <td>$subId.</td>
   <td style="text-align: left;"><a href="submission.php?subId=$subId">$title</a></td>
 </tr>
