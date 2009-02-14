@@ -39,7 +39,7 @@ foreach($_POST as $name => $value) {
   if (isset($current[$subId])) {
     if ($current[$subId] != $value) $change[$subId] = $value;
   }
-  else if ($value != 3) $change[$subId] = $value;
+  else $change[$subId] = $value;
 }
 
 foreach($change as $subId => $value) {

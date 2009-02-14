@@ -114,18 +114,24 @@ while ($row = mysql_fetch_assoc($res)) {
   if (strlen($abstract)>1000) $abstract = substr($abstract,0,997) . ' [...]';
   $abstract = '<br/><br/><b>Abstract:</b> ' . htmlspecialchars($abstract);
   $abstract = nl2br($abstract);
-  $category = empty($row['category'])? 'None' : htmlspecialchars($row['category']);
-  $category .= "/" . htmlspecialchars($row['keyWords']);
-
-  $pref = isset($row['pref']) ? ((int) $row['pref']) : 3;
-  if ($pref < 0 || $pref > 5) $pref = 3;
-  $prefCount[$pref]++;
+  $category = empty($row['category'])? '' :
+    htmlspecialchars($row['category']).'/';
+  $category .= htmlspecialchars($row['keyWords']);
 
   $checked = array('', '', '', '', '', '');
-  $checked[$pref] = ' checked="checked"';
-  $cls = $classes[$pref];
+  if (isset($row['pref'])) {
+    $pref = (int) $row['pref'];
+    if ($pref < 0 || $pref > 5) $pref = 3;
 
-  $bodyHTML .= "<tr><td><a href=\"download.php?subId=$subId\" title=\"download\"><img src=\"../common/download.gif\" alt=\"download\" border=0></a></td><td class=\"$cls\">$pref</td>\n";
+    $checked[$pref] = ' checked="checked"';
+    $cls = "class=\"$classes[$pref]\"";
+  }
+  else {
+    $pref = 3;
+    $cls = '';
+  }
+  $prefCount[$pref]++;
+  $bodyHTML .= "<tr><td><a href=\"download.php?subId=$subId\" title=\"download\"><img src=\"../common/download.gif\" alt=\"download\" border=0></a></td><td $cls>$pref</td>\n";
 
   for ($i=0; $i<6; $i++) {
     $cls = $classes[$i];
@@ -134,7 +140,6 @@ while ($row = mysql_fetch_assoc($res)) {
     <input type=\"radio\" name=\"sub{$subId}\" value=$i{$chk}>
   </td>\n";
   }
-
   $bodyHTML .=<<<EndMark
   <td><a class=tooltips href="submission.php?subId=$subId" target=_blank style="z-index:$zIdx;">&nbsp;<img title="" alt="abs" src="../common/smalleye.gif"/><span>
 <b>$title</b><br/>
