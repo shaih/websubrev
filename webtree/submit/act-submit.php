@@ -136,6 +136,8 @@ db_query($qry, $cnnct, "Cannot insert submission details to database: ");
  */
 
 // Find this submission in the database
+
+/**** Old implementation, this code does not always work:
 $qry = "SELECT subId FROM submissions WHERE subPwd='{$subPwd}'
   AND title='"   . my_addslashes(substr($title, 0, 255), $cnnct)."'
   AND authors='" . my_addslashes($author, $cnnct)."'
@@ -143,7 +145,8 @@ $qry = "SELECT subId FROM submissions WHERE subPwd='{$subPwd}'
 $res = db_query($qry, $cnnct);
 $row = mysql_fetch_row($res);
 $subId = $row[0];   // What number was assigned to this submission
-
+****************** end of old implementation ************************/
+$subId=mysql_insert_id($cnnct);
 if (empty($subId)) { // can't find this submission (transient database problem?)
   // Send a confirmation email without the submission-id
   error_log(date('Ymd-His: ')."Can't find new submission: ".mysql_error()."\n", 3, LOG_FILE);  
