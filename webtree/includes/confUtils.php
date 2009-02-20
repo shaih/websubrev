@@ -229,7 +229,7 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
   if (!empty($fileFormat) && substr($fileFormat, -12)=='.unsupported') {
     $msg .= "UNSUPPORTED FORMAT: \t{$fileFormat}\n";
   }
-  if ($sid != 0)     { $msg .= "Submission number:  \t{$sid}\n"; }
+  if ($sid != 0)     { $msg .= "Submission-ID:  \t{$sid}\n"; }
   if (!empty($pwd))  { $msg .= "Submission password:\t{$pwd}\n\n"; }
   if ($sid != 0 && !empty($pwd)) {
     $prot = (defined('HTTPS_ON')||isset($_SERVER['HTTPS']))? 'https' : 'http';
