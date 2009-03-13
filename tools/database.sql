@@ -335,5 +335,15 @@ CREATE TABLE IF NOT EXISTS changeLog (
     INDEX (changeType)
 );
 
+CREATE TABLE IF NOT EXISTS assignParams (
+    idx tinyint(1) NOT NULL auto_increment,
+    excludedRevs text NOT NULL default '',
+    specialSubs text NOT NULL default '',
+    coverage tinyint(2) NOT NULL default 3,
+    spclCvrge tinyint(2) NOT NULL default 4,
+    startFrom enum('scratch','current','file') NOT NULL default 'current',
+    PRIMARY KEY (idx)
+);
+
 -- Insert a row for the chair into the committee table
 INSERT INTO committee SET revId=1, revPwd='', name='', email='', canDiscuss=1;

@@ -40,7 +40,7 @@ h1 {text-align: center;}
 
 <a name="insall"></a><h2>1. Installing the software</h2>
 One of the goals of this software was to make administration as easy as
-possible. In particular, you never need to run scripts etc. In principle,
+possible. In particular, you should not need to run scripts etc. In principle,
 to install this software you just unpack the zip file in some directory
 in your web tree (call it the BASE directory), point your browser at that
 directory and off you go.<br/>
@@ -74,7 +74,7 @@ web-server. In particular, some issues that I came across are:
 <li>If the server is set-up with PHP in safe mode, then everything under the
   BASE directory must have same owner. (Also everything under the UPLOAD
   directory -- see below.) If safe_mode_gid is set in php.ini then instead
-  of having the same owner they need to have the same group.<br/> 
+  of having the same owner they must have the same group.<br/> 
 </li>
 </ul>
 
@@ -165,13 +165,13 @@ username for the purpose of accessing the review site.<br/>
 The chair's email will also be CC'ed on every email that is sent to authors
 of submitted papers, including submission/revision confirmations, the final
 decision notifications and the comments for authors. The address that you
-specify here can be modified from the <a href="#PCemail">customization
+specify here can later be modified from the <a href="#PCemail">customization
 page</a>, and also from the PC membership page.<br/><br/>
 </dt>
 <dt><a name="adminEmail"></a><b>Administrator email.</b>
 The administrator's email is rarely used by the software: it's main purpose
 is to serve as a backup address for the chair's email. For example, if the
-need arise to reset the chair's password, then an email with the new password
+need arises to reset the chair's password, then an email with the new password
 will be sent to both the chair and the administrator email addresses. Also,
 there are some rare error situations where the software would sends an email
 to the administrator. After it is set, the administrator email can only be
@@ -379,7 +379,7 @@ Once you close the submission site, you are taken back to the administration
 page, where you can now administer the review site. At the top-right corner
 you still have a "Submission-site" box, now consisting only of a few links 
 that let you list the submissions is various orders (and also revise or
-withdraw submissions if need be). You can even submit a new papers (just in
+withdraw submissions if need be). You can even submit new papers (just in
 case you want to accept for consideration a submission that arrived after
 the deadline.) 
 
@@ -437,64 +437,121 @@ to either assign everything manually, or to let the software compute an
 assignment (using the reviewer's preferences) that you can later adjust.
 </li>
 </ul>
-<h4>Automatically Computing Paper Assignments</h4>
-If you did not disable that option, you will find a link off the 
-administration page that points to the auto-assignment page, where you can
-have the software compute an assignment of submissions to reviewers. The
-software uses a Stable-Marriage-like algorithm to generate this assignment,
-as described next.<br/>
-<br/>
-<a name="chairPrefs"></a>
-Recall that in a (generalized) stable-marriage problem, you have a bipartite
-graph (which in our case represent reviewers and submissions) where each node
-on the left can potentially have preferences about nodes on the right and
-vise versa. Also, there are parameters that specify for each node X in the
-graph the maximum number of nodes from the other side that can be matched
-to X (i.e., the maximum degree of X). A solution to this problem is some
-subset of the edges of the complete bipartite graph that satisfies all the
-maximum-degree constraints. A solution is maximal if you cannot add any
-edges to it without violating the maximum-degree constraint of one of
-the nodes. A solution is called <i>unstable</i> is there exist two nodes
-X<sub>1</sub>, X<sub>2</sub> on the left and two nodes Y<sub>1</sub>,
-Y<sub>2</sub> on the right such that:
+
+<a name="manualAssign"></a>
+<h4>Manually Assigning Submissions to Reviewers</h4>
+There are two interfaces that you can use to manually specify the reviewing assignments. You can use either of these interfaces as you see fit, and once you "save the assignments" with one interface, the other interface is automatically updated as well. 
 <ul>
-<li>X<sub>1</sub> is matched to Y<sub>1</sub> but not to Y<sub>2</sub>,
-and X<sub>2</sub> is matched to Y<sub>2</sub> but not to Y<sub>1</sub>; and
+<li><b>The matrix interface:</b> This interface consists of a matrix
+of check-boxes, with one column for each PC member and one row for each
+submission. Throughout each column there are running headers that lets
+you see the number of submissions that are assigned to that PC member
+as well as a heuristic indication as to "how happy" this PC member will
+be with this assignment. Also, at the right end of each row you can see
+how many reviewers are assigned to that submission. If you have Javascript
+enabled in your browser, then these sums and indicater are updated every
+time that you check or clear a check-box. <i>Note, however, that you
+must use the "save assignments" button to have these changes recorded
+by the server.</i><br/>
+<a name="happy"></a><br/>
+The heuristic "indication of happiness" is copmuted as follows: The software computes the fraction of requested papers from all the assigned ones, and the faction of assigned papers from all the requested ones, and the "happiness level" is taken as the largest of these two fractions.  A level below 40% is "Angry" <img
+src="../common/angry.gif">, 40-59% is "Sad" <img src="../common/sad.gif">, 60-79% is "Satisfied" <img src="../common/ok.gif">, and from 80% and up is "Happy" <img src="../common/laugh.gif">.<br/>
+<br/>
+Every entry in the matrix also displays the preferences that the PC member specified for that submission, encoded as a number between 0 and 5 and colored from red to green (if nothing appears in the entry, it means that the PC member specified the default number 3). Also, if you <a href="#chairPrefs">specified some preferences of your own</a> from the chair-preferences page, then the checkbox itself will be colored either red (should not review) or green (should review).<br/>
+<br/>
 </li>
-<li>X<sub>1</sub> prefers Y<sub>2</sub> to Y<sub>1</sub> and Y<sub>2</sub>
-does not prefers X<sub>2</sub> over X<sub>1</sub>. 
+<li><b>The submission-list interface:</b>
+This interface consists of a list of submissions, where for each submission
+you can specify a list of PC members that are assigned to that submission.
 </li>
 </ul>
-(This is unstable since X<sub>1</sub> and Y<sub>2</sub> are motivated to
-dump Y<sub>1</sub> and X<sub>2</sub> respectively and elope together.) A
-solution is <i>stable</i> is there are no two such pairs. It is well
-known <a href="#stableMarriageBook">[1]</a> that one can employ a greedy
-algorithm to compute a stable maximal solution in time proportional to the
-number of edges in the complete bipartite graph.<br/>
+<a name="autoAssign"></a>
+<h4>Automatically Computing Paper Assignments</h4>
+If you did not disable that option, you will find a link off the main
+assignment page that points to the auto-assignment page, where you can
+have the software compute an assignment of submissions to reviewers.
+The software uses an algorithm based on maximum-flow to generate this
+assignment, as described next.<br/>
 <br/>
-In our case, the PC members specify their preferences for the submissions
-that they want to review, thus establishing preferences from left to right.
-In the other direction, the chair is given the opportunity on the Auto-Assign
-page to specify preferences as to who should (or shouldn't) review what
-submission, thus establishing preferences from right to left. Note that
-specifying that "I prefer that Joe is assigned to submission 53" is
-different than manually assigning submission 53 to Joe. Specifically, this
-is just a hint to the software and is not binding, which means that you can
-specify as many preferences as you want without having to worry about
-load balancing and such like.<br/>
+<a name="chairPrefs"></a>
+In addition to the reviewers specifying their preferences, the chair
+can specify preferences as to who should (or shouldn't) review what
+submission. Note that specifying that "I want Joe to review submission 53"
+is different than manually assigning submission 53 to Joe. Specifically,
+this is just a hint to the software and is not binding (which means that
+you can specify as many preferences as you want without having to worry
+about load balancing and such like). The chair preferences are used to
+modify the reviewer preferences during the auto-assignment procedure as
+follows:
+<ul>
+<li>
+When the chair indicates that a certain PC member SHOULD NOT review
+a certain submission, the auto-assignment procedure will decrease that
+preference. Denoting the preference-level that the reviewr assigned to
+tha tsubmission by P (between 0 and 5), then the auto-assignment
+procedure will treat it as <tt>max(0,P-2)</tt>.
+</li>
+<li>
+When the chair indicates that a certain PC member SHOULD NOT review
+a certain submission, the auto-assignment procedure will increase that
+preference. Denoting the preference-level that the reviewr assigned to
+tha tsubmission by P (between 0 and 5), then the auto-assignment
+procedure will increase it to <tt>min(6,P+1)</tt> if P was at least 3,
+and will leave P unchanged otherwise. 
+</li>
+</ul>
+Note that after the adjustments due to the chair preferences, the
+auto-assignment algorithm treats the reviewer preferences as taken
+from the range 0-6. Another adjustment that is made is that for
+reviewers that do not have any submission at preference levels 5/6,
+all their preference-4 submissions are elevated to preference-5. The
+auto-assignment algorithm will not assign to a submission to a reviewer
+if the (adujsted) preference level for it is less than 3.<br/>
+<a name="netFlow"></a><br/>
+
+After adjusting the preferences, the software prepares a flow network graph where each unit of flow from the source to the sink corresponds to an assignment of a submissions to a PC member. The graph has a source node, a sink node, and also four nodes for each reviewer (correpsonding to pref6 &rarr; pref5 &rarr; pref4 &rarr; pref3) and one node for each submission.
+<ul>
+<li>There is a capacity-1 edge from prefP to every submission for
+which the reviewer has (adujsted) preference level P.
+</li>
+<li>The capacity of the edges source &rarr; pref6 and pref6 &rarr; pref5
+is the maximum load that can be added to this reviewer. That is, if each
+PC member can be assigned upto 15 submissions, and you already assigned
+two submissions to that PC member, then the capacity on these edges will
+be set to 13.
+</li>
+<li>The capacity of the edge pref5 &rarr; pref4 is the load minus something, to force at least a few assignments with pref-5/6 for each reviewer. The "something" is set to half the smallest of the number of pref-5/6 submissions of this reviewer and the global load, rounded down. 
+</li>
+<li>The capacity of the edge pref4 &rarr; pref3 is set to at least 20% of the load. However, it could be increased to make sure that the total of pref4 &rarr; pref3 capacity plus the number of pref-4/5/6 submissions is at least 120% of the total load for that reviewer.
+</li>
+<li>From each submission there is an edge to the sink with capacity
+equal the number of reviewers that should be assigned to that submission,
+minus the number of reviewers that are already assigned to it.
+</li>
+</ul>
+After setting this network, the assignment is computed in several steps.
+First, a maximum flow is computed using only the pref-5/6 nodes, then
+the pref-4 nodes are added and the flow is augmented, and finally the pref-3
+nodes are added and the flow is augmented again.
+The maximum flow in each step is computed using the Edmonds-Karp/Dinic
+algorithm, which prefers short flow-paths over long ones. It is
+expected that this process will assign submissions at higher preference
+levels when possible, and "resort" to preference-level 3 only when there
+is no other option.
 <br/>
-<a name="exRevs"></a>
+<a name="exRevs"></a><br/>
+<b>Parameters of the algorithm.</b>
 Once you got the preferences from all the PC members and also specified
 your own preferences, you are ready to let the software compute the initial
 assignments for you. Before the algorithm is run, however, you have to
 specify some parameters. In particular, you can specify a list of <b>
 excluded reviewers</b> that will be hidden from the view of the algorithm.
-This means that the algorithm will completely ignore these reviewers: they
-will not be assigned any submissions and existing assignments that they have
-will not be removed. Also, such existing assignments (if any) will not be
-counted against the number of required reviews per submission. You can use
-this option, for example, if one of the "PC members" on your list is the
-PC chair (to whom you do not want to assign any submissions).<br/>
+This means that the algorithm will not assign any submissions to these
+reviewers. However, submissions that you assigned to the manually before
+running the algorithm will be kept, and will be counted against the
+number of required reviews per submission. You can use this option,
+for example, if one of the "PC members" on your list is the PC chair
+(to whom you do not want to assign any submissions).<br/>
 <br/> 
 Other parameters that you need to specify are how many reviewers are
 assigned for each submission and whether or not you want to keep existing
@@ -503,58 +560,19 @@ Once you specify all the parameters, the software automatically computes
 an assignment of submissions to reviewers, and you are taken to the
 manual-assignment page where you can review and modify this assignment.
 
-<h4>Manually Assigning Submissions to Reviewers</h4>
-The manual-assignment page provides you with two different interfaces that
-you can use to specify the reviewing assignments. You can use either of these
-interfaces as you see fit, and once you "save the assignments" with one
-interface, the other interface is automatically updated as well. 
-<ul>
-<li><b>The matrix interface:</b> This interface consists of a matrix
-of check-boxes, with one column for each PC member and one row for each
-submission. At the bottom of each column you can see the number of submissions
-that are assigned to that PC member, and at the right end of each row you
-can see how many reviewers are assigned to that submission. <i>Note, however,
-that these counters are only updated when you click the "save assignments"
-button.</i><a name="happy"></a><br/>
-<br/>
-In addition, at the bottom of each column you can find a heuristic
-indication of "how happy" the PC member will be with the
-assignment. Roughly, the software computes the fraction of requested
-papers from all the assigned ones and the faction of assigned papers
-from all the requested ones, and the "happiness level" is taken as the
-largest of these two fractions.  A level below 25% is "Angry" <img
-src="../common/angry.gif">, 25-49% is "Sad"
-<img src="../common/sad.gif">, 50-74% is "Satisfied" <img
-src="../common/ok.gif">, and from 75% and up is "Happy" <img
-src="../common/laugh.gif">.<br/>
-<br/>
-Every entry in the matrix also displays the
-preferences that the PC member specified for that submission, encoded as
-a number between 0 and 5 and colored from red to green (if nothing appears
-in the entry, it means that the PC member specified the default number 3).
-Also, if you <a href="#chairPrefs">specified some preferences</a> from
-the auto-assign page, then the checkbox itself will be colored either
-red (should not review) or green (should review).<br/>
-<br/>
-</li>
-<li><b>The submission-list interface:</b>
-This interface consists of a list of submissions, where for each submission
-you can specify a list of PC members that are assigned to that submission.
-</li>
-</ul>
 <a name="scratchAssign"></a>
-<h4>Scratch Assignments vs. Visible Assignments</h4>
+<h4>Sketch Assignments vs. Visible Assignments</h4>
 The assignments that are automatically computed by the software or set
-from the manual assignment page are stored as a "scratch copy" that is
+from the manual assignment page are stored as a "sketch copy" that is
 only visible to the chair but not to the reviewers. This allows the
 chair to play around with the assignments before making them publicly
 available.<br/>
 <br/>
-To make the assignments visible to the reviewers, the chair must check
-the box to "Make these assignments visible to the reviewers" next to
+To allow the PC members to see their assigned submissions, the chair must
+check the box to "Make these assignments visible to the reviewers" next to
 the "Save Assignments" button on either the matrix or the list interface. 
 Hitting the "Save Assignments" button with this box checked will copy
-the scratch assignments to the visible assignments, thus letting the
+the sketch assignments to the visible assignments, thus letting the
 reviewers see their assigned papers. <br/>
 <br/>
 <b>Note:</b> As opposed to paper assignments, setting or clearing 

@@ -30,6 +30,8 @@ while ($row = mysql_fetch_row($res)) {
 }
 $cmteIds = array_keys($committee);
 
+// Make sure that there is a record for each (revId,subId) pair
+
 // Get the assignment preferences
 $qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM assignments";
 $res = db_query($qry, $cnnct);
@@ -68,6 +70,7 @@ if (isset($_POST["saveAssign"])) { // input from matrix interface
       db_query($qry, $cnnct);
     }
   }
+  header("Location: assignmentMatrix.php");
 }
 else if (isset($_POST["manualAssign"])) { // input from list interface
   $newAssignment = array();
@@ -111,6 +114,6 @@ else if (isset($_POST["manualAssign"])) { // input from list interface
 	$prefs[$subId][$revId][2] = 0;
     }
   }
+  header("Location: assignmentList.php");
 }
-header("Location: assignments.php");
 ?>

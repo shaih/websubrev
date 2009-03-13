@@ -5,47 +5,9 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true;
+$needsAuthentication = true;
 require 'header.php';
 $cnnct = db_connect();
-
-// Prepare an array of submissions and an array of PC members
-$qry = "SELECT subId, title, 0 from submissions WHERE status!='Withdrawn'
-  ORDER BY subId";
-$res = db_query($qry, $cnnct);
-$subArray = array();
-while ($row = mysql_fetch_row($res)) {
-  $row[1] = htmlspecialchars($row[1]);
-  $subArray[] = $row;
-}
-
-$qry = "SELECT revId, name from committee WHERE revId!='" . CHAIR_ID . "'
-    ORDER BY revId";
-$res = db_query($qry, $cnnct);
-$committee = array();
-$nameList = $sep = '';
-while ($row = mysql_fetch_row($res)) {
-  $revId = (int) $row[0];
-  $committee[$revId] = array(trim($row[1]), 0, 0, 0);
-  $nameList .= $sep . '"'.htmlspecialchars(trim($row[1])).'"';
-  $sep = ",\n    ";
-}
-$cmteIds = array_keys($committee);
-
-// Get the assignment preferences
-$qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM assignments";
-$res = db_query($qry, $cnnct);
-$prefs = array();
-while ($row = mysql_fetch_row($res)) { 
-  list($revId, $subId, $pref, $compatible, $assign) = $row; 
-  if (!isset($prefs[$subId]))  $prefs[$subId] = array();
-
-  $prefs[$subId][$revId] = array($pref, $compatible, $assign);
-}
-
-
-/* Display the assignments matrix to the user */
-$classes = array('zero', 'one', 'two', 'three', 'four', 'five');
 $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -53,300 +15,108 @@ print <<<EndMark
 <head>
 <style type="text/css">
 h1 { text-align:center; }
-th { font: bold 10px ariel; text-align: center; }
-td { font: bold 16px ariel; text-align: center; }
-.zero { background: red; }
-.one { background: orange; }
-.two { background: yellow; }
-.three { }
-.four { background: lightgreen; }
-.five { background: green; }
 </style>
-<link rel="stylesheet" type="text/css" href="../common/autosuggest.css" />        
-<script type="text/javascript">
-  /**
-   * Provides suggestions for PC member names 
-   * @class
-   * @scope public
-   */
-  function Suggestions() {
-    this.suggest = [ $nameList ];
-  }
 
-  window.onload = function () {
-    var nForms = document.forms.length;
-    for (i=0; i<nForms; i++) {
-      nFlds = document.forms[i].elements.length;
-      for (j=0; j<nFlds; j++) {
-        fld = document.forms[i].elements[j];
-	if (fld.name.substring(0,5)=="cList") {
-	  var oTextbox = new AutoSuggestControl(fld, new Suggestions()); 
-	}
-      }
-    }
-  };
-</script>
-<script type="text/javascript" src="../common/autosuggest.js"></script>
-
-<title>Manual Assignments of Submissions to Reviewers</title>
+<title>Assignments of Submissions to Reviewers</title>
 </head>
-
 <body>
 $links
-<hr />
-<h1>Manual Assignments of Submissions to Reviewers</h1>
+<hr/>
+<h1>Assignments of Submissions to Reviewers</h1>
+You have several interfaces available to help you assign submissions to
+PC members. Remember that all these interfaces work on a "sketch copy"
+of the assignments, which is only visible to the chair. To let the PC
+members see their assigned submissions, you need to check the appropriate
+box next to the submit buttons in the matrix or list interfaces.
+(<a target=documentation href="../documentation/chair.html#scratchAssign"
+title="Click for more information">explain this</a>)
 
 <form action="scrapAssignments.php" enctype="multipart/form-data" method="post">
-To manually assign submissions to reviewers, you can use either the <a
-href="#matrix">matrix interface</a> or the <a href="#sublist">submission-list
-interface</a> below. The two interfaces are synchronized (and the sums at
-the right column and the bottom row of the matrix are updated) whenever
-you hit the "Save Assignments" button at the bottom of either interface.
-In addition, if you check the box for making the changes visible then the
-reviewers will be able to see what submissions were assigned to them.<br/>
+<ul>
+<li>
+<a href="assignmentMatrix.php">The matrix interface</a> displays a matrix of reviewers and submissions, and lets you check boxes to assign submissions to reviewers.
+<br/><br/>
+</li>
+<li>
+<a href="assignmentList.php">The list interface</a> displays a list of submissions, and lets you assign reviewers to submissions by typing in their names.<br/><br/>
+</li>
+
+EndMark;
+
+if (defined('REVPREFS') && REVPREFS) print <<<EndMark
+<li>
+<a href="autoAssign.php">The Auto-assignment page</a> allows you to automatically compute an assignment of submissions to reviewers.
+The software respects any manual assignments that you made (from the matrix or list interfaces), and uses the reviewer preferences and a network-flow algorithm to complete the assignments. (You can then use the matrix or list interfaces to modify the automatically-generated assignment.) It is recommended that you <a href="conflicts.php">indicate conflict of interests</a> before using the Auto-assignment functionality.
+<br/></br>
+</li>
+
+EndMark;
+
+print <<<EndMark
+<li><a href="assignChairPrefs.php">The chair preferences page</a> lets you record non-binding preferences that you have regarding which reviewer should or should not review what submission. 
+These preferences are then displayed for you in the matrix interface (by coloring the check-boxes <span style="color: green;">green</span> or <span style="color: red;">red</span>).<br/>
+<br/> 
+EndMark;
+if (defined('REVPREFS') && REVPREFS) print <<<EndMark
+In addition, your choices on that page are used to modify the reviewer
+preferences during the auto-assignment procedure: When you indicate that
+you DO NOT want a PC member to review a submission, the preference of
+the reviewer is decreased by two points (e.g., if the reviewer indicated
+a preference of 5, it is treated as a preference of 3). 
+If you indicate that the you want a PC member to review a submission, and
+if the preference of the reviewer is 3 or more, then it is increased by one
+point (e.g., if the reviewer indicated a preference of 3, it is treated as
+a preference of 4, etc.)<br/>
 <br/>
-You can always start from scratch by using the clear-all button, or
-reset the form to the assignments that are currently visible to the
-reviewers.
+EndMark;
+
+print <<<EndMark
+</li> 
+<li>
+You can <a href="getSketchAssign.php">backup the current "sketch assignment" to your local machine</a> as a text file. Later, if you want to revert to the current sketch assignments then you can upload this text file back to the server using the "Upload Assignmnt File" button below:
+<p>
+<input name="assignmnetFile" size="80" type="file">
+<input type="submit" name="upload" value="Upload Assignmnet File">
+</p>
+</li>
+<li>
+Also, you can always start from scratch by using the clear-all button, or
+reset the scratch assignments to the assignments that are currently
+visible to the reviewers.
+<p>
 <input type="submit" name="clearAll" value="Clear All Assignments"> or 
 <input type="submit" name="reset2visible" value="Reset to Visible Assignments">
-Note: these two buttons only effect the scratch copy of the assignments and
-not the assignments that are visible to reviewers. (<a target=documentation
-href="../documentation/chair.html#scratchAssign">explain this</a>)
-</form>
+</p></li>
+</ul></form><br/>
 
 EndMark;
-
-if (defined('REVPREFS') && REVPREFS) {
-  print <<<EndMark
-You can have the software automatically compute an assignment of
-submissions to reviewers (using the reviewer preferences and a stable-marriage
-algorithm) by going to <a href="autoAssign.php">the Auto-Assignment page</a>.
-The Auto-Assignment page includes also a form for specifying the <a
-href="autoAssign.php#chairPrefs">chair-preferences</a>, and these
-preferences are used in the automatic assignment algorithm. Also, the
-check-boxes in the <a href="#matrix">matrix interface</a> below will
-be colored <span style="color: green;">green</span> when you indicate
-a preference for the PC-member to review the submission or <span
-style="color: red;">red</span> when you indicate a preference that the
-PC-member do not review the submission.<br/>
-<br/>
-
-EndMark;
-}
-
-print <<<EndMark
-<a name="matrix"></a><h2>Matrix Interface</h2>
-<form action="doAssignments.php" enctype="multipart/form-data" method="post">
-<table cellspacing=0 cellpadding=0 border=1><tbody>
-
-EndMark;
-
-foreach ($committee as $revId => $pcm) {
-  $name = explode(' ', $pcm[0]);
-  if (is_array($name)) for ($j=0; $j<count($name); $j++) { 
-    $name[$j] = htmlspecialchars(substr($name[$j], 0, 7)); 
-  }
-  $cmte[$revId] = implode('<br/>', $name);
-}
-
-$header = "<tr>  <th>Num</th>\n";
-foreach ($cmte as $name) { $header .= "  <th>".$name."</th>\n"; }
-$header .= "  <th>Num</th>\n";
-$header .= "  <th>&nbsp;Title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>\n";
-$header .= "<th>&nbsp;&nbsp;#&nbsp;&nbsp;</th>\n";
-$header .= "</tr>\n";
-print $header;
-
-$n = count($committee);
-$count = 0;
-foreach ($subArray as $sub) { 
-  $subId = $sub[0];
-  print "<tr><td>{$subId}</td>\n";
-  foreach ($committee as $revId => $pcm) {
-    $name = $pcm[0];
-    if (isset($prefs[$subId][$revId])) {
-      $prf = $prefs[$subId][$revId][0];
-      $cmpt= $prefs[$subId][$revId][1];
-      $assgn=$prefs[$subId][$revId][2];
-      if ($assgn==1) { // update num of assignments for submission, reviewer
-        $sub[2]++;
-	$committee[$revId][1]++;
-	if ($prf>3) $committee[$revId][2]++;
-	else if ($prf<3) $committee[$revId][2]--;
-      }
-      if ($prf>3) $committee[$revId][3]++;
-    }
-    else { $prf = 3; $cmpt = $assgn = 0;
-    }
-    print "  <td>".colorNum($prf)."<br />";
-    print checkbox($subId, $revId, $name, $cmpt, $assgn);
-    print "\n  </td>\n";
-  }
-  print "  <td>{$sub[0]}</td>\n";
-  print "  <td style=\"text-align: left; font: italic 12px ariel;\">\n";
-  print "    <a href=\"../review/submission.php?subId={$subId}\">{$sub[1]}</a></td>\n";
-  print "  <td id=\"subSum_{$sub[0]}\">{$sub[2]}</td>\n";
-  print "</tr>\n";
-  if ($count >= 5) {
-    print $header;
-    $count = 0;
-  }
-  else $count++;
-}
-
-if ($count > 1) print $header;
-print "<tr><td> </td></tr><tr><td>#:</td>\n";
-foreach ($committee as $pcm) { print "  <td>{$pcm[1]}</td>\n"; }
-print "  <td colspan=3> &nbsp;</td>\n";
-print "</tr>\n";
-
-print '<tr><td><a target=documentation href="../documentation/chair.html#happy"><img border=1 src="../common/smile.gif" alt=":)" title="Satisfaction level"></a></td>'."\n";
-foreach ($committee as $pcm) {
-  $avg1 = ($pcm[1]>0) ?  // average pref of assigned submissions
-          (((float)$pcm[2]) / $pcm[1]) : NULL;
-  $avg2 = ($pcm[3]>0) ?  // average assign of prefrd submissions
-          (((float)$pcm[2]) / $pcm[3]) : NULL;
-  if (isset($avg1) && isset($avg2)) {
-     $happy = round(max($avg1,$avg2)*100);
-     if ($happy<0) $happy=0;
-     else if ($happy>100) $happy=100;
-     if ($happy<25) {
-       $src= '../common/angry.gif'; $title= "Angry: $happy%";
-     } else if ($happy<50) {
-       $src = '../common/sad.gif'; $title= "Sad: $happy%";
-     } else if ($happy<75) {
-       $src = '../common/ok.gif'; $title= "Satisfied: $happy%";
-     } else {
-       $src = '../common/laugh.gif'; $title= "Happy: $happy%";
-     }
-     $happy= "<img border=0 src=\"$src\" alt=$happy title=\"$title\">";
-  }
-  else $happy = '&nbsp;';
-  print "  <td>$happy</td>\n";
-}
-print "  <td colspan=3> &nbsp;</td>\n";
-print "</tr>\n";
-
-print <<<EndMark
-</tbody></table>
-<a name="saveMatrix"></a>
-<input type="hidden" name="saveAssign" value="on">
-<input type="submit" value="Save Assignments in Matrix Interface">
-<input type="checkbox" name="visible" value="on">
-Make these assignments visible to the reviewers
-</form>
-<hr /><hr />
-<a name="sublist"></a><h2>Submission-List Interface</h2>
-For each submission you may provide a <b>semi-colon-separated</b> list of PC
-members that are assigned to review that submission. When listing PC members,
-you should provide the name of the PC member as recorded in the database. You
-can specify only a prefix of the name, as long as it is sufficient to uniquely
-identify a single member (e.g., if you have a committee member named Wawrzyniec
-C. Antroponimiczna, it may be enough to write "Waw"). For example, to assign
-Attila T. Hun and John Doe to review submission number 132, you may use
-the following line:
-
+if (defined('REVPREFS') && REVPREFS) print <<<EndMark
+<h2>A suggested procedure for using the Auto-assignment functionality</h2>
 <ol>
-<li value="132"> The title of submission number 132<br/>
-  <input size=85 value="Attila; John D" readonly="on"/><br/></li>
+<li> <i>(optional)</i> You can use the <a href="assignChairPrefs.php">chair preferences page</a> to record your own (non-binding) preferences as to who should or should not review what submission.<br/>
+<br/></li>
+<li> Before using the auto-assignments, make sure that you record all <a href="conflicts.php">conflict-of-interests</a>.<br/>
+<br/></li>
+<li> You will probably also want to make some manual assignments before computing the auto-assignment, using either the <a href="assignmentMatrix.php">matrix interface</a> or the <a href="assignmentList.php">list interface</a>. Some reasons for using manual assignments before running the Auto-assignment procedure include:
+<ul>
+<li> Making absolutely sure that PC-member X is assigned to submission Y (e.g., because this PC member is a domain expert on the topic).</li>
+<li> Ensuring that there is at least one reviewer that reads both submission Y and submission Z.</li> 
+<li> Assigning a reduced load to PC-member X. (You can do this by manually assigning this PC-member however many submissions that you want, and then excluding him/her from the Auto-assignment procedure.)
+</ul>
+Note that the Auto-assignment algorithm will respect manual assignments that you made before running it. For example, if every submission needs three reviewers  and you already assigned one reviewer to submission Y, then the algorithm will only assign two more reviewrs to that submnission.<br/>
+<br/></li>
+<li> After making some manual assignments, you should <a href="getSketchAssign.php">backup these assignments to your local machine</a> (in case you want to revert to them later).<br/>
+<br/></li>
+<li> Now you can go to the <a href="autoAssign.php">Auto-Assignment page</a> and let the software compute an assignment for you.<br/>
+<br/></li>
+<li> Repeat steps 3-5 until the assignment looks good to you (using the backup copy that you made in step 4). Also, you can manually modify the Auto-assignment from the <a href="assignmentMatrix.php">matrix interface</a> or the <a href="assignmentList.php">list interface</a>.
+</li>
 </ol>
-
-<h3>Current PC members:</h3>
-<table width=100%><tbody>
-
 EndMark;
-
-$i = 4;
-foreach ($committee as $pcm) {
-  if ($i==4) print "<tr>\n";
-  print "  <td style=\"font-weight: normal; text-align: left;\">$pcm[0]</td>\n";
-  if ((--$i) == 0) {
-    print "</tr>\n";
-    $i = 4;
-  }
-}
-if ($i < 4) {
-  print "  <td colspan=$i></td>\n</tr>\n";
-}
-
 print <<<EndMark
-</tbody></table>
-
-<h3>List of submissions</h3>
-<form action=doAssignments.php enctype="multipart/form-data" method=post autocomplete=off>
-<ol>
-
-EndMark;
-foreach ($subArray as $sub) { 
-  $subId = $sub[0];
-  $sbPrefs = &$prefs[$subId];
-  $val = $sep = '';
-  if (is_array($sbPrefs)) foreach($sbPrefs as $revId => $pcm) {
-    if ($pcm[2]!=1) continue;
-    $pcmName = $committee[$revId][0];
-    $pcmName = htmlspecialchars($pcmName);
-
-    $val .= "{$sep}{$pcmName}";
-    $sep = '; ';
-  }
-  print <<<EndMark
-  <li value="$subId">
-    <a href="../review/submission.php?subId=$subId">$sub[1]</a><br/>
-    <input type="text" name="cList{$subId}" size=85 value="$val"><br/><br/>
-  </li>
-
-EndMark;
-}
-
-print <<<EndMark
-</ol>
-<input type="hidden" name="manualAssign" value="on">
-<input type="submit" value="Save Assignments in List Interface">
-<input type="checkbox" name="visible" value="on">
-Make these assignments visible to the reviewers
-</form>
-
-<hr />
+<hr/>
 $links
 </body>
 </html>
-
 EndMark;
-exit();
-
-function colorNum($num)
-{
-  global $classes;
-  if ($num >=0 && $num <=5 && $num != 3)
-    return '<span class="'.$classes[$num].'"> '.$num.' </span>';
-  else return '';
-}
-
-function checkbox($subId, $revId, $name, $cmpt, $isChecked)
-{
-  global $classes;
-  switch ($cmpt) {
-  case -1:
-    $cls = $classes[0]; break;
-  case 1:
-    $cls = $classes[4]; break;
-  default:
-    $cls = $classes[3];
-  }
-
-  $ttl = "{$subId}/{$name}";
-  switch ($isChecked) {
-  case -1:
-      return '<span class="'.$cls.'"><img src=../common/xmark.gif title="'.$ttl.' (conflict)" alt="x"></span>';
-      // $chk = ' disabled="disabled"'; $ttl .= ' (conflict)'; break;
-  case 1:
-    $chk = ' checked="checked"'; $ttl .= ' (assigned)'; break;
-  default:
-    $chk = '';
-  }
-
-  return "<span class=\"{$cls}\"><input
-    type=\"checkbox\" name=\"a_{$subId}_{$revId}\" title=\"{$ttl}\"{$chk}></span>";
-}
 ?>

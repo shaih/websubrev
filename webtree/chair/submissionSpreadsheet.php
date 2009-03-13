@@ -13,9 +13,9 @@ $qry = "SELECT subId, title, authors, contact FROM submissions WHERE status!='Wi
 $res = db_query($qry, $cnnct);
 if (!$res || mysql_num_rows($res)==0) die("<h1>No submissions found</h1>");
 
-header('Content-Type: application/vnd.ms-excel');
+header('Content-Type: text/tab-separated-values');
 $hdr = 'Content-Disposition: attachment; filename="'
-       .CONF_SHORT.CONF_YEAR.'submissions.xls"';
+       .CONF_SHORT.CONF_YEAR.'submissions.tsv"';
 header($hdr);
 print "subId\tTitle\tAuthors\tContact\n";
 while ($row = mysql_fetch_row($res)) {

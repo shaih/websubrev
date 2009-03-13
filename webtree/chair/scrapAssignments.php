@@ -7,14 +7,18 @@
  */
 $needsAuthentication = true;
 require 'header.php';
+require 'parseAssignments.php';
 $cnnct = db_connect();
 
 if (isset($_POST["clearAll"])) {
   db_query("UPDATE assignments SET sktchAssgn=0 WHERE sktchAssgn!=-1", $cnnct);
 }
-else if (isset($_POST["reset2visible"])) {
+elseif (isset($_POST["reset2visible"])) {
   db_query("UPDATE assignments SET sktchAssgn=assign", $cnnct);
 }
-
-header('Location: assignments.php');
+elseif (isset($_POST["upload"])
+	&& !empty($_FILES['assignmnetFile']['tmp_name'])) {
+  parse_assignment_file($_FILES['assignmnetFile']['tmp_name'],$cnnct);
+}
+header('Location: assignmentMatrix.php');
 ?>

@@ -124,17 +124,7 @@ function manage_reviews($period)
   if ($period < PERIOD_REVIEW) return;
   if ($period == PERIOD_REVIEW) { 
 
-    if (defined('REVPREFS') && REVPREFS) { $assignHTML = <<<EndMark
-Assign submissions to reviewers:
-<ul>
-<li><a href="autoAssign.php">Automatic assignments</a> (Compute assignments automatically from the reviewers preferences.)</li>
-<li><a href="assignments.php">Manual assignments</a> (Use matrix and list interfaces for manual assignment or adjusting the automatic assignment.)</li>
-</ul>
-The assignments can always be revised and recomputed.
-EndMark;
-    } else {
-      $assignHTML = '<a href="assignments.php">Assign submissions to reviewers</a>';
-    }
+    $assignHTML = '<a href="assignments.php">Assign submissions to reviewers...</a>';
 
     // Check if there are any submissions that needs to be purged
     $purgeLink = '';
@@ -155,7 +145,7 @@ print <<<EndMark
 <dd>$purgeLink<br/></dd>
 
 <dt><strong>Paper assignments</strong></dt>
-<dd>Download the submission-list as an <a href="submissionSpreadsheet.php">Excel spreadsheet</a></dd>
+<dd>Download the submission-list as a <a href="submissionSpreadsheet.php">TSV file</a> (can be used in spreadsheets such as Excel)</dd>
 <dd><a href="conflicts.php">Edit conflicts</a> (block access to
   submissions due to conflict-of-interests).
   <b>Access is NOT blocked by default</b>

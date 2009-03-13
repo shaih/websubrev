@@ -88,5 +88,5 @@ if (isset($_POST["saveChairPrefs"])) {
 	db_query($qry, $cnnct);
       }
 }
-header("Location: autoAssign.php");
+header("Location: assignments.php");
 ?>

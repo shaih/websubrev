@@ -349,5 +349,17 @@ function create_tabels($cnnct)
     INDEX (changeType)
   )";
   db_query($qry, $cnnct, "Cannot CREATE changeLog table: ");
+
+  // A small table to hold parameters of the auto-assign form
+  $qry = "CREATE TABLE IF NOT EXISTS assignParams (
+    idx tinyint(1) NOT NULL auto_increment,
+    excludedRevs text NOT NULL default '',
+    specialSubs text NOT NULL default '',
+    coverage tinyint(2) NOT NULL default 3,
+    spclCvrge tinyint(2) NOT NULL default 4,
+    startFrom enum('scratch','current','file') NOT NULL default 'current',
+    PRIMARY KEY (idx)
+  )";
+  db_query($qry, $cnnct, "Cannot CREATE assignParams table: ");
 }
 ?>
