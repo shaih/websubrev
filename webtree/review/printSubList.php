@@ -58,11 +58,11 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
       $revText = "";
     }
     else if (isset($reviewed[$subId])) {
-      $width = "130px";
+      $width = "140px";
       $revStyle = "Revise";
       $revText = (($reviewed[$subId]==REPORT_NOT_DRAFT)? $reviseIcon : $revise2Icon);
     } else {
-      $width = "130px";
+      $width = "140px";
       $revStyle = "Review";
       $revText = $reviewIcon;
     }
