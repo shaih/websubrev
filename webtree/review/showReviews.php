@@ -153,10 +153,9 @@ function show_reviews_with_comments(&$reviews, $revId)
 
     $sid = $rev['subId'];
     $rid = $rev['revId'];
-    // If this is my review, show a link to edit it
-    if (!defined('CAMERA_PERIOD') && $rid==$revId) 
-      $reviseTxt = ' <a target=_blank title="Revise your report" href="review.php?subId='
-                   . $sid. '"> [revise]</a>';
+    // If this is my review (or if I'm the chair), show a link to edit it
+    if (PERIOD<PERIOD_CAMERA && ($rid==$revId || $revId==CHAIR_ID))
+      $reviseTxt = ' <a target=_blank title="Revise this report" href="review.php?subId='.$sid.'&amp;revId='.$rid.'"> [revise]</a>';
     else
       $reviseTxt = ''; 
 

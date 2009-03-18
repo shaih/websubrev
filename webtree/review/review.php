@@ -20,7 +20,14 @@ if (defined('CAMERA_PERIOD'))
 if (isset($_GET['subId'])) { $subId = (int) trim($_GET['subId']); }
 else exit("<h1>No Submission specified</h1>");
 
-
+// The chair can edit anyone's review
+$notMine = (isset($_GET['revId'])
+	    && intval($_GET['revId']) != $revId
+	    && $revId==CHAIR_ID);
+if ($notMine) {
+  $revName = '(PC-chair modifications of reviewer&prime;s comments)';
+  $revId = intval($_GET['revId']);
+}
 // Make sure that this submission exists and the reviewer does not have
 // a conflict with it, and get the review for it (if exists)
 $cnnct = db_connect();
@@ -111,17 +118,24 @@ tr { vertical-align: top; }
 <!--
   function expandCollapse(fld) {
     var f = document.getElementById(fld);
+    if (f==null) return false;
     if (f.className=="shown") { f.className="hidden"; }
     else { f.className="shown"; f.focus(); }
     return false;
-}
+  }
   function hideAreas() {
-    document.getElementById("cmnt2PC").className="$pcCmmntsInitStyle";
-    document.getElementById("cmnt2chr").className="$chrCmmntsInitStyle";
-    document.getElementById("cmnt2slf").className="$slfCmmntsInitStyle";
-    document.getElementById("openCmnt2PC").className="shown";
-    document.getElementById("openCmnt2chr").className="shown";
-    document.getElementById("openCmnt2slf").className="shown";
+    var f = document.getElementById("cmnt2PC");
+    if (f!=null) f.className="$pcCmmntsInitStyle";
+    f = document.getElementById("cmnt2chr");
+    if (f!=null) f.className="$chrCmmntsInitStyle";
+    f = document.getElementById("cmnt2slf");
+    if (f!=null) f.className="$slfCmmntsInitStyle";
+    f = document.getElementById("openCmnt2PC");
+    if (f!=null) f.className="shown";
+    f = document.getElementById("openCmnt2chr");
+    if (f!=null) f.className="shown";
+    f = document.getElementById("openCmnt2slf");
+    if (f!=null) f.className="shown";
     return true;
 }
 
@@ -141,7 +155,7 @@ $links
 <tr><td>Reviewer:    </td> <td>$revName</td></tr>
 <tr><td>Sub-reviewer:</td>
   <td><input name="subRev" type="text" value="$subRev" size=60>
-  <small><br/>Separate different sub-reviewers with a semi-colon '<b>;</b>'
+  <br/><small>Separate different sub-reviewers with a semi-colon '<b>;</b>'
   </small></td>
 </tr>
 </tbody></table>
@@ -252,11 +266,16 @@ $attachmentLine
 <br />Only the program chair sees these comments.
 </div>
 
+EndMark;
+if (!$notMine) { print <<<EndMark
 <h3>Notes to yourself <a class="hidden" href="#" ID="openCmnt2slf" onclick="return expandCollapse('cmnt2slf');">(click to expand/collapse)</a></h3>
 <div ID="cmnt2slf">
 <textarea name="comments2self" rows=15 cols=80>$cmnts2self</textarea><br/>
 No one else can see these comments
 </div>
+EndMark;
+} 
+print <<<EndMark
 <br/>
 
 <input type="hidden" name="subId" value="$subId">
@@ -264,9 +283,14 @@ No one else can see these comments
 <table><tbody>
 <tr><td><input type="submit" value="Submit"></td>
 <td align=left>
+EndMark;
+if (!$notMine) { print <<<EndMark
 $watchHtml
 <input type=checkbox name=emilReview{$chkEml}> Send my review back to me via email<br/>
 <input name="draft" type="checkbox"> Remind me to go back to this review (<a target=documentation href="../documentation/reviewer.html#draftReview">what&prime;s this?</a>)
+EndMark;
+}
+print <<<EndMark
 </td>
 </tr></tbody></table>
 </center>
