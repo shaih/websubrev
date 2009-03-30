@@ -279,6 +279,7 @@ print <<<EndMark
 <br/>
 
 <input type="hidden" name="subId" value="$subId">
+<input type="hidden" name="revId" value="$revId">
 <center>
 <table><tbody>
 <tr><td><input type="submit" value="Submit"></td>

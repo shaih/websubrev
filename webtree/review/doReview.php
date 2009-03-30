@@ -19,8 +19,15 @@ if (defined('CAMERA_PERIOD')) {
    exit("<h1>Site closed: cannot post new reviews</h1>");
 }
 
-$saveDraft = isset($_POST['draft']);
-$add2watch = (!$disFlag || isset($_POST['add2watch']));
+// The chair can edit anyone's review
+$notMine = (isset($_POST['revId'])
+	    && intval($_POST['revId']) != $revId
+	    && $revId==CHAIR_ID);
+if ($notMine) $revId = intval($_POST['revId']);
+else {
+  $saveDraft = isset($_POST['draft']);
+  $add2watch = (!$disFlag || isset($_POST['add2watch']));
+}
 
 // Returns either an error code, the attachment name (if any), or NULL
 $ret = storeReview($subId, $revId, $_POST['subRev'], $_POST['conf'],
