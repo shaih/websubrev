@@ -173,7 +173,7 @@ print <<<EndMark
     <td style="text-align: right;">Submission&nbsp;File: </td>
     <td><input name="sub_file" size="70" type="file"><br />
         The archive file (tar, tzg, etc.) with all the necessary files.
-        See <a href="index.php">the instructions</a>.<br/><br/>
+        See <a href="cameraInstructions.php">the instructions</a>.<br/><br/>
     </td>
   </tr>
   <tr>
