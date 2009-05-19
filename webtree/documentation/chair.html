@@ -441,6 +441,7 @@ assignment (using the reviewer's preferences) that you can later adjust.
 <a name="manualAssign"></a>
 <h4>Manually Assigning Submissions to Reviewers</h4>
 There are two interfaces that you can use to manually specify the reviewing assignments. You can use either of these interfaces as you see fit, and once you "save the assignments" with one interface, the other interface is automatically updated as well. 
+<a name="happy"></a>
 <ul>
 <li><b>The matrix interface:</b> This interface consists of a matrix
 of check-boxes, with one column for each PC member and one row for each
@@ -453,9 +454,9 @@ enabled in your browser, then these sums and indicater are updated every
 time that you check or clear a check-box. <i>Note, however, that you
 must use the "save assignments" button to have these changes recorded
 by the server.</i><br/>
-<a name="happy"></a><br/>
-The heuristic "indication of happiness" is copmuted as follows: The software computes the fraction of requested papers from all the assigned ones, and the faction of assigned papers from all the requested ones, and the "happiness level" is taken as the largest of these two fractions.  A level below 40% is "Angry" <img
-src="../common/angry.gif">, 40-59% is "Sad" <img src="../common/sad.gif">, 60-79% is "Satisfied" <img src="../common/ok.gif">, and from 80% and up is "Happy" <img src="../common/laugh.gif">.<br/>
+<br/>
+The heuristic "indication of happiness" is computed as follows: The software computes the fraction of requested papers from all the assigned ones, and the faction of assigned papers from all the requested ones, and the "happiness level" is taken as the largest of these two fractions.  A level below 40% is "Angry" <img
+src="../common/angry.gif">, 40-59% is "Sad" <img src="../common/sad.gif">, 60-79% is "Satisfied" <img src="../common/ok.gif">, and 80% and up is "Happy" <img src="../common/laugh.gif">.<br/>
 <br/>
 Every entry in the matrix also displays the preferences that the PC member specified for that submission, encoded as a number between 0 and 5 and colored from red to green (if nothing appears in the entry, it means that the PC member specified the default number 3). Also, if you <a href="#chairPrefs">specified some preferences of your own</a> from the chair-preferences page, then the checkbox itself will be colored either red (should not review) or green (should review).<br/>
 <br/>
@@ -531,13 +532,14 @@ minus the number of reviewers that are already assigned to it.
 </ul>
 After setting this network, the assignment is computed in several steps.
 First, a maximum flow is computed using only the pref-5/6 nodes, then
-the pref-4 nodes are added and the flow is augmented, and finally the pref-3
-nodes are added and the flow is augmented again.
-The maximum flow in each step is computed using the Edmonds-Karp/Dinic
-algorithm, which prefers short flow-paths over long ones. It is
-expected that this process will assign submissions at higher preference
-levels when possible, and "resort" to preference-level 3 only when there
-is no other option.
+the pref-4 nodes are added and the flow is augmented, and finally the
+pref-3 nodes are added and the flow is augmented again. The maximum
+flow in each step is computed using the Edmonds-Karp/Dinic algorithm
+<a href="http://en.wikipedia.org/wiki/Edmonds-Karp_algorithm">[1]</a>, 
+which prefers short flow-paths over long ones. It is expected that 
+this process will assign submissions at higher preference levels when
+possible, and "resort" to preference-level 3 only when there is no other
+option.
 <br/>
 <a name="exRevs"></a><br/>
 <b>Parameters of the algorithm.</b>
@@ -704,8 +706,5 @@ other accepted paper.
 <h2>7. Feedback</h2>
 I will very much appreciate any comments that you can give me regarding
 this software. Please contact me at <tt>shaih@alum.mit.edu</tt>. 
-<hr/>
-<a name="stableMarriageBook"><b>[1]</b></a>
-Dan Gusfield , Robert W. Irving, The stable marriage problem: structure and algorithms, MIT Press, Cambridge, MA, 1989.
 </body>
 </html>
