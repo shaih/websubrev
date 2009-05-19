@@ -14,9 +14,6 @@ $disFlag = (int) $pcMember[3];
 
 // Check that this reviewer is allowed to discuss submissions
 if ($disFlag != 1) exit("<h1>$revName cannot discuss submissions yet</h1>");
-if (defined('CAMERA_PERIOD'))
-   exit("<h1>Site closed: cannot edit comments</h1>");
-
 if (isset($_POST['postId'])) { $postId = (int) trim($_POST['postId']); }
 else exit("<h1>No post specified</h1>");
 

@@ -253,11 +253,7 @@ function show_posts($postsArray, $subId, $threaded=true,
     $width = $pageWidth - $depth;
 
     $pid = (int) $post['postId'];
-    if (defined('CAMERA_PERIOD')) {
-      $class = "hidden";
-      $reply = "";
-    }
-    else if (isset($_GET['rply2post']) && $_GET['rply2post']==$pid) { // show the reply box
+    if (isset($_GET['rply2post']) && $_GET['rply2post']==$pid) { // show the reply box
       $class = "shown";
       $reply = "[<a target=\"_blank\" href=\"discuss.php?subId=$subId#p$pid\""
 	. " onclick=\"return expandcollapse('r$pid');\">Reply</a>]";

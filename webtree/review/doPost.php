@@ -15,8 +15,6 @@ $threaded= (int) $pcMember[4];
 
 // Check that this reviewer is allowed to discuss submissions
 if ($disFlag != 1) exit("<h1>$revName cannot discuss submissions yet</h1>");
-if (defined('CAMERA_PERIOD'))
-   exit("<h1>Site closed: cannot post new comments</h1>");
 
 if (isset($_POST['subId'])) { $subId = (int) trim($_POST['subId']); }
 else exit("<h1>No Submission specified</h1>");

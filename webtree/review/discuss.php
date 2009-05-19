@@ -175,14 +175,19 @@ if (is_array($posts) && count($posts)>0) {
     <a href="toggleThreaded.php">Switch to $altview view</a>
 </div>
 $chngeLogHtml
-<h2 style="text-align: left;"><a name="discuss">Discussion</a></h2>
+
+EndMark;
+  show_reviews($reports, $revId);
+
+  print <<<EndMark
+  <h2 style="text-align: left;"><a name="discuss">Discussion</a></h2>
 
 EndMark;
   show_posts($posts, $subId, $threaded, $lastSaw, $pageWidth);
 }
 else print $chngeLogHtml . "<br/>\n";
 
-if (!defined('CAMERA_PERIOD')) print <<<EndMark
+print <<<EndMark
 <a name="endDiscuss"> </a>
 <big><b>Start a new discussion thread:</b></big><br />
 <form action="doPost.php" enctype="multipart/form-data" method="post">
