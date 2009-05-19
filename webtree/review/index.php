@@ -251,17 +251,19 @@ function discussion_phase($cnnct, $revId, $extraSpace, $pcmFlags)
   }
 
   // Determine ordering of watch-list submissions
-  if ($pcmFlags & FLAG_ORDER_REVIEW_HOME) switch ($pcmFlags % 8) {
-  case 1:
-    $order = 'lastModif DESC, '; // sorted by modification date
-    break;
-  case 2:
-    $order = 's.wAvg DESC, ';    // sorted by weighted average
-    break;
-  default:
-    $order = '';                 // sorted by submission number
+  if ($pcmFlags & FLAG_ORDER_REVIEW_HOME) {
+    $order = ($pcmFlags & 8)? 'status,' : '';
+    switch ($pcmFlags % 8) {
+    case 1:
+      $order .= 'lastModif DESC, '; // sorted by modification date
+      break;
+    case 2:
+      $order .= 's.wAvg DESC, ';    // sorted by weighted average
+    default:
+      break;
+    }
   }
-  else $order = '';              // sorted by submission number
+  else $order = '';                 // sorted by submission number
 
   $order .= 's.subId';
   $qry ="SELECT s.subId subId, title, s.format format, status,
