@@ -46,7 +46,7 @@ while ($row = mysql_fetch_row($res)) {
 /*********************************************************************/
 /******* Now we can display the assignments matrix to the user *******/
 /*********************************************************************/
-$links = show_chr_links();
+$links = show_chr_links(0,array('assignments.php','Assignments'));
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>

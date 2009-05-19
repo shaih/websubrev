@@ -89,7 +89,7 @@ foreach ($committee as $revId=>$pcm) {
 
 /* Display the assignments matrix to the user */
 $classes = array('zero', 'one', 'two', 'three', 'four', 'five');
-$links = show_chr_links();
+$links = show_chr_links(0,array('assignments.php','Assignments'));
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -164,7 +164,7 @@ changes to be recorded by the server!!</i>
 <p>
 You can go back to the <a href="assignments.php">main assignment page</a>
 to reset all the assignments and start from scratch, or to upload a
-backup copy of the asignments that you stored on your local machine.
+backup copy of the assignments that you stored on your local machine.
 </p>
 <a name="matrix"></a>
 <form action="doAssignments.php" enctype="multipart/form-data" method="post">

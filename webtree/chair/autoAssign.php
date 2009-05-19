@@ -29,18 +29,21 @@ $excludedRevs='';
 $specialSubs='';
 $coverage=3;
 $spclCvrge=4;
-$startFromScratch = $startFromCurrent = '';
+$startFromScratch = '';
+$startFromCurrent = 'checked="on"';
 $res = db_query("SELECT * FROM assignParams WHERE idx=1", $cnnct);
 if ($row = mysql_fetch_assoc($res)) {
   $excludedRevs = htmlspecialchars($row['excludedRevs']);
   $specialSubs  = htmlspecialchars($row['specialSubs']);
   $coverage  = (int) $row['coverage'];
   $spclCvrge = (int) $row['spclCvrge'];
-  if ($row['startFrom']=='scratch') $startFromScratch='checked="on"';
-  else $startFromCurrent = 'checked="on"';
+  if ($row['startFrom']=='scratch') {
+    $startFromScratch='checked="on"';
+    $startFromCurrent = '';
+  }
 }
 
-$links = show_chr_links();
+$links = show_chr_links(0,array('assignments.php','Assignments'));
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>

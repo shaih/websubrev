@@ -73,10 +73,10 @@ EndMark;
 print <<<EndMark
 </li> 
 <li>
-You can <a href="getSketchAssign.php">backup the current "sketch assignment" to your local machine</a> as a text file. Later, if you want to revert to the current sketch assignments then you can upload this text file back to the server using the "Upload Assignmnt File" button below:
+You can <a href="getSketchAssign.php">backup the current "sketch assignment" to your local machine</a> as a text file. Later, if you want to revert to the current sketch assignments then you can upload this text file back to the server using the "Upload Assignment File" button below:
 <p>
 <input name="assignmnetFile" size="80" type="file">
-<input type="submit" name="upload" value="Upload Assignmnet File">
+<input type="submit" name="upload" value="Upload Assignment File">
 </p>
 </li>
 <li>
@@ -103,7 +103,7 @@ if (defined('REVPREFS') && REVPREFS) print <<<EndMark
 <li> Ensuring that there is at least one reviewer that reads both submission Y and submission Z.</li> 
 <li> Assigning a reduced load to PC-member X. (You can do this by manually assigning this PC-member however many submissions that you want, and then excluding him/her from the Auto-assignment procedure.)
 </ul>
-Note that the Auto-assignment algorithm will respect manual assignments that you made before running it. For example, if every submission needs three reviewers  and you already assigned one reviewer to submission Y, then the algorithm will only assign two more reviewrs to that submnission.<br/>
+Note that the Auto-assignment algorithm will respect manual assignments that you made before running it. For example, if every submission needs three reviewers  and you already assigned one reviewer to submission Y, then the algorithm will only assign two more reviewers to that submission.<br/>
 <br/></li>
 <li> After making some manual assignments, you should <a href="getSketchAssign.php">backup these assignments to your local machine</a> (in case you want to revert to them later).<br/>
 <br/></li>

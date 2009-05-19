@@ -76,7 +76,7 @@ function status_summary($statuses)
   return $html;
 }
 
-function show_chr_links($current = 0) 
+function show_chr_links($current = 0, $anotherLink=NULL) 
 {
   $undoLink = make_link('undoLast.php', 'Undo/Redo', ($current==4));
   if (PARAMS_VERSION==1) {
@@ -85,9 +85,14 @@ function show_chr_links($current = 0)
     $res = db_query($qry, $cnnct);
     if (mysql_num_rows($res)==0) $undoLink = '';
   }
+  if (isset($anotherLink)) {
+    $anotherLink = make_link($anotherLink[0], $anotherLink[1]);
+  }
+  else $anotherLink = '';
 
   $html = "<div style=\"text-align: center;\">\n";
-  $html .= make_link('index.php', 'Administer', ($current==1))
+  $html .= $anotherLink
+    . make_link('index.php', 'Administer', ($current==1))
     . make_link('../review/', 'Review', ($current==3))
     . make_link('viewLog.php', 'Log file', ($current==2))
     . make_link('../review/password.php', 'Change password')
