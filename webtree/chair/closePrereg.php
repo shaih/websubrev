@@ -39,11 +39,10 @@ $links
 To close the pre-registration, click on "Close Pre-Registration" below.
 Authors who already registered their submission will still be able to
 submit their paper (and revise it) until you close the submission site.
-<p>
+<p> </p>
 <form action="doClosePrereg.php">
 <input value="Close Pre-Registration" type="submit">
 </form>
-</p>
 <hr/>
 $links
 </body>

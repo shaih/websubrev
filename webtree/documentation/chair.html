@@ -9,7 +9,7 @@ h1 {text-align: center;}
 
 <body>
 <h1>Web Submission and Review, Chair Documentation</h1>
-<h2 style="text-align: center;">Version 0.62 - August 2008</h2>
+<h2 style="text-align: center;">Version 0.63 - June 2009</h2>
 
 <a name="TOC"></a><h2>Table of Contents</h2>
 <ol>
@@ -40,15 +40,13 @@ h1 {text-align: center;}
 
 <a name="insall"></a><h2>1. Installing the software</h2>
 One of the goals of this software was to make administration as easy as
-possible. In particular, you should not need to run scripts etc. In principle,
+possible, so you will not need to run scripts etc. In principle,
 to install this software you just unpack the zip file in some directory
 in your web tree (call it the BASE directory), point your browser at that
-directory and off you go.<br/>
-<br/>
-However, that method of installation requires the web-server to be able
-to write files in the web-tree, which in some cases is considered a
-security risk. I therefore provide also a non-web-based installation
-method, as explained below.<br/>
+directory and off you go. However, this simple method of installation 
+requires the web-server to be able to write files in the web-tree, 
+which in some cases is considered a security risk. I therefore provide
+also a non-web-based installation method, as explained below.<br/>
 <br/>
 <b>Prerequisites.</b>
 This is a PHP/MySQL software, which means that to use it you must have
@@ -77,20 +75,29 @@ web-server. In particular, some issues that I came across are:
   of having the same owner they must have the same group.<br/> 
 </li>
 </ul>
-
+Some of the functionality of this package also depends on the availability
+of external programs. Currently the only parts of the functionality that
+need external programs are preparing an archive file with all the
+submissions (which needs either the 
+<a href="http://pear.php.net/package/Archive_Tar"><tt>Archive_Tar</tt></a>
+PEAR library or the <tt>tar</tt> or <tt>zip</tt> programs), and stamping
+the submissions with a header saying "do not ditribute" (which needs
+auxilary program to convert between PDF and Postscript). See some more
+details in the <a href="implementation.html">implementation notes</a>.
+<p>
 <b>Experimenting with the software.</b>
 I wrote a small testing package for the purpose of experimenting with the
 software. To use this package, copy the contents of the <tt>"testOnly"</tt>
 subdirectory to the BASE directory where you installed the software itself
 <i>before</i> you customize the installation. This testing package adds 53
-dummy submissions and 17 dummy PC members to the conference database.<br/>
-<br/>
+dummy submissions and 17 dummy PC members to the conference database.</p>
+<p>
 <b>Troubleshooting.</b>
 Most of the parameters of the software are stored in the <tt>"parameters"</tt>
 table in the database. The details of the database itself are stored in the
 file <tt>init/confParams.php</tt> under the BASE directory. If you have
 problems with the software, looking at these parameters may provide
-some hints as to the source of the problem.
+some hints as to the source of the problem.</p>
 
 <a name="webBased"></a><h3>1a. Web-based installation</h3>
 To use this method, simply copy the contents of the webtree directory
@@ -189,7 +196,8 @@ so you can change the permissions to make that directory read-only.
 <a name="noWebBased"></a><h3>1b. Non-web-based installation</h3>
 An alternative method of installation (in Unix systems) is to change
 directory to where you unzipped this software (above the <tt>"webtree"</tt>
-and <tt>"tools"</tt> directories) and from the command prompt do
+and <tt>"tools"</tt> directories) and to issue the following command from
+the command prompt:
 <pre>
   % ./tools/mkNewConf.sh confname
 </pre>

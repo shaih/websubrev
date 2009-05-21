@@ -113,7 +113,7 @@ if (count($allVotes)>0) {// Generic form: print a list of votes
       $vClose = '<form action="doVoting.php" enctype="multipart/form-data" method=post>
   <input type="hidden" name="voteId" value="'.$vtId.'">
   <input type="submit" name="closeVote" value="Close vote">
-  <input type=checkbox name=hideVote value=on ID=hide{$vtId} title="Check box to prevent PC members from seeing the results of this vote"> Hide tally from PC
+  <input type=checkbox name=hideVote value=on ID=hide'.$vtId.' title="Check box to prevent PC members from seeing the results of this vote"> Hide tally from PC
   </form>';
     } else {
       $vActive = 'Closed';
