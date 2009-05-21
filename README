@@ -1,4 +1,4 @@
-WebSubRev v0.62 (beta): Web-software for Conference Submission and Review
+WebSubRev v0.63 (beta): Web-software for Conference Submission and Review
 
   Written by Shai Halevi <shaih@alum.mit.edu> from IBM Research
   Distributed under the Common Public License (CPL v1.0)
@@ -8,12 +8,11 @@ WebSubRev v0.62 (beta): Web-software for Conference Submission and Review
 Installing the software:
 ========================
 One of the goals of this software was to make administration as easy
-as possible. In particular, you never need to run scripts etc. In
-principle, to install this software you just unpack the zip file in
-some directory in your web tree (call it the BASE directory), point
-your browser at that directory and off you go.
+as possible. In principle, to install this software you just unpack
+the zip file in some directory in your web tree (call it the BASE
+directory), point your browser at that directory and off you go.
 
-However, that method of installation requires the web-server to be
+However, this simple method of installation requires the web-server to be
 able to write files in the web-tree, which in some cases is considered
 a security risk. I therefore provide also a non-web-based installation
 method, as explained below.
@@ -45,6 +44,16 @@ web-server. In particular, some issues that I came across are:
   UPLOAD directory -- see below.) If safe_mode_gid is set in php.ini
   then instead of having the same owner they need to have the same
   group.
+
+Some of the functionality of this package also depends on the availability
+of external programs. Currently the only parts of the functionality that
+need external programs are preparing an archive file with all the
+submissions (which needs either the Archive_Tar PEAR library or the
+tar or zip programs), and stamping the submissions with a header
+saying "do not ditribute" (which needs auxilary program to convert
+between PDF and Postscript). See some more details in the file 
+implementation.html under the documentation directory.
+
 
 Web-based installation:
 -----------------------
