@@ -174,18 +174,16 @@ if (is_array($posts) && count($posts)>0) {
 <div style="float: right;">
     <a href="toggleThreaded.php">Switch to $altview view</a>
 </div>
-$chngeLogHtml
 
 EndMark;
-  show_reviews($reports, $revId);
-
-  print <<<EndMark
-  <h2 style="text-align: left;"><a name="discuss">Discussion</a></h2>
-
-EndMark;
+}
+print $chngeLogHtml;
+show_reviews($reports, $revId);
+if (is_array($posts) && count($posts)>0) {
+  print '<h2 style="text-align: left;"><a name="discuss">Discussion</a></h2>';
   show_posts($posts, $subId, $threaded, $lastSaw, $pageWidth);
 }
-else print $chngeLogHtml . "<br/>\n";
+else print "<br/>\n";
 
 print <<<EndMark
 <a name="endDiscuss"> </a>
