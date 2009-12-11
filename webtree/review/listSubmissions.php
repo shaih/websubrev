@@ -50,9 +50,11 @@ if (isset($_GET['onlyAssigned'])) {
 
 $qry ="SELECT s.subId subId, title, authors, abstract, s.format format,
        status, UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
-       a.watch watch, s.avg avg, (s.maxGrade-s.minGrade) delta, category
+       a.watch watch, s.avg avg, (s.maxGrade-s.minGrade) delta, category,
+       r.score score
     FROM submissions s
          LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId
+         LEFT JOIN reports r ON r.revId='$revId' AND r.subId=s.subId
     WHERE status!='Withdrawn' {$assignedOnly}
     ORDER BY $order";
     $res = db_query($qry, $cnnct);

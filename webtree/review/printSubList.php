@@ -40,6 +40,7 @@ function print_sub_list($sbList, $title, $reviewed=NULL, $disFlag=false,
     $lastMod = (int) $sb['lastModif']; 
     $watch = (int) $sb['watch']; 
     $avg = isset($sb['avg']) ? round((float)$sb['avg'], 1) : NULL ;
+    $score = isset($sb['score']) ? '('.$sb['score'].')' : NULL ;
 
     if (isset($lastMod)) $lastMod = utcDate('d/m\&\n\b\s\p\;H:i', $lastMod);
     if ($watch == 1) {
@@ -95,6 +96,7 @@ EndMark;
     <tr>$index<td style="width:20px;"><a href="download.php?subId=$subId" title="download">
 	<img src="../common/download.gif" alt="download" border=0></a>
     </td>
+    <td>$score</td>
     <td style="width:60px;"><span class=$revStyle><a href="review.php?subId=$subId" target="_blank">$revText</a></span>
     </td>
     <td style="text-align: right;"><b>$subId.</b></td>

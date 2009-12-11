@@ -192,7 +192,7 @@ function individual_review($cnnct, $revId)
 
   $qry ="SELECT s.subId subId, title, s.format format, status, 
       UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
-      a.watch watch, r.revId revId, r.flags revFlags
+      a.watch watch, r.revId revId, r.flags revFlags, r.score score
     FROM submissions s
       INNER JOIN assignments a ON a.revId={$revId} AND a.subId=s.subId
       LEFT JOIN reports r ON r.subId=s.subId AND r.revId={$revId}
