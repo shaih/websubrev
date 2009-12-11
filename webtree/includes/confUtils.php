@@ -23,7 +23,7 @@ function show_legend()
 <td>$reviewIcon,
     $revise2Icon,
     $reviseIcon:
-    Submit a new/revised report about a submissoin</td>
+    Submit a new/revised report about a submission</td>
 </tr>
 <tr><td></td>
 <td>$discussIcon1,
