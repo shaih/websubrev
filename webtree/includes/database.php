@@ -300,6 +300,7 @@ function create_tabels($cnnct)
    *    32 - vote on submission with status DI
    *    64 - vote on submission with status MA
    *   128 - vote on submission with status AC
+   *   256 - show detailed results to PC members
    *
    * If the vote-on-submissions flag is set, then the submissions included
    * in the vote are determined by the following procedure: 
@@ -311,6 +312,9 @@ function create_tabels($cnnct)
    * If the vote-on-submissions flag is not set Otherwise then the voteOnThese
    * field MUST include a description of things to vote on, in the form of a
    * semi-colon-separated list.
+   * The show-detailed-results flag is ignored unless voteActive=0. In this
+   * case, PC members are shown the detailed results when set, and only tally
+   * when cleared (which is the default).
    */
   $qry = "CREATE TABLE IF NOT EXISTS votePrms (
     voteId smallint(3) NOT NULL auto_increment,

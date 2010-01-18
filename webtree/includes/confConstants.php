@@ -34,6 +34,7 @@ define('FLAG_VOTE_ON_NO', 16);
 define('FLAG_VOTE_ON_DI', 32);
 define('FLAG_VOTE_ON_MA', 64);
 define('FLAG_VOTE_ON_AC', 128);
+define('FLAG_SHOW_VOTE_DETAILS', 256);
 
 define('CHAIR_ID', 1);
 

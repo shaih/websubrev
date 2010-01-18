@@ -112,8 +112,10 @@ if (count($allVotes)>0) {// Generic form: print a list of votes
       $vEdit = '<a href="voting.php?voteId='.$vtId.'">Edit...</a>';
       $vClose = '<form action="doVoting.php" enctype="multipart/form-data" method=post>
   <input type="hidden" name="voteId" value="'.$vtId.'">
-  <input type="submit" name="closeVote" value="Close vote">
-  <input type=checkbox name=hideVote value=on ID=hide'.$vtId.' title="Check box to prevent PC members from seeing the results of this vote"> Hide tally from PC
+  <input type=radio name=showVote value=none title="Check to prevent PC members from seeing the results of this vote"> Hide results from PC
+  <input name="closeVote" value="Close vote" type="submit"><br/>
+  <input type=radio name=showVote value=tally title="Check to let PC members see only the tally" checked=on> Show tally to PC<br/>
+  <input type=radio name=showVote value=details title="Check to let PC members see who voted for what"> Show details to PC
   </form>';
     } else {
       $vActive = 'Closed';
@@ -121,7 +123,7 @@ if (count($allVotes)>0) {// Generic form: print a list of votes
     }
     print <<<EndMark
 <tr><td>$vTitle</td>
-  <td><a href="voteDetails.php?voteId=$vtId">View...</a></td>
+  <td><a href="../review/voteResults.php?voteId=$vtId">View...</a></td>
   <td>{$v['deadline']}</td><td>$vActive</td>
   <td>$vEdit</td>
   <td>$vClose</td>

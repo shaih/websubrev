@@ -29,16 +29,19 @@ $links
 <hr/>
 EndMark;
 
-$qry = "SELECT * FROM votePrms WHERE voteActive=0";
+$qry = "SELECT * FROM votePrms WHERE ";
+if ($revId != CHAIR_ID) $qry .= "voteActive=0 AND ";
+
 // If a vote is specified, display results of this vote
 if (isset($_GET['voteId']) && $_GET['voteId']>0) {
-  $voteId = $_GET['voteId'];
-  $qry .= " AND voteId=$voteId";
+  $voteId = (int) $_GET['voteId'];
+  $qry .= " voteId=$voteId AND ";
 }
+
 // Before the discussion phase, cannot see votes on submissions
-if (!$disFlag) $qry .= " AND (voteFlags&1)!=1";
-$qry .= " ORDER by voteId DESC";
-$res = db_query($qry, $cnnct) or die('No results found</body></html>');
+if ($revId != CHAIR_ID && !$disFlag) $qry .= "(voteFlags&1)!=1 AND ";
+$qry .= "TRUE ORDER by voteId DESC";
+$res = db_query($qry, $cnnct) or die('Cannot query database</body></html>');
 if (mysql_num_rows($res)<= 0) die('No results found</body></html>');
 
 // If more than one vote matches, display a list of them
@@ -50,9 +53,10 @@ if (mysql_num_rows($res) > 1) {
     else $voteTitle = "Ballot #".$voteId;
     print "<li><a href=\"voteResults.php?voteId=$voteId\">$voteTitle</a></li>\n";
   }
-  print "</ul>\n<hr/>\n$links\n</body></html>";
+  exit("</ul>\n<hr/>\n$links\n</body></html>");
 }
 
+// Only one match, display the tally and maybe also the details
 $row = mysql_fetch_array($res);
 $voteId = intval($row['voteId']);
 $voteTitle = isset($row['voteTitle']) ? htmlspecialchars($row['voteTitle']):'';
@@ -69,7 +73,7 @@ $noVotes = true;
 
 if ($voteFlags & VOTE_ON_SUBS) {
   $qry = "SELECT s.subId, SUM(v.vote) sum, title, a.assign
-  FROM submissions s, votes v LEFT JOIN assignments a ON a.subId=v.subID AND a.revId=$revId
+  FROM submissions s, votes v LEFT JOIN assignments a ON a.subId=v.subId AND a.revId=$revId
   WHERE v.voteId=$voteId AND s.subId=v.subId
   GROUP BY s.subId ORDER BY sum DESC, s.subId ASC";
   $res = db_query($qry, $cnnct);
@@ -119,7 +123,96 @@ if (!empty($html)) {
 }
 else print "No non-zero votes.<br/><br/>\n";
 
+if (empty($html) ||
+    ($revId != CHAIR_ID && ($voteFlags & FLAG_SHOW_VOTE_DETAILS)==0)) {
+  print <<<EndMark
+<hr />
+$links
+</body>
+</html>
+
+EndMark;
+  exit(); // nothing more to show here
+}
+
+// Show the details of the vote
+// Get the names of PC membes that voted in the current ballot
+$voters = array();
+$qry = "SELECT c.revId revId, c.name name, COUNT(v.vote) dummy
+  FROM committee c, votes v
+  WHERE v.voteId=$voteId AND c.revId=v.revId GROUP BY revId ORDER BY revId";
+$res = db_query($qry, $cnnct);
+while ($row=mysql_fetch_row($res)) {
+  $rId = (int)$row[0];
+  $name = explode(' ', $row[1]);
+  if (is_array($name)) {
+    for ($j=0; $j<count($name); $j++)
+      $name[$j] = htmlspecialchars(substr($name[$j], 0, 7)); 
+    $voters[$rId] = implode('<br/>', $name);
+  }
+}
+
+// Get the vote results
+$vItems = array();
+$voteResults = array();
+if ($voteFlags & VOTE_ON_SUBS) {
+  $qry = "SELECT v.subId vId, v.revId revId, v.vote vote, s.title title, a.assign assign
+  FROM submissions s, votes v LEFT JOIN assignments a ON a.subId=v.subId AND a.revId=$revId
+  WHERE v.voteId=$voteId AND s.subId=v.subId AND vote>0
+  ORDER BY v.subId, v.revId";
+} else {
+  $qry = "SELECT v.subId vId, v.revId revId, v.vote vote
+  FROM votes v WHERE v.voteId=$voteId AND vote>0
+  ORDER BY v.subId, v.revId";
+}
+
+$res = db_query($qry, $cnnct);
+while ($row=mysql_fetch_assoc($res)) {
+  if (isset($row['assign']) && $row['assign']==-1) continue;
+
+  $vId   = (int)$row['vId'];
+  $rId = (int)$row['revId'];
+
+  $title = ($voteFlags & VOTE_ON_SUBS) ? $row['title'] : $voteTitles[$vId];
+  $vItems[$vId] = htmlspecialchars($title);
+
+  if (!isset($voteResults[$vId])) { $voteResults[$vId] = array(); }
+  $voteResults[$vId][$rId] = (int)$row['vote'];
+}
+
+print "<h2>Detailed Results</h2>\n";
+print "<table cellspacing=0 cellpadding=0 border=1><tbody>\n";
+
+$header = "<tr>";
+foreach ($voters as $name) { $header .= "  <th>".$name."</th>\n"; }
+$header .= "  <th>Num</th>\n";
+$header .= "  <th style=\"text-align: left;\">&nbsp;Title</th>\n</tr>\n";
+
+$i = 0;
+print $header;
+foreach ($vItems as $vId => $title) {
+  if ($i>0 && $i%6==0) print $header;
+
+  print "<tr>";
+  foreach ($voters as $rId => $name) {
+    if (isset($voteResults[$vId][$rId]) && $voteResults[$vId][$rId]>0) {
+      if ($voteType=='Grade')
+	   print "  <td align=center>".$voteResults[$vId][$rId]."</td>\n";
+      else print "  <td align=center>X</td>\n";
+    }
+    else print "  <td>&nbsp;</td>\n";
+  }
+  print "  <td style=\"font: bold 12px ariel;\">$vId.</td>\n";
+  print "  <td style=\"text-align: left;\">$title</td>\n</tr>\n";
+  $i++;
+}
+if ($i==0) { // no non-zero votes
+  $nCols = is_array($voters) ? (count($voters)+2) : 2;
+  print "<tr><td align=center colspan=$nCols>No non-zero votes yet</td></tr>\n";
+}
+
 print <<<EndMark
+</tbody></table>
 <hr />
 $links
 </body>

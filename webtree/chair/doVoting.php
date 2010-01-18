@@ -82,11 +82,15 @@ if (isset($_POST["setup"])) {
  *******************************************************************/
 if (isset($_POST["closeVote"])) {
   $voteId = intval(trim($_POST["voteId"]));
-  $hide = (isset($_POST["hideVote"]) && $_POST["hideVote"]=="on")? -1 :0;
-  if ($voteId > 0) {
-    db_query("UPDATE votePrms SET voteActive=$hide WHERE voteId=$voteId", $cnnct);
+  $hide = $details = 0;
+  if (isset($_POST["showVote"])) {
+    if ($_POST["showVote"]=="none") $hide = -1;
+    elseif ($_POST["showVote"]=="details") $details = FLAG_SHOW_VOTE_DETAILS;
   }
-  header("Location: voteDetails.php?voteId=$voteId");
+  if ($voteId > 0) {
+    db_query("UPDATE votePrms SET voteActive=$hide, voteFlags=(voteFlags|$details) WHERE voteId=$voteId", $cnnct);
+    header("Location: ../review/voteResults.php?voteId=$voteId");
+  }
 }
 
 header("Location: voting.php");
