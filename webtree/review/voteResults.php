@@ -59,9 +59,13 @@ if (mysql_num_rows($res) > 1) {
 // Only one match, display the tally and maybe also the details
 $row = mysql_fetch_array($res);
 $voteId = intval($row['voteId']);
+$active = (isset($row['voteActive'])&& $row['voteActive']>0) ? 'in progress' : 'closed';
+$voteType  = isset($row['voteType'])  ? htmlspecialchars($row['voteType']) : 'Choose';
 $voteTitle = isset($row['voteTitle']) ? htmlspecialchars($row['voteTitle']):'';
 $voteFlags = isset($row['voteFlags']) ? intval($row['voteFlags']) : 0;
+$voteBudget= isset($row['voteBudget'])? intval($row['voteBudget']): 0;
 $voteOnThese = isset($row['voteOnThese'])? $row['voteOnThese'] : '';
+$voteMaxGrade= isset($row['voteMaxGrade'])? intval($row['voteMaxGrade']): 1;
 if (empty($voteTitle)) $voteTitle = "Ballot #$voteId";
 if ($voteFlags & VOTE_ON_SUBS) $voteTitles = NULL;
 else $voteTitles = explode(';', ';'.$voteOnThese);
@@ -125,14 +129,7 @@ else print "No non-zero votes.<br/><br/>\n";
 
 if (empty($html) ||
     ($revId != CHAIR_ID && ($voteFlags & FLAG_SHOW_VOTE_DETAILS)==0)) {
-  print <<<EndMark
-<hr />
-$links
-</body>
-</html>
-
-EndMark;
-  exit(); // nothing more to show here
+  exit("<hr/>\n{$links}\n</body></html>\n");
 }
 
 // Show the details of the vote
