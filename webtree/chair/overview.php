@@ -54,6 +54,12 @@ $statuses = array('Accept'         => 0,
 		  'None'           => 0,
 		  'Perhaps Reject' => 0,
 		  'Reject'         => 0);
+$sttsClass = array('Accept'         => "setAC",
+		  'Maybe Accept'    => "setMA",
+		  'Needs Discussion'=> "setDI",
+		  'None'            => "setNO",
+		  'Perhaps Reject'  => "setMR",
+		  'Reject'          => "setRE");
 while ($row = mysql_fetch_row($res)) {
   $subArray[] = $row;
   $stts = $row[2];
@@ -135,8 +141,9 @@ $n = count($committee);
 $count = 0;
 foreach ($subArray as $sub) { 
   $subId = $sub[0];
+  $status = $sub[2];
   $nRevs = 0;
-  print "<tr><td>{$subId}</td>\n";
+  print "<tr><td class=\"".$sttsClass[$status]."\">{$subId}</td>\n";
   foreach ($committee as $j => $pcm) {
     $revId = $pcm[0];
     $entry = '&nbsp;';
@@ -185,7 +192,7 @@ foreach ($subArray as $sub) {
     }
     print "  <td>$entry</td>\n";
   }
-  print "  <td>{$subId}</td>\n";
+  print "  <td class=\"".$sttsClass[$status]."\">{$subId}</td>\n";
   print "  <td style=\"text-align: left; font: italic 14px ariel;\">\n";
   print "    <a href=\"../review/submission.php?subId={$subId}\">{$sub[1]}</a></td>\n";
   print "  <td><center>{$nRevs}</center></td>\n";
