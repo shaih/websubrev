@@ -97,10 +97,10 @@ EndMark;
 	<img src="../common/download.gif" alt="download" border=0></a>
     </td>
     <td>$score</td>
-    <td style="width:60px;"><span class=$revStyle><a href="review.php?subId=$subId" target="_blank">$revText</a></span>
+    <td width="110"><span class=$revStyle><a href="review.php?subId=$subId" target="_blank">$revText</a></span>
+    <b>$subId.</b>
     </td>
-    <td style="text-align: right;"><b>$subId.</b></td>
-    <td><a href="submission.php?subId=$subId">$title</a></td>$catgry
+    <td width="85%"><a href="submission.php?subId=$subId">$title</a></td>$catgry
     </tr>
 
 EndMark;
@@ -112,7 +112,7 @@ EndMark;
 	$abs .= "    <tr><td></td><td colspan=3><i>$authors</i></td></tr>\n";
       if (isset($abstract)) {
 	$abs .='    <tr><td></td><td colspan=3 class="fixed"><b>Abstract: </b>'
-	  . nl2br($abstract). "<br /><br /></span></td></tr>\n";
+	  . nl2br($abstract). "<br/><br/></td></tr>\n";
       }
     }
     print $abs;
