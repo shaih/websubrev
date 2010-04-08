@@ -14,10 +14,11 @@ if (PERIOD>PERIOD_SUBMIT) exit("<h1>Submissions Site is already Closed</h1>");
 
 $updates = "version=version+1";
 if (isset($_POST['revPrefsFlag'])) {
-  if (isset($_POST['revPrefs'])) $confFlags = CONF_FLAGS | FLAG_PCPREFS;
-  else                           $confFlags = CONF_FLAGS & (~FLAG_PCPREFS);
-  if (isset($_POST['revAttach'])) $confFlags= CONF_FLAGS | FLAG_REV_ATTACH;
-  else                           $confFlags = CONF_FLAGS & (~FLAG_REV_ATTACH);
+  $confFlags = CONF_FLAGS;
+  if (isset($_POST['revPrefs']))  $confFlags |= FLAG_PCPREFS;
+  else                            $confFlags &= (~FLAG_PCPREFS);
+  if (isset($_POST['revAttach'])) $confFlags |= FLAG_REV_ATTACH;
+  else                            $confFlags &= (~FLAG_REV_ATTACH);
   $updates .= ", flags=$confFlags";
 }
 
