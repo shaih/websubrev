@@ -90,7 +90,7 @@ function update_committee_member($cnnct, $name, $email,
 
   // Modify an existing member: first get current details
   $updates = $comma = '';
-  if (empty($revPwd)) $reset=true;                   // Set initial password
+  // if (empty($revPwd)) $reset=true;  removed this test -- Shai, Apr-2010
   if (isset($email) && $email!=$oldEml) $reset=true; // Change email address
 
   if ($reset) { // reset pwd
