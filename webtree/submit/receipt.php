@@ -169,10 +169,15 @@ EndMark;
 flush();      // Don't let the user wait while we stamp the file
 if ($needsStamp && PERIOD<PERIOD_CAMERA) {
   include_once('stampFiles.php');
-  // re-set the "needs stump" flag for this submission
-  $qry = "UPDATE submissions SET flags=(flags&(~".SUBMISSION_NEEDS_STAMP.")) WHERE subId={$subId}";
-  db_query($qry, $cnnct,"Cannot mark file as stamped: ");
-  stampSubmission($subId,$row['format']); // Stump the file (if possible)
+
+  $res = stampSubmission($subId,$row['format']); // Stamp the file (if possible)
+
+  if ($res == 0) {
+    // re-set the "needs stamp" flag for this submission
+    // if stamping was successful.
+    $qry = "UPDATE submissions SET flags=(flags&(~".SUBMISSION_NEEDS_STAMP.")) WHERE subId={$subId}";
+    db_query($qry, $cnnct,"Cannot mark file as stamped: ");
+  }
 }
 exit();
 

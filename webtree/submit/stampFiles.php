@@ -32,6 +32,28 @@ function stampPDF($pdfFile, $stampString) {
   $pdf->save($pdfFile, true);
 }
 
+// Backup a submitted file. If a backup file already exists,
+// a new numbered backup file will be created.
+// Returns TRUE if backup succeeded and FALSE otherwise.
+function createBackup($subFile, $subId, $format, $backupDir) 
+{
+  if (!file_exists("$backupDir/{$subId}.unstamped.{$format}"))
+    return copy($subFile, "$backupDir/{$subId}.unstamped.{$format}");
+
+  $num = 1;
+  $maxnum = 1000;
+
+  while (($num < $maxnum) && file_exists("$backupDir/{$subId}.unstamped-{$num}.{$format}")) 
+	++$num;
+
+  if ($num >= $maxnum)
+	return FALSE;
+
+  return copy($subFile, "$backupDir/{$subId}.unstamped-{$num}.{$format}");
+}
+
+
+// Stamp a submission
 function stampSubmission($subId, $format)
 {
   $confName = CONF_SHORT.' '.CONF_YEAR;
@@ -49,11 +71,11 @@ function stampSubmission($subId, $format)
 
 
   // Backup the "unstamped" file
-  // We only perform a backup if it doesn't already exist, otherwise
-  // there's a risk of overwriting a good backup with a corrupted file
-  // from a previous stamp attempt.
-  if (!file_exists("backup/{$subId}.unstamped.{$format}"))
-    copy($subFile, "backup/{$subId}.unstamped.{$format}");
+  if (!createBackup($subFile, $subId, $format, "backup")) {
+	// We won't risk stamping if backup failed!
+	error_log("Backup failed for $subId; leaving unstamped!");
+	return cleanExit(1,$saveDir);
+  }
 
   if (HAVE_ZEND_PDF && (strtoupper($format)=='PDF')) {
     // Use cleaner PDF stamping mechanism
@@ -149,14 +171,10 @@ EndMark;
   if (!empty($buffer)) fwrite($fout,$buffer);
   fclose($fout);
 
-  // Backup the "unstamped" file
-  if (!file_exists("backup/{$subId}.unstamped.{$format}")) {
-    rename($subFile, "backup/{$subId}.unstamped.{$format}");
-  } else {
-    // backup already exists, delete original to prevent problem with
-    // rename.
-    unlink($subFile); 
-  }
+  
+  // backup already exists, delete original to prevent problem with
+  // rename.
+  unlink($subFile); 
 
   // Convert back from PS to PDF if needed ...
   if (strtoupper($format)=='PDF') {
