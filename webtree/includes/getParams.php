@@ -21,6 +21,16 @@ foreach ($lines as $line) {
 
 require_once('../includes/confConstants.php');
 require_once('../includes/confUtils.php');
+
+if (file_exists('../zend-framework')) {
+  define("HAVE_ZEND_PDF", true);   
+  $zend_dir = realpath("../zend-framework");
+  $include_path = get_include_path();
+  set_include_path($include_path . ":" . $zend_dir);
+} else {
+  define("HAVE_ZEND_PDF", false);   
+}
+
 $cnnct = db_connect();
 $qry = "SELECT name, email from committee WHERE revId=".CHAIR_ID;
 $res = db_query($qry, $cnnct, "Cannot find chair in database: ");

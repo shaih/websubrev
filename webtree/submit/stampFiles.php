@@ -5,6 +5,33 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
+
+// Check for Zend Framework
+if (HAVE_ZEND_PDF) {
+  require_once 'Zend/Pdf.php';
+}
+
+// Use Zend PDF Framework to stamp without losing ToC and hyperlinks
+function stampPDF($pdfFile, $stampString) {
+  // Use FONT_TIMES_BOLD for header
+  $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_TIMES_BOLD);
+
+  $pdf = Zend_Pdf::load($pdfFile);
+
+  foreach ($pdf->pages as $pdfPage) {
+    // Apply font
+    $pdfPage->setFont($font, 12);
+
+    $xAxis = 70; $yAxis = $pdfPage->getHeight() - 22; // Where to put the stamp
+
+    $pdfPage->drawText($stampString, $xAxis, $yAxis, 'UTF-8');
+  }
+  #
+  // Save document to same file (just appending new data)
+  #
+  $pdf->save($pdfFile, true);
+}
+
 function stampSubmission($subId, $format)
 {
   $confName = CONF_SHORT.' '.CONF_YEAR;
@@ -17,6 +44,32 @@ function stampSubmission($subId, $format)
 
   $return_var = 0;
   $output_lines = array();
+
+  $stampString = "Submission number $subId to $confName: DO NOT DISTRIBUTE!";
+
+
+  // Backup the "unstamped" file
+  // We only perform a backup if it doesn't already exist, otherwise
+  // there's a risk of overwriting a good backup with a corrupted file
+  // from a previous stamp attempt.
+  if (!file_exists("backup/{$subId}.unstamped.{$format}"))
+    copy($subFile, "backup/{$subId}.unstamped.{$format}");
+
+  if (HAVE_ZEND_PDF && (strtoupper($format)=='PDF')) {
+    // Use cleaner PDF stamping mechanism
+
+    try {
+      // Stamp the PDF
+      stampPDF($subFile, $stampString);
+
+      return cleanExit(0,$saveDir);
+    } catch(Exception $e) {
+      // Stamping failed (probably due to unsupported PDF version)
+      // Fall back to previous stamping method
+
+      //error_log("Zend PDF stamp failed for $subId: ".$e);
+    }
+  }
 
   if (file_exists($tmpFile)) unlink($tmpFile);  // just in case
   // Conver PDF to PS if needed
@@ -75,7 +128,7 @@ function stampSubmission($subId, $format)
         initmatrix
         /Times-Roman findfont 12 scalefont setfont
         $xAxis $yAxis moveto
-        (Submission number $subId to $confName: DO NOT DISTRIBUTE!) show
+        ($stampString) show
     restore
     \@show\@page
 %    /showpage {\@show\@page} bind def
@@ -97,9 +150,13 @@ EndMark;
   fclose($fout);
 
   // Backup the "unstamped" file
-  if (file_exists("backup/{$subId}.unstamped.{$format}")) 
-    unlink("backup/{$subId}.unstamped.{$format}"); // just in case
-  rename($subFile, "backup/{$subId}.unstamped.{$format}");
+  if (!file_exists("backup/{$subId}.unstamped.{$format}")) {
+    rename($subFile, "backup/{$subId}.unstamped.{$format}");
+  } else {
+    // backup already exists, delete original to prevent problem with
+    // rename.
+    unlink($subFile); 
+  }
 
   // Convert back from PS to PDF if needed ...
   if (strtoupper($format)=='PDF') {
