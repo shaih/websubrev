@@ -28,19 +28,16 @@ require_once('../includes/confUtils.php');
 //    Note that fopen use the include_path while file_exists does not
 if (($fp = @fopen('Zend/Pdf.php', 'r', 1)) and fclose($fp)) {
   define("HAVE_ZEND_PDF", true);
-  print "found system Zend";
 } 
 // 2. If not found, look for a local copy of Zend framework
 elseif (file_exists('../zend-framework/Zend/Pdf.php')) {
   $zend_dir = realpath("../zend-framework");
   set_include_path(get_include_path() . PATH_SEPARATOR . $zend_dir);
   define("HAVE_ZEND_PDF", true);
-  print "found local Zend";
 } 
 // 3. If all fails, conclude that we do not have Zend
 else {
   define("HAVE_ZEND_PDF", false);
-  print "No Zend";
 }
 
 $cnnct = db_connect();
@@ -222,7 +219,7 @@ function emptyPrms()
     'cmrDeadline'   => 0,
     'maxGrade'      => 6,
     'maxConfidence' => 3,
-    'flags'         => FLAG_PCPREFS| FLAG_AFFILIATIONS| FLAG_EML_HDR_X_MAILER,
+    'flags'         => FLAG_PCPREFS| FLAG_ANON_SUBS| FLAG_AFFILIATIONS| FLAG_EML_HDR_X_MAILER,
     'timeShift'     => 0,
     'emlSender'     => NULL,
     'period'        => 0,
