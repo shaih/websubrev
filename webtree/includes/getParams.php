@@ -1,6 +1,6 @@
 <?php
 /* Web Submission and Review Software
- * Written by Shai Halevi
+ * Written by Shai Halevi, Tal Moran
  * This software is distributed under the terms of the open-source license
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
@@ -22,13 +22,25 @@ foreach ($lines as $line) {
 require_once('../includes/confConstants.php');
 require_once('../includes/confUtils.php');
 
-if (file_exists('../zend-framework')) {
-  define("HAVE_ZEND_PDF", true);   
+// Check if we can use the PDF stamping based on Zend framework: 
+
+// 1. Look for Zend in the standard include path on this server
+//    Note that fopen use the include_path while file_exists does not
+if (($fp = @fopen('Zend/Pdf.php', 'r', 1)) and fclose($fp)) {
+  define("HAVE_ZEND_PDF", true);
+  print "found system Zend";
+} 
+// 2. If not found, look for a local copy of Zend framework
+elseif (file_exists('../zend-framework/Zend/Pdf.php')) {
   $zend_dir = realpath("../zend-framework");
-  $include_path = get_include_path();
-  set_include_path($include_path . ":" . $zend_dir);
-} else {
-  define("HAVE_ZEND_PDF", false);   
+  set_include_path(get_include_path() . PATH_SEPARATOR . $zend_dir);
+  define("HAVE_ZEND_PDF", true);
+  print "found local Zend";
+} 
+// 3. If all fails, conclude that we do not have Zend
+else {
+  define("HAVE_ZEND_PDF", false);
+  print "No Zend";
 }
 
 $cnnct = db_connect();

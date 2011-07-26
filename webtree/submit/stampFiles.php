@@ -1,6 +1,6 @@
 <?php
 /* Web Submission and Review Software
- * Written by Shai Halevi
+ * Written by Shai Halevi, Tal Moran
  * This software is distributed under the terms of the open-source license
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
