@@ -185,7 +185,7 @@ print <<<EndMark
 Use the form below to customize your accept/reject letters. The email
 notifications will be sent when you hit the "Send Notification" button
 at the bottom of this page. You can also make changes to the text of
-these letetrs and then save it without sending the email yet by using
+these letters and then save it without sending the email yet by using
 this button: <input type="submit" name="saveText" value="Save Text"><br/>
 <br/>
 (Note that the keywords <code>&lt;&#36;authors&gt;</code>, 
