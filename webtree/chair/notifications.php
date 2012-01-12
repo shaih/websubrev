@@ -72,7 +72,6 @@ We are looking forward to seeing you at the conference.
 Sincerely,
 
 '.$cName.' program chair(s)';
-$acc = htmlspecialchars($acc);
 
 // the default reject letter
 $rejSbjct = REJECT_SBJCT;
@@ -102,8 +101,6 @@ and we hope to see you at the conference.
 Sincerely,
 
 '.$cName.' program chair(s)';
-
-$rej = htmlspecialchars($rej);
 
 // If either $_POST['saveText'] or $_POST['notifySubmitters'] are set
 // then store the current text in the database
@@ -178,6 +175,11 @@ $links
 EndMark;
   exit();
 }
+
+$accSbjct = htmlspecialchars($accSbjct);
+$acc = htmlspecialchars($acc);
+$rejSbjct = htmlspecialchars($rejSbjct);
+$rej = htmlspecialchars($rej);
 
 // Allow the chair to customize the emails
 print <<<EndMark
