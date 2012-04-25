@@ -48,6 +48,7 @@ The program chair(s)
 
 // If $_POST['sendComments2Submitters'] is set, send the actual emails
 if (isset($_POST['sendComments2Submitters'])) {
+  $send2All = (isset($_POST['send2All']) && $_POST['send2All']=='yes');
   $x = trim($_POST['commentsLetter']);
   if (!empty($x)) $ltr = $x;
   $ltr = str_replace("\r\n", "\n", $ltr); // just in case
@@ -98,7 +99,7 @@ if (isset($_POST['sendComments2Submitters'])) {
 
   $count=0;
   foreach ($submissions as $subId => $sb) {
-    if (($sb[5]=="Accept") || ($sb[5]=="Reject")) {
+    if ($send2All || ($sb[5]=="Accept") || ($sb[5]=="Reject")) {
       sendComments($subId, $sb[0], $sb[1], $sb[2], $sb[3], $sb[4], $ltr);
     }
     else continue;
@@ -130,8 +131,11 @@ EndMark;
 // Allow the chair to customize the emails
 print <<<EndMark
 The comments-for-authors will be send when you hit the "Send Comments"
-button at the bottom of this page. You can customize the header of
-these emails below.<br />
+button at the bottom of this page.  You can customize the header of
+these emails below.
+By default the comments are sent only for submissions whose status is
+Accept or Reject, you can override this defualt by checking the box
+below the "Send Comments" button.<br />
 <br />
 
 (Note that the keywords <code>&lt;&#36;authors&gt;</code>,
@@ -152,11 +156,15 @@ send comments to the authors of all the submissions.<br /><br />
 Send comments only for these submissions:
 <input type="text" name="subIds2send" size="70">
 <br /><br />
-
-<input type="submit" value="Send Comments">
+<table><tr>
+<td><input type="submit" value="Send Comments"></td>
 <input type="hidden" name="sendComments2Submitters" value="yes">
-<input type=checkbox name=withGrades value=yes> Check to include score
-and confidence in the email sent to the authors
+<td><input type=checkbox name=withGrades value=yes> Check to include score
+and confidence in the email sent to the authors</td>
+</tr><tr>
+<td></td><td><input type=checkbox name="send2All" value="yes"> Check to send
+comments also to submissions whose status is not Accept or Reject</td>
+</tr></table>
 </form>
 
 <hr />
@@ -170,7 +178,7 @@ exit();
 function sendComments($subId, $title, $authors, $contact,
 		      $cmnts, $attachments, $text)
 {
-  $subject = "Reviewer comments for ".CONF_SHORT.' '.CONF_YEAR." submission";
+  $subject = "Reviewer comments for ".CONF_SHORT.' '.CONF_YEAR." submission $subId";
   $errMsg = "comments for submission {$subId} to {$contact}";
 
   $text = str_replace('<$authors>', $authors, $text);
@@ -180,5 +188,7 @@ function sendComments($subId, $title, $authors, $contact,
   else $text = str_replace('<$comments>', "\nNo Reviewer Comments\n", $text);
 
   my_send_mail($contact, $subject, $text, CHAIR_EMAIL, $errMsg, $attachments);
+// print "debug mode: message to $contact not sent <br/>\n";
 }
 ?>
+
