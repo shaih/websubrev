@@ -104,6 +104,11 @@ if (isset($allSubFile)) {
   $allSubFile = '&nbsp;o&nbsp;&nbsp;<a href="download.php?all_in_one='.$allSubFile.'">Download submissions in one file</a><br/>';
 }
 
+if (defined('IACR')) {
+  $IACRrevGuidelines = '&nbsp;o&nbsp;&nbsp;<a href="http://www.iacr.org/docs/reviewer.pdf">The IACR Guidelines for Reviewers</a><br/>';
+}
+else $IACRrevGuidelines = '';
+
 if (REVPREFS && !$disFlag) {
   $indicatePrefs = '&nbsp;o&nbsp;&nbsp;<a href="prefs.php">Indicate reviewing preferences</a><br />';
 }
@@ -153,6 +158,7 @@ $listSubmissions
 </td>
 
 <td><strong>Some other links:</strong><br />
+$IACRrevGuidelines
 $allSubFile
 {$indicatePrefs}{$watchList}
 &nbsp;o&nbsp;&nbsp;<a target=_blank href="scorecard.php">Work with scorecard files</a><br/>

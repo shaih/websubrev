@@ -13,7 +13,8 @@ foreach ($lines as $line) {
   $vl = rtrim(substr($line,$i+1));
   if ($nm=='MYSQL_HOST'     || $nm=='MYSQL_DB'   || $nm=='MYSQL_USR'
       || $nm=='MYSQL_PWD'   || $nm=='SUBMIT_DIR' || $nm=='LOG_FILE'
-      || $nm=='ADMIN_EMAIL' || $nm=='CONF_SALT'  || $nm=='BASE_URL') {
+      || $nm=='ADMIN_EMAIL' || $nm=='CONF_SALT'  || $nm=='BASE_URL'
+      || $nm=='IACR') {
     if (empty($vl)) die("<h1>Parameter $nm cannot be empty</h1>");
     define($nm, $vl);
   }
