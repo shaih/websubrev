@@ -127,7 +127,7 @@ if (empty($pwd1) || ($pwd1 != $pwd2)) returnError(2);
 
 // All is well, change/reset the password in the database
 $cnnct = db_connect();
-$pwd1 = md5(CONF_SALT . $user . $pwd1);
+$pwd1 = sha1(CONF_SALT . $user . $pwd1);
 $user = my_addslashes($user, $cnnct);
 $qry = "UPDATE committee SET revPwd='{$pwd1}' WHERE revId='{$revId}'";
 db_query($qry, $cnnct, "Cannot change passwords for $revName: ");

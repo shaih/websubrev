@@ -45,12 +45,12 @@ $nReports = array_sum($subs);  // how many reports we need in total
 
 
 // Simillarly record for each reviewer the maximum number of assignments.
-$qry = "SELECT revId, name FROM committee WHERE revId!=" . CHAIR_ID 
-     . " ORDER by revPwd";    // pick a fixed random order
+$qry = "SELECT revId, name FROM committee WHERE !(flags & " . FLAG_IS_CHAIR .")
+  ORDER by revPwd";    // pick a fixed random ordera
 $res = db_query($qry, $cnnct);
 $revs = array();
 $committee = array();
-while ($row = mysql_fetch_row($res)) { 
+while ($row = mysql_fetch_row($res)) {
   $revId = (int)$row[0]; 
   $revs[$revId] = 0;
   $committee[$revId] = array(trim($row[1]));

@@ -6,20 +6,32 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
 
-function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0)
+function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0, $showStats = true)
 {
-  global $discussIcon1, $discussIcon2;
+  global $discussIcon1, $discussIcon2, $pcMember;
 
   $subId = (int) $sub['subId'];
+  $isGroup = $sub['flags'] & FLAG_IS_GROUP;
   $title =  htmlspecialchars($sub['title']);
   $sttus  = show_status($sub['status']);
   $avg   = isset($sub['avg']) ? round($sub['avg'],1) : '*';
   $wAvg  = isset($sub['wAvg']) ? round($sub['wAvg'],1) : '*';
-  $delta = isset($sub['delta']) ? ((int) $sub['delta']) : '*';
+  $delta = isset($sub['delta']) ? ($sub['delta']) : '*'; 
   $disText = (isset($sub['hasNew'])&&$sub['hasNew']) ? $discussIcon2 : $discussIcon1;
-
+  $minGrade = isset($sub['minGrade']) ? round($sub['minGrade'],1) : '*';
+  $maxGrade = isset($sub['maxGrade']) ? round($sub['maxGrade'],1) : '*';
   $lastModif = isset($sub['lastModif']) ? utcDate('M\&\n\b\s\p\;j H:i', ((int)$sub['lastModif'])) : '';
 
+/* // kluggy integration with Boneh's system for sending questions to authors
+  $sharedKey='abcXYZ123';
+  $qryStr = 'id='.$subId             // submission ID
+    .'&title='.urlencode($title)     // submission title
+    .'&authEml='.urlencode($sub['contact'])// comma-separated address list
+    .'&revEml='.urlencode($pcMember[2]);   // a single email address
+
+  $token = hash_hmac('sha1', $qryStr, $sharedKey);  // authentication token
+  $emlURL = "https://crypto.stanford.edu/tcc2013/view.php?$qryStr&token=$token";
+*/
   if ($rank>0) {
     $extra = "<small>$rank</small>";
     $br = "<br/>";
@@ -31,7 +43,7 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0)
   print "<br />\n<div class=\"darkbg\">\n";
   // If this is the chair: allow setting the status of this submission
   // and also provide a list of reviewers that have conflict.
-  if ($revId==CHAIR_ID) {
+  if (is_chair($revId)) {
     $cnnct = db_connect();
     $qry = "SELECT c.name FROM assignments a, committee c WHERE a.subId=$subId AND a.assign=-1 AND c.revId=a.revId";
     $res = db_query($qry, $cnnct);
@@ -50,7 +62,9 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0)
     else {
       print "&nbsp;&nbsp;&nbsp;&nbsp;</td><td>\n";
     }
-    print setFlags_table($subId, $sub['status']); // setFlags_table in revFunctions.php
+    if(!$isGroup){
+    	print setFlags_table($subId, $sub['status']); // setFlags_table in revFunctions.php
+    }
     print "</td></tr></tbody></table>";
   }
 
@@ -63,24 +77,40 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0)
     print '    <td style="width: 25px;"><span class="Discuss"><a target="_blank" href="discuss.php?subId='.$subId.'#start'.$subId."\">$disText</a></span>
     </td>"."\n";
   }
+  
     // Submission name and statistics
     print <<<EndMark
     <td style="width: 25px; text-align: right;"><strong>$subId.</strong>&nbsp;
     </td>
     <td><big><a href="submission.php?subId=$subId">$title</a></big></td>
+EndMark;
+  if($showStats) {
+    print <<<EndMark
     <td style="width: 50px; text-align: center;">
 	<small>Average<br />$avg</small>
     </td>
     <td style="width: 50px; text-align: center;">
 	<small>Weighted<br />$wAvg</small>
     </td>
+<!--    <td style="width: 50px; text-align: center;">
+	<small>Variance<br />$delta</small>
+    </td> -->
     <td style="width: 50px; text-align: center;">
-	<small>Max-Min<br />$delta</small>
+	<small>Max Score<br />$maxGrade</small>
     </td>
-    <td style="width: 40px; text-align: right;">$sttus</td>
+   	<td style="width: 50px; text-align: center;">
+	<small>Min Score<br />$minGrade</small>
+    </td>
+    
+    <td style="text-align: right;"><div style='float: left;'>$sttus</div></td>
     <td style="width: 50px; text-align: center;"><small>$lastModif</small>
-    </td>
+   
+    </td> 
+EndMark;
+  }
+  print <<<EndMark
     </tr>
+    
     </tbody></table>
     </div>
 
@@ -102,8 +132,12 @@ function show_reviews(&$reviews, $revId)
     $revTxt = "<small><a target=_blank title=\"Submit/Revise a report\" href=\"review.php?subId=$sid\">[review]</a></small>";
   }
   else $revTxt = "";
-
+  $is_chair = is_chair($revId);
   print "  <div class=\"lightbg\">\n";
+  if ($is_chair) {
+  	print "<table cellpadding=0 cellspacing=5 border=0><tbody><tr><td>Note: Scores in parentheses are the average score that the reviewer has given in that
+  			category across all reviews</td></tr></tbody></table> ";
+  }
   print "  <table cellpadding=0 cellspacing=5 border=0><tbody>\n";
   print "    <tr><td></td>\n";
   print "        <td class=\"ctr\"><small>Score&nbsp;</small></td>
@@ -119,22 +153,50 @@ function show_reviews(&$reviews, $revId)
     $pcm = htmlspecialchars($rev['PCmember']);
     $subRev = $rev['subReviewer'];
     if (!empty($subRev)) $subRev = " (".htmlspecialchars($subRev).")";
-
     $mod = isset($rev['modified']) 
            ? utcDate('M\&\n\b\s\p\;j H:i', ((int)$rev['modified'])) : '';
     $confidence = (int) $rev['conf'];
     if ($confidence <= 0) $confidence = '*';
+	if (isset($rev['avgConf'])) {    
+    	$is_chair? $avgConf = '('.round($rev['avgConf'], 2).')': $avgConf='';
+	} else {
+		$avgConf = -1;
+	}
+	if ($is_chair) {
+    	if ($avgConf < 0) $avgConf = "*";
+	} else {
+		$avgConf = '';
+	}
     $score = (int) $rev['score'];
     if ($score <= 0) $score = '*';
-
+    if (isset($rev['avgScore'])) {
+    	$is_chair? $avgScore = '('.round($rev['avgScore'], 2).')': $avgScore='';
+    } else {
+    	$avgScore = -1;
+    }
+    if ($is_chair) {
+    	if ($avgScore < 0) $avgScore = "*";
+    } else {
+    	$avgScore = '';
+    }
     print "    <tr><td class=\"ctr\"><small>$mod</small></td>
-      <td class=\"ctr\">$score</td>
-      <td class=\"ctr\">$confidence</td>\n";
+      <td class=\"ctr\">$score $avgScore</td>
+      <td class=\"ctr\">$confidence $avgConf</td>\n";
     $nCrits = (is_array($criteria)) ? count($criteria) : 0;
     for ($i=0; $i<$nCrits; $i++) {
       $grade = (int) $rev["grade_{$i}"];
+      if (isset($rev["avgGrade_{$i}"])) {
+      	$is_chair? $avgGrade = '('.round($rev["avgGrade_{$i}"], 2).')': $avgGrade='';
+      } else {
+      	$avgGrade = -1;
+      }
       if ($grade <= 0) $grade = '*';
-      print "      <td class=\"ctr\">$grade</td>\n";
+      if($is_chair){
+      	if (substr($avgGrade, 1, -1) <= 0) $avgGrade = '(*)';
+      } else {
+      	$avgGrade = '';
+      }
+      print "      <td class=\"ctr\">$grade $avgGrade</td>\n";
     }
     print "      <td>&nbsp;</td>\n      <td><b>$pcm{$subRev}</b></td></tr>\n";
   }
@@ -154,7 +216,7 @@ function show_reviews_with_comments(&$reviews, $revId)
     $sid = $rev['subId'];
     $rid = $rev['revId'];
     // If this is my review (or if I'm the chair), show a link to edit it
-    if (PERIOD<PERIOD_CAMERA && ($rid==$revId || $revId==CHAIR_ID))
+    if (PERIOD<PERIOD_CAMERA && ($rid==$revId || is_chair($revId)))
       $reviseTxt = ' <a target=_blank title="Revise this report" href="review.php?subId='.$sid.'&amp;revId='.$rid.'"> [revise]</a>';
     else
       $reviseTxt = ''; 
@@ -199,7 +261,7 @@ EndMark;
     print "</tbody></table>\n";
 
     $reviewsShown = false;
-    if ($revId==CHAIR_ID && !empty($cmnt2chr)) {
+    if (is_chair($revId) && !empty($cmnt2chr)) {
       $reviewsShown = true;
       print "<br/><b>Comments to Chair:</b><br />\n";
       print '<div class="fixed">'.nl2br($cmnt2chr).'</div>';
@@ -324,6 +386,39 @@ EndMark;
   }
 }
 
+/********************************************************************
+ * $postsArray is an array of posts, each post is defined as
+ * $post = array(depth, postId, parentId,
+ *               subject, comments, whenEntered, name)
+ * Intended to be used by Javascript for front-end.
+ ********************************************************************/
+function show_posts_json($postsArray, $subId, $threaded=true,
+                         $lastSaw=0) {
+  if (!is_array($postsArray)) return json_encode(array());
+
+  $thrdPid = $thrdSubj = NULL;
+  $newPosts = false;
+
+  /*
+  foreach($postsArray as $post) {
+    $depth = isset($post['depth']) ? $post['depth'] : 0;
+    if ($depth > 3) $depth = 3;
+    
+    if ($depth==0) {
+      if ($threaded && isset($thrdPid)) {
+        reply_thread_json();
+      }
+      
+      $thrdPid = $post['postId'];
+      $thrdSubj = isset($post['subject']) ? $post['subject'] : '';
+    } // end if ($depth==0)
+    
+    $pid = (int) $post['postId'];
+  }
+  */
+  return json_encode(array('posts'=>$postsArray, 'subId'=>$subId, 'threaded'=>$threaded, 'lastSaw'=>$lastSaw));
+}
+
 function reply_to_thread($subId, $thrdPid, $thrdSubj)
 {
   if (defined('CAMERA_PERIOD')) return ''; // read-only mode: cannot reply
@@ -364,5 +459,87 @@ function reply_to_thread($subId, $thrdPid, $thrdSubj)
 
 EndMark;
   return $html;
+}
+
+// a basic "node" class to be able to do Depth-First-Search
+class Node {
+  var $parentIdx  =-1;
+  var $childIdx   =-1;
+  var $nxtSibIdx  =-1;
+  var $curChldIdx =-1;
+  var $level      =0;
+}
+
+// This function returns an array of posts, which is ordered by 
+// thread (in a depth-first manner) and by date within each thread
+function make_post_array(&$res, &$posts)
+{
+  // First get all the rows that the MySQL query returned, and prepare
+  // a "reverse translation" table from postId to index in rows[]
+  $rows = array();
+  $rowIdx = array();
+  $i = 1;           // index zero is reserved for the root
+  while ($row = mysql_fetch_assoc($res)) {
+    $row['subject'] = htmlspecialchars($row['subject'], ENT_QUOTES| ENT_COMPAT);
+    $row['comments'] = nl2br(htmlspecialchars($row['comments']));
+    $pid = $row['postId'];
+    $rows[$i] = $row;
+    $rowIdx[$pid] = $i;
+    $i++;
+  }
+  if (count($rows)==0) return 0; // no posts: the "depth" is zero
+
+  // exit("<pre>".print_r($rows, true)."</pre>"); // debug
+
+  // Now initialize a dependency graph, represented as an array of
+  // nodes. (The code below depends on the parents to appear in the
+  // list before their children.)
+  $graph = array();
+  $graph[0] = new Node;
+  foreach($rows as $i => $row) {
+    $p = $row['parentId'];
+    if (isset($p) && isset($rowIdx[$p])) $p = $rowIdx[$p];
+    else                                 $p = 0;    // child of the root
+
+    $nd = new Node;
+    $nd->parentIdx = $p;
+    $prnt =& $graph[$p];
+
+    if ($prnt->childIdx == -1) {// $i is the first child of $prnt
+      $prnt->childIdx = $i;
+    }
+    else {                      // $prnt has "older" children
+      $s = $prnt->curChldIdx;
+      $graph[$s]->nxtSibIdx = $i;  // mark $i as the young sibling of $s
+    }
+    $prnt->curChldIdx = $i;        // make $i as the current child of $prnt
+
+    $graph[$i] = $nd;
+  }
+
+  // run depth-first-search on the graph
+  $depth = depth_first_search(0, -1, $rows, $graph, $posts);
+  
+  return $depth;
+}
+
+function depth_first_search($idx, $depth, &$rows, &$graph, &$posts)
+{
+  if ($idx > 0) {
+    $rows[$idx]['depth'] = $depth;  // fill in the depth fields
+    $posts[] = &$rows[$idx];
+  }
+
+  $node = $graph[$idx];
+  $d = 0;
+  if ($node->childIdx > 0) {
+    $d = depth_first_search($node->childIdx, 
+				$depth+1, $rows, $graph, $posts);
+  }
+  if ($node->nxtSibIdx > 0) {
+    $depth=depth_first_search($node->nxtSibIdx, $depth, $rows, $graph, $posts);
+    if ($d > $depth) $depth = $d;
+  }
+  return $depth;
 }
 ?>

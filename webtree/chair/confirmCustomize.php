@@ -27,21 +27,21 @@ $subDeadline = isset($_POST['subDeadline']) ? trim($_POST['subDeadline']) : NULL
 $cameraDeadline= isset($_POST['cameraDeadline']) ? trim($_POST['cameraDeadline']) : NULL;
 $categories  = isset($_POST['categories']) ? explode(';', $_POST['categories']) : NULL;
 
-$f1dsc     = isset($_POST['format1desc']) ? trim($_POST['format1desc']): NULL;
-$f1ext     = isset($_POST['format1ext'])  ? trim($_POST['format1ext']) : NULL;
-$f1mime    = isset($_POST['format1mime']) ? trim($_POST['format1mime']): NULL;
+$f1dsc  = isset($_POST['format1desc']) ? trim($_POST['format1desc']): NULL;
+$f1ext  = isset($_POST['format1ext'])  ? trim($_POST['format1ext']) : NULL;
+$f1mime = isset($_POST['format1mime']) ? trim($_POST['format1mime']): NULL;
 
-$f2dsc     = isset($_POST['format2desc']) ? trim($_POST['format2desc']): NULL;
-$f2ext     = isset($_POST['format2ext'])  ? trim($_POST['format2ext']) : NULL;
-$f2mime    = isset($_POST['format2mime']) ? trim($_POST['format2mime']): NULL;
+$f2dsc  = isset($_POST['format2desc']) ? trim($_POST['format2desc']): NULL;
+$f2ext  = isset($_POST['format2ext'])  ? trim($_POST['format2ext']) : NULL;
+$f2mime = isset($_POST['format2mime']) ? trim($_POST['format2mime']): NULL;
 
-$f3dsc     = isset($_POST['format3desc']) ? trim($_POST['format3desc']): NULL;
-$f3ext     = isset($_POST['format3ext'])  ? trim($_POST['format3ext']) : NULL;
-$f3mime    = isset($_POST['format3mime']) ? trim($_POST['format3mime']): NULL;
+$f3dsc  = isset($_POST['format3desc']) ? trim($_POST['format3desc']): NULL;
+$f3ext  = isset($_POST['format3ext'])  ? trim($_POST['format3ext']) : NULL;
+$f3mime = isset($_POST['format3mime']) ? trim($_POST['format3mime']): NULL;
+$chairs = isset($_POST['chair'])     ? explode(';',$_POST['chair']) : NULL;
+$cmte   = isset($_POST['committee']) ? explode(';',$_POST['committee']): NULL;
 
-$chair       = isset($_POST['chair']) ? parse_email($_POST['chair'])  : false;
-$committee   = isset($_POST['committee'])  ?
-                                    explode(';', $_POST['committee'])   : NULL;
+$checktext = isset($_POST['checktext']) ? $_POST['checktext'] : "";
 
 $anonymous = isset($_POST['anonymous']) ?
   'Anonymous submissions' :
@@ -60,9 +60,9 @@ $crList = isset($_POST['criteria']) ? explode(';', $_POST['criteria']) : NULL;
 
 // Check that the required fileds are specified
 
-if (empty($longName)|| empty($shortName)|| empty($confYear)|| !$chair) {
+if (empty($longName)|| empty($shortName)|| empty($confYear) || empty($chairs)) {
   print "<h1>Mandatory fields are missing</h1>\n";
-  exit("You must specify the conference short and long names and year, and the program chair email address\n");
+  exit("You must specify the conference short and long names and year, and the program chair(s) email address\n");
 }
 
 if ($confYear < 1970 || $confYear > 2099) {
@@ -99,10 +99,20 @@ if ($tcr!==false && $tcr!=-1) {
 else die("<h1>Unrecognized time format for camera-ready deadline</h1>");
 
 // Create an array of committee members
-if (isset($committee)) {
-  $list = $committee;
-  $committee = array();
-  foreach ($list as $m) { $committee[] = parse_email($m); }
+$committee = array();
+foreach ($chairs as $m) {
+  $m = parse_email($m);  // returns a (name, email) array
+  if (!empty($m)) {
+    $m[2] = FLAG_IS_CHAIR; // set the IS_CHAIR flag
+    $committee[] = $m;
+  }
+}
+if (isset($cmte)) foreach ($cmte as $m) { 
+  $m = parse_email($m); // returns a (name, email) array
+  if (!empty($m)) {
+    $m[2] = 0;
+    $committee[] = $m;
+  }
 }
 
 // Create an array of criteria
@@ -161,9 +171,6 @@ $shortNameHtml = htmlspecialchars($shortName);
 $confYearHtml  = htmlspecialchars($confYear);  
 $confURLHtml   = htmlspecialchars($confURL);   
 
-$chairNmHtml   = htmlspecialchars($chair[0]);
-$chairEmlHtml  = htmlspecialchars($chair[1]);
-
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -204,7 +211,9 @@ $regDeadlineHtml
 <tr><td class=rjust>Camera-ready Deadline:</td>
   <td colspan="3"><b>$cameraDeadlineHtml</b></td>
 </tr>
-
+<tr><td class=rjust>Opt In Text:</td>
+  <td colspan="3">$checktext</td>
+</tr>
 EndMark;
 
 if (is_array($categories) && count($categories)>0) {
@@ -249,28 +258,19 @@ print <<<EndMark
 <h2>Program Committee:</h2>     
 <table cellspacing=6>
 <tbody>
-  <tr><th></th> <th>Name</th> <th>Email</th></tr>
-  <tr><td style="text-align: right;">Program Chair:</td>
-    <td><tt>$chairNmHtml</tt></td> <td><tt>$chairEmlHtml</tt></td>
-  </tr>
+  <tr><th>Name</th><th>Email</th><th></th></tr>
 
 EndMark;
 
 if (is_array($committee) && count($committee)>0) {
-  $i = 0;
   foreach ($committee as $m) {
     $nm = htmlspecialchars(trim($m[0])); $eml = htmlspecialchars(trim($m[1]));
     if (!empty($eml)) {
-      if ($i>0) print "  <tr><td></td>\n";
-      else      print "  <tr><td style=\"text-align: right;\">Program Committee:</td>\n";
-
-      print "    <td><tt>$nm</tt></td> <td><tt>$eml</tt></td>\n  </tr>\n";
-      $i++;
+      print "  <tr><td><tt>$nm</tt></td><td><tt>$eml</tt></td><td>"
+	.($m[2]?'CHAIR':'')."</td></tr>\n";
     }
   }
-  $nCmmtee = $i; // How many non-empty email addresses
 }
-else $nCmmtee = 0;
 
 print <<<EndMark
 </tbody></table>
@@ -310,27 +310,24 @@ print <<<EndMark
 <input name="regDeadline" type="hidden" value="$regDeadline">
 <input name="subDeadline" type="hidden" value="$subDeadline">
 <input name="cameraDeadline" type="hidden" value="$cameraDeadline">
-<input name="chairName"  type="hidden" value="$chair[0]">
-<input name="chairEmail" type="hidden" value="$chair[1]">
 
 EndMark;
 
-print "<input name=\"nCmmtee\" type=\"hidden\" value=\"$nCmmtee\">\n";
-if ($nCmmtee > 0) {
-  $i = 0;
-  foreach ($committee as $m) {
-    $nm = trim($m[0]); $eml = trim($m[1]);
-    if (!empty($eml)) {
-      print <<<EndMark
-  <input name="member_{$i}_name" type="hidden" value="$nm">
-  <input name="member_{$i}_email" type="hidden" value="$eml">
+$i = 0;
+if (!empty($committee)) foreach ($committee as $m) {
+  $nm = trim($m[0]);
+  $eml = trim($m[1]);
+  if (!empty($eml)) {
+    print <<<EndMark
+  <input name="cmte[$i][name]" type="hidden" value="$nm">
+  <input name="cmte[$i][email]" type="hidden" value="$eml">
+  <input name="cmte[$i][flags]" type="hidden" value="{$m[2]}">
 
 EndMark;
       $i++;
-    }
   }
-  print "\n";
 }
+print "\n<input name='checktext' type='hidden' value='$checktext' />\n";
 
 print "<input name=\"nCats\" type=\"hidden\" value=\"$nCats\">\n";
 if ($nCats > 0) {
@@ -383,7 +380,6 @@ if ($nCrits > 0) {
       print <<<EndMark
   <input name="criterion_{$i}_name" type="hidden" value="$nm">
   <input name="criterion_{$i}_max" type="hidden" value="$maxval">
-
 EndMark;
       $i++;
     }

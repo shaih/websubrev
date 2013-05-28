@@ -54,12 +54,6 @@ $statuses = array('Accept'         => 0,
 		  'None'           => 0,
 		  'Perhaps Reject' => 0,
 		  'Reject'         => 0);
-$sttsClass = array('Accept'         => "setAC",
-		  'Maybe Accept'    => "setMA",
-		  'Needs Discussion'=> "setDI",
-		  'None'            => "setNO",
-		  'Perhaps Reject'  => "setMR",
-		  'Reject'          => "setRE");
 while ($row = mysql_fetch_row($res)) {
   $subArray[] = $row;
   $stts = $row[2];
@@ -141,9 +135,8 @@ $n = count($committee);
 $count = 0;
 foreach ($subArray as $sub) { 
   $subId = $sub[0];
-  $status = $sub[2];
   $nRevs = 0;
-  print "<tr><td class=\"".$sttsClass[$status]."\">{$subId}</td>\n";
+  print "<tr><td>{$subId}</td>\n";
   foreach ($committee as $j => $pcm) {
     $revId = $pcm[0];
     $entry = '&nbsp;';
@@ -192,7 +185,7 @@ foreach ($subArray as $sub) {
     }
     print "  <td>$entry</td>\n";
   }
-  print "  <td class=\"".$sttsClass[$status]."\">{$subId}</td>\n";
+  print "  <td>{$subId}</td>\n";
   print "  <td style=\"text-align: left; font: italic 14px ariel;\">\n";
   print "    <a href=\"../review/submission.php?subId={$subId}\">{$sub[1]}</a></td>\n";
   print "  <td><center>{$nRevs}</center></td>\n";
@@ -204,27 +197,88 @@ foreach ($subArray as $sub) {
   else $count++;
 }
 
-
+global $criteria;
+$toolTip0="Cannot discuss any submissions";
+$toolTip1="Can discuss all submissions";
+$toolTip2="Can discuss everything except non-reviewed assigned submissions";
 print <<<EndMark
 </tbody></table>
 <br /><br />
 <h2><a name="progress">Program Committee Progress Summary</a></h2>
 <form action=setDiscussFlags.php enctype="multipart/form-data" method=post>
 <table><tbody>
-<tr style="font-weight: bold;"><td>Reviewer</td>
-  <td>Can discuss &nbsp; </td>
-  <td>Reviewed/Assigned &nbsp; </td><td>+Extra</td></tr>
-
+<tr style="font-weight: bold; vertical-align: bottom;">
+  <td style="text-align:left;">Reviewer</td>
+  <td style="text-align:left;" colspan=3>Can Discuss:<br/>
+    <span title="$toolTip0">None</span>
+    <span title="$toolTip2">Most<sup style="color: blue;">(?)</sup></span>
+    <span title="$toolTip1">All&nbsp;&nbsp;</span>
+  </td>
+  <td>Reviewed/Assigned &nbsp; </td><td>+Extra</td>
+  <td>Score</td><td>Confidence</td>
 EndMark;
-
+if (is_array($criteria)) foreach ($criteria as $c) {
+	print "      <td>$c[0]</td>";
+}
+print <<<EndMark
+</tr>
+EndMark;
+$qryAvg = "SELECT r.revId revId, AVG(r.confidence) avgConf, AVG(r.score) avgScore
+    FROM reports r, committee c WHERE r.revId = c.revId
+	GROUP BY revId";
+$qry2Avg = "SELECT revId, gradeId, avg(grade) avgGrade
+			FROM auxGrades
+			GROUP BY gradeId, revId";
+$avgRes = db_query($qryAvg, $cnnct);
+$aux2Res = db_query($qry2Avg, $cnnct);
+$avgGrades = array();
+while ($row = mysql_fetch_assoc($avgRes)) {
+	$rId = (int) $row['revId'];
+	if($row['avgScore'] < 0) $row['avgScore'] = '*';
+	if($row['avgConf'] < 0) $row['avgConf'] = '*';
+	$avgGrades[$rId]['avgScore'] = $row['avgScore'];
+	$avgGrades[$rId]['avgConf'] = $row['avgConf'];
+}
+$avgAuxGrades = array();
+while ($row = mysql_fetch_assoc($aux2Res)) {
+	$rId = (int) $row['revId'];
+	$gId = (int) $row['gradeId'];
+	$avgAuxGrades[$rId][$gId] = $row['avgGrade'];
+}
 foreach ($committee as $pcm) {
-  $chk = $pcm[5] ? 'checked="checked"' : '';
+  $chk0 = ($pcm[5] == 0) ? 'checked="checked"' : '';
+  $chk1 = ($pcm[5] == 1) ? 'checked="checked"' : '';
+  $chk2 = ($pcm[5] == 2) ? 'checked="checked"' : '';
+  if(!isset($avgGrades[$pcm[0]])) {
+  	$avgGrades[$pcm[0]]['avgScore'] = -1;
+  	$avgGrades[$pcm[0]]['avgConf'] = -1;
+  }
+  if ($avgGrades[$pcm[0]]['avgScore'] < 0) $avgGrades[$pcm[0]]['avgScore'] = '*';
+  if ($avgGrades[$pcm[0]]['avgConf'] < 0) $avgGrades[$pcm[0]]['avgConf'] = '*';
   print <<<EndMark
 <tr><td style="text-align: left;">{$pcm[1]}</td>
-  <td><center><input type="checkbox" name="dscs[{$pcm[0]}]" $chk></center></td>
+  <td><input type="radio" name="dscs[{$pcm[0]}]" $chk0 value='0' title="$toolTip0"></td>
+  <td><input type="radio" name="dscs[{$pcm[0]}]" $chk2 value='2' title="$toolTip2"></td>
+  <td><input type="radio" name="dscs[{$pcm[0]}]" $chk1 value='1' title="$toolTip1"></td>
   <td>{$pcm[3]} of {$pcm[2]} </td>
   <td>+ {$pcm[4]}</td>
-</tr>
+  <td>{$avgGrades[$pcm[0]]['avgScore']}</td>
+  <td>{$avgGrades[$pcm[0]]['avgConf']}</td>
+EndMark;
+  $nCrits = (is_array($criteria)) ? count($criteria) : 0;
+  for ($i=0; $i<$nCrits; $i++) {
+  	if(!isset($avgAuxGrades[$pcm[0]])) {
+  		$grade = '*';
+  	} else {
+  		$grade = round($avgAuxGrades[$pcm[0]][$i], 2);
+  	}
+  	print <<<EndMark
+		<td>{$grade}</td>
+EndMark;
+  	}
+  
+ print <<<EndMark
+ 	</tr>
 
 EndMark;
 }

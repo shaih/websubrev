@@ -16,14 +16,31 @@ $php_errormsg = ''; // just so we don't get notices when it is not defined.
 
 // Only the chair can use these scripts outside the submission periods
 $chair = false;
-if ((PERIOD>PERIOD_SUBMIT)&&(PERIOD!=PERIOD_CAMERA)) {
+$submission = false;
+
+if (isset($allow_rebuttal) && $allow_rebuttal) { // Check that rebuttal is open
+  if(!active_rebuttal())                         // and authenticate submission
+    exit("<h1>Rebuttal not active</h1>");
+  
   if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
-    $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
-			    $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
-  if ($chair === false) {
+    $submission = auth_author($_SERVER['PHP_AUTH_USER'],
+                              $_SERVER['PHP_AUTH_PW']);
+  if ($submission === false) {
     header("WWW-Authenticate: Basic realm=\"$confShortName\"");
     header("HTTP/1.0 401 Unauthorized");
-    exit("<h1>Submission Deadline Expired</h1>Please contact the chair.");
+    exit("<h1>Authentication Error</h1><h2>Invalid Submission Id or Password given</h2>.");
+  }
+}
+else { // For anything other than rebuttal, check that it is allowed
+  if ((PERIOD>PERIOD_SUBMIT) && (PERIOD!=PERIOD_CAMERA)) {   // only the chair
+    if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
+      $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
+			      $_SERVER['PHP_AUTH_PW'], chair_ids());
+    if ($chair === false) {
+      header("WWW-Authenticate: Basic realm=\"$confShortName\"");
+      header("HTTP/1.0 401 Unauthorized");
+      exit("<h1>Submission Deadline Expired</h1>Please contact the chair.");
+    }
   }
 }
 
@@ -43,9 +60,9 @@ function show_sub_links($current=0, $prt=false)
   if (!defined('REVIEW_PERIOD'))
     $html .= make_link('submit.php', 'New Submission Form', ($current == 3));
 
-  if (!defined('REVIEW_PERIOD') || $chair[0]==CHAIR_ID) {
+  if (!defined('REVIEW_PERIOD') || is_chair($chair[0])) {
     $html .= make_link('revise.php', 'Revision Form', ($current == 4))
-           . make_link('withdraw.php', 'Withdrawal Form', ($current == 5));
+      . make_link('withdraw.php', 'Withdrawal Form', ($current == 5));
   }
   if (defined('CAMERA_PERIOD')) {
     $html .= make_link('cameraready.php', 'Camera-Ready Form', ($current==6));

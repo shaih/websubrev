@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-$needsAuthentication = true; 
+$needsAuthentication = true;
 require 'header.php';
 
 // Get current preferences/assignments
@@ -21,8 +21,7 @@ while ($row = mysql_fetch_row($res)) {
   $subArray[$subId] = array($title, $authors);
 }
 
-$qry = "SELECT revId, name from committee WHERE revId!='" . CHAIR_ID . "'
-    ORDER BY revId";
+$qry = "SELECT revId, name from committee WHERE !(flags & " . FLAG_IS_CHAIR . ") ORDER BY revId";
 $res = db_query($qry, $cnnct);
 $committee = array();
 while ($row = mysql_fetch_row($res)) {

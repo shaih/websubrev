@@ -49,7 +49,7 @@ EndMark;
   if (PERIOD>PERIOD_PREREG) {
     if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
       $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
-			      $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
+			      $_SERVER['PHP_AUTH_PW'], chair_ids());
     if ($chair === false) {
       header("WWW-Authenticate: Basic realm=\"$confShortName\"");
       header("HTTP/1.0 401 Unauthorized");
@@ -60,12 +60,20 @@ EndMark;
   $testForFile = $subFileLine = '';
 }
 
+$checkbox = "";
+$checkbox_text = "";
+if(defined("OPTIN_TEXT")) {
+  $checkbox = "<input type='checkbox' name='optin' value='1'/>";
+  $checkbox_text = OPTIN_TEXT;
+}
+
 $timeleft = show_deadline($ddline);                   // how much time is left
 $subDdline = 'Deadline is '.utcDate('r (T)',$ddline); // when is the deadline
 
 $chairNotice = (PERIOD>PERIOD_SUBMIT || (USE_PRE_REGISTRATION && PERIOD>PERIOD_PREREG))? "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n": '';
 
 $links = show_sub_links(3);
+
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -188,6 +196,10 @@ print <<<EndMark
     <td><textarea name="comment" rows="4" cols="80"></textarea><br />
         This message will only be seen by the program chair(s).
     </td>
+  </tr>
+  <tr>
+    <td style="text-align: right;">$checkbox</td>
+    <td>$checkbox_text</td>
   </tr>
   <tr>
     <td></td>

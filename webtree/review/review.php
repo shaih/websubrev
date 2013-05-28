@@ -15,7 +15,7 @@ $pcmFlags= (int) $pcMember[5];
 $chkEml = ($pcmFlags & FLAGS_EML_MY_REPORT)? ' checked="checked"' : '';
 
 if (defined('CAMERA_PERIOD'))
-   exit("<h1>Site closed: cannot post new reviews</h1>");
+  exit("<h1>Site closed: cannot post new reviews</h1>");
 
 if (isset($_GET['subId'])) { $subId = (int) trim($_GET['subId']); }
 else exit("<h1>No Submission specified</h1>");
@@ -23,7 +23,7 @@ else exit("<h1>No Submission specified</h1>");
 // The chair can edit anyone's review
 $notMine = (isset($_GET['revId'])
 	    && intval($_GET['revId']) != $revId
-	    && $revId==CHAIR_ID);
+	    && is_chair($revId));
 if ($notMine) {
   $revName = '(PC-chair modifications of reviewer&prime;s comments)';
   $revId = intval($_GET['revId']);

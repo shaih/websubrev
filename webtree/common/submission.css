@@ -2,3 +2,6 @@ h1 { text-align: center; }
 
 .lefthdr td { text-align: right; }
 .timeleft   { text-align: center; color: blue; }
+
+.hidden  { display: none; }
+.shown   { display: inline; }

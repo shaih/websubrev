@@ -102,7 +102,7 @@ foreach($subArray as $sb) {
       print "<h2 style=\"color: green;\">$cat: ".$countArray[$cat]." submissions</h2>\n";
     }
   }
-  print "<table><tbody><tr><td>$downld</td>
+  print "<table><tbody><tr><td style=\"width: 20px;\">$downld</td>
   <td style=\"width: 20px;\"><big><strong>{$subId}.</strong></big></td>
   <td><big><strong>$title</strong></big>\n";
 

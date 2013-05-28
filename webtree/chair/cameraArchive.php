@@ -77,9 +77,9 @@ EndMark;
   exit();
 }
 
-$ext = '';
-if ($pearAvailable) $ext = PEARmkTar(); // Use PEAR if available
-if (empty($ext)) $ext = SYSmkTar();     // otherwise try the system utilities
+$ext = SYSmkTar();     // Use system utilities, is possible
+if (empty($ext) && $pearAvailable) 
+  $ext = PEARmkTar();  // otherwise try PEAR if available
 if (empty($ext)) die('Failed to create an archive file');
 
 // backup old file (if exists) and rename new tar to premanent name

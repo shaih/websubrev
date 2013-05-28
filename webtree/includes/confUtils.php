@@ -5,21 +5,20 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-
 function show_legend()
 {
   // icons are defined in includes/getParams.php
-  global $WDicon, $NOicon, $REicon, $MRicon, $DIicon, $MAicon, $ACicon;
+  global $WDicon, $NOicon, $REicon, $MRicon, $DIicon, $MAicon, $ACicon, $PCicon, $HVRicon;
   global $reviseIcon, $reviewIcon, $revise2Icon, $discussIcon1, $discussIcon2;
-
+  
   $legend = <<<EndMark
 <hr/>
 <table><tbody>
-<tr><td>Legend:</td>
+<tr><td>Status:</td>
 <td>$NOicon, $REicon, $MRicon, $DIicon, $MAicon, $ACicon:
     Status marks (None, [Maybe-]Reject, Discuss, [Maybe-]Accept)</td>
 </tr>
-<tr><td></td>
+<tr><td>Actions:</td>
 <td>$reviewIcon,
     $revise2Icon,
     $reviseIcon:
@@ -36,13 +35,62 @@ EndMark;
   return $legend;
 }
 
+// a debugging routine, prints the contents of an email instead of sending it
+function my_display_mail($sendTo, $subject, $msg,
+		      $cc=array(), $errMsg='', $attachments=NULL,
+                      $from=NULL)
+{
+  $chrEml = defined('CHAIR_EMAIL')  ? CHAIR_EMAIL  : '';
+  $sender = defined('EML_SENDER')   ? EML_SENDER   : '';
+  $xMailer= defined('EML_X_MAILER') ? EML_X_MAILER : false;
+  $xParam = defined('EML_EXTRA_PRM')? EML_EXTRA_PRM: false;
+
+  echo "<pre>\n";
+  if($from)
+    echo "From: $from\n";
+  else if (empty($chrEml))
+   echo "From: ".ini_get('sendmail_from')."\n";
+  else if (defined('CONF_SHORT') && defined ('CONF_YEAR'))
+    echo "From: ".CONF_SHORT.CONF_YEAR." Chair <$chrEml>\n";
+  else
+    echo "From: $chrEml\n";
+  echo "To: ".(is_array($sendTo)? implode(", ",$sendTo) : $sendTo)."\n";
+  echo "Subject: {$subject}\n";
+  if (!empty($cc))
+    echo "Cc: ".(is_array($cc)? implode(", ",$cc) : $cc);
+  echo "\n";
+  echo $msg."\n";
+  if (is_array($attachments) && count($attachments)>0)
+    foreach($attachments as $a) {
+      echo "Attachment: ".$a[0].$a[1],"\n";
+    }
+  echo "</pre>\n";
+  return true;
+}
+
 // The $attachments parameter is an array of (path,filename) pairs,
 // $msg is assumed to be a text-message (in utf-8 encoding)
 function my_send_mail($sendTo, $subject, $msg,
-		      $cc=NULL, $errMsg='', $attachments=NULL)
+		      $cc=array(), $errMsg='', $attachments=NULL,
+                      $from=NULL)
 {
+  // return my_display_mail($sendTo,$subject,$msg,$cc,$errMsg,$attachments,$from);
+  // return true;
+
+  // Support sending to multiple e-mails, all but the first address
+  // will be included in the CC field
+  if(is_array($sendTo)) {
+    $tmp = array_shift($sendTo); // remove first adderss and store it in $tmp
+    if(!is_array($cc)) {         // make sure that $cc is an array
+      $cc = array($cc);
+    }
+    $cc = array_merge($cc, $sendTo); // add remaining addresses to $cc
+    $sendTo = $tmp;
+  }
+
   $php_errormsg = ''; // avoid notices in case it isn't defined 
 
+  // handle CRLF oddities
   if (defined('EML_CRLF') && EML_CRLF=="\n") $emlCRLF = "\n";
   else                                       $emlCRLF = "\r\n";
 
@@ -50,22 +98,36 @@ function my_send_mail($sendTo, $subject, $msg,
   $sender = defined('EML_SENDER')   ? EML_SENDER   : '';
   $xMailer= defined('EML_X_MAILER') ? EML_X_MAILER : false;
   $xParam = defined('EML_EXTRA_PRM')? EML_EXTRA_PRM: false;
-
-  if (empty($chrEml)) 
-    $hdr = "From: ".ini_get('sendmail_from');
+  
+  if($from)
+    $hdr = "From: ".$from;
+  else if (empty($chrEml))
+   $hdr = "From: ".ini_get('sendmail_from');
   else if (defined('CONF_SHORT') && defined ('CONF_YEAR'))
     $hdr = "From: ".CONF_SHORT.CONF_YEAR." Chair <$chrEml>";
   else
     $hdr = "From: $chrEml";
-
-  if (!empty($cc))     $hdr .= $emlCRLF."Cc: $cc";
+  
+  if (!empty($cc)) {
+    if(!is_array($cc)) {
+      $cc = array($cc);
+    }
+    $hdr .= $emlCRLF."Cc: ".implode(", ", $cc);
+  }
+  
   if (!empty($sender)) $hdr .= $emlCRLF."Sender: ".EML_SENDER;
   if ($xMailer)        $hdr .= $emlCRLF."X-Mailer: PHP/".phpversion();
 
+  // guess the type of message
+  $sniplet = strtolower(substr($msg,0,14));
+  if ($sniplet=='<!doctype html' || substr($sniplet,0,6)=='<html>')
+    $type = "Content-type: text/html; charset=utf-8";
+  else $type = "Content-type: text/plain; charset=utf-8";
+
   // If there are attachments, prepare a MIME email
+  $mime='';
   if (is_array($attachments) && count($attachments)>0) {
     $boundary = '===WebSubRev_email_boundary_dKp9hcAr6===';
-    $mime='';
     foreach($attachments as $a) {
       $content = file_get_contents($a[0].$a[1]);
       if (!$content) continue;
@@ -76,19 +138,21 @@ function my_send_mail($sendTo, $subject, $msg,
       $mime.= "Content-Disposition: attachment; filename=\"{$a[1]}\"".$emlCRLF;
       $mime.= $emlCRLF. chunk_split(base64_encode($content)).$emlCRLF.$emlCRLF;
     }
-    if (!empty($mime)) {
-      $msg = "This is a multi-part message in MIME format.\r\n"
-	. "--{$boundary}\r\n"
-	. "Content-type:text/plain; charset=utf-8\r\n"
-	. "Content-Transfer-Encoding: 7bit\r\n\r\n"
+  }
+  if (!empty($mime)) {
+    $msg = "This is a multi-part message in MIME format.".$emlCRLF
+	. "--{$boundary}".$emlCRLF
+	. $type.$emlCRLF
+	. "Content-Transfer-Encoding: 7bit".$emlCRLF.$emlCRLF
 	. $msg.$emlCRLF.$emlCRLF
 	. $mime
-	. "--{$boundary}--\r\n";
-      $hdr .= $emlCRLF."MIME-Version: 1.0"
+	. "--{$boundary}--".$emlCRLF;
+    $hdr .= $emlCRLF."MIME-Version: 1.0"
 	. $emlCRLF."Content-Type: multipart/mixed; boundary=\"$boundary\"";
-    }
   }
-
+  else // no attachments, just a single part
+    $hdr .= $emlCRLF.$type;
+ 
   if ($xParam && !empty($chrEml) && !ini_get('safe_mode'))
     $success = mail($sendTo, $subject, $msg, $hdr, "-f $chrEml");
   else
@@ -117,26 +181,55 @@ function auth_PC_member($eml, $pwd, $id=NULL, $pwdInClear=false)
   // Create a digest of the password and sanitize the email address
   $eml = strtolower(trim($eml));
 
-  if (!$pwdInClear) $pwd = md5(CONF_SALT . $eml . $pwd);
+  // exit("$eml:$pwd => ".sha1(CONF_SALT . $eml . $pwd));
+  if (!$pwdInClear) $pwd = sha1(CONF_SALT . $eml . $pwd);
   $eml = my_addslashes($eml, $cnnct);
 
   // Formulate the SQL find the user
   $qry = "SELECT revId, name, email, canDiscuss, threaded, flags FROM committee WHERE";
   if (isset($id)) {
-    $id = (int) trim($id);
-    $qry .= " revId='{$id}' AND email = '{$eml}' AND revPwd = '{$pwd}'";
+    //Could be array or int
+    if (is_numeric($id)) 
+      $qry .= " revId=$id AND";
+    elseif (is_array($id) && count($id)>=1) {
+      $ids = $comma = '';
+      foreach ($id as $n) if ($n>0) {
+	$ids .= "{$comma}{$n}";
+	$comma = ',';
+      }
+      $qry .= " revId IN ($ids) AND";
+    }
   }
-  else $qry .= " email = '{$eml}' AND revPwd = '{$pwd}'";
+  $qry .= " email = '{$eml}' AND revPwd = '{$pwd}'";
 
   // Go to the database to look for the user
   $res = db_query($qry, $cnnct, "Cannot authenticate against database: ");
 
   // exactly one row? if not then we failed
-  if (mysql_num_rows($res) != 1) 
+  if (mysql_num_rows($res) != 1)
     return false;
 
   // return the user details
   return mysql_fetch_array($res);
+}
+
+function auth_author($subId, $password) {
+  $cnnct = db_connect();
+  $qry = "SELECT subId, subPwd, title, authors, abstract, rebuttal FROM submissions WHERE subPwd='".my_addslashes($password)."'";
+  $res = db_query($qry, $cnnct);
+  
+  if(mysql_num_rows($res) < 1)
+    return false;
+
+  $row = mysql_fetch_assoc($res);
+  return $row;
+}
+
+function active_rebuttal() {
+  if (defined('REBUTTAL_FLAG') && REBUTTAL_FLAG) {
+    return true;
+  } 
+  return false;
 }
 
 function my_addslashes($str, $cnnct=NULL)
@@ -158,6 +251,8 @@ function db_connect($host=MYSQL_HOST,
     error_log(date('Y.m.d-H:i:s ').mysql_error()."\n", 3, LOG_FILE);
     exit("<h1>Cannot select database $db</h1>\n" . mysql_error());
   }
+  mysql_query("SET NAMES utf8", $cnnct); // explicitly tell MySQL to speak utf8
+
   return $cnnct;
 }
 
@@ -202,16 +297,15 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
 {
   // During review process, don't send email to authors, only to chair
   if (defined('REVIEW_PERIOD') && REVIEW_PERIOD==true) {
-    $sndto = CHAIR_EMAIL;
-    $cc = NULL;
+    $sndto = chair_emails();
+    $cc = array();
   }
-  else $cc = CHAIR_EMAIL;
-
-  if ($status < 0) {  // if an error occured, send also to the administrator
-    if (isset($cc)) $cc .= ', '.ADMIN_EMAIL;
-    else $cc = ADMIN_EMAIL;
-  }
-
+  else 
+    $cc = chair_emails();
+  
+  if ($status < 0)  // if an error occured, send also to the administrator
+    array_push($cc, ADMIN_EMAIL);
+  
   $dots = (strlen($ttl) > 50) ? '... ' : ' ';
   switch (abs($status)) {
   case 1:
@@ -252,11 +346,23 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
   if (!empty($cmnt)) { $msg .= "Comments: \t{$cmnt}\n"; }
   if (!empty($abs))  { $msg .= "\nAbstract:\n" .wordwrap($abs, 78) ."\n"; }
 
-  $success = my_send_mail($sndto, $sbjct, $msg, $cc, "receipt to $sndto");
+
+  $chairSbjct = $sbjct;
+  if (!empty($cmnt))
+    $chairSbjct .= " (comments to chair included)";
+
+  //Send to author if 
+  if (!(defined('REVIEW_PERIOD') && REVIEW_PERIOD==true)) {
+    my_send_mail($sndto, $sbjct, $msg, array(), "receipt to $sndto");
+    my_send_mail($cc, $chairSbjct, $msg, array(), "receipt to $sndto");
+  }
+  else {
+    my_send_mail($sndto, $chairSbjct, $msg, array(), "receipt to $sndto");
+  }
 }
 
-
-// This function could be expanded
+// This function could be expanded. It return the extension for this file
+// type if the type is supported, and otherwise returns 'ext.unsupported'
 function determine_format($fType, $fName, $fLocation)
 {
   global $confFormats;
@@ -473,25 +579,107 @@ function parse_format($str)
   return $fmt;
 }
 
-function show_status($status)
+function show_status($status, $scratch = false)
 {
   global $WDicon, $NOicon, $REicon, $MRicon, $DIicon, $MAicon, $ACicon;
-
-  if ($status == 'Withdrawn') {
-    return "<span class=WD>$WDicon</span>";
-  } else if ($status == 'Reject') {
-    return "<span class=RE>$REicon</span>";
-  } else if ($status == 'Perhaps Reject') {
-    return "<span class=MR>$MRicon</span>";
-  } else if ($status == 'Needs Discussion') {
-    return "<span class=DI>$DIicon</span>";
-  } else if ($status == 'Maybe Accept') {
-    return "<span class=MA>$MAicon</span>";
-  } else if ($status == 'Accept') {
-    return "<span class=AC>$ACicon</span>";
-  } else {
-    return "<span class=NO>$NOicon</span>";
+  
+  $scratch_class = "";
+  
+  if($scratch) {
+    $scratch_class = " scratch";
   }
+  
+  if ($status == 'Withdrawn') {
+    return "<span class='WD $scratch_class'>$WDicon</span>";
+  } else if ($status == 'Reject') {
+    return "<span class='RE $scratch_class'>$REicon</span>";
+  } else if ($status == 'Perhaps Reject') {
+    return "<span class='MR $scratch_class'>$MRicon</span>";
+  } else if ($status == 'Needs Discussion') {
+    return "<span class='DI $scratch_class'>$DIicon</span>";
+  } else if ($status == 'Maybe Accept') {
+    return "<span class='MA $scratch_class'>$MAicon</span>";
+  } else if ($status == 'Accept') {
+    return "<span class='AC $scratch_class'>$ACicon</span>";
+  } else {
+    return "<span class='NO $scratch_class'>$NOicon</span>";
+  }
+}
+
+function has_pc_author($authors, $subId)
+{
+  $cnnct = db_connect();	
+  $authors = my_addslashes($authors);
+  $res = db_query("SELECT * FROM committee c JOIN submissions s on '$authors' LIKE CONCAT('%',c.name,'%') WHERE s.subId = '$subId';", $cnnct);	
+  if (mysql_num_rows($res)> 0) {
+  	return true;
+  }
+  return false;
+}
+
+function has_reviewed_paper($revId, $subId)
+{
+  $cnnct = db_connect();
+  $res = db_query("SELECT score FROM reports WHERE subId=$subId AND revId=$revId", $cnnct);
+  $reviewed = (mysql_num_rows($res) > 0);
+
+  $res = db_query("SELECT assign FROM assignments WHERE subId=$subId AND revId=$revId", $cnnct);
+  $row = mysql_fetch_row($res);
+  $assigned = ($row[0] > 0);
+
+  return (!$assigned || $reviewed);
+  /*
+  $res = db_query("SELECT flags from submissions s where s.subId = '$subId'", $cnnct);
+  $sb = mysql_fetch_assoc($res);
+  return ($sb['flags'] && FLAG_IS_GROUP);
+  */
+}
+
+function has_reviewed_anything($revId)
+{
+  $cnnct = db_connect();
+  $res = db_query("SELECT score FROM reports WHERE revId=$revId", $cnnct);
+  return (mysql_num_rows($res) > 0);
+}
+
+function has_discussed($revId, $subId)
+{
+  $cnnct = db_connect();
+  $res = db_query("SELECT postId FROM posts WHERE revId=$revId AND subId=$subId", $cnnct);
+  return (mysql_num_rows($res) > 0);
+}
+
+function high_variance_reviews($subId, $thresh = 2.0)
+{
+  $cnnct = db_connect();
+  $res = db_query("SELECT VAR_POP(score) avg FROM reports WHERE subId=$subId",$cnnct);
+  return (mysql_result($res, 0) > $thresh);
+}
+
+function has_group_conflict($revId, $title) {
+	$title = htmlspecialchars($title);
+	$tArr = explode(',', $title);
+	$cnnct = db_connect();
+	foreach($tArr as $sId) {
+		$sId = my_addslashes($sId, $cnnct);
+		$qry1 = "SELECT a.assign assign FROM assignments a WHERE a.revId='$revId' ";
+		$qry1 .= "AND a.subId='$sId'";
+		$row = mysql_fetch_assoc(db_query($qry1, $cnnct));
+		if($row['assign'] < 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function get_sub_links($subs) {
+	$subs = explode(',',$subs); 
+	$ret = '';
+	foreach($subs as $s) {
+		$ret.="<a href='discuss.php?subId=".$s."'>".$s."</a>, ";
+	}
+	$ret = substr($ret, 0, -2);
+	return $ret;
 }
 
 // Each entry in the PCMs array is $revId => array(name, ...)
@@ -609,4 +797,19 @@ function readfile_chunked($filename)
   }
   return $status;
 }
-?>
+
+//Chair utilities
+function is_chair($revId) {
+  global $CHAIR_IDS;
+  return in_array($revId, $CHAIR_IDS);
+}
+
+function chair_emails() {
+  global $CHAIR_EMAILS;
+  return $CHAIR_EMAILS;
+}
+
+function chair_ids() {
+  global $CHAIR_IDS;
+  return $CHAIR_IDS;
+}

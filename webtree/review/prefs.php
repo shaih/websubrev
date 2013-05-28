@@ -92,7 +92,8 @@ EndMark;
 
 $prefCount = array(0, 0, 0, 0, 0, 0);
 $qry = "SELECT s.subId,s.title,s.authors,s.affiliations,s.abstract,s.category,
-  s.keyWords,a.pref,a.assign FROM submissions s LEFT JOIN assignments a
+  s.keyWords,a.pref,a.assign
+  FROM submissions s LEFT JOIN assignments a
   ON a.revId=$revId AND a.subId=s.subId
   WHERE s.status!='Withdrawn' ORDER BY s.subId";
 $res = db_query($qry, $cnnct, "Cannot retrieve submission list: ");
@@ -141,7 +142,7 @@ while ($row = mysql_fetch_assoc($res)) {
   </td>\n";
   }
   $bodyHTML .=<<<EndMark
-  <td><a class=tooltips href="submission.php?subId=$subId" target=_blank style="z-index:$zIdx;">&nbsp;<img title="" alt="abs" src="../common/smalleye.gif"/><span ID="details{$subId}">
+  <td><a class=tooltips href="submission.php?subId=$subId" target=_blank style="z-index:$zIdx;">&nbsp;<img title="" alt="abs" src="../common/smalleye.gif"/><span>
 <b>$title</b><br/>
 $authors
 $category
@@ -160,7 +161,7 @@ $bodyHTML .=<<<EndMark
 <br/>
 <input value="Submit My Preferences" type="submit">
 </form>
-<div style="height: 300px;"></div>
+
 EndMark;
 
 // Display a count of how many submissions are marked at each level

@@ -11,18 +11,8 @@ require 'header.php';
 if (defined('CAMERA_PERIOD')) { exit("<h1>Review Site is Closed</h1>"); }
 
 $cnnct = db_connect();
-$qry = "SELECT revId, revPwd, name, email FROM committee ORDER BY revId";
+$qry = "SELECT revId, revPwd, name, email, flags FROM committee ORDER BY revId";
 $res = db_query($qry, $cnnct);
-
-// Get the chair details
-$row = mysql_fetch_row($res);
-
-// sanity check: the chair must be the first row in the table
-$chrId = CHAIR_ID;
-if ($row[0] != $chrId) {
-  exit("<h1>Malformed committee table in database</h1>");
-}
-$chair = $row;
 
 // Store the committee details in an array
 $cmmtee = array();
@@ -94,8 +84,8 @@ correct any errors</i>. Note the following:
   automatically resets his/her password.<br /><br /></li>
 
 <li>When you submit this form, an email message will be sent to any PC member
-  whose password was reset, informing him/her of the new password. The chair
-  address will be CCed on all these emails.</li>
+  whose password was reset, informing him/her of the new password. The chair(s)
+  will be CCed on all these emails.</li>
 </ul>
 
 <form action=doManagePCmembership.php enctype="multipart/form-data" method=post>
@@ -106,30 +96,17 @@ correct any errors</i>. Note the following:
   <th colspan="5" style="text-align: center;"><big>Program Comittee</big></th>
 </tr>
 <tr class="darkbg">
-  <th style="text-align: center;"></th>
+  <th style="text-align: center;">Chair</th>
   <th style="text-align: center;">Name</th>
   <th style="text-align: center;">Email</th>
   <th style="text-align: center;">Reset Pwd</th>
   <th style="text-align: center;">Remove</th>
 </tr>
-<tr class="lightbg">
-  <td style="text-align: center;">CHAIR</td>
-  <td><input name="members[$chrId][0]" size="30" type="text"
-       value="$chair[2]" style="width: 100%;">
-  </td>
-  <td><input name="members[$chrId][1]" value="$chair[3]" type="text"
-       size="35" onchange="return checkEmail(this)" style="width: 100%;">
-  </td>
-  <td style="text-align: center;">
-    <input name="members[$chrId][2]" type="checkbox"></td>
-  <td style="text-align: center;"><img alt="(X)" width=12 src="../common/stop.GIF">
-    <input disabled type="checkbox"></td>
-</tr>
-
 EndMark;
 
 $bgs = array("class=\"lightbg\"", "class=\"darkbg\"");
 $parity=1;
+$firstChair = true;
 foreach($cmmtee as $m) {
   $revId = $m[0];
   if (empty($m[1])) {  // Empty password, force reset
@@ -138,9 +115,21 @@ foreach($cmmtee as $m) {
   else { $chk = ''; }
   $m[2] = htmlspecialchars($m[2]);
   $m[3] = htmlspecialchars($m[3]);
+  print "<tr ".$bgs[$parity].">\n";
+  if ($m[4] & FLAG_IS_CHAIR) {
+    $chairChk = 'checked="checked"';
+    $rmGrayed = ' disabled="disabled"';
+  } else {
+    $chairChk = $rmGrayed = '';
+  }
+  if ($firstChair && ($m[4] & FLAG_IS_CHAIR)) { // cannot uncheck the 1st chair
+      print '  <td style="text-align: center;">YES
+      <input name="members['.$revId.'][3]" type="hidden" value="on"></td>'."\n";
+      $firstChair = false;
+  }
+  else print '  <td style="text-align: center;">
+      <input id="pcm'.$revId.'isChair" name="members['.$revId.'][3]" type="checkbox" title="check to make '.$m[2].' a PC-chair" '.$chairChk."></td>\n";
   print <<<EndMark
-<tr $bgs[$parity]>
-  <td style="text-align: center;"></td>
   <td><input name="members[$revId][0]" size="30" type="text"
        value="$m[2]" style="width: 100%;">
   </td>
@@ -148,10 +137,9 @@ foreach($cmmtee as $m) {
        value="$m[3]" onchange="return checkEmail(this)" style="width: 100%;">
   </td>
   <td style="text-align: center;">
-      <input name="members[$revId][2]" type="checkbox" $chk></td>
+      <input id="pcm{$revId}pwdReset" name="members[$revId][2]" type="checkbox" $chk/></td>
   <td style="text-align: center;"><img alt="(X)" width=12 src="../common/stop.GIF">
-      <input title="Check to remove $m[2] from the committee"
-             name="mmbrs2remove[$revId]" type="checkbox">
+      <input id="pcm{$revId}remove" title="Check to remove $m[2] from the committee" name="mmbrs2remove[$revId]" type="checkbox" $rmGrayed>
   </td>
 </tr>
 

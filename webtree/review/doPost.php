@@ -13,12 +13,11 @@ $revEmail= htmlspecialchars($pcMember[2]);
 $disFlag = (int) $pcMember[3];
 $threaded= (int) $pcMember[4];
 
-// Check that this reviewer is allowed to discuss submissions
-if ($disFlag != 1) exit("<h1>$revName cannot discuss submissions yet</h1>");
-
 if (isset($_POST['subId'])) { $subId = (int) trim($_POST['subId']); }
 else exit("<h1>No Submission specified</h1>");
 
+// Check that this reviewer is allowed to discuss submissions
+if ($disFlag != 1 && (!has_reviewed_paper($revId, $subId) && $disFlag == 2)) exit("<h1>$revName cannot discuss submissions yet</h1>");
 
 
 // Make sure that this submission exists and the reviewer does not have

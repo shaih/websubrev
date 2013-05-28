@@ -11,6 +11,7 @@ if (!file_exists('../init/confParams.php')) { // Not intialized yet
   header("Location: initialize.php");
   exit();
 }
+
 require_once('../includes/getParams.php');
 
 if (!isset($needsAuthentication)) $needsAuthentication = true;
@@ -26,14 +27,14 @@ if ($needsAuthentication !== false) {
   if (isset($_GET['username']) && isset($_GET['password'])) {
     // returns either an array (id, name, email, ...) or false 
     $chair = auth_PC_member($_GET['username'], 
-			    $_GET['password'], CHAIR_ID, $notCustomized);
+			    $_GET['password'], chair_ids(), $notCustomized);
   }
 
   // next try uname/pwd from HTTP authentication
   if ($chair===false && isset($_SERVER['PHP_AUTH_USER'])
-                     && isset($_SERVER['PHP_AUTH_PW'])) {
+      && isset($_SERVER['PHP_AUTH_PW'])) {
     $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
-			    $_SERVER['PHP_AUTH_PW'], CHAIR_ID, $notCustomized);
+			    $_SERVER['PHP_AUTH_PW'], chair_ids(), $notCustomized);
   }
 
   // If nothing works, prompt client for credentials
@@ -53,26 +54,44 @@ if (get_magic_quotes_gpc()) {
 
 $php_errormsg = ''; // just so we don't get notices when it is not defined.
 
-function status_summary($statuses)
+function status_summary($statuses, $scstatuses=NULL)
 {
-  $html = '<table style="text-align: center;" border=1><tbody><tr>
+  if (isset($scstatuses)) {
+    $legend = '<td><br/>visible<br/>scratch</td>';
+    $scNO = '<br/><span class="summary" data-status="None">'.(isset($scstatuses['None']) ? $scstatuses['None'] : 0).'</span>';
+    $scRE = '<br/><span class="summary" data-status="Reject">'.(isset($scstatuses['Reject']) ? $scstatuses['Reject'] : 0).'</span>';
+    $scMR = '<br/><span class="summary" data-status="Perhaps Reject">'.(isset($scstatuses['Perhaps Reject']) ? $scstatuses['Perhaps Reject'] : 0).'</span>';
+    $scDI = '<br/><span class="summary" data-status="Needs Discussion">'.(isset($scstatuses['Needs Discussion']) ? $scstatuses['Needs Discussion'] : 0).'</span>';
+    $scMA = '<br/><span class="summary" data-status="Maybe Accept">'.(isset($scstatuses['Maybe Accept']) ? $scstatuses['Maybe Accept'] : 0).'</span>';
+    $scAC = '<br/><span class="summary" data-status="Accept">'.(isset($scstatuses['Accept']) ? $scstatuses['Accept'] : 0).'</span>';
+  }
+  else {
+    $legend = '';
+    $scNO = '';
+    $scRE = '';
+    $scMR = '';
+    $scDI = '';
+    $scMA = '';
+    $scAC = '';
+  }
+  $html = '<table style="text-align: center;" border=1><tbody><tr>'.$legend.'
   <td class="setNO"><b>None<br />'
-    . (isset($statuses['None']) ? $statuses['None'] : 0) .'</b></td>
+    . (isset($statuses['None']) ? $statuses['None'] : 0).$scNO.'</b></td>
   <td class="setRE"><b>Reject<br />'
-    . (isset($statuses['Reject']) ? $statuses['Reject'] : 0) . '</b></td>
+    . (isset($statuses['Reject']) ? $statuses['Reject'] : 0).$scRE.'</b></td>
   <td class="setMR"><b>Maybe Reject<br />'
     . (isset($statuses['Perhaps Reject']) ? $statuses['Perhaps Reject'] : 0)
-    . '</b></td>
+    .$scMR. '</b></td>
   <td class="setDI"><b>Discuss<br />'
     . (isset($statuses['Needs Discussion'])? $statuses['Needs Discussion']: 0)
-    . '</b></td>
+    .$scDI. '</b></td>
   <td class="setMA"><b>Maybe Accept<br />'
     . (isset($statuses['Maybe Accept'])? $statuses['Maybe Accept']: 0)
-    . '</b></td>
+    .$scMA. '</b></td>
   <td class="setAC"><b>Accept<br />'
-    . (isset($statuses['Accept'])? $statuses['Accept'] : 0) .'</b></td>
-</tr></tbody></table>';
-
+    . (isset($statuses['Accept'])? $statuses['Accept'] : 0).$scAC.'</b></td>
+</tr>';
+  $html .= '</tbody></table>';
   return $html;
 }
 

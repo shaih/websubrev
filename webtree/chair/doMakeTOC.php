@@ -34,18 +34,18 @@ if (isset($_POST['makeTOC'])) {
       $papers[$subId] = array();
     $papers[$subId]['title'] = $ttl;
   }
-
+  
   foreach ($_POST['authors'] as $subId => $athr) {
     $subId = (int) $subId;
     if (!is_array($papers[$subId])) // check that this subId has a record
       $papers[$subId] = array();
     $papers[$subId]['authors'] = $athr;
   }
-
+  
   // Update database with the given user input
   $cnnct = db_connect();
   foreach ($papers as $subId => $ppr) {
-
+    
     if (isset($papers[$subId]['nPages']) || isset($papers[$subId]['pOrder'])) {
       $updates = $sep = '';
       if (isset($papers[$subId]['nPages'])) {
@@ -85,13 +85,12 @@ if (isset($_POST['makeTOC'])) {
     if (empty($names)) continue;
     $names = explode(';', $names);
     if (is_array($names)) foreach ($names as $nm) {
-      $nm = trim($nm); if (empty($nm)) continue;
-      $nameKey = lastNameFirst($nm); // use "Last, First M." as key to array
-      $subRevs[$nameKey] = $nm;
-    }
+        $nm = trim($nm); if (empty($nm)) continue;
+        $nameKey = lastNameFirst($nm); // use "Last, First M." as key to array
+        $subRevs[$nameKey] = $nm;
+      }
   }
-
-  $res = db_query("SELECT name from committee WHERE revId!=".CHAIR_ID, $cnnct);
+  $res = db_query("SELECT name from committee WHERE flags & ".FLAG_IS_CHAIR." = 0", $cnnct);
   $pcMembers = array();
   while ($row = mysql_fetch_row($res)) {
     $name = trim($row[0]);
@@ -99,7 +98,7 @@ if (isset($_POST['makeTOC'])) {
     $nameKey = lastNameFirst($name); // use "Last, First M." as key to array
     $pcMembers[$nameKey] = $name;    
   }
-
+  
   // sort reviewer and PC-member arrays by keys
   ksort($subRevs);
   ksort($pcMembers);
@@ -223,7 +222,7 @@ EndMark;
   uasort($papers, "cmpOrder"); // sort by order
   $curPage = 1;
   foreach ($papers as $subId => $ppr) if ($ppr['pOrder']>0) {
-    $ltxFile .= "\\setcounter{page}{".$curPage."}\n";
+    $ltxFile .= "\\setcounter{page}{$curPage}\n";
     $curPage += $ppr['nPages'];
     $ltxFile .= "\\title{".$ppr['title']."}\n";
     $ltxFile .= "\\author{".str_replace(';', ' \and ', $ppr['authors'])."}\n";

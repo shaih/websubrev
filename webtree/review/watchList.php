@@ -9,15 +9,18 @@ $needsAuthentication=true;
 require 'header.php';  // defines $pcMember=array(revId, name, ...)
 
 $revId = (int) $pcMember[0];
+$revName = htmlspecialchars($pcMember[1]);
 $disFlag= (int) $pcMember[3];
 $pcmFlags= (int) $pcMember[5];
 $chkEmlNewPosts= ($pcmFlags & FLAG_EML_WATCH_EVENT)? ' checked="checked"': '';
 $chkWatchOrder= ($pcmFlags & FLAG_ORDER_REVIEW_HOME)? ' checked="checked"': '';
 
+
 $classes = array('zero', 'one', 'two', 'three', 'four', 'five');
 
 // Check that this reviewer is allowed to discuss submissions
-if ($disFlag != 1) exit("<h1>$revName cannot discuss submissions yet</h1>");
+if ($disFlag < 1 ||($disFlag==2 && !has_reviewed_anything($revId)))
+  exit("<h1>$revName cannot discuss submissions yet</h1>");
 
 // A header for the prefs column (if needed)
 $prfHdr = (REVPREFS) ? "\n  <th><small>pref</small></th>" : "";
@@ -58,14 +61,24 @@ h1 { text-align: center; }
 // -->
 </script>
 
-<title>Watch List for $pcMember[1]</title>
+<title>Watch List and Preferences for $pcMember[1]</title>
 </head>
 
 <body onload=selDeselAll();>
 $links
 <hr />
-<h1>Watch List for $pcMember[1]</h1>
+<h1>Watch List and Preferences for $pcMember[1]</h1>
 <form name="watchListForm" action="doWatchList.php" enctype="multipart/form-data" method="post">
+
+<table><tbody>
+<tr><td><input type=checkbox name="emlNewPosts"{$chkEmlNewPosts}></td>
+ <td style="text-align: left;">Send me email whenever a new message or review is posted to any submission on my watch list</td></tr>
+<tr><td><input type=checkbox name="orderWatchAtHome"{$chkWatchOrder}></td>
+ <td style="text-align: left;">Use the same ordering for the watch list on my review homepage as in the submission-list page<br/>(clearing this checkbox means that ordering on the homepage is always by submission number)</td></tr>
+</tbody></table>
+<input value="Update Preferences and Watch List" type="submit" name="updateWatchList">
+
+<h2>My Watch List</h2>
 <div id="SelDeselAll" class=hidden>
 &nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;
@@ -129,13 +142,7 @@ print <<<EndMark
 </tbody>
 </table>
 <br />
-<input value="Update Watch List" type="submit" name="updateWatchList">
-<table><tbody>
-<tr><td><input type=checkbox name=emlNewPosts{$chkEmlNewPosts}></td>
- <td style="text-align: left;">Send me email whenever a new message is posted to any submission on my watch list</td></tr>
-<tr><td><input type=checkbox name=orderWatchAtHome{$chkWatchOrder}></td>
- <td style="text-align: left;">Use the same ordering for the watch list on my review homepage as in the submission-list page<br/>(clearing this checkbox means that ordering on the homepage is always by submission number)</td></tr>
-</tbody></table>
+<input value="Update Watch List and Preferences" type="submit" name="updateWatchList">
 </form>
 <hr />
 $links

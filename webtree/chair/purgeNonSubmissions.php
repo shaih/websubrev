@@ -45,7 +45,7 @@ submissions: either use the 'withdraw' links to withdraw individual
 submissions, or the 'Withdraw All' button at the bottom of this form
 to withdraw all the checked submissions at once.</p>
 
-<form action=doPurgeNonSubmissions.php enctype="multipart/form-data" method=post>
+<form action="doPurgeNonSubmissions.php" enctype="multipart/form-data" method=post>
 <table><tbody>
 EndMark;
 

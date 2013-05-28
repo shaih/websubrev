@@ -72,6 +72,7 @@ We are looking forward to seeing you at the conference.
 Sincerely,
 
 '.$cName.' program chair(s)';
+$acc = htmlspecialchars($acc);
 
 // the default reject letter
 $rejSbjct = REJECT_SBJCT;
@@ -102,123 +103,59 @@ Sincerely,
 
 '.$cName.' program chair(s)';
 
-// If either $_POST['saveText'] or $_POST['notifySubmitters'] are set
-// then store the current text in the database
-
-// If $_POST['notifySubmitters'] is set, send the actual emails
-if (isset($_POST['notifySubmitters']) || isset($_POST['saveText'])) {
-  $x = trim($_POST['accSubject']);
-  if (!empty($x)) $accSbjct = $x;
-
-  $x = trim($_POST['accLetter']);
-  if (!empty($x)) $acc = $x;
-  $acc = str_replace("\r\n", "\n", $acc); // just in case
-
-  $x = trim($_POST['rejSubject']);
-  if (!empty($x)) $rejSbjct = $x;
-
-  $x = trim($_POST['rejLetter']);
-  if (!empty($x)) $rej = $x;
-  $rej = str_replace("\r\n", "\n", $rej); // just in case
-
-  $cnnct = db_connect();
-  $qry = "UPDATE parameters SET acceptLtr='".my_addslashes($acc,$cnnct)
-  . "',\n  rejectLtr='".my_addslashes($rej,$cnnct)
-  . "',\n  acptSbjct='".my_addslashes($accSbjct,$cnnct)
-  . "',\n  rjctSbjct='".my_addslashes($rejSbjct,$cnnct)
-  . "'\n  WHERE version=".PARAMS_VERSION;
-  db_query($qry, $cnnct);
-}
-
-if (isset($_POST['notifySubmitters'])) {
-  $qry = "SELECT subId, title, authors, contact, status, subPwd FROM submissions WHERE status!='Withdrawn'";
-
-  $subIds2notify = trim($_POST['subIds2notify']);
-  if (!empty($subIds2notify)) {
-    $subIds2notify = my_addslashes($subIds2notify, $cnnct);
-    $qry .= " AND subId IN ({$subIds2notify})";
-  }
-  $res = db_query($qry, $cnnct);
-
-  print "<h3>Sending notification letters...</h3>\n";
-
-  $count=0;
-  while ($row = mysql_fetch_row($res)) {
-    if ($row[4]=='Accept') {
-      notifySubmitters($row[0], $row[1], $row[2], $row[3], $row[5],
-		       $accSbjct, $acc);
-    }
-    // Send a rejection letter only when status='Reject'
-    else if ($row[4]=='Reject') {
-      notifySubmitters($row[0], $row[1], $row[2], $row[3], $row[5],
-		       $rejSbjct, $rej);
-    }
-    else continue;
-
-    $count++;
-    if (($count % 25)==0) { // rate-limiting, avoids cutoff
-      print "$count messages sent so far...<br/>\n";
-      ob_flush();flush();sleep(1);
-    }
-  }
-
-  print <<<EndMark
-<br/>
-Total of $count messages sent. Check the <a href="viewLog.php">log file</a>
-for any errors.
-
-<hr />
-$links
-</body>
-</html>
-
-EndMark;
-  exit();
-}
-
-$accSbjct = htmlspecialchars($accSbjct);
-$acc = htmlspecialchars($acc);
-$rejSbjct = htmlspecialchars($rejSbjct);
 $rej = htmlspecialchars($rej);
 
 // Allow the chair to customize the emails
 print <<<EndMark
-<form action="notifications.php" enctype="multipart/form-data" method="post">
-Use the form below to customize your accept/reject letters. The email
-notifications will be sent when you hit the "Send Notification" button
-at the bottom of this page. You can also make changes to the text of
-these letters and then save it without sending the email yet by using
-this button: <input type="submit" name="saveText" value="Save Text"><br/>
-<br/>
-(Note that the keywords <code>&lt;&#36;authors&gt;</code>, 
-<code>&lt;&#36;title&gt;</code>,  <code>&lt;&#36;subId&gt;</code>
-and <code>&lt;&#36;subPwd&gt;</code> will be replaced by the authors,
-title and the submission-ID and password as they appear in the
-database. To be recognized as keywords, these words MUST include the
-'&lt;' and '&gt;' characters and the dollar-sign.)
-
+<p>
+Use the forms below to customize your accept/reject letters. The email
+notifications will be sent when you hit the <tt>Send</tt> button at the
+bottom of each form. You can also make changes to the text of these
+letetrs and then save it without sending the email yet by using the
+<tt>Save Text</tt> button instead. Note that you have to send the emails
+<b>separately to the accepted submissions and to the rejected ones</b>.
+</p>
+<p>If you want to send different messages to some particular submissions
+(e.g. conditional accepts), use for that purpose the generic interface
+for <a href="emailAuthors.php">sending email to authors</a>.
+</p>
+<p>You can include in the text any of the keywords
+<code>&lt;&#36;authors&gt;</code>, 
+<code>&lt;&#36;title&gt;</code>,
+<code>&lt;&#36;subId&gt;</code>,
+<code>&lt;&#36;subPwd&gt;</code>, and
+<code>&lt;&#36;comments&gt;</code>, and they will be replaced by the
+authors, title, submission-ID, password, and comments-to-authors as
+they appear in the database. To be recognized as keywords, these words
+MUST include the '&lt;' and '&gt;' characters and the dollar-sign.
+The keywords <code>&lt;&#36;title&gt;</code> and
+<code>&lt;&#36;subId&gt;</code> can also be included in the subject
+line.
+</p>
 <h3>Acceptance letters</h3>
-Subject: <input type=text name=accSubject size=90 maxlength=80 value="$accSbjct">
+<form name="acceptLetters" action="doEmailAuthors.php" enctype="multipart/form-data" method="post">
+<input type="hidden" name="saveText_ACC" value="true">
+<input type="hidden" name="emailTo" value="AC">
+Subject: <input type=text name="subject" size=90 maxlength=80 value="$accSbjct">
 <br/>
-<textarea name="accLetter" cols=80 rows=13>$acc</textarea>
-
-<h3>Rejection letters</h3>
-Subject: <input type=text name=rejSubject size=90 maxlength=80 value="$rejSbjct"><br/>
-<textarea name="rejLetter" cols=80 rows=13>$rej</textarea>
-<br /><br />
-
-<h3>Notify only a few submissions</h3>
-To send notifications only to certain submissions, put a comma-separated
-list of submission-IDs in the line below. Leaving the line empty will send
-notification letters to all the accepted and rejected submissions.<br/>
+<textarea name="message" cols=80 rows=13>$acc</textarea>
 <br/>
-Notify only these submissions:
-<input type="text" name="subIds2notify" size="70">
-<br /><br />
-
-<input type="submit" name="notifySubmitters" value="Send Notifications">
+<input type="submit" name="notifySubmitters" value="Send Acceptance Notifications">
+or only
+<input type="submit" name="saveOnly" value="Save Text">
 </form>
 
+<h3>Rejection letters</h3>
+<form name="rejectLetters" action="doEmailAuthors.php" enctype="multipart/form-data" method="post">
+<input type="hidden" name="saveText_REJ" value="true">
+<input type="hidden" name="emailTo" value="RE">
+Subject: <input type=text name="subject" size=90 maxlength=80 value="$rejSbjct"><br/>
+<textarea name="message" cols=80 rows=13>$rej</textarea>
+<br/>
+<input type="submit" name="notifySubmitters" value="Send Rejection Notifications">
+or only
+<input type="submit" name="saveOnly" value="Save Text">
+</form>
 <hr />
 $links
 </body>
@@ -226,22 +163,4 @@ $links
 
 EndMark;
 exit();
-
-function notifySubmitters($subId, $title, $authors, $contact, $pwd, $sbjct, $text)
-{
-  $errMsg = "notification for submission {$subId} to {$contact}";
-  $cName = CONF_SHORT.' '.CONF_YEAR;
-
-  $sbjct = str_replace('<$authors>', $authors, $sbjct);
-  $sbjct = str_replace('<$title>', $title, $sbjct);
-  $sbjct = str_replace('<$subId>', $subId, $sbjct);
-  $sbjct = str_replace('<$subPwd>', $pwd, $sbjct);
-
-  $text = str_replace('<$authors>', $authors, $text);
-  $text = str_replace('<$title>', $title, $text);
-  $text = str_replace('<$subId>', $subId, $text);
-  $text = str_replace('<$subPwd>', $pwd, $text);
-
-  my_send_mail($contact, $sbjct, $text, CHAIR_EMAIL, $errMsg);
-}
 ?>

@@ -30,35 +30,57 @@ h1 {text-align: center;}
 $links
 <hr />
 <h1>Activate Final-Version Submission Site for $cName</h1>
-When you hit the "Activate Final-Version Submissions" button at the
-bottom of this page, the authors of accepted papers will be sent emails,
-telling them that the final-version submission site is open. At the same
-time, the review site will switch to a read-only mode. (I.e., PC members
-will still be able to view the reviews and discussions but not to modify
-them or insert new ones.)
-<p>
-You can use the form below to customize the email that is sent to the
-authors, and also if you want to change the camera-ready deadline.
-</p>
+EndMark;
 
-<form name="cameraInstructions" action="doActivateCamera.php"
+if (PERIOD<PERIOD_CAMERA) {
+print <<<EndMark
+<p>
+When you hit the "Activate Final-Version Submissions" button below, the
+camera-ready submission site will open and the review site will switch to
+a read-only mode. (I.e., PC members will still be able to view the reviews
+and discussions but not to modify them or insert new ones.)</p>
+
+<form name="cameraReady" action="doActivateCamera.php"
       enctype="multipart/form-data" method="post">
-Subject: <input type=text name=subject size=75 value="Final-version submission site for $cName now open">
-<textarea cols=80 rows=15 name="finalVersionInstructions">The site for uploading the camera-ready papers for $cName is now open at
+<input type="submit" value="Activate Final-Version Submissions">,
+camera-ready deadline is
+<input type=text name=cameraDeadline value="$cmrDdline" size=50>
+</form>
+<hr/>
+EndMark;
+} else {
+  print "Final-Version Submission Site was activated.";
+}
+print <<<EndMark
+<h2>Send email to authors of accepted papers</h2>
+You can use this form to customize the email that is sent to the
+authors. You can use the keywords <tt><\$subId>, <\$subPwd>,
+<\$authors>, <\$title></tt>, and <tt><\$comments></tt>, in the message
+body. They will be replaced by the submission-ID, password, authors,
+title and the comments-to-authors as they appear in the database.
+(To be recognized as keywords, these words MUST include the '<'
+and '>' characters and the dollar-sign.)
+<br/><br/>
+<form name="cameraReady" action="doEmailAuthors.php"
+  enctype="multipart/form-data" method="post">
+<input type="hidden" name="emailTo" value="AC">
+Subject: <input type=text name="subject" size=75 value="Final-version submission site for $cName now open">
+<textarea cols=80 rows=15 name="message">The site for uploading the camera-ready papers for $cName is now open at
 
   ${baseURL}submit/
 
-Instructions for preparing your camera-ready versions are available there. The deadline for uploading your submission to the server, as well as for sending the copyright form, is $cmrDdline.
+Instructions for preparing your camera-ready versions are available there. You will need your submission-ID and password in order to upload the camera-ready version. These are:
+
+Submission-ID: &lt;\$subId&gt;
+Password:      &lt;\$subPwd&gt;
+
+The deadline for uploading your submission to the server is $cmrDdline.
 
 Regards,
 
 The chair(s)</textarea><br/>
-<br />
-Camera-ready deadline:
-<input type=text name=cameraDeadline value="$cmrDdline" size=50>
-<br/><br/>
-<input type="submit" value="Activate Final-Version Submissions">
-</form>
+<input type="submit" name="SendEmail" value="Send Email">
+
 <hr/>
 $links
 </body>

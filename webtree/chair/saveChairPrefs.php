@@ -17,7 +17,7 @@ $res = db_query($qry, $cnnct);
 $subArray = array();
 while ($row = mysql_fetch_row($res)) { $subArray[] = $row; }
 
-$qry = "SELECT revId, name from committee WHERE revId!=".CHAIR_ID." ORDER BY revId";
+$qry = "SELECT revId, name from committee WHERE revId NOT IN(".implode(", ", chair_ids()).") ORDER BY revId";
 $res = db_query($qry, $cnnct);
 $committee = array();
 $nameList = $sep = '';
@@ -30,7 +30,7 @@ while ($row = mysql_fetch_row($res)) {
 
 // read current chair-preferences from database
 $curPrefs = array();
-$qry = "SELECT revId, subId, compatible FROM assignments WHERE revId!=".CHAIR_ID." ORDER BY subId, revId";
+$qry = "SELECT revId, subId, compatible FROM assignments WHERE revId NOT IN(".implode(", ", chair_ids()).") ORDER BY subId, revId";
 $res = db_query($qry, $cnnct);
 while ($row = mysql_fetch_row($res)) {
   $revId = (int) $row[0];
@@ -88,5 +88,5 @@ if (isset($_POST["saveChairPrefs"])) {
 	db_query($qry, $cnnct);
       }
 }
-header("Location: assignments.php");
+header("Location: assignChairPrefs.php");
 ?>

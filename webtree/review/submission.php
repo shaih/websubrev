@@ -29,7 +29,7 @@ if (!($submission = mysql_fetch_assoc($res))
 }
 
 $title    = htmlspecialchars($submission['title']);
-if (ANONYMOUS && $revId!=CHAIR_ID) { $authors = ''; }
+if (ANONYMOUS && !is_chair($revId)) { $authors = ''; }
 else {
   $affiliations = htmlspecialchars($submission['affiliations']);
   $authors = htmlspecialchars($submission['authors']);

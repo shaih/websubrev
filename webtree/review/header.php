@@ -10,6 +10,7 @@ if (!file_exists('../init/confParams.php')) { // Not yet customized
   header("Location: ../chair/initialize.php");
   exit();
 }
+
 require_once('../includes/getParams.php');
 
 if (PERIOD==PERIOD_SETUP) die("<h1>Site Not Active Yet</h1>");
@@ -38,7 +39,7 @@ if ($needsAuthentication !== false) {
 
 // Before the review period: the chair can access everything,
 // but others can only access pages that set $preReview=true
-if (PERIOD<PERIOD_REVIEW && $pcMember[0]!=CHAIR_ID
+if (PERIOD<PERIOD_REVIEW && !is_chair($pcMember[0])
     && (!isset($preReview) || $preReview!==true)
     && (PERIOD<PERIOD_SUBMIT || !USE_PRE_REGISTRATION)) {
     exit("<h1>This area of the review site is not active yet</h1>");

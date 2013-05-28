@@ -18,9 +18,11 @@ $confName = CONF_SHORT . ' ' . CONF_YEAR;
 $links = show_rev_links(2);
 $message = show_message();
 $phase = $disFlag ? 'Discussion Phase' : 'Individual Review Phase';
-if ($revId==CHAIR_ID) $phase .= ' (Program Chair)';
+if ($disFlag==2) $phase .= ' (limited)';
+if (is_chair($revId)) $phase .= ' (Program Chair)';
 if (defined('CAMERA_PERIOD')) $phase = 'Read Only';
 $legend = '';
+
 $cnnct = db_connect();
 
 // A box listing the current active votes
@@ -60,12 +62,14 @@ print <<<EndMark
 <head>
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
-body { width: 818px; }
+body { width: 900px; }
 h1, h2 { text-align: center; }
 div.frame { border-style: inset; }
 tr { vertical-align: top; }
 </style>
 <title>$confName Review homepage for $revName</title>
+<script type="text/javascript" src="{$JQUERY_URL}"></script>
+<script type="text/javascript" src="../common/ui.js"></script>
 </head>
 <body>
 $message
@@ -78,7 +82,7 @@ Hello $revName. $ballotsText
 EndMark;
 
 // Before the review period: only chair can sees things.
-if ($pcMember[0]!=CHAIR_ID &&
+if (!is_chair($pcMember[0]) &&
     (PERIOD<PERIOD_SUBMIT ||(PERIOD==PERIOD_SUBMIT &&!USE_PRE_REGISTRATION))){
   print <<<EndMark
 The review period has not started yet.
@@ -104,18 +108,13 @@ if (isset($allSubFile)) {
   $allSubFile = '&nbsp;o&nbsp;&nbsp;<a href="download.php?all_in_one='.$allSubFile.'">Download submissions in one file</a><br/>';
 }
 
-if (defined('IACR')) {
-  $IACRrevGuidelines = '&nbsp;o&nbsp;&nbsp;<a href="http://www.iacr.org/docs/reviewer.pdf">The IACR Guidelines for Reviewers</a><br/>';
-}
-else $IACRrevGuidelines = '';
-
 if (REVPREFS && !$disFlag) {
   $indicatePrefs = '&nbsp;o&nbsp;&nbsp;<a href="prefs.php">Indicate reviewing preferences</a><br />';
 }
 else $indicatePrefs = '';
 
 if ($disFlag) {
-  $watchList = '&nbsp;o&nbsp;&nbsp;<a href="watchList.php">Work with watch list</a><br />';
+  $watchList = '&nbsp;o&nbsp;&nbsp;<a href="watchList.php">Preferences and watch list</a><br />';
 }
 else $watchList = '';
 
@@ -153,15 +152,15 @@ print <<<EndMark
 <br/>
 <table cellspacing=5 width="100%"><tbody><tr>
 <!-- A box that lets the reviewer list submissions in different orders -->
-<td style="width: 265px;">
+<td style="width: 290px;">
 $listSubmissions
 </td>
 
 <td><strong>Some other links:</strong><br />
-$IACRrevGuidelines
 $allSubFile
 {$indicatePrefs}{$watchList}
 &nbsp;o&nbsp;&nbsp;<a target=_blank href="scorecard.php">Work with scorecard files</a><br/>
+&nbsp;o&nbsp;&nbsp;<a href="assignSubreviewer.php">Email subreviewers </a><br/>
 $seeVoteRes
 &nbsp;o&nbsp;&nbsp;<a href="password.php">Change password</a><br />
 $allReviews
@@ -198,11 +197,11 @@ function individual_review($cnnct, $revId)
 
   $qry ="SELECT s.subId subId, title, s.format format, status, 
       UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
-      a.watch watch, r.revId revId, r.flags revFlags, r.score score
+      a.watch watch, r.revId revId, r.flags revFlags, s.flags flags, s.contact
     FROM submissions s
       INNER JOIN assignments a ON a.revId={$revId} AND a.subId=s.subId
       LEFT JOIN reports r ON r.subId=s.subId AND r.revId={$revId}
-    WHERE s.status!='Withdrawn' AND a.assign=1";
+    WHERE (s.status!='Withdrawn' OR (s.flags & ".FLAG_IS_GROUP.")) AND a.assign=1";
   $res = db_query($qry, $cnnct);
 
   $nReviewed = $total = 0;
@@ -236,7 +235,7 @@ function individual_review($cnnct, $revId)
 
 function discussion_phase($cnnct, $revId, $extraSpace, $pcmFlags)
 {
-  global $discussIcon1, $discussIcon2;
+  global $discussIcon1, $discussIcon2, $disFlag;
 
   // Get a list of submissions for which this reviewer already saw all
   // the discussions/reviews. Everything else is considered "new"
@@ -274,24 +273,34 @@ function discussion_phase($cnnct, $revId, $extraSpace, $pcmFlags)
   $order .= 's.subId';
   $qry ="SELECT s.subId subId, title, s.format format, status,
       UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
-      a.watch watch, s.wAvg avg
+      a.watch watch, s.wAvg avg, s.flags flags, s.contact
     FROM submissions s, assignments a
-    WHERE status!='Withdrawn' AND a.revId={$revId}
-      AND a.subId=s.subId AND a.watch=1
+    WHERE (status!='Withdrawn' OR (s.flags & ".FLAG_IS_GROUP.")) AND a.revId={$revId} AND a.subId=s.subId AND a.watch=1
     ORDER BY $order";
   $res = db_query($qry, $cnnct);
 
   $needsDiscussion = 0;
   $subs = array();
+  $subs2 = array();
   while ($row = mysql_fetch_assoc($res)) {
     $subId = $row['subId'];
     $row['hasNew'] = !isset($seenSubs[$subId]);
-    $subs[] = $row;
     if ($row['status']=='Needs Discussion') $needsDiscussion++;
+    // sanitize for the case of "discuss most"
+    if ($disFlag==2 && $row['assign']==1 && !isset($reviewed[$subId])) {
+      $row['avg'] = NULL;
+      $row['lastModif'] = '';
+      $row['noDiscuss'] = true;
+      $subs2[$subId] = $row;
+    }
+    else $subs[] = $row;
   }
 
+  ksort($subs2);
+  foreach($subs2 as $sb) $subs[] = $sb; // concatenate the arrays
+
   if (count($subs)>0) {
-    if ($needsDiscussion > 0) { // show list of submissions needing discussion
+    if ($needsDiscussion > 0 && $disFlag==1) {
 
       if ($needsDiscussion==1) {  // singular vs plural in English
 	$require = "requires";
@@ -304,7 +313,7 @@ function discussion_phase($cnnct, $revId, $extraSpace, $pcmFlags)
     }
     else if ($extraSpace) print "<br/><br/>\n";
     print_sub_list($subs, "Submissions on your watch list",
-		   $reviewed, true, 0, true);
+		   $reviewed, $disFlag, 0, true, $revId);
     return true;
   }
   return false;

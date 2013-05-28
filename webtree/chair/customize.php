@@ -128,6 +128,14 @@ program committee</a>, and <a href="#review">reviews</a>.
     A <b><i>semi-colon-separated</i></b> list of categories for the
     submissions (leave empty to forgo categories).</td>
 </tr>
+<tr><td class=rjust>Opt In Text:</td>
+  <td><textarea name="checktext" rows="3" cols="70"></textarea><br/>
+    This text will be presented with a check box to the user when they 
+    submit a paper. <br />You will then be able to see who opts in from the review
+    section of the site. <br />Use this for something like eligibility for an
+    award. If this is blank, no checkbox will be shown.
+  </td>
+</tr>
 <tr><td class=rjust>Require&nbsp;Affiliations:</td>
   <td><input name="affiliations" type="checkbox"{$chkAff}>
     Check to require submitters to specify their affiliations</td>
@@ -173,19 +181,16 @@ program committee</a>, and <a href="#review">reviews</a>.
 <!-- ================= The Program Committee =================== -->
 <tr><td class=rjust><big><b><a NAME="committee">Program&nbsp;Committee:</a></b></big></td><td></td>
 </tr>
-<tr><td class=rjust>{$star}<a href="../documentation/chair.html#PCemail" target="documentation" title="click for more help">Chair&nbsp;Email:</a></td>
-  <td><input name="chair" size="90" type="text" value="$chrEml" onchange="return checkEmail(this)"><br/>
-     Only one address (e.g., <tt>chair@basket06.org</tt> or <tt>Earvin Johnson
-     &lt;Magic.Johnson@retirement.net&gt;</tt>)</td>
-</tr>
+<tr><td class=rjust>{$star}<a href="../documentation/chair.html#PCemail" target="documentation" title="click for more help">Chair&nbsp;Email(s):</a></td>
+  <td><textarea name="chair" rows=5 cols=70>$chrEml</textarea><br/>
+     A <i><b>semi-colon-separated</b></i> list of email addresses of the
+     program chairs. A separate PC-chair account is created for each address.
+</td></tr>
 <tr><td class=rjust><a href="../documentation/chair.html#PCemail" target="documentation" title="click for more help">Program&nbsp;Committee:</a></td>
   <td><textarea name="committee" rows=15 cols=70>Shaquille O'Neal &lt;shaq@MiamiHeat.nba.com&gt;;
 Larry J. Bird &lt;the-bird@old-timers.org&gt;;
 Jordan, Michael &lt;Air-Jordan@nike.com&gt;</textarea><br/>
-    A <i><b>semi-colon-separated</b></i> list of email addresses (including the
-    chair's personal email address).<br/> Each address should be in the format
-    "Name &lt;email-address&gt;". (The names that you enter here <br/>will be
-    displayed on the reports and discussion boards.)</td>
+    A <i><b>semi-colon-separated</b></i> list of email addresses. Each address should be in the format "Name &lt;email-address&gt;". (The names that you enter here will be displayed on the reports and discussion boards.)</td>
 </tr>
 <tr><td colspan=2 class=rjust><hr /></td></tr>
 <!-- ================= Reviews =================== -->

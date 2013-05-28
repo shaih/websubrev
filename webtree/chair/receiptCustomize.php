@@ -18,6 +18,7 @@ $eml2 = ADMIN_EMAIL;
 
 $testOnly = isset($_GET['testOnly']) ? ' (including dummy test data)' : '';
 
+
 print <<<EndMark
 <!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
@@ -33,6 +34,7 @@ print <<<EndMark
 EndMark;
 
 $cName = CONF_NAME." (".CONF_SHORT." ".CONF_YEAR.")";
+
 if (USE_PRE_REGISTRATION) {
   $rgDdline = "<td>Pre-registration deadline:</td>
       <td><b>".utcDate('r (T)', REGISTER_DEADLINE)."</b></td>";
@@ -68,6 +70,10 @@ else print "     <td>Not required</td>\n  </tr>\n";
 print "  <tr><td>Anonymous submissions:</td>\n";
 if (ANONYMOUS) print "     <td>Submissions are anonymous</td>\n  </tr>\n";
 else print "     <td>Submissions are <b>not</b> anonymous</td>\n  </tr>\n";
+
+if (defined("OPTIN_TEXT")) {
+  print "<tr><td>Opt In Text:</td><td>".OPTIN_TEXT."</td>";
+}
 
 if (is_array($categories) && (count($categories)>0)) {
   print "  <tr><td>&nbsp;</td><td></td></tr>\n";

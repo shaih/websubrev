@@ -5,15 +5,18 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
+if(isset($_GET['attachment']))
+  $allow_rebuttal = true;
 
 require 'header.php'; // brings in the constants and utils files
-
 $subId = isset($_GET['subId']) ? ((int)trim($_GET['subId'])) : 0;
 $subPwd = isset($_GET['subPwd']) ? trim($_GET['subPwd']) : '';
 
 if ($subId<=0 || empty($subPwd)) {
   die('<h1>Missing Submission-ID or password</h1>');
 }
+
+$view_reviews = false;
 
 $cnnct = db_connect();
 $qry= "SELECT format, nPages
@@ -48,9 +51,22 @@ else if ($fmt=='odp') $mimeType = 'application/vnd.oasis.opendocument.presentati
 
 if ((PERIOD>=PERIOD_CAMERA) && $finalVersion) {
   $fileName = SUBMIT_DIR."/final/$subId.$fmt";
-} else {
+}
+else {
   $fileName = SUBMIT_DIR."/$subId.$fmt";
 }
+
+if($_GET['attachment'] && $view_reviews) {
+  $qry = "SELECT attachment FROM reports WHERE subId='".
+    my_addslashes($subId).
+    "' AND attachment='".my_addslashes($_GET['attachment']). "'";
+  $res = db_query($qry, $cnnct);
+  if(mysql_num_rows($res) > 0) {
+    $row = mysql_fetch_assoc($res);
+    $filename = SUBMIT_DIR."/attachments/".$row['attachment'];
+  }
+}
+
 if (!file_exists($fileName)) {
   exit("<h1>Submission file not found</h1>");
 }

@@ -11,7 +11,7 @@ $adminEmail = ADMIN_EMAIL;
 
 if (defined('CAMERA_PERIOD')) {
   $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
-			  $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
+			  $_SERVER['PHP_AUTH_PW'], chair_ids());
   if ($chair === false) {
     header("WWW-Authenticate: Basic realm=\"$confShortName\"");
     header("HTTP/1.0 401 Unauthorized");

@@ -56,7 +56,7 @@ function ascii_showReviews(&$reviews, $revId)
       $comma = ',';
     }
 
-    if ($revId==CHAIR_ID && !empty($cmnt2chr)) {
+    if (is_chair($revId) && !empty($cmnt2chr)) {
       print "\n--------------------------------------------------------\n";
       print "Comments to Chair:\n{$cmnt2chr}\n";
     }

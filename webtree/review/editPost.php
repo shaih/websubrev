@@ -13,7 +13,12 @@ $postId = (int) $_GET['postId'];
 $cnnct = db_connect();
 $qry = "SELECT p.subId, p.subject, p.comments, s.title
   FROM posts p, submissions s
-  WHERE p.postId=$postId AND p.revId=$revId AND s.subId=p.subId";
+  WHERE p.postId=$postId AND s.subId=p.subId "; 
+
+//if (!is_chair($revId)) {
+    $qry .= " AND p.revId = $revId";
+//}
+
 $res = db_query($qry, $cnnct);
 if (!($post = mysql_fetch_row($res))) {
   exit("<h1>Post not found</h1>");
@@ -45,7 +50,7 @@ confusion. This feature is meant for correcting typos (or in case you
 violated confidentiality by mistake). Try to use it as little as
 possible.<br/>
 <br/>
-<form id="r$pid" class="$class" action="doEditPost.php" enctype="multipart/form-data" method="post">
+<form action="doEditPost.php" enctype="multipart/form-data" method="post">
 Subject:&nbsp;&nbsp;<input style="width: 91%;" type="text" name="subject" value="$subject">
 <br/><textarea style="width: 100%;" rows="9" name="comments">$comments</textarea>
 <br/><input type="submit" value="Edit Post">

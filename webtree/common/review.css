@@ -26,5 +26,30 @@
 .lightbg { background-color: rgb(245,245,245); } 
 .darkbg  { background-color: lightgrey; } 
 .sbjct   { color: maroon; font-size: large; } 
-div.fixed { font: 14px monospace; width: 90%; }
+.fixed { font: 14px monospace; width: 90%; }
 .ctr   { text-align: center; }
+
+.cb {
+    clear: both;
+}
+
+.multiple-inputs .add {
+    float:right;
+}
+
+.watch {
+    border: 0px;
+    cursor: pointer;
+    width: 29px;
+    height: 19px;
+}
+
+.open {
+    background-image:url('../common/openeye.gif');
+}
+
+.close {
+    background-image:url('../common/shuteye.gif');
+}
+
+ul.noDot {list-style-type: none; margin-left: 0px; }

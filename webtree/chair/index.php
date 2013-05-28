@@ -98,9 +98,6 @@ EndMark;
 <h3><span style="background-color: red;">Submission Site is Active:</span></h3>
 {$reg}Deadline is <big>$ddline</big>
 <ul>
-<li><a href="tweakSite.php">Tweak Site Settings</a> (email settings, etc.)</li>
-</ul>
-<ul>
 <li>List submissions by <a href="listSubmissions.php">number</a>, 
     $catLink <a href="listSubmissions.php?subOrder=format">format</a>
     ($nSubs submissions so far)</li>
@@ -114,6 +111,10 @@ EndMark;
 <li><a href="managePCmembership.php">Manage PC membership</a></li>
 <li><a href="voting.php">Set-up and manage PC votes</a></li>
 </ul>
+<ul>
+<li><a href="tweakSite.php">Tweak Site Settings</a> (email settings, etc.)</li>
+</ul>
+		
 
 EndMark;
 }
@@ -125,7 +126,6 @@ function manage_reviews($period)
   if ($period == PERIOD_REVIEW) { 
 
     $assignHTML = '<a href="assignments.php">Assign submissions to reviewers...</a>';
-
     // Check if there are any submissions that needs to be purged
     $purgeLink = '';
     if (USE_PRE_REGISTRATION) {
@@ -151,6 +151,7 @@ print <<<EndMark
   <b>Access is NOT blocked by default</b>
   (<a href="../documentation/chair.html#block">what&prime;s this?</a>)</dd>
 <dd>$assignHTML</dd>
+<dd><a href="groups.php">Add a group paper discussion</a></dd>
 <dd><br/></dd>
 
 <dt><strong>Reviews and decisions</strong></dt>
@@ -158,11 +159,16 @@ print <<<EndMark
 <dd><a href="status.php">Set status of submissions</a></dd>
 <dd><a href="voting.php">Set-up and manage PC votes</a></dd>
 <dd><br/></dd>
+		
+<dt><strong>Reviewer comments</strong></dt>
+<dd><a href="rebuttal.php">Open/close Rebuttal</a>
+    (<b>deadline is not enforced automatically</b>)</dd>
+<dd><a href="sendComments.php">Generate comments letters...</a></dd>
+<dd><br/></dd>
 
 <dt><strong>Wrap-up</strong>
 <dd><a href="../review/listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on&amp;format=ascii" target="_blank">A full list of all the reviews and discussions (text)</a>
 <dd><a href="notifications.php">Generate accept/reject letters...</a></dd>
-<dd><a href="sendComments.php">Generate comments letters...</a></dd>
 <dd><a href="activateCamera.php">Activate Final-submission site...</a></dd>
 <dd><a href="guidelines.php?what=camera">Edit camera-ready instructions</a></dd>
 </dl>
@@ -208,12 +214,12 @@ function manage_final_version($period)
     $hdr = '<h3>Final Submission Site is Closed</h3>';
     $closeIt = $editInstructions = '';
     $uploadTOC = '<li><a href="uploadPreface.php">Upload Preface/TOC/Author-index to the server</a></li>';
-  }
-  else {
+    $cryptoDB = (defined('IACR'))? '<li><a href="cryptoDB.php">Upload '.CONF_SHORT.' '.CONF_YEAR.' to CryptoDB</a></li>' : '';
+  } else {
     $hdr = '<h3><span style="background-color: red;">Final Submission Site is Active</span></h3>' . "\nDeadline is <big>$cmrDdline</big> <a href=\"manageSubmissions.php\">change it</a>";
     $editInstructions = '<li><a href="guidelines.php?what=camera">Edit camera-ready instructions</a></li>';
     $closeIt = '<a href="closeSite.php">Close Final Submission Site</a> (<b>deadline is not enforced automatically</b>)';
-    $uploadTOC = '';
+    $uploadTOC = $cryptoDB = '';
   }
 
   print <<<EndMark
@@ -229,6 +235,7 @@ $editInstructions
 $allSubFile
 <li><a href="makeTOC.php">Generate a LeTeX file with TOC and author index</a></li>
 $uploadTOC
+$cryptoDB
 </ul>
 $closeIt
 EndMark;

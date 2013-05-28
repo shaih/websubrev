@@ -5,12 +5,13 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-$needsAuthentication = true; 
+$needsAuthentication = true;
 require 'header.php';
+$cnnct = db_connect();
 
 if (defined('SHUTDOWN')) exit("<h1>Site is Closed</h1>");
-
 $cName = CONF_SHORT.' '.CONF_YEAR;
+
 $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -19,6 +20,8 @@ print <<<EndMark
 <style type="text/css">
 h1 {text-align: center;}
 h2 {text-align: center;}
+}
+
 </style>
 <title>Send Comments to Authors</title>
 </head>
@@ -27,168 +30,72 @@ $links
 <hr />
 <h1>Send Comments to Authors</h1>
 <h2>$cName</h2>
-
-EndMark;
-
-$ltr = 'Dear <$authors>,
+The comments-for-authors will be send when you hit the "Send Comments"
+button at the bottom of this page. You can customize the header of
+these emails below. You can include in the text any of the keywords
+<code>&lt;&#36;authors&gt;</code>, 
+<code>&lt;&#36;title&gt;</code>,
+<code>&lt;&#36;subId&gt;</code>,
+<code>&lt;&#36;subPwd&gt;</code>, and
+<code>&lt;&#36;comments&gt;</code>, and they will be replaced by the
+authors, title, submission-ID, password, and comments-to-authors as
+they appear in the database. To be recognized as keywords, these words
+MUST include the '&lt;' and '&gt;' characters and the dollar-sign.
+The keywords <code>&lt;&#36;title&gt;</code> and
+<code>&lt;&#36;subId&gt;</code> can also be included in the subject
+line.<br/>
+<br/>
+<form name="sendComments" action="doEmailAuthors.php"
+  enctype="multipart/form-data" method="post">
+Subject: <input type=text size=80 name=subject value="Reviewer comments for $cName submission &lt;&#36;subId&gt;">
+<br/>
+<textarea cols=80 rows=20 name=message>Dear &lt;&#36;authors&gt,
 
 Below please find the reviewer comments on your paper
 
-  "<$title>"
+  "&lt;&#36;title&gt;"
 
-That was submitted to '.$cName.'. Thank you again for submitting
-your work to '.$cName.'.
+That was submitted to $cName Thank you again for submitting
+your work to $cName.
 
 Sincerely,
 
 The program chair(s)
 ************************************************************************
 
-<$comments>';
+&lt;&#36;comments&gt;
+</textarea>
 
-// If $_POST['sendComments2Submitters'] is set, send the actual emails
-if (isset($_POST['sendComments2Submitters'])) {
-  $send2All = (isset($_POST['send2All']) && $_POST['send2All']=='yes');
-  $x = trim($_POST['commentsLetter']);
-  if (!empty($x)) $ltr = $x;
-  $ltr = str_replace("\r\n", "\n", $ltr); // just in case
-
-  $cnnct = db_connect();
-  $qry = "SELECT s.subId, title, authors, contact, comments2authors, status,
-    confidence, score, attachment
-  FROM submissions s LEFT JOIN reports r USING(subId)
-  WHERE s.status!='Withdrawn'";
-
-  $subIds2send = trim($_POST['subIds2send']);
-  if (!empty($subIds2send)) {
-    $subIds2send = my_addslashes($subIds2send, $cnnct);
-    $qry .= " AND s.subId IN ({$subIds2send})";
-  }
-  $qry .= " ORDER by s.subId, r.lastModified";
-  $submissions = array();
-  $curId = -1;
-
-  $res = db_query($qry, $cnnct);
-  while ($row=mysql_fetch_row($res)) {
-    $subId = (int) $row[0];
-    if ($subId<=0) continue;
-
-    if (!isset($submissions[$subId])) { // a new submission
-      $submissions[$subId] = array($row[1], $row[2], $row[3], 
-				   array(), NULL, trim($row[5]));
-    }
-    $comment = trim($row[4]);
-    if (!empty($comment)) {
-      if (isset($_POST['withGrades']) && $row[7]>0) {
-        $grade = "Score: ".$row[7];
-        if ($row[6]>0) $grade .= "\nConfidence: ".$row[6];
-        $comment = $grade."\n\n".$comment;
-      }
-     if (!empty($row[8])) {
-       $comment .= "\n\nSee attached file ".$row[8]."\n";
-     }
-      array_push($submissions[$subId][3], wordwrap($comment, 78));
-    }
-    if (!empty($row[8])) {
-      if (!isset($submissions[$subId][4])) $submissions[$subId][4] = array();
-      $attachment = array(SUBMIT_DIR."/attachments/", $row[8]);
-      array_push($submissions[$subId][4], $attachment);
-    }
-  }
-  print "<h3>Sending comments...</h3>\n";
-
-  $count=0;
-  foreach ($submissions as $subId => $sb) {
-    if ($send2All || ($sb[5]=="Accept") || ($sb[5]=="Reject")) {
-      sendComments($subId, $sb[0], $sb[1], $sb[2], $sb[3], $sb[4], $ltr);
-    }
-    else continue;
-
-    $count++;
-    if (($count % 25)==0) { // rate-limiting, avoids cutoff
-      print "$count messages sent so far...<br/>\n";
-      ob_flush();flush();sleep(1);
-    }
-  }
-
-  print <<<EndMark
-<br/>
-Total of $count messages sent. Check the <a href="viewLog.php">log file</a>
-for any errors.
-
-<hr />
-$links
-</body>
-</html>
-
-EndMark;
-  exit();
-}
-
-/********************************************************************/
-/********************************************************************/
-
-// Allow the chair to customize the emails
-print <<<EndMark
-The comments-for-authors will be send when you hit the "Send Comments"
-button at the bottom of this page.  You can customize the header of
-these emails below.
-By default the comments are sent only for submissions whose status is
-Accept or Reject, you can override this defualt by checking the box
-below the "Send Comments" button.<br />
-<br />
-
-(Note that the keywords <code>&lt;&#36;authors&gt;</code>,
-<code>&lt;&#36;title&gt;</code>, and <code>&lt;&#36;comments&gt;</code>
-will be replaced by the authors and title as specified by the
-submitters and by the list of comments, respectively. To be recognized
-as keywords, these words MUST include the '&lt;' and '&gt;' characters
-and the dollar-sign.)
-
-<form action="sendComments.php" enctype="multipart/form-data" method="post">
-<textarea name="commentsLetter" cols=80 rows=16>$ltr</textarea>
-
-<h3>Send comments to only a few submissions</h3>
-To send comments only to certain submissions, put a comma-separated
-list of submission-IDs in the line below. Leaving the line empty will
-send comments to the authors of all the submissions.<br /><br />
-
-Send comments only for these submissions:
-<input type="text" name="subIds2send" size="70">
-<br /><br />
-<table><tr>
-<td><input type="submit" value="Send Comments"></td>
-<input type="hidden" name="sendComments2Submitters" value="yes">
-<td><input type=checkbox name=withGrades value=yes> Check to include score
-and confidence in the email sent to the authors</td>
-</tr><tr>
-<td></td><td><input type=checkbox name="send2All" value="yes"> Check to send
-comments also to submissions whose status is not Accept or Reject</td>
-</tr></table>
+<h3>Who to send this email to</h3>
+<ul>
+<li>
+<input type="radio" ID="send2all" name="emailTo" value="all" checked="true">
+Authors of all submissions<br/><br/>
+</li>
+<li>
+Only submissions with status:
+  <input type="radio" ID="send2AC" name="emailTo" value="AC"> AC,
+  <input type="radio" ID="send2MA" name="emailTo" value="MA"> MA,
+  <input type="radio" ID="send2DI" name="emailTo" value="DI"> DI, 
+  <input type="radio" ID="send2NO" name="emailTo" value="NO"> NO,
+  <input type="radio" ID="send2MR" name="emailTo" value="MR"> MR, 
+  <input type="radio" ID="send2RE" name="emailTo" value="RE"> RE</input>
+<br/><br/>
+</li>
+<li>
+<input ID="send2these" type="radio" name="emailTo" value="these">
+Only submissions with the IDs specified below:</br>
+<input type="text" name="subIDs" size="100" onfocus="document.getElementById('send2these').checked = true">
+</li>
+</ul>
+<p><input type="submit" value="Send email">
+<input name="withGrades" type="checkbox" value="true">
+Check to include score and confidence in the email sent to the authors
+</p>
 </form>
-
-<hr />
+<hr/>
 $links
+EndMark;
+?>
 </body>
 </html>
-
-EndMark;
-exit();
-
-function sendComments($subId, $title, $authors, $contact,
-		      $cmnts, $attachments, $text)
-{
-  $subject = "Reviewer comments for ".CONF_SHORT.' '.CONF_YEAR." submission $subId";
-  $errMsg = "comments for submission {$subId} to {$contact}";
-
-  $text = str_replace('<$authors>', $authors, $text);
-  $text = str_replace('<$title>', $title, $text);
-  if (is_array($cmnts) && count($cmnts)>0)
-    $text = str_replace('<$comments>', implode("\n\n========================================================================\n\n", $cmnts), $text);
-  else $text = str_replace('<$comments>', "\nNo Reviewer Comments\n", $text);
-
-  my_send_mail($contact, $subject, $text, CHAIR_EMAIL, $errMsg, $attachments);
-// print "debug mode: message to $contact not sent <br/>\n";
-}
-?>
-

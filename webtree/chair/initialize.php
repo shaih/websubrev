@@ -5,10 +5,6 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-//if (file_exists('../init/confParams.php')) { // Already customized
-//  header("Location: index.php");
-//  exit();
-//}
 $webServer = $_SERVER['HTTP_HOST'];
 if ($webServer=='localhost' || $webServer=='127.0.0.1') $webServer='';
 
@@ -20,6 +16,13 @@ if ($month>6) $year++;
 // Set some default name for the database
 $rnd = mt_rand() % 100;
 $dbName = "Conf{$rnd}_$year";
+
+if (empty($_GET['iacr'])) $iacr = '';
+else {
+  $iacr = '<tr><td class=rjust>IACR&nbsp;parameters:</td>
+  <td><input name="iacr" size="90" type="text" value="'
+    .htmlspecialchars($_GET['iacr']).'"></td></tr>';
+}
 
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -65,7 +68,7 @@ function checkform( form )
   if (pat.test(form.pwd.value))     { st |= 8; }
 
   if ((st & 3) && (st & 12)) {
-    alert( "You must specify either the MySQL administarot name and password, or the name and password of a user that can access the conference database" );
+    alert( "You must specify either the MySQL administrator name and password, or the name and password of a user that can access the conference database" );
     form.rootPwd.focus();
     return false ;
   }
@@ -106,10 +109,7 @@ kept, etc.<br/>
     create a database for this installation</td>
 </tr>
 <tr><td></td>
-  <td>If you do not have the password of a MySQL root user, you should
-    manually create the <br/>database and add a user that can access
-    it (or ask the site administrator to do it for you) and <br/>enter the
-    details below.</td>
+   <td>You can also use an existing database (e.g. if you do not have the credentials for creating one yourself).<br/>Then enter below the details of this database and a user that can access it (and also create tables etc.).</td>
 </tr>
 <tr><td class=rjust><a href="../documentation/chair.html#SQLuser" target="documentation" title="click for more help">MySQL&nbsp;User:</a></td>
   <td>Name: <input name="user" size="32" type="text"> &nbsp; &nbsp;
@@ -129,12 +129,13 @@ kept, etc.<br/>
 </tr>
 <tr><td class=rjust><a href="../documentation/chair.html#chairEmail" target="documentation" title="click for more help">Chair&nbsp;Email:</a></td>
   <td><input name="chair" size="90" type="text" onchange="return checkEmail(this)"><br/>
-     Only one address (e.g., <tt>My Name &lt;chair@myConf.org&gt;</tt> or <tt>My.Email@company.com</tt>)</td>
+    Only one address, e.g., <tt>My Name &lt;chair@myConf.org&gt;</tt> or <tt>My.Email@company.com</tt>.<br/>You will be able to add more PC chairs later.</td>
 </tr>
 <tr><td class=rjust><a href="../documentation/chair.html#adminEmail" target="documentation" title="click for more help">Administrator&nbsp;Email:</a></td>
   <td><input name="admin" size="90" type="text" onchange="return checkEmail(this)"><br/>
     Who should get the angry emails when there are problems with the site?</td>
 </tr>
+$iacr
 <tr><td class=ctr colspan="2" >
   <input value="         Submit         " type="submit"></td>
 </tr>

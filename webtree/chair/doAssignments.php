@@ -18,7 +18,7 @@ while ($row = mysql_fetch_row($res)) {
   $subArray[] = $row;
 }
 
-$qry = "SELECT revId, name from committee WHERE revId!='".CHAIR_ID."' ORDER BY revId";
+$qry = "SELECT revId, name from committee WHERE !(flags & ". FLAG_IS_CHAIR. ") ORDER BY revId";
 $res = db_query($qry, $cnnct);
 $committee = array();
 $nameList = $sep = '';
@@ -48,11 +48,11 @@ if (isset($_POST["saveAssign"])) { // input from matrix interface
   foreach($subArray as $sub) foreach($cmteIds as $revId) {
     $subId = (int) $sub[0];
     $assgn = isset($_POST["a_{$subId}_{$revId}"]) ? 1 : 0;
-
+    
     // do not override a conflict
     if (isset($prefs[$subId][$revId][2])
 	&& $prefs[$subId][$revId][2] == -1) $assgn=-1;
-
+    
     if (isset($prefs[$subId][$revId])                 // modify existing entry
 	&& (isset($_POST["visible"]) || $prefs[$subId][$revId][2]!=$assgn)) {
       $prefs[$subId][$revId][2] = $assgn;
@@ -61,7 +61,7 @@ if (isset($_POST["saveAssign"])) { // input from matrix interface
       $qry .= " WHERE revId='{$revId}' AND subId='{$subId}'";
       db_query($qry, $cnnct);
     }
-
+    
     if (!isset($prefs[$subId][$revId]) && $assgn!=0) {// inser a new entry
       if (!isset($prefs[$subId])) { $prefs[$subId] = array(); }
       $prefs[$subId][$revId] = array(3, 0, $assgn);

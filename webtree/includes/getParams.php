@@ -26,7 +26,7 @@ require_once('../includes/confUtils.php');
 // Check if we can use the PDF stamping based on Zend framework: 
 
 // 1. Look for Zend in the standard include path on this server
-//    Note that fopen use the include_path while file_exists does not
+//    Note that fopen uses the include_path while file_exists does not
 if (($fp = @fopen('Zend/Pdf.php', 'r', 1)) and fclose($fp)) {
   define("HAVE_ZEND_PDF", true);
 } 
@@ -42,11 +42,27 @@ else {
 }
 
 $cnnct = db_connect();
-$qry = "SELECT name, email from committee WHERE revId=".CHAIR_ID;
+$qry = "SELECT revId, name, email from committee WHERE (flags & ".FLAG_IS_CHAIR.")>0";
 $res = db_query($qry, $cnnct, "Cannot find chair in database: ");
-$row = mysql_fetch_row($res) or die("Cannot find chair in database");
-define('CHAIR_NAME', $row[0]);
-define('CHAIR_EMAIL', $row[1]);
+
+if(mysql_num_rows($res) == 0)
+  die("Cannot find chair in database.");
+
+$CHAIR_IDS = array();
+$CHAIR_INFO = array();
+$CHAIR_EMAILS = array();
+
+while($row = mysql_fetch_assoc($res)) {
+  array_push($CHAIR_IDS, $row['revId']);
+  array_push($CHAIR_EMAILS, $row['email']);
+  $CHAIR_INFO[$row['revId']] = $row;
+}
+
+reset($CHAIR_INFO);
+$first = key($CHAIR_INFO);
+
+define('CHAIR_NAME', $CHAIR_INFO[$first]['name']);
+define('CHAIR_EMAIL', $CHAIR_INFO[$first]['email']);
 
 if (isset($notCustomized) && $notCustomized===true) $row=emptyPrms();
 else {
@@ -60,6 +76,7 @@ define('CONF_NAME', $row['longName']);
 define('CONF_SHORT', $row['shortName']);
 define('CONF_YEAR', $row['confYear']);
 define('CONF_HOME', $row['confURL']);
+
 if (isset($row['regDeadline'])) {
   define('USE_PRE_REGISTRATION',true);
   define('REGISTER_DEADLINE',$row['regDeadline']);
@@ -67,8 +84,26 @@ if (isset($row['regDeadline'])) {
   define('USE_PRE_REGISTRATION',false);
   define('REGISTER_DEADLINE',NULL);
 }
+
 define('SUBMIT_DEADLINE', $row['subDeadline']);
 define('CAMERA_DEADLINE', $row['cmrDeadline']);
+
+//if (isset($row['rebStart'])) {
+//  define("REBUTTAL_START", $row['rebStart']);
+//}
+if (isset($row['rebDeadline'])) {
+  define("REBUTTAL_DEADLINE", $row['rebDeadline']);
+}
+if (isset($row['flags'])) {
+  define("REBUTTAL_FLAG", $row['flags'] & FLAG_REBUTTAL_ON);
+}
+if (isset($row['maxRebuttal'])) {
+  define("MAX_REBUTTAL", $row["maxRebuttal"]);
+}
+
+if (!empty($row['optIn'])) {
+  define("OPTIN_TEXT", $row['optIn']);
+}
 
 $confFlags = (int) $row['flags'];
 define('CONF_FLAGS', $confFlags);
@@ -100,6 +135,9 @@ $categories = categoryTable($row['categories']);
 $criteria = criteriaTable($row['extraCriteria']);
 
 define('PERIOD', $row['period']);
+
+$JQUERY_URL = "../common/jquery-1.9.0.js";
+
 switch($row['period']) {
   case PERIOD_FINAL:
     define('CAMERA_PERIOD', false);
@@ -114,6 +152,7 @@ switch($row['period']) {
   default:
     break;
 }
+
 switch($row['period']) {
   case PERIOD_FINAL:
     define('SHUTDOWN', true);
@@ -134,11 +173,11 @@ switch($row['period']) {
     define('SETUP_PERIOD', true);
 }
 
+if (defined('IACR')) $IACRdir = IACR;
+
 $footer = <<<EndMark
 <br />
-This is a version 0.63 (beta) of the <a href="http://alum.mit.edu/www/shaih/websubrev">Web-Submission-and-Review software</a>, written by Shai Halevi from <a href="http://www.research.ibm.com"><img src="../common/ibm-research-logo.jpg" alt="IBM Research"></a>
-<br/>
-Shai would love to hear your comments and suggestions regarding this software.
+This is a version 0.64 (beta) of the <a href="http://alum.mit.edu/www/shaih/websubrev">Web-Submission-and-Review software</a>, written mostly by Shai Halevi from <a href="http://www.research.ibm.com"><img src="../common/ibm-research-logo.jpg" alt="IBM Research"></a>.
 EndMark;
 
 $reviewIcon = '<img alt="[Review]" title="Write a report about this submission" src="../common/Review.gif" border=1>';
@@ -153,7 +192,8 @@ $MRicon = '<img alt="[MR]" title="Status: maybe reject" src="../common/MR.gif" b
 $REicon = '<img alt="[RE]" title="Status: reject" src="../common/RE.gif" border=0>';
 $NOicon = '<img alt="[NO]" title="Status: none" src="../common/NO.gif" border=0>';
 $WDicon = '<img alt="[WD]" title="Status: Withdrawn" src="../common/WD.gif" border=0>';
-
+$PCicon = '<img alt="[PC]" title="One or more PC\'s is listed as author" src="../common/PC.gif" border=0>';
+$HVRicon = '<img alt="[PC]" title="High Variance Review" src="../common/HVR.gif" border=0>';
 function formatTable($fmtString)
 {
   if (!isset($fmtString)) return NULL;

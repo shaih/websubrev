@@ -22,7 +22,7 @@ if (defined('CAMERA_PERIOD')) {
 // The chair can edit anyone's review
 $notMine = (isset($_POST['revId'])
 	    && intval($_POST['revId']) != $revId
-	    && $revId==CHAIR_ID);
+	    && is_chair($revId));
 if ($notMine) $revId = intval($_POST['revId']);
 else {
   $saveDraft = isset($_POST['draft']);

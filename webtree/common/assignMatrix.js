@@ -1,4 +1,4 @@
-/** assignMatrix.js: manupulate the assignment matrix interface
+/** assignMatrix.js: manipulate the assignment matrix interface
  **/
 
 function initMatrix()

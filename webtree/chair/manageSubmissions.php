@@ -12,7 +12,6 @@ $longName    = CONF_NAME;
 $shortName   = CONF_SHORT;
 $confYear    = CONF_YEAR;
 $confURL     = CONF_HOME;
-$chairEml    = CHAIR_EMAIL;
 $adminEml    = ADMIN_EMAIL;
 
 $regDeadline = USE_PRE_REGISTRATION? utcDate('r (T)',REGISTER_DEADLINE): '';

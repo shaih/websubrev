@@ -9,7 +9,7 @@ h1 {text-align: center;}
 
 <body>
 <h1>Web Submission and Review, Chair Documentation</h1>
-<h2 style="text-align: center;">Version 0.63 - June 2009</h2>
+<h2 style="text-align: center;">Version 0.64 - June 2013</h2>
 
 <a name="TOC"></a><h2>Table of Contents</h2>
 <ol>
@@ -70,7 +70,7 @@ web-server. In particular, some issues that I came across are:
 <br/></li>
 
 <li>If the server is set-up with PHP in safe mode, then everything under the
-  BASE directory must have same owner. (Also everything under the UPLOAD
+  BASE directory must have the same owner. (Also everything under the UPLOAD
   directory -- see below.) If safe_mode_gid is set in php.ini then instead
   of having the same owner they must have the same group.<br/> 
 </li>
@@ -82,8 +82,9 @@ submissions (which needs either the
 <a href="http://pear.php.net/package/Archive_Tar"><tt>Archive_Tar</tt></a>
 PEAR library or the <tt>tar</tt> or <tt>zip</tt> programs), and stamping
 the submissions with a header saying "do not ditribute" (which needs
-auxilary program to convert between PDF and Postscript). See some more
-details in the <a href="implementation.html">implementation notes</a>.
+either the Zend framework or auxilary program to convert between PDF
+and Postscript). See some more details in the
+<a href="implementation.html">implementation notes</a>.
 <p>
 <b>Experimenting with the software.</b>
 I wrote a small testing package for the purpose of experimenting with the
@@ -162,7 +163,7 @@ the UPLOAD directory defaults to the subdirectory <tt>"subs"</tt> under the
 BASE directory. The UPLOAD directory need not be in the web-tree, but the web
 server must be able to read and write in that directory.<br/><br/> 
 </dt>
-<dt><a name="chairEmail"></a><b>Program Chair email.</b>
+<dt><a name="chairEmail"></a><b>Program Chair emails.</b>
 In this field you can specify either just an email address or also the name
 (in the form <tt>Name &lt;email&gt;</tt>). If you do not specify the chair's
 name, it will default to something like <tt>"&lt;conf-name&gt; Chair"</tt>.
@@ -173,7 +174,9 @@ The chair's email will also be CC'ed on every email that is sent to authors
 of submitted papers, including submission/revision confirmations, the final
 decision notifications and the comments for authors. The address that you
 specify here can later be modified from the <a href="#PCemail">customization
-page</a>, and also from the PC membership page.<br/><br/>
+page</a>, and also from the PC membership page. The system supports multiple
+chair accounts, but during initialization you can only specify one of them.
+<br/><br/>
 </dt>
 <dt><a name="adminEmail"></a><b>Administrator email.</b>
 The administrator's email is rarely used by the software: it's main purpose
@@ -230,6 +233,13 @@ deadline for registration is 1-2 weeks before the submission deadline. If you
 leave the field for pre-registration deadline empty, then the software will
 assume that pre-registration is not required.<br/><br/></dt>
 
+<dt><a name="optIn"></a><b>Opt-in text.</b> Some conferences would like the option
+for submissions to choose to opt in (via a checkbox) to some list or program. 
+For example, the text might read "This paper qualifies for the 'Outstanding
+Young Author' award." Later in the process, the chairs will have the option
+to list all papers who 'opted in' for further processing. If this is left
+blank, the checkbox will be left out of the submission page.<br/><br/></dt>
+
 <dt><a name="formats"></a><b>Supported Formats.</b> The software is very
 permissive in terms of handling formats other than the ones that you specify
 here. If a submitter uploads a file in an unsupported format, the only
@@ -238,7 +248,7 @@ to the file name. (For example, uploading a file <tt>xyz.txt</tt>, the
 file will be stored as <tt>xyz.txt.unsupported</tt>.<br/><br/>
 </dt>
 <dt><a name="PCemail"></a><b>Program Committee.</b>
-In this section you must enter the PC chair's email address, and you can
+In this section you must enter the PC chair(s) email address(es), and
 optionally also specify the names and email addresses of the program
 committee members. For each PC member (or chair) you can specify either just
 an email address or also the name (in the form <tt>Name &lt;email&gt;</tt>).
@@ -395,8 +405,9 @@ the deadline.)
 One of the first things that you would want to do after the deadline
 (if not before) is letting the PC members access the review site. This
 is done from the "Manage PC membership" page. On that page you can add
-or remove PC members, reset the password of a PC member and modify the
-email address or the name  that is recorded in the database for each
+or remove PC members, reset the password of a PC member, modify the
+email address or the name that is recorded in the database for each
+member, and set the status of a member as either a chair or a regular
 member. The PC members can login to the site using their email address
 and password. When you reset the password of a PC member, an email
 message is sent to that member with the new password. (Also, changing
@@ -433,12 +444,13 @@ page.
 On the <a href="../chair/conflicts.php">Edit conflicts</a> page you
 are presented with a list of all the PC members, and for each member
 you are given a list of the submission-ID's that that member specified
-as having conflict-of-interests with. For each
-PC member you can then specify a list of submissions that this member should
-be barred from seeing. You are then asked again to confirm these choices, and
+as having conflict-of-interests with. For each PC member you can then
+specify a list of submissions that this member should be barred from
+seeing. You are then <i>asked again to confirm these choices</i>, and
 once you do the submissions that you specified are removed from the view of
 that PC member. (You can access the Blocking-Access page at any time during
-the review process, should you need to modify these decisions.)<br/><br/></li>
+the review process, should you need to modify these decisions.)<br/>
+<br/></li>
 <li>
 For the task of assigning submissions to reviewers, you are given the choice
 to either assign everything manually, or to let the software compute an
@@ -463,8 +475,8 @@ time that you check or clear a check-box. <i>Note, however, that you
 must use the "save assignments" button to have these changes recorded
 by the server.</i><br/>
 <br/>
-The heuristic "indication of happiness" is computed as follows: The software computes the fraction of requested papers from all the assigned ones, and the faction of assigned papers from all the requested ones, and the "happiness level" is taken as the largest of these two fractions.  A level below 40% is "Angry" <img
-src="../common/angry.gif">, 40-59% is "Sad" <img src="../common/sad.gif">, 60-79% is "Satisfied" <img src="../common/ok.gif">, and 80% and up is "Happy" <img src="../common/laugh.gif">.<br/>
+The heuristic "indication of happiness" is computed as follows: The software computes the fraction of requested papers from all the assigned ones, and the faction of assigned papers from all the requested ones, and the "happiness level" is taken as the largest of these two fractions.  A level below 50% is "Angry" <img
+src="../common/angry.gif">, 50-64% is "Sad" <img src="../common/sad.gif">, 65-79% is "Satisfied" <img src="../common/ok.gif">, and 80% and up is "Happy" <img src="../common/laugh.gif">.<br/>
 <br/>
 Every entry in the matrix also displays the preferences that the PC member specified for that submission, encoded as a number between 0 and 5 and colored from red to green (if nothing appears in the entry, it means that the PC member specified the default number 3). Also, if you <a href="#chairPrefs">specified some preferences of your own</a> from the chair-preferences page, then the checkbox itself will be colored either red (should not review) or green (should review).<br/>
 <br/>
@@ -501,7 +513,7 @@ tha tsubmission by P (between 0 and 5), then the auto-assignment
 procedure will treat it as <tt>max(0,P-2)</tt>.
 </li>
 <li>
-When the chair indicates that a certain PC member SHOULD review
+When the chair indicates that a certain PC member SHOULD NOT review
 a certain submission, the auto-assignment procedure will increase that
 preference. Denoting the preference-level that the reviewr assigned to
 tha tsubmission by P (between 0 and 5), then the auto-assignment
@@ -598,14 +610,18 @@ shows whether a PC member is assigned to a submissions and whether it
 entered a review of it. If the PC member entered a review for the submission,
 you can click on the entry to see that review. At the bottom of the
 page you can manage the "discuss flags" that let PC members see each
-other's comments and participate in the discussions.<br/>
+other's comments and participate in the discussions. You can also see each
+PC members average scores across all the reviews they have given.<br/>
 <br/>
 At any time you can go to the Set Submission Status page where you can
 modify the status of any submission. The available status values are the
 usual ones,  namely "No status", "Reject", "Maybe Reject", "Discuss",
-"Maybe accept", and "Accept". At the top of the Overview and Set-Status
-pages you can see how many submissions are currently assigned any of the
-status values.<br/>
+"Maybe accept", and "Accept". The Set Submission Status page has both a
+"scratch" and "final" status. Only chairs can see the scratch status, and
+it can be changed without affecting final status. Only when you click "Set
+scratch and final status" will the final status be updated for all to see.
+At the top of the Overview and Set-Status pages you can see how many
+submissions are currently assigned any of the status values.<br/>
 <br/>
 Also, at any time you can also go from the Administration page to the
 Review page (via the links at the top and bottom of the page), where you
@@ -658,7 +674,18 @@ tally for submissions for which they have a conflict. You can prevent
 even the tally from becoming visible by checking the box to "Hide tally
 from PC" (next to the "Close vote" button) when you close the vote.
 
-<a name="wrap"></a><h3>5e. Wrapping up the PC work</h3>
+<a name="rebuttal"></a><h3>5e. Rebuttal Phase</h3>
+At any point during the review phase you can choose to send comments-to-authors
+that have been entered. In this email you are given the option to send a link to the
+submissions rebuttal page. Each submission is given one rebuttal with a maximum
+number of characters set by you. When the authors submit a rebuttal it is shown
+on the discussion page in below the discussions and above the reviews.<br/>
+<br/>
+On the rebuttal-setup page you can choose how many characters it can have
+and when is the deadline for submitting it, and you can open the rebuttal
+(or close it, if it is currently open).
+
+<a name="wrap"></a><h3>5f. Wrapping up the PC work</h3>
 After all the decisions are made, the software lets you send to the authors
 the notification of decisions and the comments-to-authors that were entered
 during the review period. Just follow the appropriate link off the
@@ -666,14 +693,15 @@ administration page, and you will be given the opportunity to edit these
 emails before they are sent. In addition to the contact authors, the chair
 is also CCed on all these emails.<br/> 
 <br/> 
-Note that the Notification and Comments pages <i>only send emails to contact
+Note that from the Notification page you can <i>only send emails to
 authors of submissions whose status is either "Accept" or "Reject"</i>. 
-These pages give you the choice of either sending emails to the contact
-authors of all the accepted and rejected submissions, or only to specific
-submissions that you explicitly list. This can be used to hold off on
-sending emails to some submissions (by setting their status to something
-other than "Accept" or "Reject") and later assigning the correct status
-and specifying these submission explicitly. <br/>
+The comments page (And the generic page for sending email to authors)
+also give you the choice of sending emails to authors of submissions
+with a particular status, or only to specific submissions that you
+explicitly list. This can be used, for example, to hold off on sending
+emails to some submissions by setting their status to something other
+than "Accept" or "Reject", and later sending these submission separate
+emails (e.g., for conditional-accept submissions).<br/>
 <br/>
 If you want to keep all the reviews and discussions for future reference,
 you can find a link off the administration page that packs all of them in
@@ -686,7 +714,8 @@ to close the review site and activate the site for final-version submission.
 Once the review site is closed, PC members can still access the site and
 read the comments and discussions, but they can no longer modify them.
 
-<a name="manageFinal"></a><h2>6. Managing the final-version submission site</h2>
+<a name="manageFinal"></a>
+<h2>6. Managing the final-version submission site</h2>
 After you activated the final-version submission site, you still see a 
 "Review site" box at the top right corner of the administration page, that
 lets you send emails to authors or change the status of submissions if

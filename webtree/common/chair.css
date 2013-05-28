@@ -1,0 +1,30 @@
+.notice {
+    position: fixed;
+    left: 50%;
+    top: 0px;
+    padding: 10px;
+    color: red;
+    font-size: small;
+    font-weight: bold;
+    border-bottom-right-radius:15px;
+    border-bottom-left-radius:15px;
+    -moz-border-bottom-right-radius:15px;
+    -webkit-border-bottom-right-radius:15px;
+    -moz-border-bottom-left-radius:15px;
+    -webkit-border-bottom-left-radius:15px;
+}
+
+.saving {
+    background-color: #FFFF00;
+}
+
+.saved {
+    background-color: #FFFF99;
+}
+
+.remove-notice {
+    border: 0px;
+    cursor: pointer;
+    background: none;
+    font-weight: bold;
+}

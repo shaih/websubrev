@@ -20,9 +20,6 @@ $confYear    = trim($_POST['confYear']) ;
 $confURL     = trim($_POST['confURL'])  ;
 if (empty($confURL)) $confURL = '.';
 
-$chrName = isset($_POST['chairName']) ? trim($_POST['chairName']) : NULL;
-$chrEmail= isset($_POST['chairEmail']) ? trim($_POST['chairEmail']) : NULL;
-
 $regDeadline = trim($_POST['regDeadline']);
 if (empty($regDeadline)) { // pre-registration is required
   $regDeadline = "NULL";
@@ -45,11 +42,12 @@ if (($maxGrade < 2) || ($maxGrade > 9)) { $maxGrade =6; }
 $nCrits = isset($_POST['nCrits']) ? ((int) $_POST['nCrits']) : 0;
 if ($nCrits > 20) { die("Cannot handle more than 20 evaluation criteria"); }
 
-// Check that the required fileds are specified
+$checktext = isset($_POST['checktext']) ? $_POST['checktext'] : "";
 
-if (empty($longName) || empty($shortName) || empty($confYear) || empty($chrEmail)) {
+// Check that the required fields are specified
+if (empty($longName) || empty($shortName) || empty($confYear)) {
   print "<h1>Mandatory fields are missing</h1>\n";
-  exit("You must specify the conference short and long names and year, and an email address for the program chair");
+  exit("You must specify the conference short and long names and year");
 }
 
 if ($confYear < 1970 || $confYear > 2099) {
@@ -57,15 +55,10 @@ if ($confYear < 1970 || $confYear > 2099) {
   exit("Year must be an integer between 1970 and 2099");
 }
 
-$nCmmtee = isset($_POST['nCmmtee']) ? (int) $_POST['nCmmtee'] : 0;
-if ($nCmmtee > 500) { die("Cannot handle committees larger than 500"); }
-$committee = array();
-for ($i=0; $i<$nCmmtee; $i++) {
-  $mmbr = "member_{$i}_";
-  $nm  = trim($_POST["{$mmbr}name"]);
-  $eml = trim($_POST["{$mmbr}email"]);
-  $committee[$i] = array($nm, $eml);
-}
+$committee = $_POST['cmte'];
+if (!is_array($committee) || empty($committee)) 
+  exit("<h1>Mandatory fields are missing</h1>\nMust specify at least one chair");
+if (count($committee) > 500) die("Cannot handle committees larger than 500");
 
 /* We are ready to start customizing the installation */
 
@@ -130,79 +123,79 @@ $qry = "INSERT INTO parameters SET version=1,\n"
    . "  period=$firstPeriod,\n"
    . "  formats=$confFormats,\n"
    . "  categories=$categories,\n"
+   . "  optIn='".my_addslashes($checktext, $cnnct)."',\n"
    . "  extraCriteria=$criteria";
+
 db_query($qry, $cnnct, "Cannot set conference parameters: ");
 
-// Set the PC Chair name, email, and password in the database
-if (empty($chrName)) $chrName = $shortName.$confYear." Chair";
-$chrName = my_addslashes($chrName, $cnnct);
-$chrEml =  my_addslashes($chrEmail, $cnnct);
+// Insert PC members to the database
+db_query("DELETE FROM committee", $cnnct); // start from scratch
 
-$qry = "SELECT revPwd FROM committee WHERE revId=".CHAIR_ID;
-$res=db_query($qry, $cnnct);
-if (($row=mysql_fetch_row($res))) $chrPasswd = trim($row[0]);
-else $chrPasswd = '';
-
-if (empty($chrPasswd)) {
-  $chrPasswd= md5(uniqid(rand()).mt_rand());             // returns hex string
-  $chrPasswd= alphanum_encode(substr($chrPasswd, 0, 15));// "compress" a bit
+if (!empty($_GET['password']))            // set pwd for 1st chair
+  $pwd = my_addslashes($_GET['password']);
+else {
+  $pwd = sha1(uniqid(rand()).mt_rand());        // returns hex string
+  $pwd = alphanum_encode(substr($pwd, 0, 15));  // "compress" a bit
 }
-$chrPwd = md5(CONF_SALT . $chrEmail . $chrPasswd);
-
-$qry = "UPDATE committee SET revPwd='$chrPwd', name='$chrName', email='$chrEml' WHERE revId=".CHAIR_ID;
-db_query($qry, $cnnct);
-
-// Inseret PC members to the database
+$i=1;
 foreach ($committee as $m) {
-  $m[0] = my_addslashes($m[0], $cnnct);
-  $m[1] = my_addslashes($m[1], $cnnct);
-  $qry= "INSERT INTO committee SET revPwd='', name='{$m[0]}', email='{$m[1]}'";
-  mysql_query($qry, $cnnct); // No error checking, those can be fixed later
+  $nm = my_addslashes($m['name'], $cnnct);
+  $eml = my_addslashes($m['email'], $cnnct);
+  if ($m['flags']) { // PC chair(s): first one gets a password
+    if (!empty($pwd)) {
+      $chrEml = $eml;
+      $chrPwd = $pwd;
+      $pwd = sha1(CONF_SALT . $eml . $pwd);
+    }
+    if (empty($nm))
+      $nm = $shortName.$confYear." Chair".(($i>1)? $i: '');
+    $qry= "INSERT INTO committee SET revId=$i, revPwd='$pwd', name='$nm', email='$eml', canDiscuss=1, flags=".FLAG_IS_CHAIR;
+    $pwd = '';
+  }
+  else $qry= "INSERT INTO committee SET revId=$i, revPwd='', name='$nm', email='eml', flags=0";
+
+  db_query($qry, $cnnct);
+  $i++;
 }
 
 // insert a dummy submission, so numbering will start at 101
 $qry = "INSERT INTO submissions SET subId=100, title = 'Dummy',
         authors = 'Dummy', contact = 'Dummy', abstract = 'Dummy',
         status = 'Withdrawn', subPwd = 'Dummy'";
-mysql_query($qry, $cnnct);
+db_query($qry, $cnnct);
 $qry = "DELETE FROM submissions WHERE subId=100";
-mysql_query($qry, $cnnct);
+db_query($qry, $cnnct);
 
-// All went well, send email to chair and go to confirmation page
-$hdr = "From: $chrName <$chrEmail>";
+// All went well, send email to 1st chair
+$hdr = "From: $chrEml";
 $sbjct = "Submission and review site for $shortName $confYear is operational";
-
+  
 $prot = (isset($_SERVER['HTTPS'])) ? 'https' : 'http';
 $baseURL = $prot.'://'.BASE_URL;
-
+$passwd = $chrPwd;
 $msg =<<<EndMark
 The submission and review site for $shortName $confYear is customized
 and ready for use. The start page for submitting papers is:
 
-  {$baseURL}submit/
+{$baseURL}submit/
 
 The administration page is:
 
-  {$baseURL}chair/
+{$baseURL}chair/
 
 You can login to the administration page using your email address
-as username and with password $chrPasswd
-
+as username {$chrEml} and with password {$chrPwd}
 EndMark;
 
-$sndTo = "$chrEmail, ". ADMIN_EMAIL;
-$success = mail($sndTo, $sbjct, $msg, $hdr);
-
-if (!$success) {
-  $err = "Cannot send email to $sndTo (pwd=$chrPasswd)";
+$sndTo = "$chrEml, ". ADMIN_EMAIL;
+if (!mail($sndTo, $sbjct, $msg, $hdr)) {
+  $err = "Cannot send email to $chrEml (pwd=$chrPwd)";
   error_log(date('Y.m.d-H:i:s ')."$err. {$php_errormsg}\n", 3, LOG_FILE);
 }
-
-$urlParams = '?username='.$chrEmail.'&password='.$chrPasswd;
+$urlParams = '?username='.$chrEml.'&password='.$chrPwd;
 
 // if in testing mode: insert dummy submissions/reviewers
 if (file_exists('testingOnly.php')) {
   header("Location: testingOnly.php{$urlParams}");
 }
 else header("Location: receiptCustomize.php{$urlParams}");
-?>

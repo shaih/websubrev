@@ -20,8 +20,8 @@ while ($row = mysql_fetch_row($res)) {
   $subArray[$subId] = true;
 }
 
-$qry = "SELECT revId from committee WHERE revId!='" . CHAIR_ID . "'
-    ORDER BY revId";
+$qry = "SELECT revId from committee WHERE !(flags & " . FLAG_IS_CHAIR . ")
+   ORDER BY revId";
 $res = db_query($qry, $cnnct);
 $committee = array();
 while ($row = mysql_fetch_row($res)) {

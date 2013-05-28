@@ -30,7 +30,7 @@ $disFlag= (int) $pcMember[3];
 $pcmFlags=  (int) $pcMember[5];
 
 // Check that this reviewer is allowed to discuss submissions
-if ($disFlag != 1) exit("<h1>$revName cannot discuss submissions yet</h1>");
+if ($disFlag != 1 && !has_reviewed_anything($revId)) exit("<h1>$revName cannot discuss submissions yet</h1>");
 
 // Get a list of submissions for which this reviewer already saw all
 // the discussions/reviews. Everything else is considered "new"
@@ -52,10 +52,11 @@ else               { $order .= ', subId, r.revId'; }
 // prepare the query: first get the submission details
 $qry = "SELECT s.subId subId, s.title title, 
        UNIX_TIMESTAMP(s.lastModified) lastModif, s.status status, 
-       s.avg avg, s.wAvg wAvg, (s.maxGrade-s.minGrade) delta,
-       a.assign assign, a.watch watch,\n";
+       s.avg avg, s.wAvg wAvg, s.minGrade minGrade, s.maxGrade maxGrade,
+       maxGrade-minGrade delta, s.flags flags,
+       a.assign assign, a.watch watch, \n";
 
-// Next the reviwe details
+// Next the review details
 $qry .="       r.revId revId, r.confidence conf, r.score score, 
        UNIX_TIMESTAMP(r.lastModified) modified, c.name PCmember,
        r.subReviewer subReviewer";
@@ -63,17 +64,19 @@ if (isset($_GET['withReviews'])) { // get also the comments
   $flags |= 64;
   $qry .= ",\n       r.comments2authors cmnts2athr,
        r.comments2committee cmnts2PC";
-  if ($revId==CHAIR_ID) $qry .= ",\n       r.comments2chair cmnts2chr";
+  if (is_chair($revId)) $qry .= ",\n       r.comments2chair cmnts2chr";
 }
+$qry .= ",s.contact contact";
 
 // Next comes the JOIN conditions (not for the faint of heart)
+//You said it! -AU
 $qry .= "\n  FROM submissions s
        LEFT JOIN reports r ON r.subId=s.subId
        LEFT JOIN committee c ON c.revId=r.revId
-       LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId\n";
+       LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId ";
 
 // Finally the WHERE and ORDER clauses
-$qry .= "  WHERE status!='Withdrawn'\n";
+$qry .= "  WHERE (status!='Withdrawn' OR (s.flags & ".FLAG_IS_GROUP." ))\n";
 if (isset($_GET['watchOnly'])) {
   $qry .= " AND a.watch=1\n";
   $flags |= 16;
@@ -81,16 +84,23 @@ if (isset($_GET['watchOnly'])) {
 if (isset($_GET['ignoreWatch'])) {
   $flags |= 32;
 }
-$qry .= "  ORDER BY $order";
+$qry .= "  GROUP BY subId, revId ORDER BY $order";
 
 // Get also the auxiliary grades
 $qry2 = "SELECT z.subId, z.revId, z.gradeId, z.grade"
      . " FROM auxGrades z, submissions s"
      . " WHERE s.subId=z.subId AND s.status!='Withdrawn' "
      . " ORDER BY z.subId, z.revId, z.gradeId";
-
+$qryAvg = "SELECT r.revId revId, AVG(r.confidence) avgConf, AVG(r.score) avgScore
+    FROM reports r, committee c WHERE r.revId = c.revId
+	GROUP BY revId";
+$qry2Avg = "SELECT revId, gradeId, avg(grade) avgGrade
+			FROM auxGrades
+			GROUP BY gradeId, revId";
 $res = db_query($qry, $cnnct);
 $auxRes = db_query($qry2, $cnnct);
+$avgRes = db_query($qryAvg, $cnnct);
+$aux2Res = db_query($qry2Avg, $cnnct);
 
 // store aux grades in a more convenient array
 $auxGrades = array();
@@ -100,22 +110,31 @@ while ($row = mysql_fetch_row($auxRes)) {
   $gId = (int) $row[2];
   $auxGrades[$sId][$rId][$gId] = isset($row[3]) ? ((int) $row[3]) : NULL;
 }
-     
+while ($row = mysql_fetch_assoc($avgRes)) {
+	$rId = (int) $row['revId'];
+	$avgGrades[$rId]['avgScore'] = $row['avgScore'];
+	$avgGrades[$rId]['avgConf'] = $row['avgConf'];
+}
+$avgAuxGrades = array();
+while ($row = mysql_fetch_assoc($aux2Res)) {
+	$rId = (int) $row['revId'];
+	$gId = (int) $row['gradeId'];
+	$avgAuxGrades[$rId][$gId] = $row['avgGrade'];
+}
+
 // Store the reviews in a tables
 $subs = array();
 $watch = array();
 $others = array();
 $currentId = -1; // make sure that it does not equal $row['subId'] below
 while ($row = mysql_fetch_assoc($res)) {
-  if ($row['assign']==-1) continue; // don't show conflict-of-interest subs
-
+  if ($row['assign']==-1 || has_group_conflict($revId, $row['title']))
+    continue;                  // don't show conflict-of-interest subs
   //  print "<pre>".print_r($row, true)."</pre>";
 
   if ($row['subId'] != $currentId) { // A new submission record
     $currentId = $row['subId'];
     $nohtingNew = isset($seenSubs[$currentId]);
-
-    // Record the details of this new submission (including statistics)
     $subs[$currentId] = array('reviews'   => array(),
 			'subId'     => $row['subId'],
 			'title'     => $row['title'],
@@ -124,10 +143,20 @@ while ($row = mysql_fetch_assoc($res)) {
 			'avg'       => $row['avg'],
 			'wAvg'      => $row['wAvg'],
 			'delta'     => $row['delta'],
+    		'minGrade'  => $row['minGrade'],
+    		'maxGrade'  => $row['maxGrade'],
+    		'flags'     => $row['flags'],
+			'contact'   => $row['contact'],
 			'hasNew'    => (!$nohtingNew) );
 
     if (isset($_GET['ignoreWatch']) && $row['watch']==1)
       $subs[$currentId]['watch'] = 1;
+
+    // kludge: if the reviewer cannot discuss this submission,
+    // don't show it at all
+    if ($disFlag==2 && $row['assign']==1 && 
+	!has_reviewed_paper($revId, $row['subId']))
+	continue;
 
     // Store the newly found submission in one of the lists
     if (!isset($_GET['ignoreWatch']) && $row['watch']==1)
@@ -146,14 +175,18 @@ while ($row = mysql_fetch_assoc($res)) {
 		    'subReviewer' => $row['subReviewer'],
 		    'modified'    => $row['modified'],
 		    'conf'        => $row['conf'],
-		    'score'       => $row['score']);
-    for ($i=0; $i<count($criteria); $i++)
+		    'score'       => $row['score'],
+    		'avgScore'    => $avgGrades[$rId]['avgScore'],
+    		'avgConf'     => $avgGrades[$rId]['avgConf']);
+    for ($i=0; $i<count($criteria); $i++) {
       $review["grade_{$i}"] = $auxGrades[$sId][$rId][$i];
+      $review["avgGrade_{$i}"] = $avgAuxGrades[$rId][$i];
+    }
 
     if (isset($_GET['withReviews'])) { // get also the comments
       $review["cmnts2athr"] = $row["cmnts2athr"];
       $review["cmnts2PC"] = $row["cmnts2PC"];
-      if ($revId==CHAIR_ID) $review["cmnts2chr"] = $row["cmnts2chr"];
+      if (is_chair($revId)) $review["cmnts2chr"] = $row["cmnts2chr"];
     }
     array_push($subs[$currentId]['reviews'], $review);
   }
@@ -218,7 +251,7 @@ if (count($watch)>0) {
   foreach ($watch as $sub) {
     $subHeader_fnc($sub, $revId, true, $i++);
     $showReviews_fnc($sub['reviews'], $revId);
-    if (isset($_GET['withDiscussion']) && is_array($sub['posts'])) { 
+    if (isset($_GET['withDiscussion']) && isset($sub['posts']) && is_array($sub['posts'])) { 
       $showPosts_fnc($sub['posts'], $sub['subId'], false, $bigNumber);
     }
     $otherTtl = true;

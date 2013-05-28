@@ -45,12 +45,12 @@ if (!empty($x)) {
   if ($trg===false || $trg==-1)
      die ("<h1>Unrecognized time format for pre-registration deadline</h1>");
   if ($trg!=$regDeadline) { $changeParams=true; $regDeadline=$trg; }
-  $period = PERIOD_PREREG;
+  //  $period = PERIOD_PREREG;
 }
 else if (USE_PRE_REGISTRATION && $period <= PERIOD_SUBMIT){ // chair decided not to use pre-reg after all
   $changeParams=true;
   $regDeadline = "NULL";
-  $period = PERIOD_SUBMIT;
+  //  $period = PERIOD_SUBMIT;
 }
 if (!isset($regDeadline)) $regDeadline = "NULL";
      
@@ -132,7 +132,7 @@ if ($changeParams) {
   if ($affiliations)   $flags |= FLAG_AFFILIATIONS;
   $qry .= "  flags=$flags,\n";
 
-  if ($period != PERIOD) $qry .= "  period=$period,\n";
+  //  if ($period != PERIOD) $qry .= "  period=$period,\n";
 
   if (is_array($confFormats) && count($confFormats)>0) {
     $fmtString = $sc = '';

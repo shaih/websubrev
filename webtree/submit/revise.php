@@ -25,6 +25,7 @@ if (USE_PRE_REGISTRATION) { // if pre-registration is required
   $submission = 'submission';
 }
 
+
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 $titleText = "{$submit}Revise a Submission to $confName";
 $h1text = "<h1>$titleText</h1>";
@@ -37,10 +38,12 @@ $subPwd = isset($_GET['subPwd']) ? trim($_GET['subPwd']) : '';
 $title = $authors  = $affiliations  
   = $contact = $abstract= $category = $keywords = $comment = '';
 
+$optin = 0;
+
 if ($subId > 0 && !empty($subPwd)) {
   $cnnct = db_connect();
   $qry = "SELECT title, authors, affiliations, contact, abstract, category,\n"
-    . "   keyWords, comments2chair\n"
+    . "   keyWords, comments2chair,flags\n"
     . "FROM submissions WHERE subId='" . my_addslashes($subId, $cnnct) .
     "' AND subPwd='" . my_addslashes($subPwd, $cnnct) . "'";
   $res=db_query($qry, $cnnct);
@@ -63,8 +66,18 @@ if ($subId > 0 && !empty($subPwd)) {
     $category= htmlspecialchars($row[5]);
     $keywords= htmlspecialchars($row[6]);
     $comment = htmlspecialchars($row[7]);
+    $flags = $row[8];
+    $optin = $flags & FLAG_IS_CHECKED;
   }
 }
+
+$checkbox = $checkbox_text = "";
+if(defined("OPTIN_TEXT")) {
+  $checked = $optin ? "checked" : "";
+  $checkbox = "<input type='checkbox' name='optin' value='1' $checked/>";
+  $checkbox_text = OPTIN_TEXT;
+}
+
 
 if (is_array($confFormats) && count($confFormats)>0) {
   $supportedFormats = '';
@@ -240,6 +253,10 @@ print <<<EndMark
     <td><textarea name="comment" rows="4" cols="80">$comment</textarea><br/>
         This message will only be seen by the program chair(s).
     </td>
+  </tr>
+  <tr>
+    <td style="text-align: right;">$checkbox</td>
+    <td>$checkbox_text</td>
   </tr>
   <tr>
     <td></td>

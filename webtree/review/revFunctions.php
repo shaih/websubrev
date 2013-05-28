@@ -5,14 +5,14 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-function show_rev_links($current = 0) 
+function show_rev_links($current = 0)
 {
   global $pcMember;
   $html = "<div style=\"text-align: center;\">\n";
 
-  if ($pcMember[0]==CHAIR_ID)
+  if (is_chair($pcMember[0]))
     $html .= make_link('../chair/', 'Administer');
-
+  
   $html .= make_link('guidelines.php', 'Guidelines', ($current==1))
     . make_link('index.php', 'Review Home', ($current==2));
   if (PERIOD>=PERIOD_REVIEW ||(PERIOD==PERIOD_SUBMIT &&USE_PRE_REGISTRATION)) {
@@ -60,9 +60,21 @@ function order_clause()
       $flags |= 3;
     } else if ($ord=='delta'){
       $order .= $comma . "delta $dir, s.subId"; 
-      $heading .= $comma . 'max-min grade';
+      $heading .= $comma . 'difference in grades';
       $flags |= 4;
-    }
+    } else if ($ord =='conf'){
+      $order .= $comma . "avgConf $dir, s.subId";
+      $heading .= $comma . 'confidence';
+      $flags |= 5;
+    } else if ($ord =='minGrade'){
+      $order .= $comma . "minGrade $dir, s.subId";
+      $heading .= $comma . 'min grade';
+      $flags |= 6;
+    } else if ($ord =='maxGrade'){
+      $order .= $comma . "maxGrade $dir, s.subId";
+      $heading .= $comma . 'max grade';
+      $flags |= 7;
+      }
   }
 
   return array($order, $heading, $flags);
@@ -71,7 +83,7 @@ function order_clause()
 function showReviewsBox($flags=0)
 {
   $flags = ($flags & 0xffffff00) >> 8;
-  $srt0=$srt1=$srt2=$srt3=$srt4='';
+  $srt0=$srt1=$srt2=$srt3=$srt4=$srt5=$srt6='';
   switch ($flags % 8) {
   case 1:
     $srt1=' checked="checked"';
@@ -84,6 +96,12 @@ function showReviewsBox($flags=0)
     break;
   case 4:
     $srt4=' checked="checked"';
+    break;
+   case 5:
+   	$srt5=' checked="checked"';
+   	break;
+   case 6:
+   	$srt6=' checked="checked"';
     break;
   default:
     $srt0=' checked="checked"';
@@ -117,7 +135,13 @@ function showReviewsBox($flags=0)
   <td><input type="radio" name="sortOrder" value="avg"{$srt3}> average</td>
 </tr>
 <tr><td></td>
-  <td><input type="radio" name="sortOrder" value="delta"{$srt4}> max-min grade</td>
+  <td><input type="radio" name="sortOrder" value="maxGrade"{$srt5}> max grade</td>
+</tr>
+<tr><td></td>
+  <td><input type="radio" name="sortOrder" value="minGrade"{$srt6}> min grade</td>
+</tr>
+<tr><td></td>
+  <td><input type="radio" name="sortOrder" value="delta"{$srt4}> grade difference</td>
 </tr>
 <tr>
   <td colspan=2><input type="checkbox" name="watchOnly"{$wtchChk}>
@@ -144,7 +168,11 @@ EndMark;
 
 function listSubmissionsBox($canDiscuss, $flags=0)
 {
-  $srt0=$srt1=$srt2='';
+  global $pcMember;
+  global $revId;
+  $flags = $pcMember[5];
+  
+  $srt0=$srt1=$srt2=$srt5='';
   switch ($flags % 8) {
   case 1:
     $srt1=' checked="checked"'; // sorted by modification date
@@ -160,10 +188,25 @@ function listSubmissionsBox($canDiscuss, $flags=0)
   $noAsgnChk= ($flags & 32) ? ' checked="checked"' : '';
   $abstChk  = ($flags & 64) ? ' checked="checked"' : '';
   $catChk  = ($flags & 128) ? ' checked="checked"' : '';
-  if ($canDiscuss) {
-    $stts = '<input type="checkbox" name="sortByStatus"'.$sttsChk.'> Status+';
-  } else { $stts = '&nbsp;'; }
+  $rvChk   = ($flags & 256) ? ' checked="checked"' : '';
+  $hvrChk   = ($flags & 512) ? ' checked="checked"' : '';
+  $disChk   = ($flags & 1024) ? ' checked="checked"' : '';
+  $optChk   = ($flags & 2048) ? ' checked="checked"' : '';
+  
+ if ($canDiscuss) {
+   $stts = '<input type="checkbox" name="sortByStatus"'.$sttsChk.'> Status+';
+   $viewDiscussed = '<input type="checkbox" name="onlyDiscussed"'.$disChk.'> Only submissions I discussed<br/>';
+  } else { 
+    $stts = '&nbsp;';
+    $viewDiscussed = '';
+  }
 
+  $viewChecked = "";
+  $highVar = "";
+  if(defined("OPTIN_TEXT") && is_chair($revId)) {
+    $viewChecked = "<input type='checkbox' name='optedIn' $optChk/> Only \"opt-in\" submissions<br/>";
+  }
+  
   $html =<<<EndMark
 <form action="listSubmissions.php" method="get">
 <div class="frame">
@@ -177,10 +220,10 @@ function listSubmissionsBox($canDiscuss, $flags=0)
   <td><input type="radio" name="sortOrder" value="num"{$srt0}>
     submission number</td>
 </tr>
-
 EndMark;
 
   if ($canDiscuss) { // discussion phase
+    //   $highVar = '<input type="checkbox" name="hvr"'.$hvrChk.'>Highlight high variance scores <input style="margin-left: 21px;" type="text" name="thresh" placeholder="2.0">';
     $html .=<<<EndMark
 <tr><td></td>
   <td><input type="radio" name="sortOrder" value="mod"{$srt1}> modification date</td>
@@ -188,22 +231,27 @@ EndMark;
 <tr><td></td>
   <td><input type="radio" name="sortOrder" value="wAvg"{$srt2}> weighted average</td>
 </tr>
+<tr><td></td>
+  <td><input type="radio" name="sortOrder" value="conf"{$srt5}> confidence</td>
+</tr>
 
 EndMark;
   }
-
   $html .=<<<EndMark
-<tr><td colspan=2><input type="checkbox" name="onlyAssigned"{$asgnChk}>
-  Only submissions assigned to me<br/>
-  or <input type="checkbox" name="ignoreAssign"{$noAsgnChk}>Show all submissions in one list</td>
-</tr>
+  <tr><td colspan=2>
+  <input type="checkbox" name="onlyAssigned"{$asgnChk}> Only submissions assigned to me<br/>
+  $viewDiscussed
+  $viewChecked
+  <input type="checkbox" name="ignoreAssign"{$noAsgnChk}> Show all submissions in one list<br/>
+</td></tr>
 <tr><td colspan=2><hr/>
    <input type="checkbox" name="abstract"{$abstChk}>Show with abstracts<br/>
-   <input type="checkbox" name="category"{$catChk}>Show with category</td>
-</tr>
+   <input type="checkbox" name="category"{$catChk}>Show with category<br/>
+   $highVar
+</td></tr>
 </tbody></table>\n</div></form>
 EndMark;
-    
+
   return $html;
 }
 
@@ -234,16 +282,16 @@ function setFlags_table($subId, $status)
 <form action="../chair/setStatus.php{$params}"
 		enctype="multipart/form-data" method="post">
   <table border=1><tbody>
-     <tr><td><input type="submit" value="Set status:"></td>
-       <td class="setNO"><input type="radio" name="subStts{$subId}" value="None" $chk0><b>None</b></td>
-       <td class="setRE"><input type="radio" name="subStts{$subId}" value="Reject" $chk2><b>Reject</b></td>
-       <td class="setMR"><input type="radio" name="subStts{$subId}" value="Perhaps Reject" $chk3>
+     <tr><td><input type="submit" name="noAnchor" value="Set status:"></td>
+       <td class="setNO"><input type="radio" name="scrsubStts{$subId}" value="None" $chk0><b>None</b></td>
+       <td class="setRE"><input type="radio" name="scrsubStts{$subId}" value="Reject" $chk2><b>Reject</b></td>
+       <td class="setMR"><input type="radio" name="scrsubStts{$subId}" value="Perhaps Reject" $chk3>
          <b>Maybe Reject</b></td>
-       <td class="setDI"><input type="radio" name="subStts{$subId}" value="Needs Discussion" $chk4>
+       <td class="setDI"><input type="radio" name="scrsubStts{$subId}" value="Needs Discussion" $chk4>
          <b>Discuss</b></td>
-       <td class="setMA"><input type="radio" name="subStts{$subId}" value="Maybe Accept" $chk5>
+       <td class="setMA"><input type="radio" name="scrsubStts{$subId}" value="Maybe Accept" $chk5>
          <b>Maybe Accept</b></td>
-       <td class="setAC"><input type="radio" name="subStts{$subId}" value="Accept" $chk6><b>Accept</b></td>
+       <td class="setAC"><input type="radio" name="scrsubStts{$subId}" value="Accept" $chk6><b>Accept</b></td>
      </tr>
   </tbody></table></form>
 EndMark;

@@ -13,7 +13,7 @@ if (isset($_GET['subId'])) { $subId = (int) trim($_GET['subId']); }
 else exit("<h1>No Submission specified</h1>");
 
 // The chair is allowed to see the reciept of other people's reviews
-$isChair = ($revId==CHAIR_ID
+$isChair = (is_chair($revId)
 	    && isset($_GET['revId']) && $revId!=$_GET['revId']);
 if  ($isChair)  $revId = (int) trim($_GET['revId']);
 

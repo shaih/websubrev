@@ -48,31 +48,55 @@ if (isset($_GET['onlyAssigned'])) {
   $assignedOnly = "";
 }
 
+$opted_in = "";
+if (isset($_GET['optedIn'])) {
+  $opted_in = "AND s.flags & ".FLAG_IS_CHECKED;
+  $flags |= 2048;
+}
+
 $qry ="SELECT s.subId subId, title, authors, abstract, s.format format,
        status, UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
-       a.watch watch, s.avg avg, (s.maxGrade-s.minGrade) delta, category,
-       r.score score
+       a.watch watch, s.avg avg, VAR_POP(r.score) delta, category, AVG(r.confidence) as avgConf, s.flags flags, s.contact contact
     FROM submissions s
          LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId
-         LEFT JOIN reports r ON r.revId='$revId' AND r.subId=s.subId
-    WHERE status!='Withdrawn' {$assignedOnly}
-    ORDER BY $order";
+         LEFT JOIN reports r ON r.subId=s.subId
+   WHERE (status!='Withdrawn' OR (s.flags & ".FLAG_IS_GROUP.")) {$assignedOnly} {$opted_in}
+    GROUP BY subId ORDER BY $order";
     $res = db_query($qry, $cnnct);
-
 $assigned = array();
 $others = array();
+$yetOthers = array();
 while ($row = mysql_fetch_assoc($res)) {
+  if(isset($_GET['onlyDiscussed'])) {
+  	if (!has_discussed($revId, $row['subId'])){
+  		continue;
+  	}
+  }
   $subId = $row['subId'];
   $row['hasNew'] = !isset($seenSubs[$subId]);
-  if ($row['assign']==1 && !isset($_GET['ignoreAssign']))
+  // sanitize for the case of "discuss most"
+  if ($disFlag==2 && $row['assign']==1 && !isset($reviewed[$subId])) {
+    $row['avg'] = NULL;
+    $row['delta'] = NULL;
+    $row['avgConf'] = NULL;
+    $row['lastModif'] = NULL;
+    $row['noDiscuss'] = true;
+    $yetOthers[$subId] = $row;
+  }
+  else if ($row['assign']==1 && !isset($_GET['ignoreAssign']))
     $assigned[] = $row;
-  else if ($row['assign']!=-1)
+  else if (($row['assign']!=-1) && !has_group_conflict($revId, $row['title']))
     $others[] = $row; 
 }
+
 if (isset($_GET['ignoreAssign'])) $flags |= 32;
+if (isset($_GET['onlyDiscussed'])) $flags |= 1024;
+
+
 
 // Display results to the user
 $links = show_rev_links(3);
+
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
   "http://www.w3.org/TR/html4/loose.dtd">
@@ -85,6 +109,8 @@ h1 { text-align: center; }
 </style>
 
 <title>Submission List (by $heading)</title>
+<script type="text/javascript" src="{$JQUERY_URL}"></script>
+<script type="text/javascript" src="../common/ui.js"></script>
 </head>
 <body>
 $links
@@ -104,16 +130,34 @@ if (isset($_GET['category'])) {
   $flags |= 128;
   $showMore |= 2;
 }
+if (isset($_GET['pcmark'])) {
+  $flags |= 256;
+  $showMore |= 4;
+}
+if (isset($_GET['hvr'])) {
+  $flags |= 512;
+  $showMore |= 8;
+}
+
+$otherName = "";
+if (count($yetOthers)>0) {
+  ksort($yetOthers);
+  print_sub_list($yetOthers, "Submissions assigned and not reviewed", 
+		 $reviewed, 0, $showMore, false, $revId);
+  print "\n<br />\n";
+  $otherName = "Other submissions";
+}
 
 if (count($assigned)>0) {
   print_sub_list($assigned, "Submissions assigned to $revName", 
-		 $reviewed, $disFlag, $showMore);
+		 $reviewed, $disFlag, $showMore, false, $revId);
   print "\n<br />\n";
   $otherName = "Other submissions";
-} else { $otherName = ""; }
+}
 
 if (count($others)>0) {
-  print_sub_list($others, $otherName, $reviewed, $disFlag, $showMore);
+  print_sub_list($others, $otherName, 
+		 $reviewed, $disFlag, $showMore, false, $revId);
 }
 
 if ($disFlag && (count($assigned)>0 || count($others)>0))
@@ -122,7 +166,7 @@ if ($disFlag && (count($assigned)>0 || count($others)>0))
 print "\n<hr />\n{$links}\n</body>\n</html>\n";
 
 if (isset($_GET['listBox'])) { // remember the flags for next time
-  $pcmFlags &= 0xffffff00;
+  $pcmFlags &= 0xfffff000;
   $pcmFlags |= $flags;
   db_query("UPDATE committee SET flags=$pcmFlags WHERE revId=$revId", $cnnct);
 }

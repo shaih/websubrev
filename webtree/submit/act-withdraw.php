@@ -10,7 +10,7 @@ require 'header.php'; // brings in the contacts file and utils file
 
 if (defined('CAMERA_PERIOD')) {
   $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
-			  $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
+			  $_SERVER['PHP_AUTH_PW'], chair_ids());
   if ($chair === false) {
     header("WWW-Authenticate: Basic realm=\"$confShortName\"");
     header("HTTP/1.0 401 Unauthorized");
@@ -24,7 +24,7 @@ $subId = (int)$_POST['subId'];
 $subPwd = my_addslashes(trim($_POST['subPwd']));
 
 // Check that mandatory subID and subPwd are specified
-if (empty($subId) || empty($subPwd)) 
+if (empty($subId) || empty($subPwd))
   exit("<h1>Withdrawal Failed</h1>Missing submission-ID or password.");
 
 // Test that there exists a submission with this subId/subPwd
@@ -43,14 +43,14 @@ $cntct = $row[2];
 /***** User input vaildated. Next modify the status *****/
 
 $qry = "UPDATE submissions SET status='Withdrawn' WHERE subId='{$subId}' AND subPwd='{$subPwd}'";
-db_query($qry, $cnnct); 
+db_query($qry, $cnnct);
 
 // Tell the client that the submission is withdrawn
 
 if (defined('REVIEW_PERIOD') && REVIEW_PERIOD===true) { // send email only to chair
-  email_submission_details(CHAIR_EMAIL, 3, $subId, $subPwd, $ttl, $athr);
+  email_submission_details(chair_emails(), 3, $subId, $subPwd, $ttl, $athr);
 } else {                    // send email to contact author
   email_submission_details($cntct, 3, $subId, $subPwd, $ttl, $athr);
-} 
+}
 header("Location: withdrawn.php?subId=$subId&subPwd=$subPwd");
 ?>

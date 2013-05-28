@@ -36,9 +36,9 @@ CREATE TABLE IF NOT EXISTS parameters (
     cmrDeadline int NOT NULL,
     maxGrade    tinyint(2) NOT NULL DEFAULT 6,
     maxConfidence tinyint(1) NOT NULL DEFAULT 3,
-    flags       int NOT NULL DEFAULT 1, 
+    flags       int NOT NULL DEFAULT 1,
     emlSender   text,
-    timeShift   int NOT NULL DEFAULT 0, 
+    timeShift   int NOT NULL DEFAULT 0,
     period      tinyint(1) NOT NULL DEFAULT 0,
     formats     text NOT NULL,
     categories  text,
@@ -48,6 +48,9 @@ CREATE TABLE IF NOT EXISTS parameters (
     rejectLtr text,
     acptSbjct varchar(80),
     rjctSbjct varchar(80),
+    rebDeadline int(11),
+    maxRebuttal smallint,
+    optIn text,
     PRIMARY KEY (version)
 );
 
@@ -75,6 +78,9 @@ CREATE TABLE IF NOT EXISTS paramsBckp (
     rejectLtr text,
     acptSbjct varchar(80),
     rjctSbjct varchar(80),
+    rebDeadline int(11),
+    maxRebuttal smallint,
+    optIn text,
     PRIMARY KEY (version)
 );
 
@@ -98,7 +104,7 @@ CREATE TABLE IF NOT EXISTS submissions (
     keyWords varchar(255),
     comments2chair text,
     format varchar(32),
-    subPwd varchar(16) BINARY,
+    subPwd varchar(32) BINARY,
     status enum('Accept',
                 'Maybe Accept',
                 'Needs Discussion',
@@ -109,21 +115,29 @@ CREATE TABLE IF NOT EXISTS submissions (
     whenSubmitted datetime NOT NULL,
     lastModified timestamp,
     flags int NOT NULL DEFAULT 0,
-    numReviewers tinyint(1),
     avg float,
     wAvg float,
     minGrade tinyint(1),
     maxGrade tinyint(1),
-    revisionOf smallint(5),
-    oldVersionOf smallint(5),
+    scratchStatus enum('Accept',	 
+                'Maybe Accept',
+                'Needs Discussion',
+                'None',
+                'Perhaps Reject',
+                'Reject',
+                'Withdrawn') NOT NULL DEFAULT 'None',
+    rebuttal text,
     PRIMARY KEY (subId),
     KEY pwd (subPwd(2))
 );
 
 CREATE TABLE IF NOT EXISTS acceptedPapers (
     subId smallint(5) NOT NULL,
-    nPages smallint(3) DEFAULT 0 NOT NULL,
+    nPages smallint(3),
     pOrder smallint(3) DEFAULT 0 NOT NULL,
+    copyright text,
+    copyrightTime datetime DEFAULT NULL,
+    eprint varchar(10),
     PRIMARY KEY (subId),
     INDEX (pOrder)
 );
@@ -177,7 +191,7 @@ CREATE TABLE IF NOT EXISTS committee (
 CREATE TABLE IF NOT EXISTS reports (
     subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL,
-    flags tinyint(1) NOT NULL DEFAULT 1,
+    flags int NOT NULL DEFAULT 1,
     subReviewer varchar(255),
     confidence tinyint(1),
     score tinyint(2),
@@ -186,7 +200,7 @@ CREATE TABLE IF NOT EXISTS reports (
     comments2chair text,
     comments2self text,
     attachment text,
-    whenEntered datetime NOT NULL,
+    whenEntered datetime NOT NULL,";
     lastModified datetime NOT NULL,
     PRIMARY KEY (subId, revId)
 );
@@ -275,6 +289,7 @@ CREATE TABLE IF NOT EXISTS lastPost (
     subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL, 
     lastSaw smallint(5) NOT NULL,
+    prevSaw smallint(5) DEFAULT NULL,
     lastVisited timestamp, 
     PRIMARY KEY (revId, subId)
 );

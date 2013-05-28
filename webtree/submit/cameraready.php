@@ -7,6 +7,7 @@
  */
 require 'header.php'; // brings in the constants file and utils file
 
+$cnnct = db_connect();
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 if (PERIOD<PERIOD_CAMERA)
      die("<h1>Final-version submission site for $confName is not open</h1>");
@@ -19,37 +20,37 @@ $h1text = "<h1>Camera-Ready Revision for $confName</h1>";
 $timeleft = show_deadline(CAMERA_DEADLINE);
 $deadline = 'Deadline is '. utcDate('r (T)', CAMERA_DEADLINE);
 
-$subId = isset($_GET['subId']) ? trim($_GET['subId']) : '';
+$subId = isset($_GET['subId']) ? ((int)trim($_GET['subId'])) : '';
 $subPwd = isset($_GET['subPwd']) ? trim($_GET['subPwd']) : '';
-$title = $authors = $affiliations = $contact = $abstract= $nPages = '';
+$title = $authors = $affiliations = $contact = $abstract 
+  = $nPages = $copyright = $urlPrms = $eprint = '';
 
-if ($subId > 0 && !empty($subPwd)) {
-  $cnnct = db_connect();
-  $sid = my_addslashes($subId, $cnnct);
+if (!empty($subId) && !empty($subPwd)) {
   $pw = my_addslashes($subPwd, $cnnct);
-  $qry = "SELECT title, authors, affiliations, contact, abstract, nPages\n"
-    . "  FROM submissions sb LEFT JOIN acceptedPapers ac USING(subId)\n"
-    . "  WHERE sb.subId='$sid' AND subPwd='$pw' AND status='Accept'\n";
+  $qry = "SELECT title, authors, affiliations, contact, abstract, nPages, copyright, eprint FROM submissions sb LEFT JOIN acceptedPapers ac USING(subId) WHERE sb.subId=$subId AND subPwd='$pw' AND status='Accept'";
   $res=db_query($qry, $cnnct);
-  $row=@mysql_fetch_row($res);
-  if (!$row) {
-    $h1text="<h1>Non-Existent Accepted Submission</h1>\n"
-     . "<span style=\"color: red;\">\n"
-     . "No accepted submission with ID $subId and password $subPwd found.\n"
-     . "Please enter the correct details below:</span><br/><br/>\n\n";
-    $subId = $subPwd = '';
+  if (!($row = mysql_fetch_row($res))) {
+    exit("<h1>Non-Existent Accepted Submission</h1>\n"
+	 . "No accepted submission with ID $subId and password $subPwd found");
   }
-  if (!empty($subId)) {
-    $subId = (int) $subId;
-    $subPwd = htmlspecialchars($subPwd);
-    $title = htmlspecialchars($row[0]);
-    $authors  = htmlspecialchars($row[1]);
-    $affiliations  = htmlspecialchars($row[2]);
-    $contact = htmlspecialchars($row[3]);
-    $abstract= htmlspecialchars($row[4]);
-    $nPages = (int) $row[5];
-    if ($nPages <= 0) $nPages = '';
-  }
+  $subPwd = htmlspecialchars($subPwd);
+  $title = htmlspecialchars($row[0]);
+  $authors  = htmlspecialchars($row[1]);
+  $affiliations  = htmlspecialchars($row[2]);
+  $contact = htmlspecialchars($row[3]);
+  $abstract= htmlspecialchars($row[4]);
+  $nPages = (int) $row[5];
+  $copyright = htmlspecialchars($row[6]);
+  $eprint =  htmlspecialchars($row[7]);
+  if ($nPages <= 0) $nPages = '';
+  $urlPrms = "?subId=$subId&subPwd=$subPwd";
+}
+
+// If authors need to submit a copyright file but didn't, ask them to
+$file = SUBMIT_DIR."/final/copyright.html";
+if (file_exists($file) && empty($copyright) && !$chair) {
+  header("Location: copyright.php{$urlPrms}");
+  exit();
 }
 
 $links = show_sub_links(6);
@@ -126,6 +127,17 @@ if (empty($subId)) { // put a button to "Load submission details"
   </tr>';
 }
 
+if (defined('IACR')) { // Specify ePrint report (if exists)
+  $ePrintHTML = '<tr>
+    <td style="text-align: right;">ePrint&nbsp;report:</td>
+    <td><input name="eprint" size="10" type="text" value="'.$eprint.'">
+     If this work is available on <a href="http://eprint.iacr.org">ePrint</a>,
+     specify the report number using the format <tt>yyyy/nnn</tt>
+    </td>
+  </tr>';
+}
+else $ePrintHTML = '';
+
 print <<<EndMark
   <tr>
     <td colspan="2" style="text-align: center;"><hr />
@@ -133,6 +145,7 @@ print <<<EndMark
              no input means the old content remains intact.</big><br /><br />
     </td>
   </tr>
+  $ePrintHTML
   <tr>
     <td style="text-align: right;">Number&nbsp;of&nbsp;Pages:</td>
     <td><input name="nPages" size="3" type="text" value="$nPages">
@@ -170,10 +183,14 @@ print <<<EndMark
     </td>
   </tr>
   <tr>
-    <td style="text-align: right;">Submission&nbsp;File: </td>
-    <td><input name="sub_file" size="70" type="file"><br />
-        The archive file (tar, tzg, etc.) with all the necessary files.
-        See <a href="cameraInstructions.php">the instructions</a>.<br/><br/>
+    <td style="text-align: right;">Submission&nbsp;Files: </td>
+    <td><input name="pdf_file" size="70" type="file">
+        <tt><==</tt> PDF file only<br/>
+    <input name="sub_file" size="70" type="file">
+    <tt><==</tt> Archive file<br/>
+    The archive file (tar, tzg, etc.) must include all the necessary files
+    <i>including the PDF file from above</i>.
+    See <a href="cameraInstructions.php">the instructions</a>.<br/><br/>
     </td>
   </tr>
   <tr>

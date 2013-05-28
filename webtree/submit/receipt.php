@@ -58,6 +58,14 @@ $rvsd = (int) $row['revised'];
 $rvsd = $rvsd ? utcDate('Y-m-j H:i:s (T)', $rvsd) : '';
 $needsStamp = ($row['flags'] & SUBMISSION_NEEDS_STAMP);
 
+$checked = ($row['flags'] & FLAG_IS_CHECKED) ? "Yes" : "No";
+
+$checkedtext = $showchecked = '';
+if (defined("OPTIN_TEXT")) {
+  $showchecked = $checked;
+  $checkedtext = OPTIN_TEXT;
+}
+
 if (defined('CAMERA_PERIOD') && $status=='Accept') {
   $subRev = 'camera-ready revision';
   $where2go = "the <a href=\"cameraready.php?subId=$subId&amp;subPwd=$subPwd\">
@@ -145,6 +153,8 @@ if (!empty($frmt)) print <<<EndMark
       <td><a href="download.php?subId=$subId&amp;subPwd=$subPwd">$frmt</a> (click to download)</td>
     </tr>
 
+
+
 EndMark;
 print <<<EndMark
     <tr style="vertical-align: top;">
@@ -154,6 +164,10 @@ print <<<EndMark
     <tr style="vertical-align: top;">
       <td style="text-align: right;">Comments:</td>
       <td>$cmnt</td>
+    </tr>
+    <tr style="vertical-align: top;">
+      <td style="text-align: right;">$showchecked</td>
+      <td>$checkedtext</td>
     </tr>
     <tr>
       <td style="text-align: right;"></td>
@@ -169,15 +183,10 @@ EndMark;
 flush();      // Don't let the user wait while we stamp the file
 if ($needsStamp && PERIOD<PERIOD_CAMERA) {
   include_once('stampFiles.php');
-
-  $res = stampSubmission($subId,$row['format']); // Stamp the file (if possible)
-
-  if ($res == 0) {
-    // re-set the "needs stamp" flag for this submission
-    // if stamping was successful.
-    $qry = "UPDATE submissions SET flags=(flags&(~".SUBMISSION_NEEDS_STAMP.")) WHERE subId={$subId}";
-    db_query($qry, $cnnct,"Cannot mark file as stamped: ");
-  }
+  // re-set the "needs stump" flag for this submission
+  $qry = "UPDATE submissions SET flags=(flags&(~".SUBMISSION_NEEDS_STAMP.")) WHERE subId={$subId}";
+  db_query($qry, $cnnct,"Cannot mark file as stamped: ");
+  stampSubmission($subId,$row['format']); // Stump the file (if possible)
 }
 exit();
 

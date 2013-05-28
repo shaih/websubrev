@@ -12,7 +12,7 @@ if (defined('CAMERA_PERIOD')) exit("<h1>Submission Deadline Expired</h1>");
 if (USE_PRE_REGISTRATION && PERIOD>PERIOD_PREREG) {
   if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
     $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
-			    $_SERVER['PHP_AUTH_PW'], CHAIR_ID);
+			    $_SERVER['PHP_AUTH_PW'], chair_ids());
   if ($chair === false) {
     header("WWW-Authenticate: Basic realm=\"$confShortName\"");
     header("HTTP/1.0 401 Unauthorized");
@@ -31,6 +31,8 @@ $category= isset($_POST['category']) ? trim($_POST['category']) : NULL;
 $keywords= isset($_POST['keywords']) ? trim($_POST['keywords']) : NULL;
 $comment = isset($_POST['comment']) ? trim($_POST['comment']) : NULL;
 
+$optin = isset($_POST['optin']) ? trim($_POST['optin']) : NULL;
+
 if (isset($_FILES['sub_file'])) {
   $sbFileName = trim($_FILES['sub_file']['name']);
   $tmpFile = $_FILES['sub_file']['tmp_name'];
@@ -38,7 +40,7 @@ if (isset($_FILES['sub_file'])) {
 else $sbFileName = NULL;
 
 // Assign random (?) password to the new submission
-$subPwd = md5(uniqid(rand()) . mt_rand().$title.$author); // returns hex string
+$subPwd = sha1(uniqid(rand()) . mt_rand().$title.$author); // returns hex string
 $subPwd = alphanum_encode(substr($subPwd, 0, 15));          // "compress" a bit
 
 // Test that the mandatory fields are not empty. Submissions without an
@@ -74,11 +76,22 @@ else $fileFormat = NULL;
 
 /***** User input vaildated. Next prepare the MySQL query *****/
 
+$cnnct = db_connect();
+/* Get next subId less than 10,000 for insertion */
+$qry = "SELECT max(subId) FROM submissions WHERE subId < 10000";
+$res = db_query($qry, $cnnct);
+$res = mysql_fetch_assoc($res);
+$newSubId = $res['max(subId)'] + 1;
+
+if($newSubId < 101 ) {
+  $newSubId = 101;
+}
 
 // Sanitize user input while preparing the query
-$cnnct = db_connect();
-$qry = "INSERT INTO submissions SET title='"
-  . my_addslashes(substr($title, 0, 255), $cnnct)
+
+$qry = "INSERT INTO submissions SET subId ='"
+  . $newSubId
+  . "',	title='". my_addslashes(substr($title, 0, 255), $cnnct)
   . "', authors='". my_addslashes($author, $cnnct)
   . "', contact='". my_addslashes($contact, $cnnct)
   . "', abstract='". my_addslashes($abstract, $cnnct)
@@ -98,7 +111,10 @@ if (!empty($comment)) {
 }
 if (isset($fileFormat)) {
   $qry .= "format='".my_addslashes($fileFormat,$cnnct)."', ";
-}     
+}
+if (isset($optin)) {
+  $qry .= "flags = ".FLAG_IS_CHECKED.", ";
+}
 $qry .= "subPwd='{$subPwd}', whenSubmitted=NOW()";
 
 /* Now we need to record the new submission. Below we try to minimize the

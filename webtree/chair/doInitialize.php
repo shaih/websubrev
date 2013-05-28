@@ -94,7 +94,7 @@ fclose($fd);
 error_log(date('Y.m.d-H:i:s ')."Log file created\n", 3, LOG_FILE);
 
 // We generate some randomness for salting the password hashes
-$salt = alphanum_encode(md5(uniqid(rand()).mt_rand()));
+$salt = alphanum_encode(sha1(uniqid(rand()).mt_rand()));
 
 // If MySQL user & pwd are not specified, create a new database and user
 if (empty($sqlUsr) || empty($sqlPwd)) {
@@ -115,7 +115,7 @@ if (empty($sqlUsr) || empty($sqlPwd)) {
   // Create new user if not specified
   if (empty($sqlUsr)) $sqlUsr = $sqlDB;
   else                $sqlUsr = my_addslashes($sqlUsr, $cnnct);
-  $sqlPwd = md5(uniqid(rand()). mt_rand(). $sqlUsr); // returns hex string
+  $sqlPwd = sha1(uniqid(rand()). mt_rand(). $sqlUsr); // returns hex string
   $sqlPwd = alphanum_encode(substr($sqlPwd, 0, 12)); // "compress" a bit
 
   if ($sqlHost=='localhost') {
@@ -140,6 +140,8 @@ if (file_exists($prmsFile)) unlink($prmsFile); // just in case
 if (!($fd = fopen($prmsFile, 'w'))) {          // Open for write
   exit("<h1>Cannot create the parameters file at $prmsFile</h1>\n");
 }
+
+$iacr = empty($_POST['iacr'])? '': ("IACR=".$_POST['iacr']."\n");
 $prmsString = "<?php\n"
   . "/* Parameters for a new installation: this file is formatted as a PHP\n"
   . " * file to ensure that accessing it directly by mistake does not cause\n"
@@ -152,7 +154,7 @@ $prmsString = "<?php\n"
   . "LOG_FILE=$logFile\n"
   . "ADMIN_EMAIL=$adminEmail\n"
   . "CONF_SALT=$salt\n"
-  . "BASE_URL=$baseURL\n"
+  . "BASE_URL=$baseURL\n".$iacr
   . " ********************************************************************/\n"
   . "?>\n";
 if (!fwrite($fd, $prmsString)) {
@@ -182,17 +184,17 @@ copy('../init/index.html', $subDir.'/final/index.html');
 copy('../init/index.html', $subDir.'/attachments/index.html');
 
 // Insert the PC chair into the committee table. Also generates password
-// for the chair and send it by email. Initialy, the password is written
+// for the chair and send it by email. Initially, the password is written
 // to the database "in the clear" (to be consistent with the non-web-based
 // method of initialization). After customization, the value that will
-// be written to the database is MD5(salt.email.password)
-$chrPwd = md5(uniqid(rand()).mt_rand());            // returns hex string
+// be written to the database is SHA1(salt.email.password)
+$chrPwd = sha1(uniqid(rand()).mt_rand());           // returns hex string
 $chrPwd = alphanum_encode(substr($chrPwd, 0, 15));  // "compress" a bit
 $chairEmail = strtolower($chairEmail);
 $chrEml = my_addslashes($chairEmail, $cnnct);
 $chrNam = my_addslashes($chairName, $cnnct);
 
-$qry = "INSERT INTO committee SET revId=1, revPwd='$chrPwd', name='$chrNam', email='$chrEml', canDiscuss=1";
+$qry = "INSERT INTO committee SET revId=1, revPwd='$chrPwd', name='$chrNam', email='$chrEml', canDiscuss=1, flags=".FLAG_IS_CHAIR;
 db_query($qry, $cnnct, "Cannot insert program chair to database: ");
 
 // Send email to chair and admin with the password for using this site

@@ -52,7 +52,7 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
     $fileName = trim($_FILES["attach{$subId}"]['name']);
     $ext = file_extension($fileName);
 
-    $fileName = md5(uniqid(CONF_SALT . $subId . $revId));
+    $fileName = sha1(uniqid(CONF_SALT . $subId . $revId));
     $fileName = "R{$subId}" . alphanum_encode(substr($fileName, 0, 12));
     if (!empty($ext)) $fileName .= ".$ext";
     $tmpFile = $_FILES["attach{$subId}"]['tmp_name'];
@@ -98,11 +98,12 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
   }
   
   // Check if anything changed vs. the stored review (if any)
-  if (!compareReview($oldReview,$subReviewer,$conf,$score,
+  $cmp2Old = compareReview($oldReview,$subReviewer,$conf,$score,
 		     $authCmnt,$pcCmnt,$chrCmnt,$slfCmnt,
-		     $flags,$fileName,$oldAuxGrades,$newAuxGrades)) {
+		     $flags,$fileName,$oldAuxGrades,$newAuxGrades);
+  if (!$cmp2Old)
     return -4; // review is identical to what's already stored in database
-  }
+ 
 
   // Prepare the query to update the review
   $qry = " flags=$flags,";
@@ -152,7 +153,11 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
   }
 
   if ($oldReview) {  // existing entry
-    $qry .= "    lastModified=NOW()";
+    if ($cmp2Old === -1) // only change is in comments-to-self
+      $qry .= "    lastModified=lastModified";
+    else
+      $qry .= "    lastModified=NOW()";
+
     $qry = "UPDATE reports SET $qry WHERE revId=$revId AND subId=$subId";
 
     $version = backup_existing_review($subId, $revId, $nCrit, $cnnct);
@@ -238,6 +243,12 @@ function backup_existing_review($subId, $revId, $nCrit, $cnnct)
   return $nextVersion;
 }
 
+
+// Returns true if the new report is different from the old one (or if
+// the old report does not exist). The only exception is if the new
+// report differs from the old one only in comments-to-self, in which
+// case this function returns the number -1 (rather than boolean true)
+
 function compareReview($oldReview,$subReviewer,$conf,$score,
 		       $authCmnt,$pcCmnt,$chrCmnt,$slfCmnt,
 		       $flags,$attach,$oldAuxGrades,$newAuxGrades)
@@ -250,9 +261,9 @@ function compareReview($oldReview,$subReviewer,$conf,$score,
   if (strcmp($oldReview['comments2authors'],  $authCmnt)) return true;
   if (strcmp($oldReview['comments2committee'],$pcCmnt))   return true;
   if (strcmp($oldReview['comments2chair'],    $chrCmnt))  return true;
-  if (strcmp($oldReview['comments2self'],     $slfCmnt))  return true;
   if (strcmp($oldReview['attachment'],        $attach))   return true;
   if ($oldAuxGrades != $newAuxGrades) return true;
+  if (strcmp($oldReview['comments2self'],     $slfCmnt))  return -1;
 
   return false;
 }

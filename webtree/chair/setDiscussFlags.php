@@ -16,16 +16,34 @@ if (isset($_POST["setDiscussFlags"])) {
   $qry = "SELECT revId, canDiscuss from committee ORDER BY revId";
   $res = db_query($qry, $cnnct);
   $changed = '';
+  $flags = '';
   while ($row = mysql_fetch_row($res)) {
     $revId = (int) $row[0];
     $oldFlag = (int) $row[1];
-    $newFlag = isset($_POST["dscs"][$revId]);
-    if ($newFlag!=$oldFlag) $changed .= "$revId,";
+    if(isset($_POST["dscs"][$revId])){
+    	$newFlag = $_POST["dscs"][$revId];
+    } else {
+    	$newFlag = $oldFlag;
+    }
+    if ($newFlag!=$oldFlag) {
+    	$changed .= $revId.",";
+    	$flags .= $newFlag.",";
+    }
   }
+  substr($changed,0,-1);
+  substr($flags,0,-1);
+  $changed = explode(',', $changed);
+  $flags = explode(',', $flags);
+  $i = 0;
   if (!empty($changed)) {
-    $changed .= "0";
-    $qry = "UPDATE committee SET canDiscuss=(NOT canDiscuss) WHERE revId in ($changed)";
-    db_query($qry, $cnnct);
+  	for ($i = 0; $i < count($flags); $i++) {
+  		echo $i;
+  		$fl = $flags[$i];
+  		$ch = $changed[$i];
+  		if(!$ch) continue;		
+    	$qry = "UPDATE committee SET canDiscuss= ".$fl." WHERE revId = ".$ch;
+    	db_query($qry, $cnnct);
+  	}
   }
 }
 header("Location: overview.php");

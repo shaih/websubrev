@@ -7,6 +7,7 @@
  */
 
 require 'header.php'; // brings in the contacts file and utils file
+$confName = CONF_SHORT . ' ' . CONF_YEAR;
 
 // Check that mandatory subId and subPwd are specified
 $subId = (int) trim($_POST['subId']);
@@ -34,6 +35,8 @@ $category= isset($_POST['category']) ? trim($_POST['category']) : NULL;
 $keywords= isset($_POST['keywords']) ? trim($_POST['keywords']) : NULL;
 $comment = isset($_POST['comment'])  ? trim($_POST['comment'])  : NULL;
 $nPages  = isset($_POST['nPages'])   ? ((int) trim($_POST['nPages'])) : 0;
+$eprint  = isset($_POST['eprint'])   ? trim($_POST['eprint'])   : '';
+$optin   = isset($_POST['optin'])    ? ((int) trim($_POST['optin'])) : 0;
 
 if (isset($_FILES['sub_file'])) {
   $sbFileName = trim($_FILES['sub_file']['name']);
@@ -65,7 +68,7 @@ if (!empty($sbFileName)) {
 
 $cnnct = db_connect();
 $qry = 'SELECT title, authors, affiliations, contact, abstract, category, keyWords, comments2chair, format, status FROM submissions WHERE'
-       . " subId='{$subId}' AND subPwd='{$subPwd}'";
+       . " subId=$subId AND subPwd='{$subPwd}'";
 $res=db_query($qry, $cnnct);
 $row=mysql_fetch_assoc($res)
   or exit("<h1>Revision Failed</h1>
@@ -122,6 +125,13 @@ if (!empty($comment)) {
 }
 else $comment = $row['comments2chair'];
 
+
+if (!empty($optin)) {
+  $updts .= " flags = flags | ".FLAG_IS_CHECKED.", \n";
+} else {
+  $updts .= " flags = flags & (~".FLAG_IS_CHECKED."), \n";
+}
+
 // If a new file is specified, try to determine its format and then
 // store the uploaded file under a temporary name
 $fileFormat = NULL;
@@ -137,18 +147,18 @@ if (!empty($sbFileName)) {
           Cannot move submission file " . $tmpFile . " to " . $fileName);
   }
 }
-     
+
 // If anything changed, insert changes into the database
 if (!empty($updts) || isset($_POST['reinstate'])) {
   if ((PERIOD<=PERIOD_SUBMIT) || isset($_POST['reinstate']) || $oldStatus=='Withdrawn')
     $updts .= "status='None', "; 
   $qry = "UPDATE submissions SET $updts lastModified=NOW()\n"
-    . "WHERE subId='{$subId}' AND subPwd='{$subPwd}'";
+    . "WHERE subId=$subId AND subPwd='{$subPwd}'";
   db_query($qry, $cnnct, 'Cannot insert submission details to database: ');
 }
 else { // Hmm.. nothing has changed, why are we here?
-  exit("<h1>Revision Failed</h1>Revision form indicated no changes.");
-  //  header("Location: revise.php?subId={$subId}&subPwd={$subPwd}");
+  if (PERIOD<PERIOD_CAMERA || !isset($_FILES['pdf_file']))
+    exit("<h1>Revision Failed</h1>Revision form indicated no changes.");
 }
 
 // If a new file is specified, copy old submission file for backup
@@ -175,17 +185,40 @@ if (!empty($sbFileName)) {
     header("Location: receipt.php?subId={$subId}&subPwd={$subPwd}&warning=1");
     exit();
   }
-  elseif (PERIOD<PERIOD_CAMERA) { // mark new file as needing a stamp
+  if (PERIOD<PERIOD_CAMERA) { // mark new file as needing a stamp
     $qry = "UPDATE submissions SET flags=(flags|".SUBMISSION_NEEDS_STAMP.") WHERE subId={$subId}";
     db_query($qry, $cnnct,"Cannot mark file as needing a stamp: ");
   }
 }
 
-// If submitting camera-ready file: record the number of pages
+// If submitting camera-ready file: record extra information
 if (PERIOD>=PERIOD_CAMERA) {
-  $qry = "UPDATE acceptedPapers SET nPages=$nPages WHERE subId={$subId}";
-  db_query($qry, $cnnct,
-	   "Cannot update number of pages for submission $subId: ");
+  if (isset($_FILES['pdf_file'])) { // store also the PDF separately, if given
+    $pdfFileName = trim($_FILES['pdf_file']['name']);
+    $tmpFile = $_FILES['pdf_file']['tmp_name'];
+    $pdfFileSize = $_FILES['pdf_file']['size'];
+  }
+  else $pdfFileName = $tmpFile = $pdfFileSize = NULL;
+  $file2Format = (is_uploaded_file($tmpFile) && $pdfFileSize>0)?
+    determine_format($_FILES['pdf_file']['type'], $pdfFileName, $tmpFile):
+    '';
+  // The determine_format will return 'pdf.unsupported', since for camera-ready
+  // we only allow archive files. We just ignore the 'unsupported' part
+  if (strtolower($file2Format)=='pdf.unsupported') { // if it exists, store it
+    if (!empty($IACRdir))
+      $pdfFileName = "$IACRdir/$confName.$subId.pdf";
+    else 
+      $pdfFileName = SUBMIT_DIR."/$subId.pdf";
+    if (file_exists($pdfFileName)) unlink($pdfFileName);
+    move_uploaded_file($tmpFile, $pdfFileName);
+  }
+
+  if (!empty($eprint)) {
+    $eprint = my_addslashes($eprint, $cnnct);
+    $qry = "UPDATE acceptedPapers SET nPages=$nPages, eprint='$eprint' WHERE subId={$subId}";
+    db_query($qry, $cnnct,
+	     "Cannot update ePrint information for submission $subId: ");
+  }
 }
 
      

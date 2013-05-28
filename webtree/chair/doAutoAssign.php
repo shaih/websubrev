@@ -76,7 +76,7 @@ while ($row = mysql_fetch_row($res)) {
 // The optional input excludeRevs is a semi-colon-separated list of
 // reviewers that should not be assigned any submissions (e.g., you
 // may not want to assign submissions to the chair(s)).
-$excluded = array(CHAIR_ID);
+$excluded = chair_ids();
 $exRevs = explode(';', $_POST['cListExclude']);
 foreach ($exRevs as $name) {
   $revId = match_PCM_by_name($name, $committee);

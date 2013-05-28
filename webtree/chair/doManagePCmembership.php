@@ -11,13 +11,12 @@ require 'header.php';
 if (PERIOD==PERIOD_FINAL) exit("<h1>The Site is Closed</h1>");
 
 $cnnct = db_connect();
-$chairEml = CHAIR_EMAIL;
 
 // Manage access to the review cite
 if (isset($_POST['reviewSite'])) {
   $mmbrs2remove = isset($_POST['mmbrs2remove'])? $_POST['mmbrs2remove']: NULL;
   if (is_array($mmbrs2remove)) foreach ($mmbrs2remove as $revId => $x) {
-    if ($revId==CHAIR_ID) continue;    // Cannot remove the chair
+      if (is_chair($revId)) continue;    // Cannot remove the chair(s)
     $qry = "DELETE from committee WHERE revId=".intval($revId);
     db_query($qry, $cnnct, "Cannot remove member with revId=$revId: ");
   }
@@ -25,23 +24,26 @@ if (isset($_POST['reviewSite'])) {
   // Compare PC member details from the databse with the details from
   // the _POST array, and update the database whenever these differ
   $members = $_POST['members'];
+
   if (is_array($members)) { 
 
-    $qry = "SELECT revId, revPwd, name, email FROM committee ORDER BY revId";
-    $res = db_query($qry, $cnnct);
+    $res = db_query("SELECT revId, revPwd, name, email, flags FROM committee ORDER BY revId", $cnnct);
     while ($row = mysql_fetch_row($res)) {
       $revId = (int) $row[0];
-      $m = $members[$revId]; // $m = array(name, email, reset-flag)
+      $m = $members[$revId]; // $m = array(name, email, reset-flag, isChair)
       if (isset($m)) {
 	$nm = isset($m[0]) ? trim($m[0]) : NULL;
 	$eml = isset($m[1]) ? strtolower(trim($m[1])) : NULL;
 	$reset = isset($m[2]);
+	$isChair = isset($m[3])? FLAG_IS_CHAIR: 0;
 	$oldPw = $row[1];
 	$oldNm = $row[2];
+	if ($isChair) $flags = FLAG_IS_CHAIR | (int) $row[4];
+	else          $flags = (~FLAG_IS_CHAIR) & (int) $row[4];
 	$oldEml= strtolower($row[3]);
-	if ($nm!=$oldNm || $eml!=$oldEml || isset($m[2])) {
+	if ($nm!=$oldNm || $eml!=$oldEml || $reset || $flags!=$row[4]) {
 	  update_committee_member($cnnct, $nm, $eml, $revId,
-				  $oldPw, $oldNm, $oldEml, $reset);
+				  $oldPw, $oldNm, $oldEml, $reset, $flags);
 	}
       }
     }
@@ -51,7 +53,7 @@ if (isset($_POST['reviewSite'])) {
   if (is_array($mmbrs2add)) foreach ($mmbrs2add as $m) {
     if ($m = parse_email($m))
       update_committee_member($cnnct, $m[0], $m[1]);
-  }
+    }
 } // if (isset($_POST['reviewSite']))
 
 header("Location: index.php");
@@ -59,10 +61,9 @@ exit();
 
 function update_committee_member($cnnct, $name, $email,
 				 $revId=false, $revPwd=NULL,
-				 $oldName=NULL, $oldEml=NULL, $reset=false)
+				 $oldName=NULL, $oldEml=NULL,
+				 $reset=false, $flags=0)
 {
-  global $chairEml;
-
   if (!empty($name)) $nm = my_addslashes(trim($name), $cnnct);
   if (!empty($email)) {
     $email = strtolower(trim($email));
@@ -77,12 +78,12 @@ function update_committee_member($cnnct, $name, $email,
       if (empty($name)) return; // email address without '@' ??
       $nm = my_addslashes(trim($name), $cnnct);
     }
-
-    $pwd = md5(uniqid(rand()).mt_rand());          // returns hex string
+    
+    $pwd = sha1(uniqid(rand()).mt_rand());          // returns hex string
     $pwd = alphanum_encode(substr($pwd, 0, 15));   // "compress" a bit
-    $pw = md5(CONF_SALT. $email . $pwd);
-
-    $qry = "INSERT INTO committee SET name='$nm', email='$eml', revPwd='$pw'";
+    $pw = sha1(CONF_SALT. $email . $pwd);
+    
+    $qry = "INSERT INTO committee SET name='$nm', email='$eml', revPwd='$pw', flags=$flags";
     db_query($qry, $cnnct, "Cannot add PC member $name <$email>: ");
     email_password($email, $pwd);
     return;
@@ -90,13 +91,13 @@ function update_committee_member($cnnct, $name, $email,
 
   // Modify an existing member: first get current details
   $updates = $comma = '';
-  // if (empty($revPwd)) $reset=true;  removed this test -- Shai, Apr-2010
+  if (empty($revPwd)) $reset=true;                   // Set initial password
   if (isset($email) && $email!=$oldEml) $reset=true; // Change email address
 
   if ($reset) { // reset pwd
-    $pwd = md5(uniqid(rand()).mt_rand());        // returns hex string
+    $pwd = sha1(uniqid(rand()).mt_rand());       // returns hex string
     $pwd = alphanum_encode(substr($pwd, 0, 15)); // "compress" a bit
-    $pw = md5(CONF_SALT. $email . $pwd);
+    $pw = sha1(CONF_SALT. $email . $pwd);
     $updates .= "revPwd='$pw'";
     $comma = ", ";
   }
@@ -108,31 +109,26 @@ function update_committee_member($cnnct, $name, $email,
 
   if (!empty($email) && $email!=$oldEml) {
     $updates .= $comma . "email='$eml'";
+    $comma = ", ";
   }
+  $canDiscuss = ($flags & FLAG_IS_CHAIR)? 1: 0;  
 
-  if (!empty($email) && $revId==CHAIR_ID) 
-    $chairEml = $email;
-
-  if (!empty($updates)) {
-    $qry = "UPDATE committee SET $updates WHERE revId='{$revId}'";
-    db_query($qry, $cnnct, "Cannot update PC member $name <$email>: ");
-    if ($reset) email_password($email, $pwd, ($revId == CHAIR_ID));
-  } 
+  $qry = "UPDATE committee SET $updates{$comma} flags=$flags, canDiscuss=$canDiscuss WHERE revId='{$revId}'";
+  db_query($qry, $cnnct, "Cannot update PC member $name <$email>: ");
+  if ($reset) email_password($email, $pwd, $flags & FLAG_IS_CHAIR);
 }
-
 
 function email_password($emailTo, $pwd, $isChair=false)
 {
   $shortName = CONF_SHORT;
   $confYear = CONF_YEAR;
-  global $chairEml;
-
-  $prot = (defined('HTTPS_ON') || isset($_SERVER['HTTPS']))? 'https' : 'http';
+  
+  $prot = (defined('HTTPS_ON') || isset($_SERVER['HTTPS'])) ? 'https' : 'http';
   $baseURL = $prot.'://'.BASE_URL;
-
-  if ($isChair) $cc = ADMIN_EMAIL;
-  else          $cc = $chairEml;
-
+  
+  if ($isChair) $cc = array(ADMIN_EMAIL);
+  else          $cc = chair_emails();
+  
   $sbjct = "New/reset password for submission and review site for $shortName $confYear";
 
   $msg =<<<EndMark
@@ -149,7 +145,7 @@ EndMark;
   $msg .= <<<EndMark
 
 You can login to the review site with your email address $emailTo
-as username and with password $pwd
+as username $emailTo and with password $pwd
 
 EndMark;
 

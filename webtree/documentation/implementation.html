@@ -7,7 +7,7 @@
 
 <body>
 <h1>Web Submission and Review, Implementation Notes</h1>
-<h2 style="text-align: center;">Version 0.63 - June 2009</h2>
+<h2 style="text-align: center;">Version 0.64 - June 2013</h2>
 
 <a name="stamp"></a><h2>Stamping a submission</h2>
 When a submission file is uploaded to the server, the software makes
@@ -16,8 +16,11 @@ an attempt to "stamp it" with a header that says
  <tt>Submission &lt;nnn&gt; to &lt;confname&gt;: Do Not Distribute!</tt>
 </blockquote>
 
-The current mechanism used for this is rather kludgey, and can only
-handle PDF and Postscript files: Postscript files are handled by
+The primary mechanism used for this relies on the
+<a href="http://framework.zend.com">Zend framework</a> to implement
+the PDF stamping. If the Zend framework is not available (or if the
+file is a Postscript file), it falls back on a soemwhat kludgey patch
+that works as follows: Postscript files are handled by
 adding a few lines to the header of the file, re-defining the 
 <tt>\@show\@page</tt> action. PDF files are handled by converting
 them to Postscript, adding the stamp, and then converting back to PDF.

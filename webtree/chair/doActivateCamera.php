@@ -25,37 +25,11 @@ $updates .= ", period=".PERIOD_CAMERA;
 
 $updates .= ",\n formats='tar(tar, application/x-tar);Compressed tar(tar.gz, application/x-tar-gz);Compressed tar(tgz, application/x-compressed-tar);zip(zip, application/x-zip)'";
 
-$cameraAnnouncement = trim($_POST['finalVersionInstructions']);
-$cameraAnnouncement = str_replace("\r\n", "\n", $cameraAnnouncement);
-$subject = trim($_POST['subject']);
-
-send_camera_instructions($cnnct, $cameraAnnouncement, $subject);
-
 $cnnct = db_connect();
 backup_conf_params($cnnct, PARAMS_VERSION);
 $qry = "UPDATE parameters SET $updates";
 db_query($qry, $cnnct, "Cannot reset parameters: ");
 
-// All went well, go back to administration page
-header("Location: index.php");
-exit();
-
-function send_camera_instructions($cnnct, $text, $sbjct)
-{
-  $qry = "SELECT subId, title, authors, contact FROM submissions WHERE status='Accept'";
-  $res = db_query($qry, $cnnct);
-  $count=0;
-  while ($row = mysql_fetch_row($res)) {
-    $subId = (int) $row[0];
-    $contact = $row[3];
-
-    my_send_mail($contact, $sbjct, $text, CHAIR_EMAIL,
-	       "camera-ready notification for subID $subId, contact $contact");
-
-    $count++;
-    if (($count % 25)==0) { // rate-limiting, avoids cutoff
-      sleep(1);
-    }
-  }
-}
+// All went well, go back to caller
+return_to_caller("activateCamera.php");
 ?>

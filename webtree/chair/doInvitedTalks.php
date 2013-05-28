@@ -10,16 +10,15 @@ require 'header.php'; // brings in the contacts file and utils file
 $cName = CONF_SHORT.' '.CONF_YEAR;
 $cnnct = db_connect();
 
-// Read all the fields, stripping spurious white-spaces 
-
+// Read all the fields, stripping spurious white-spaces
 $title   = isset($_POST['title']) ? trim($_POST['title']) : NULL;
 $author  = isset($_POST['authors']) ? trim($_POST['authors']) : NULL;
 $affiliations  = isset($_POST['affiliations']) ? trim($_POST['affiliations']) : NULL;
 $contact = isset($_POST['contact']) ? trim($_POST['contact']) : NULL;
 
 // Assign random (?) password to the submission
-$subPwd = md5(uniqid(rand()) . mt_rand().$title.$author); // returns hex string
-$subPwd = alphanum_encode(substr($subPwd, 0, 15));          // "compress" a bit
+$subPwd = sha1(uniqid(rand()).mt_rand().$title.$author); // returns hex string
+$subPwd = alphanum_encode(substr($subPwd, 0, 15));       // "compress" a bit
 
 // Test that the mandatory fields are not empty
 if (empty($title) || empty($author) || empty($contact))
@@ -38,7 +37,10 @@ Contact(s) must be a list of email addresses in the format user@domain.");
 
 // Sanitize user input while preparing the query
 $cnnct = db_connect();
-$qry = "INSERT INTO submissions SET title='"
+$res = db_query("SELECT MAX(subId) FROM submissions WHERE status!='Withdrawn'", $cnnct);
+$row=mysql_fetch_row($res);
+$subId=1+(int)$row[0];
+$qry = "INSERT INTO submissions SET subId=$subId, title='"
   . my_addslashes(substr($title, 0, 255), $cnnct)
   . "', authors='". my_addslashes($author, $cnnct)
   . "', contact='". my_addslashes($contact, $cnnct)
@@ -79,7 +81,7 @@ $msg .="  $prot://".BASE_URL."submit/\n\n";
 $msg .="On that page you can find instructions for preparing the writeup\n";
 $msg .="and uploading it to the server. You should use submission-ID $subId\n";
 $msg .="and password $subPwd to upload the file.\n";
-my_send_mail($contact, $subject, $msg, CHAIR_EMAIL,"Invited talk with ID $subId and password $subPwd");
+my_send_mail($contact, $subject, $msg, chair_emails(),"Invited talk with ID $subId and password $subPwd");
 
 header("Location: .");
 ?>

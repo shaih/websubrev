@@ -12,7 +12,7 @@ $disFlag = (int) $pcMember[3];
 $threaded= (int) $pcMember[4];
 
 // Check that this reviewer is allowed to discuss submissions
-if ($disFlag != 1) exit("<h1>$revName cannot discuss submissions yet</h1>");
+if ($disFlag != 1 && !has_reviewed_anything($revId)) exit("<h1>$revName cannot discuss submissions yet</h1>");
 
 $threaded = ($threaded != 0) ? 0 : 1;   // toggle 0<-->1
 $cnnct = db_connect();

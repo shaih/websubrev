@@ -38,18 +38,18 @@ if (isset($_GET['removeTAR'])) {
 if (isset($_GET['makeTar'])){ 
   $fileName = NULL;
 
-  // Try to use the PEAR library, if present
-  if (($fp = @fopen('Archive/Tar.php', 'r', 1)) and fclose($fp)) {
-    $fileName = PEARmkTar();
-  }
+  // Try using exec('tar') or exec('zip')
+  $fileName = SYSmkTar();
 
-  // If couldn't use PEAR, try using exec('tar') or exec('zip')
   if (!isset($fileName)) {
-    $fileName = SYSmkTar();
+    // Try to use the PEAR library, if present
+    if (($fp = @fopen('Archive/Tar.php', 'r', 1)) and fclose($fp)) {
+      $fileName = PEARmkTar();
+    }
   }
 
-  if (isset($fileName)) exit("<h1>Tar file $fileName created</h1>\n<a href=\".\">Back to main page</a>");
-  else exit("<h1>Failed to create tar file</h1>\n<a href=\".\">Back to main page</a>");
+  if (isset($fileName)) exit("<h1>Archive file $fileName created</h1>\n<a href=\".\">Back to main page</a>");
+  else exit("<h1>Failed to create archive file</h1>\n<a href=\".\">Back to main page</a>");
 }
 
 
@@ -75,10 +75,10 @@ Use this page to generate an archive file that contains all the
 submissions, so reviewers do not have to download each one individually.
 
 <h2>Automatically creating archive files</h2>
-This script will attempt to use the Archive_Tar package (which is part of
-PEAR) to automatically generate the archive file. If this package is not
-installed, it will then try to use the utility program <tt>tar</tt>, and
-failing that it will try to use the program <tt>zip</tt>. 
+This script will attempt to use the utility program <tt>tar</tt>, and
+failing that it will try to use the program <tt>zip</tt>. Failing both,
+it will attempt to use the Archive_Tar package (which is part of
+PEAR) to automatically generate the archive file.
 <ul>
 <li>If support for compression is installed on the server, then you
     can generate a gzipped tar file called <i>all_in_one.tgz</i> by

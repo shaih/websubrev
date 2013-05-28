@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true;
+$needsAuthentication = true;
 require 'header.php';
 $cnnct = db_connect();
 
@@ -24,8 +24,8 @@ while ($row = mysql_fetch_row($res)) {
 $nSubmissions = count($subArray);
 $numHdrIdx=(2+intval(($nSubmissions-1)/6));
 
-$qry = "SELECT revId, name from committee WHERE revId!='" . CHAIR_ID . "'
-    ORDER BY revId";
+$qry = "SELECT revId, name from committee WHERE flags & ".FLAG_IS_CHAIR." = 0 ORDER BY revId";
+
 $res = db_query($qry, $cnnct);
 $committee = array();
 $minRevId = null;
@@ -51,7 +51,7 @@ while ($row = mysql_fetch_row($res)) {
   $prefs[$subId][$revId] = array($pref, $compatible, $assign);
 }
 
-// Compute the load for PC membres and cover for submissions
+// Compute the load for PC members and cover for submissions
 foreach ($subArray as $i=>$sub) { 
   $subId = $sub[0];
   foreach ($committee as $revId => $pcm) {
@@ -86,7 +86,6 @@ foreach ($committee as $revId=>$pcm) {
   $happiness[$revId] = $happy;
 }
 
-
 /* Display the assignments matrix to the user */
 $classes = array('zero', 'one', 'two', 'three', 'four', 'five');
 $links = show_chr_links(0,array('assignments.php','Assignments'));
@@ -94,6 +93,7 @@ print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
+<link rel="stylesheet" type="text/css" href="../common/chair.css" />
 <style type="text/css">
 h1 { text-align:center; }
 th { font: bold 10px ariel; text-align: center; }
@@ -109,6 +109,8 @@ td { font: bold 16px ariel; text-align: center; }
 .shown   { display: inline; }
 </style>
 
+<script type="text/javascript" src="{$JQUERY_URL}"></script>
+<script type="text/javascript" src="../common/ui.js"></script>
 <script type="text/javascript" src="../common/assignMatrix.js"></script>
 <script type="text/javascript">
 <!--
@@ -158,8 +160,12 @@ PC-member do not review the submission.
 <p id="jsEnabled" class="hidden">
 If Javascript is enabled in your browser, then the various sums are
 updated immediately when you check or clear any check-box. Remember,
-however, that <i>you still must submit the form in order for these
-changes to be recorded by the server!!</i>
+however, that <b>you still must submit the form in order for these
+changes to be recorded by the server!!</b> 
+Pressing the 'Save changes to sketch' will  update only the value of
+changed checkboxes to the sketch copy, and not reload the page.
+Pressing the button to 'Save All Assignments' at the bottom of the
+table will update the value of every checkbox, and reload the page.		
 </p>
 <p>
 You can go back to the <a href="assignments.php">main assignment page</a>
@@ -167,10 +173,8 @@ to reset all the assignments and start from scratch, or to upload a
 backup copy of the assignments that you stored on your local machine.
 </p>
 <a name="matrix"></a>
-<form action="doAssignments.php" enctype="multipart/form-data" method="post">
-<input type="submit" value="Save Assignments in Matrix Interface">
-<input type="checkbox" name="visible" value="on">
-Make these assignments visible to the reviewers
+<form id="saveAssignments" action="doAssignments.php" enctype="multipart/form-data" method="post">
+<button class="submit-assignment" style="margin-right:50px" type="button">Save changes to sketch</button>
 <table cellspacing=0 cellpadding=0 border=1><tbody>
 
 EndMark;
@@ -220,9 +224,9 @@ foreach ($committee as $revId=>$pcm) {
   $happy = $happiness[$revId];
   if (!isset($happy)) {
       $src = '../common/empty.gif'; $title = '';
-  } else if ($happy<40) {
+  } else if ($happy<50) {
     $src= '../common/angry.gif'; $title= "Angry: $happy%";
-  } else if ($happy<60) {
+  } else if ($happy<65) {
     $src = '../common/sad.gif'; $title= "Sad: $happy%";
   } else if ($happy<80) {
     $src = '../common/ok.gif'; $title= "Satisfied: $happy%";
@@ -281,7 +285,7 @@ print <<<EndMark
 </tbody></table>
 <a name="saveMatrix"></a>
 <input type="hidden" name="saveAssign" value="on">
-<input type="submit" value="Save Assignments in Matrix Interface">
+<button class="send-form" data-form="saveAssignments">Save Assignments in Matrix Interface</button>
 <input type="checkbox" name="visible" value="on">
 Make these assignments visible to the reviewers
 </form>
@@ -328,6 +332,6 @@ function checkbox($subId, $revId, $name, $cmpt, $isChecked, $pref)
     $chk = '';
   }
   $name = "{$subId}_{$revId}";
-  return '<span class="'.$cls.'"><input type="checkbox" name="a_'.$name.'" id="chk_'.$name.'" onclick="return updateBox(this);" title="'.$ttl.'"'."$chk/></span>";
+  return '<span class="'.$cls.'"><input class="assignment" type="checkbox" name="a_'.$name.'" id="chk_'.$name.'" onclick="return updateBox(this);" title="'.$ttl.'"'."$chk/></span>";
 }
 ?>

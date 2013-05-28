@@ -12,8 +12,8 @@ require 'header.php';
 $cnnct = db_connect();
 
 // An array of PC members (for the autoSuggest functionality)
-$qry = "SELECT revId, name from committee WHERE revId!=". CHAIR_ID
-     . " ORDER BY revId";
+$qry = "SELECT revId, name from committee WHERE !(flags & ". FLAG_IS_CHAIR .")
+  ORDER BY revId";
 $res = db_query($qry, $cnnct);
 $committee = array();
 $nameList = $sep = '';

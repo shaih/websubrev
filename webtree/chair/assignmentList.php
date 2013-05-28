@@ -19,8 +19,8 @@ while ($row = mysql_fetch_row($res)) {
   $subArray[] = $row;
 }
 
-$qry = "SELECT revId, name from committee WHERE revId!='" . CHAIR_ID . "'
-    ORDER BY revId";
+$qry = "SELECT revId, name from committee WHERE !(flags & " . FLAG_IS_CHAIR .")
+   ORDER BY revId";
 $res = db_query($qry, $cnnct);
 $committee = array();
 $nameList = $sep = '';

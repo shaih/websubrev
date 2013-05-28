@@ -66,7 +66,7 @@ header("Content-Disposition: inline; filename=\"$subId.$fmt\"");
  *
  *   if (!readfile_chunked($fileName)) {
  */
-if (!readfile($fileName)) {
+if (!readfile_chunked($fileName)) {
   exit("<h1>Error readng file</h1>");
 }
 ?>

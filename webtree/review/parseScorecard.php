@@ -37,11 +37,11 @@ print <<<EndMark
 h1 { text-align: center; }
 </style>
 
-<title>Upload Reviewes for $confName</title></head>
+<title>Upload Reviews for $confName</title></head>
 <body>
 $links
 <hr/>
-<h1>Upload Reviewes for $confName</h1>
+<h1>Upload Reviews for $confName</h1>
 
 EndMark;
 
