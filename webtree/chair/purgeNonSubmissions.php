@@ -12,20 +12,15 @@ if (PERIOD!=PERIOD_REVIEW) {
   exit("<h1>Can only purge submissions during the review period</h1>");
 }
 
-$cnnct = db_connect();
-$qry = "SELECT subId,subPwd,title,authors,contact,comments2chair FROM submissions WHERE status!='Withdrawn' AND format IS NULL ORDER BY subID";
-$res = db_query($qry, $cnnct);
-$subArray = array();
-while ($row = mysql_fetch_assoc($res)) {
-  $subArray[] = $row;
-}
+$qry = "SELECT subId,subPwd,title,authors,contact,comments2chair FROM {$SQLprefix}submissions WHERE status!='Withdrawn' AND format IS NULL ORDER BY subID";
+$subArray = pdo_query($qry)->fetchAll(PDO::FETCH_ASSOC);
 
 $cName = CONF_SHORT.' '.CONF_YEAR;
 $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 {text-align: center;}
 tr {vertical-align: top;}
@@ -45,7 +40,7 @@ submissions: either use the 'withdraw' links to withdraw individual
 submissions, or the 'Withdraw All' button at the bottom of this form
 to withdraw all the checked submissions at once.</p>
 
-<form action="doPurgeNonSubmissions.php" enctype="multipart/form-data" method=post>
+<form accept-charset="utf-8" action="doPurgeNonSubmissions.php" enctype="multipart/form-data" method=post>
 <table><tbody>
 EndMark;
 

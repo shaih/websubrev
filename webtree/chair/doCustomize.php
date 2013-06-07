@@ -8,7 +8,6 @@
 $needsAuthentication = true; 
 $notCustomized = true;
 require 'header.php';
-$cnnct = db_connect();
 
 if (PERIOD>PERIOD_SETUP) die("<h1>Installation Already Customized</h1>");
 
@@ -21,13 +20,8 @@ $confURL     = trim($_POST['confURL'])  ;
 if (empty($confURL)) $confURL = '.';
 
 $regDeadline = trim($_POST['regDeadline']);
-if (empty($regDeadline)) { // pre-registration is required
-  $regDeadline = "NULL";
-  $firstPeriod = PERIOD_SUBMIT;
-} else {
-  $regDeadline = intval($regDeadline);
-  $firstPeriod = PERIOD_PREREG;
-}
+$firstPeriod = empty($regDeadline)? PERIOD_SUBMIT : PERIOD_PREREG;
+
 $subDeadline = trim($_POST['subDeadline']);
 $cameraDeadline= trim($_POST['cameraDeadline']);
 $nCats = isset($_POST['nCats']) ? ((int) $_POST['nCats']) : 0;
@@ -80,58 +74,40 @@ for ($i=0; $i<$nFrmts; $i++) {
   $confFormats .= $sc . "$nm($ext, $mime)";
   $sc = ';';
 }
-$confFormats = "'".my_addslashes($confFormats, $cnnct)."'";
 
-if ($nCats <= 0) $categories = 'NULL';
-else {
-  $sc = $categories = '';
-  for ($i=0; $i<$nCats; $i++) {
-    $categories .= $sc . trim($_POST["category_{$i}"]);
-    $sc = ';';
-  }
-  $categories = "'".my_addslashes($categories, $cnnct)."'";
+$sc = $categories = '';
+for ($i=0; $i<$nCats; $i++) {
+  $categories .= $sc . trim($_POST["category_{$i}"]);
+  $sc = ';';
 }
 
-if ($nCrits <= 0) $criteria = 'NULL';
-else {
-  $sc = $criteria = '';
-  for ($i=0; $i<$nCrits; $i++) {
-    $cr = "criterion_{$i}_";
-    $nm = trim($_POST["{$cr}name"]);
-    $mx = isset($_POST["{$cr}max"]) ? (int) trim($_POST["{$cr}max"]) : 3;
-    if (($mx < 2) || ($mx>9)) $mx = 3;
-    if (!empty($nm)) {
-      $criteria .= $sc . "$nm($mx)";
-      $sc = ';';
-    }
+$sc = $criteria = '';
+for ($i=0; $i<$nCrits; $i++) {
+  $cr = "criterion_{$i}_";
+  $nm = trim($_POST["{$cr}name"]);
+  $mx = isset($_POST["{$cr}max"]) ? (int) trim($_POST["{$cr}max"]) : 3;
+  if (($mx < 2) || ($mx>9)) $mx = 3;
+  if (!empty($nm)) {
+    $criteria .= $sc . "$nm($mx)";
+    $sc = ';';
   }
-  $criteria = "'".my_addslashes($criteria, $cnnct)."'";
 }
 
 // Store the conference parameters in the database
-$qry = "INSERT INTO parameters SET version=1,\n"
-   . "  longName='"  .my_addslashes($longName, $cnnct)."',\n"
-   . "  shortName='" .my_addslashes($shortName, $cnnct)."',\n"
-   . "  confYear="   .intval($confYear).",\n"
-   . "  confURL='"   .my_addslashes($confURL, $cnnct)."',\n"
-   . "  regDeadline=$regDeadline,\n"
-   . "  subDeadline=".intval($subDeadline).",\n"
-   . "  cmrDeadline=".intval($cameraDeadline).",\n"
-   . "  maxGrade="   .intval($maxGrade).",\n"
-   . "  maxConfidence=3,\n"
-   . "  flags=$flags,\n"
-   . "  period=$firstPeriod,\n"
-   . "  formats=$confFormats,\n"
-   . "  categories=$categories,\n"
-   . "  optIn='".my_addslashes($checktext, $cnnct)."',\n"
-   . "  extraCriteria=$criteria";
-
-db_query($qry, $cnnct, "Cannot set conference parameters: ");
+$fields = "version,longName,shortName,confYear,confURL,"
+  . "regDeadline,subDeadline,cmrDeadline,maxGrade,maxConfidence,"
+  . "flags,period,formats,categories,optIn,extraCriteria";
+$prms = array(1,$longName,$shortName,$confYear,$confURL,
+	      $regDeadline,$subDeadline,$cameraDeadline,$maxGrade,3,
+	      $flags,$firstPeriod,$confFormats,$categories,$checktext,$criteria);
+$qry = "INSERT INTO {$SQLprefix}parameters ($fields) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+pdo_query($qry, $prms, "Cannot set conference parameters: ");
 
 // Insert PC members to the database
-db_query("DELETE FROM committee", $cnnct); // start from scratch
 
-if (!empty($_GET['password']))            // set pwd for 1st chair
+pdo_query("DELETE FROM {$SQLprefix}committee"); // start from scratch
+
+if (!empty($_GET['password']))      // set pwd for 1st chair
   $pwd = my_addslashes($_GET['password']);
 else {
   $pwd = sha1(uniqid(rand()).mt_rand());        // returns hex string
@@ -139,8 +115,8 @@ else {
 }
 $i=1;
 foreach ($committee as $m) {
-  $nm = my_addslashes($m['name'], $cnnct);
-  $eml = my_addslashes($m['email'], $cnnct);
+  $nm = $m['name'];
+  $eml = $m['email'];
   if ($m['flags']) { // PC chair(s): first one gets a password
     if (!empty($pwd)) {
       $chrEml = $eml;
@@ -149,22 +125,24 @@ foreach ($committee as $m) {
     }
     if (empty($nm))
       $nm = $shortName.$confYear." Chair".(($i>1)? $i: '');
-    $qry= "INSERT INTO committee SET revId=$i, revPwd='$pwd', name='$nm', email='$eml', canDiscuss=1, flags=".FLAG_IS_CHAIR;
-    $pwd = '';
-  }
-  else $qry= "INSERT INTO committee SET revId=$i, revPwd='', name='$nm', email='eml', flags=0";
 
-  db_query($qry, $cnnct);
+    $qry= "INSERT INTO {$SQLprefix}committee (revId,revPwd,name,email,canDiscuss,flags)"
+      . " VALUES(?,?,?,?,?,?)";
+    pdo_query($qry, array($i,$pwd,$nm,$eml,1,FLAG_IS_CHAIR));
+    $pwd = ''; // other chairs (if any) will not get their passwords yet
+  } 
+  else {  // regular PC member
+    $qry= "INSERT INTO {$SQLprefix}committee (revId,revPwd,name,email) VALUES(?,?,?,?)";
+    pdo_query($qry, array($i,'',$nm,$eml));
+  }
   $i++;
 }
 
 // insert a dummy submission, so numbering will start at 101
-$qry = "INSERT INTO submissions SET subId=100, title = 'Dummy',
-        authors = 'Dummy', contact = 'Dummy', abstract = 'Dummy',
-        status = 'Withdrawn', subPwd = 'Dummy'";
-db_query($qry, $cnnct);
-$qry = "DELETE FROM submissions WHERE subId=100";
-db_query($qry, $cnnct);
+$qry = "INSERT INTO {$SQLprefix}submissions (subId,title,authors,contact,abstract,status,subPwd)"
+  . " VALUES(100,'Dummy','Dummy','Dummy','Dummy','Withdrawn','Dummy')";
+pdo_query($qry);
+pdo_query("DELETE FROM {$SQLprefix}submissions WHERE subId=100");
 
 // All went well, send email to 1st chair
 $hdr = "From: $chrEml";

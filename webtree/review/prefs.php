@@ -27,16 +27,11 @@ $semantics = array(
 $links = show_rev_links(4);
 
 // Display a warning if too many submissions are marked 0 or 1
-$cnnct = db_connect();
-$qry = "SELECT COUNT(*) FROM assignments WHERE revId=$revId AND pref<=1";
-$res = db_query($qry, $cnnct);
-$row = mysql_fetch_row($res);
-$nExtreme = $row[0];
+$qry = "SELECT COUNT(*) FROM {$SQLprefix}assignments WHERE revId=? AND pref<=1";
+$nExtreme = pdo_query($qry, array($revId))->fetchColumn();
 
-$qry = "SELECT COUNT(*) FROM submissions WHERE status!='Withdrawn'";
-$res = db_query($qry, $cnnct);
-$row = mysql_fetch_row($res);
-$nSubmisions = $row[0];
+$qry = "SELECT COUNT(*) FROM {$SQLprefix}submissions WHERE status!='Withdrawn'";
+$nSubmisions = pdo_query($qry)->fetchColumn();
 
 if ($nSubmisions>20 && $nExtreme > $nSubmisions/2) {
   $warningHtml = '<blockquote  style="border: solid red; color: red">'."\n"
@@ -47,7 +42,7 @@ else $warningHtml = "<br/><br/>\n";
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head>
+<head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
 <style type="text/css">
 tr { vertical-align: top; }
@@ -76,7 +71,7 @@ you can specify one of the following options: <br /><br />
 EndMark;
 
 $bodyHTML =<<<EndMark
-<form action="doPrefs.php" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" action="doPrefs.php" enctype="multipart/form-data" method="post">
 <table><tbody>
 <tr><th></th><th><small>pref</small></th>
   <th class="zero">0</th> 
@@ -91,14 +86,12 @@ $bodyHTML =<<<EndMark
 EndMark;
 
 $prefCount = array(0, 0, 0, 0, 0, 0);
-$qry = "SELECT s.subId,s.title,s.authors,s.affiliations,s.abstract,s.category,
-  s.keyWords,a.pref,a.assign
-  FROM submissions s LEFT JOIN assignments a
-  ON a.revId=$revId AND a.subId=s.subId
+$qry = "SELECT s.subId,s.title,s.authors,s.affiliations,s.abstract,s.category,s.keyWords,a.pref,a.assign
+  FROM {$SQLprefix}submissions s LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId
   WHERE s.status!='Withdrawn' ORDER BY s.subId";
-$res = db_query($qry, $cnnct, "Cannot retrieve submission list: ");
+$res = pdo_query($qry, array($revId), "Cannot retrieve submission list: ");
 $zIdx = 2000;
-while ($row = mysql_fetch_assoc($res)) {
+while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   if ($row['assign']==-1) continue; // conflict
   // Get the submission details
   $subId = (int) $row['subId'];

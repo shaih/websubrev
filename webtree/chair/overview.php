@@ -18,16 +18,15 @@ class matrixEntry {
 if (defined('CAMERA_PERIOD')) exit("<h1>Review Site is Closed</h1>");
 
 // Get assignments and reviews
-$cnnct = db_connect();
 $qry = "SELECT s.subId, c.revId, r.whenEntered, a.assign
-  FROM submissions s CROSS JOIN committee c
-    LEFT JOIN reports r ON r.subId=s.subId AND r.revId=c.revId
-    LEFT JOIN assignments a ON a.revId=c.revId AND a.subId=s.subId
+  FROM {$SQLprefix}submissions s CROSS JOIN {$SQLprefix}committee c
+    LEFT JOIN {$SQLprefix}reports r ON r.subId=s.subId AND r.revId=c.revId
+    LEFT JOIN {$SQLprefix}assignments a ON a.revId=c.revId AND a.subId=s.subId
   WHERE s.status!='Withdrawn'
   ORDER BY s.subId, c.revId";
-$res = db_query($qry, $cnnct);
+$res = pdo_query($qry);
 $subRevs = array();
-while ($row = mysql_fetch_row($res)) { 
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   list($subId, $revId, $whenEntered, $assign) = $row; 
   if (!isset($subRevs[$subId])) $subRevs[$subId] = array();
   $subRevs[$subId][$revId] = new matrixEntry();
@@ -35,9 +34,9 @@ while ($row = mysql_fetch_row($res)) {
   $subRevs[$subId][$revId]->reviewed = isset($whenEntered);
 }
 
-$qry = "SELECT subId,revId,COUNT(postId) FROM posts GROUP BY subId,revId";
-$res = db_query($qry, $cnnct);
-while ($row = mysql_fetch_row($res)) {
+$qry = "SELECT subId,revId,COUNT(postId) FROM {$SQLprefix}posts GROUP BY subId,revId";
+$res = pdo_query($qry);
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   list($subId, $revId, $nPosts) = $row; 
   if ($nPosts==0) continue; // no posts
   if (!isset($subRevs[$subId])) $subRevs[$subId] = array();
@@ -45,8 +44,8 @@ while ($row = mysql_fetch_row($res)) {
 }
 
 // Prepare an array of submissions and an array of PC members
-$qry = "SELECT subId, title, status from submissions WHERE status!='Withdrawn' ORDER BY subId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT subId, title, status FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER BY subId";
+$res = pdo_query($qry);
 $subArray = array();
 $statuses = array('Accept'         => 0,
 		  'Maybe Accept'   => 0,
@@ -54,16 +53,14 @@ $statuses = array('Accept'         => 0,
 		  'None'           => 0,
 		  'Perhaps Reject' => 0,
 		  'Reject'         => 0);
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $subArray[] = $row;
   $stts = $row[2];
   $statuses[$stts]++;
 }
 
-$qry = "SELECT revId, name, 0, 0, 0, canDiscuss from committee ORDER BY revId";
-$res = db_query($qry, $cnnct);
-$committee = array();
-while ($row = mysql_fetch_row($res)) { $committee[] = $row; }
+$qry = "SELECT revId, name, 0, 0, 0, canDiscuss FROM {$SQLprefix}committee ORDER BY revId";
+$committee = pdo_query($qry)->fetchAll(PDO::FETCH_NUM);
 
 /*********************************************************************/
 /******* Now we can display the assignments matrix to the user *******/
@@ -73,7 +70,7 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 h1 { text-align:center; }
@@ -205,7 +202,7 @@ print <<<EndMark
 </tbody></table>
 <br /><br />
 <h2><a name="progress">Program Committee Progress Summary</a></h2>
-<form action=setDiscussFlags.php enctype="multipart/form-data" method=post>
+<form accept-charset="utf-8" action=setDiscussFlags.php enctype="multipart/form-data" method=post>
 <table><tbody>
 <tr style="font-weight: bold; vertical-align: bottom;">
   <td style="text-align:left;">Reviewer</td>
@@ -224,15 +221,15 @@ print <<<EndMark
 </tr>
 EndMark;
 $qryAvg = "SELECT r.revId revId, AVG(r.confidence) avgConf, AVG(r.score) avgScore
-    FROM reports r, committee c WHERE r.revId = c.revId
+    FROM {$SQLprefix}reports r, {$SQLprefix}committee c WHERE r.revId = c.revId
 	GROUP BY revId";
 $qry2Avg = "SELECT revId, gradeId, avg(grade) avgGrade
-			FROM auxGrades
+			FROM {$SQLprefix}auxGrades
 			GROUP BY gradeId, revId";
-$avgRes = db_query($qryAvg, $cnnct);
-$aux2Res = db_query($qry2Avg, $cnnct);
+$avgRes = pdo_query($qryAvg);
+$aux2Res = pdo_query($qry2Avg);
 $avgGrades = array();
-while ($row = mysql_fetch_assoc($avgRes)) {
+while ($row = $avgRes->fetch(PDO::FETCH_ASSOC)) {
 	$rId = (int) $row['revId'];
 	if($row['avgScore'] < 0) $row['avgScore'] = '*';
 	if($row['avgConf'] < 0) $row['avgConf'] = '*';
@@ -240,7 +237,7 @@ while ($row = mysql_fetch_assoc($avgRes)) {
 	$avgGrades[$rId]['avgConf'] = $row['avgConf'];
 }
 $avgAuxGrades = array();
-while ($row = mysql_fetch_assoc($aux2Res)) {
+while ($row = $aux2Res->fetch(PDO::FETCH_ASSOC)) {
 	$rId = (int) $row['revId'];
 	$gId = (int) $row['gradeId'];
 	$avgAuxGrades[$rId][$gId] = $row['avgGrade'];

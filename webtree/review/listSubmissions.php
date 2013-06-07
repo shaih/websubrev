@@ -16,11 +16,10 @@ $disFlag= (int) $pcMember[3];
 $pcmFlags= (int) $pcMember[5];
 
 // Prepare a list of submissions that the current member reviewed
-$cnnct = db_connect();
-$qry = "SELECT subId, flags FROM reports WHERE revId='$revId'";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT subId, flags FROM {$SQLprefix}reports WHERE revId=?";
+$res = pdo_query($qry, array($revId));
 $reviewed = array();
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $subId = (int) $row[0];
   $notDraft = (int) $row[1];
   $reviewed[$subId] = $notDraft;
@@ -30,9 +29,9 @@ while ($row = mysql_fetch_row($res)) {
 // the discussions/reviews. Everything else is considered "new"
 $seenSubs = array();
 if ($disFlag) {
-  $qry = "SELECT s.subId FROM submissions s, lastPost lp WHERE lp.revId=$revId AND s.subId=lp.subId AND s.lastModified<=lp.lastVisited";
-  $res = db_query($qry, $cnnct);
-  while ($row = mysql_fetch_row($res)) { $seenSubs[$row[0]] = true; }
+  $qry = "SELECT s.subId FROM {$SQLprefix}submissions s, {$SQLprefix}lastPost lp WHERE lp.revId=? AND s.subId=lp.subId AND s.lastModified<=lp.lastVisited";
+  $res = pdo_query($qry, array($revId));
+  while ($row = $res->fetch(PDO::FETCH_NUM)) { $seenSubs[$row[0]] = true; }
 }
 
 
@@ -57,20 +56,22 @@ if (isset($_GET['optedIn'])) {
 $qry ="SELECT s.subId subId, title, authors, abstract, s.format format,
        status, UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
        a.watch watch, s.avg avg, VAR_POP(r.score) delta, category, AVG(r.confidence) as avgConf, s.flags flags, s.contact contact
-    FROM submissions s
-         LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId
-         LEFT JOIN reports r ON r.subId=s.subId
-   WHERE (status!='Withdrawn' OR (s.flags & ".FLAG_IS_GROUP.")) {$assignedOnly} {$opted_in}
-    GROUP BY subId ORDER BY $order";
-    $res = db_query($qry, $cnnct);
+    FROM {$SQLprefix}submissions s
+         LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId
+         LEFT JOIN {$SQLprefix}reports r ON r.subId=s.subId ";
+if ($disFlag==1)
+     $qry .= "WHERE (status!='Withdrawn' OR (s.flags & ".FLAG_IS_GROUP."))";
+else $qry .= "WHERE (status!='Withdrawn')";
+$qry .= " {$assignedOnly} {$opted_in} GROUP BY subId ORDER BY $order";
+$res = pdo_query($qry, array($revId));
 $assigned = array();
 $others = array();
 $yetOthers = array();
-while ($row = mysql_fetch_assoc($res)) {
+while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   if(isset($_GET['onlyDiscussed'])) {
-  	if (!has_discussed($revId, $row['subId'])){
-  		continue;
-  	}
+    if (!has_discussed($revId, $row['subId'])){
+      continue;
+    }
   }
   $subId = $row['subId'];
   $row['hasNew'] = !isset($seenSubs[$subId]);
@@ -101,7 +102,7 @@ print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
   "http://www.w3.org/TR/html4/loose.dtd">
 
-<html><head>
+<html><head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 h1 { text-align: center; }
@@ -168,6 +169,7 @@ print "\n<hr />\n{$links}\n</body>\n</html>\n";
 if (isset($_GET['listBox'])) { // remember the flags for next time
   $pcmFlags &= 0xfffff000;
   $pcmFlags |= $flags;
-  db_query("UPDATE committee SET flags=$pcmFlags WHERE revId=$revId", $cnnct);
+  pdo_query("UPDATE {$SQLprefix}committee SET flags=? WHERE revId=?",
+	    array($pcmFlags,$revId));
 }
 ?>

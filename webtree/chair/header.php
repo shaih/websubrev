@@ -11,7 +11,6 @@ if (!file_exists('../init/confParams.php')) { // Not intialized yet
   header("Location: initialize.php");
   exit();
 }
-
 require_once('../includes/getParams.php');
 
 if (!isset($needsAuthentication)) $needsAuthentication = true;
@@ -97,12 +96,13 @@ function status_summary($statuses, $scstatuses=NULL)
 
 function show_chr_links($current = 0, $anotherLink=NULL) 
 {
+  global $SQLprefix;
   $undoLink = make_link('undoLast.php', 'Undo/Redo', ($current==4));
   if (PARAMS_VERSION==1) {
-    $cnnct = db_connect();
-    $qry = "SELECT version FROM paramsBckp WHERE version=".(PARAMS_VERSION+1);
-    $res = db_query($qry, $cnnct);
-    if (mysql_num_rows($res)==0) $undoLink = '';
+    $qry = "SELECT count(*) FROM {$SQLprefix}paramsBckp WHERE version=?".(PARAMS_VERSION+1);
+    $res = pdo_query("SELECT version FROM {$SQLprefix}paramsBckp WHERE version=?",
+		     array(PARAMS_VERSION+1));
+    if ($res->fetchColumn()<=0) $undoLink = ''; // no redo information
   }
   if (isset($anotherLink)) {
     $anotherLink = make_link($anotherLink[0], $anotherLink[1]);
@@ -122,13 +122,13 @@ function show_chr_links($current = 0, $anotherLink=NULL)
   return $html;
 }
 
-function backup_conf_params($cnnct,$version)
+function backup_conf_params($version)
 {
+  global $SQLprefix;
   // Delete paramater-sets with larger version number (can happen after undo's)
-  $qry = "DELETE FROM paramsBckp WHERE version>=$version";
-  mysql_query($qry, $cnnct); //  no need to abort of failure
+  pdo_query("DELETE FROM {$SQLprefix}paramsBckp WHERE version>=?", array($version));
 
-  $qry = "INSERT IGNORE INTO paramsBckp SELECT * FROM parameters WHERE version=$version";
-  mysql_query($qry, $cnnct);
+  // Insert the current row into the backup table
+  pdo_query("INSERT IGNORE INTO {$SQLprefix}paramsBckp SELECT * FROM {$SQLprefix}parameters WHERE version=?", array($version));
 }
 ?>

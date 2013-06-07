@@ -9,7 +9,6 @@ $needsAuthentication = true;
 require 'header.php';
 
 $voteId = isset($_GET['voteId']) ? intval($_GET['voteId']) : 0; // 0 for generic form
-$cnnct = db_connect();
 
 $chkAll = $chkSome = $chkOther = '';
 $chkAC = $chkMA = $chkDI = $chkNO = $chkMR = $chkRE = '';
@@ -17,12 +16,11 @@ $voteBudget = $voteMaxGrade = $voteOnThese = $voteItems = '';
 $voteFlags = 0;
 $voteTitle = $voteDeadline = $voteInstructions = '';
 $chooseVote= $gradeVote = '';
-$allVotes = array();
 
 if ($voteId > 0) { // If voteId is specified, get details of vote
-  $qry = "SELECT * from votePrms WHERE voteId=$voteId";
-  $res = db_query($qry,$cnnct);
-  $voteDetails = mysql_fetch_array($res)
+  $qry = "SELECT * FROM {$SQLprefix}votePrms WHERE voteId=?";
+  $res = pdo_query($qry,array($voteId));
+  $voteDetails = $res->fetch()
      or die("<h1>No vote with Vote-ID $voteId</h1>");
 
   $voteFlags = intval($voteDetails['voteFlags']);
@@ -55,18 +53,15 @@ if ($voteId > 0) { // If voteId is specified, get details of vote
 }
 else {             // Get a list of votes
   $head2 = "Set-up a new vote";
-  $qry = "SELECT voteId, voteTitle, deadline, voteActive FROM votePrms ORDER BY voteId DESC";
-  $res = db_query($qry, $cnnct);
-  while ($row=mysql_fetch_array($res)) {
-    $allVotes[] = $row;
-  }
+  $qry = "SELECT voteId, voteTitle, deadline, voteActive FROM {$SQLprefix}votePrms ORDER BY voteId DESC";
+  $allVotes = pdo_query($qry)->fetchAll();
 }
 
 $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 { text-align: center;}
 tr { vertical-align: top; }
@@ -110,7 +105,7 @@ if (count($allVotes)>0) {// Generic form: print a list of votes
     if (isset($v['voteActive']) && $v['voteActive']>0) {
       $vActive = 'In progress';
       $vEdit = '<a href="voting.php?voteId='.$vtId.'">Edit...</a>';
-      $vClose = '<form action="doVoting.php" enctype="multipart/form-data" method=post>
+      $vClose = '<form accept-charset="utf-8" action="doVoting.php" enctype="multipart/form-data" method=post>
   <input type="hidden" name="voteId" value="'.$vtId.'">
   <input type="submit" name="closeVote" value="Close vote">
   <input type=checkbox name=hideVote value=on ID=hide'.$vtId.' title="Check box to prevent PC members from seeing the results of this vote"> Hide tally from PC
@@ -155,7 +150,7 @@ In either type of vote, the tally is the sum of votes that each submission
 received. (In the "Choose vote" this is the number of PC members that chose
 that submission.)<br/>
 <br/>
-<form action="doVoting.php" enctype="multipart/form-data" method=post ID=votePrms>
+<form accept-charset="utf-8" action="doVoting.php" enctype="multipart/form-data" method=post ID=votePrms>
 <b>Title:</b>&nbsp; <input type="text" name="voteTitle" size=60
    value="$voteTitle"> (used to distinguish this ballot from others)<br/>
 <b>Deadline:</b> <input type="text" name="voteDeadline" size=56

@@ -29,6 +29,8 @@ h1 {text-align: center;}
 <li><a href="#revSetUp">Initial set-up</a></li>
 <li><a href="#assign">Paper assignments and blocking access to papers</a></li>
 <li><a href="#track">Tracking progress</a></li>
+<li><a href="#rebuttal">Rebuttal phase</a></li>
+<li><a href="#subGroups">Discussing a group of submissions</a></li>
 <li><a href="#votes">Program-committee votes</a></li>
 <li><a href="#wrap">Wrapping up the PC work</a></li>
 </ol></li>
@@ -51,29 +53,34 @@ also a non-web-based installation method, as explained below.<br/>
 <b>Prerequisites.</b>
 This is a PHP/MySQL software, which means that to use it you must have
 a MySQL server and a PHP engine (and your web-server must supports PHP
-and MySQL). I tested the software with PHP 4.3.9 and MySQL 4.1.20 (and
-earlier versions of it were tested with PHP 4.3.2 and MySQL 3.23). It
-may work even with older versions but I cannot test it.  Also, proper
-functioning of this software depends on "proper" functioning of you
-web-server. In particular, some issues that I came across are:
+and MySQL). It uses the php PDO extension to access the database, so
+it requires version 5.0 or higher of php. Also, proper functioning of
+this software depends on "proper" functioning of you web-server. In
+particular, some issues that I came across are:
 <ul>
 <li>The web-server (and the PHP engine) must be willing to upload files.
   For example, in one system that I used to test it, the PHP engine was
   configured to only allow uploads of files upto 500KB (and I was wrecking
   my brains as to why I can only upload pdf and not postscript files..) In
   my case it turned out that I had to change the parameter LimitRequestBody
-  in php.conf (which on that system was somewhere under /etc/httpd/).<br/>
+  in <tt>php.conf</tt> (which on that system was somewhere under /etc/httpd/).
+  Anoter parameter that I needed to update sometime is the limit
+  <tt>upload_max_filesize</tt> in <tt>php.ini</tt>, the default value for
+  this parameter is only 2MB, and some of the submission files can easily
+  be larger than this.
+<br/>
 </li>
 
 <li>The web-server must be able to send email. For example, if this is a
   Windows machine then the variable SMTP in php.ini should be set correctly.
-<br/></li>
-
+<br/>
+</li>
+<!--
 <li>If the server is set-up with PHP in safe mode, then everything under the
   BASE directory must have the same owner. (Also everything under the UPLOAD
   directory -- see below.) If safe_mode_gid is set in php.ini then instead
   of having the same owner they must have the same group.<br/> 
-</li>
+</li>-->
 </ul>
 Some of the functionality of this package also depends on the availability
 of external programs. Currently the only parts of the functionality that
@@ -131,29 +138,51 @@ provide the DNS name or IP address of the machine that hosts the MySQL server.
 <br/><br/> 
 </dt>
 
-<dt><a name="SQLuser"></a>
-<b>MySQL Administrator or MySQL Database and User.</b>
-There are two ways to create a database for use with the submission and review
-software:</dt>
+<dt><a name="SQLdb"></a>
+<b>MySQL details.</b>
+There are three ways to create and populate a database for use with the
+submission and review software:</dt>
 <dd>
-<ul>
-<li>If you have administrative access to the MySQL server, you can simply
+<ol>
+<li><i>Create a new database.</i>
+If you have administrative access to the MySQL server, you can simply
 enter the administrator username and password and the software will
 automatically create a new database. The "administrator" whose details are
 thus specified should have sufficient privileges to DROP and CREATE databases
 and to GRANT access privileges on these databases.<br/>
 <br/></li>
 
-<li>If you do not know the username/password of the MySQL administrator,
-you should create the database for this conference by some other means.
-(For example, some hosted sites have a "control panel" that lets users
-create new databases. In other sites one must ask the administrator to
-create new databases.)<br/>
+<li><i>Create new tables in an existing database.</i>
+This is similar to the previous option, except it uses an existing
+database instead of creating a new one. Several instances of the
+software can share the same database, and they are distinguished by
+different prefixes for the table names. For example, in one instance
+we use the tables <tt>confXZYsubmissions,confXYZcommittee,...</tt>
+while in the other we use <tt>ABC13submissions,ABC13committee,...
+</tt>. To create new tables in an existing database, you need either
+to specify the administrator username and password as above, or the
+username and password of a user that have enough privileges to CREATE
+tables in the specified database.<br/>
+<br/></li>
+
+<li><i>Use existing database and tables.</i>
+Sometime you may prefer to create the database for this conference by
+some other means. (For example, some hosted sites have a "control panel"
+that lets users create new databases. In other sites one must ask the
+administrator to create new databases.) In this case the software will
+not attempt to create any table, but will assume that all the tables
+were already created.<br/>
 <br/> 
-Once you created the database, enter in the form the database name and the
-MySQL username/password that are needed to access it.</li>
-</ul>
-<br/><br/> 
+</ol>
+In the initialization page you need to provide either the administrator
+username and password as above, or the username and password of a standard
+user (where in the second case you can only use options 2 and 3 above,
+and the user should have sufficient privileges for the case that you
+choose). You also need to provide the name of the database to use (new
+or existing), and the table-name prefix to use. If you provide the
+username and password then a new MySQL user will be created, with
+sufficient privileges to access (only) the tables of the current
+instance.<br/><br/> 
 </dd>
 
 <dt><a name="UploadDir"></a>
@@ -292,7 +321,7 @@ administration page to manage it.
 
 
 <a name="adminPage"></a><h2>3. The Administration Page</h2>
-The administration page is what you use the manage the site and the entire
+The administration page is what you use to manage the site and the entire
 submission and review process. The links on that page change according
 to the different phases of the process. You have one set of links during
 the submission phase, another during the review phase, and yet others
@@ -332,10 +361,10 @@ submissions. The same page also lets you modify some of the review parameters
 that you specified during customization.</li>
 </ul>
 
-You will also see on the administration phase links to some pages that
+You will also see on the administration page links to some pages that
 deal with review-period activities, such as setting the review guidelines,
 managing PC membership and setting up PC votes. These are described
-in more details below.
+in more detail below.
 
 <a name="emailSettings"></a><h3>4a. Tweaking Server Settings</h3>
 This form is meant to provide some workarounds common bugs and
@@ -627,7 +656,21 @@ Also, at any time you can also go from the Administration page to the
 Review page (via the links at the top and bottom of the page), where you
 can participate in the review and discussions just like any other PC member.
 
-<a name="votes"></a><h3>5d. Program-committee votes</h3>
+<a name="rebuttal"></a><h3>5d. Rebuttal phase</h3>
+At any point during the review phase you can choose to send comments-to-authors
+that have been entered. In this email you are given the option to send a link to the submissions rebuttal page. Each submission is given one rebuttal with a maximum number of characters set by you. When the authors submit a rebuttal it is shown on the discussion page in below the discussions and above the reviews.<br/>
+<br/>
+On the rebuttal-setup page you can choose how many characters it can have
+and when is the deadline for submitting it, and you can open the rebuttal
+(or close it, if it is currently open).
+
+<a name="subGroups"></a><h3>5e. Discussing a group of submissions</h3>
+The chair can set-up discussion boards for the purpose of
+discussing/comparing a group of submissions. These boards work just like any
+other discussion board, except that reviewers that have a conflict with any
+of the submissions in the group cannot access that board.
+
+<a name="votes"></a><h3>5f. Program-committee votes</h3>
 The software includes support for setting up and managing program-committee
 votes. You can have the committee vote on things such as "what papers to
 move from 'Discuss' to 'Maybe Accept'", or "which of the accepted papers
@@ -674,18 +717,8 @@ tally for submissions for which they have a conflict. You can prevent
 even the tally from becoming visible by checking the box to "Hide tally
 from PC" (next to the "Close vote" button) when you close the vote.
 
-<a name="rebuttal"></a><h3>5e. Rebuttal Phase</h3>
-At any point during the review phase you can choose to send comments-to-authors
-that have been entered. In this email you are given the option to send a link to the
-submissions rebuttal page. Each submission is given one rebuttal with a maximum
-number of characters set by you. When the authors submit a rebuttal it is shown
-on the discussion page in below the discussions and above the reviews.<br/>
-<br/>
-On the rebuttal-setup page you can choose how many characters it can have
-and when is the deadline for submitting it, and you can open the rebuttal
-(or close it, if it is currently open).
 
-<a name="wrap"></a><h3>5f. Wrapping up the PC work</h3>
+<a name="wrap"></a><h3>5g. Wrapping up the PC work</h3>
 After all the decisions are made, the software lets you send to the authors
 the notification of decisions and the comments-to-authors that were entered
 during the review period. Just follow the appropriate link off the

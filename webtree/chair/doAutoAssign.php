@@ -24,19 +24,18 @@ if (empty($spclCvrg)) $spclCvrg = $cvrg+1;
 else $spclCvrg = (int) $spclCvrg;
 
 // Record the choices from the auto-assign form
-$qry = "excludedRevs='" . my_addslashes($_POST['cListExclude'],$cnnct)
-     . "',specialSubs='" . my_addslashes($_POST['specialSubs'],$cnnct)
-     . "',coverage=$cvrg,spclCvrge=$spclCvrg,startFrom='"
-     . my_addslashes($_POST['startFrom'],$cnnct)."'";
-db_query("INSERT IGNORE INTO assignParams SET idx=1,$qry", $cnnct);
-db_query("UPDATE assignParams SET $qry WHERE idx=1", $cnnct);
+$qry = "excludedRevs=?,specialSubs=?,coverage=$cvrg,spclCvrge=$spclCvrg,startFrom=?";
+pdo_query("INSERT IGNORE INTO {$SQLprefix}assignParams SET idx=1,$qry",
+	  array($_POST['cListExclude'],$_POST['specialSubs'],$_POST['startFrom']));
+pdo_query("UPDATE {$SQLprefix}assignParams SET $qry WHERE idx=1",
+	  array($_POST['cListExclude'],$_POST['specialSubs'],$_POST['startFrom']));
 
 // If statrFrom is not 'current', set the starting point for the algorithm
 if ($_POST['startFrom']=='scratch') {
-  db_query("UPDATE assignments SET sktchAssgn=0 WHERE sktchAssgn=1", $cnnct);
+  pdo_query("UPDATE {$SQLprefix}assignments SET sktchAssgn=0 WHERE sktchAssgn=1");
 }
 elseif ($_POST['startFrom']=='file' && isset($_FILES['assignmnetFile'])) {
-  parse_assignment_file($_FILES['assignmnetFile']['tmp_name'],$cnnct);
+  parse_assignment_file($_FILES['assignmnetFile']['tmp_name']);
 }
 
 // Get the lists of submissions. For each submission we record the
@@ -50,11 +49,11 @@ for ($i=0; $i<count($spclSubs); $i++) {
   $spclSubs[$i] = (int) trim($spclSubs[$i]);
 }
 
-$res = db_query("SELECT subId FROM submissions WHERE status!='Withdrawn' ORDER BY subId", $cnnct);
+$res = pdo_query("SELECT subId FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER BY subId");
 $subs = array();
 $subCoverage = array(); // how much coverage a submission needs
 $curCoverage = array(); // how much coverage it already has
-while ($row = mysql_fetch_row($res)) { 
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $subId = (int) $row[0];
   $subs[] = $subId;
   if (in_array($subId, $spclSubs))  // this submission is "special"
@@ -66,9 +65,9 @@ $nSubmissions = count($subs);  // how many submissions we have
 
 // Get the list of reviewers: put them all in the committee() array, and
 // put all *except the excluded reviewers and chair* in the revs() array
-$res = db_query("SELECT name,revId FROM committee ORDER BY revId", $cnnct);
+$res = pdo_query("SELECT name,revId FROM {$SQLprefix}committee ORDER BY revId");
 $committee = array();
-while ($row = mysql_fetch_row($res)) { 
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $revId = (int)$row[1];
   if ($revId>0) $committee[$revId] = $row; // to be used with match_PCM_by_name
 }
@@ -106,10 +105,10 @@ foreach ($revs as $revId) {
 
 // Get the preferences and existing assignments from the database and
 // overwrite the above defualt values
-$qry = "SELECT revId,subId,pref,compatible,sktchAssgn FROM assignments ORDER BY revId,subId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT revId,subId,pref,compatible,sktchAssgn FROM {$SQLprefix}assignments ORDER BY revId,subId";
+$res = pdo_query($qry);
 $exRevLoad = 0;   // how much of the load is assigned to the excluded reviewers
-while ($row = mysql_fetch_assoc($res)) {
+while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   $subId = (int)$row['subId'];
   if (!in_array($subId,$subs)) continue;
 
@@ -269,6 +268,8 @@ if ($m < $nReports) for ($i=0; $i<$nReviewers; $i++) {
 }
 
 // The algorithm is done, all that is left is to record the results
+$stmtInsrt= $db->prepare("INSERT IGNORE INTO {$SQLprefix}assignments SET revId=?, subId=?, sktchAssgn=?");
+$stmtUpdt = $db->prepare("UPDATE {$SQLprefix}assignments SET sktchAssgn=? WHERE revId=? AND subId=?");
 for ($i=0; $i<$nReviewers; $i++) {
   $revId = $revs[$i];
   for ($j=0; $j<$nSubmissions; $j++) {
@@ -282,10 +283,8 @@ for ($i=0; $i<$nReviewers; $i++) {
 
     // do not overwrite conflict-of-interest
     if ($aNew && $aOld==0) {
-      $qry = "INSERT IGNORE INTO assignments SET revId={$revId}, subId={$subId}, sktchAssgn=$aNew";
-      db_query($qry, $cnnct);
-      $qry = "UPDATE assignments SET sktchAssgn={$aNew} WHERE revId={$revId} AND subId={$subId}";
-      db_query($qry, $cnnct);
+      $stmtInsrt->execute(array($revId,$subId,$aNew)); // insert if not there
+      $stmtUpdt->execute(array($aNew,$revId,$subId));  // update
     }
   }
 }

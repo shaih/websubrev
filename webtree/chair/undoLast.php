@@ -8,39 +8,31 @@
 $needsAuthentication = true; 
 require 'header.php';
 
-$cnnct = db_connect();
+$qry = "SELECT version FROM {$SQLprefix}paramsBckp WHERE version IN(?,?)";
+$res = pdo_query($qry,array(PARAMS_VERSION-1, PARAMS_VERSION+1));
+$versions = $res->fetchAll(PDO::FETCH_NUM);
 
-$qry = "SELECT version FROM paramsBckp WHERE version=".(PARAMS_VERSION-1);
-$res = db_query($qry, $cnnct);
-$canUndo = (mysql_num_rows($res)>0);
-
-$qry = "SELECT version FROM paramsBckp WHERE version=".(PARAMS_VERSION+1);
-$res = db_query($qry, $cnnct);
-$canRedo = (mysql_num_rows($res)>0);
-
-if (isset($_GET['undoLast']) && $canUndo) { // undo last change
-  $version = PARAMS_VERSION-1;
-  $qry = "REPLACE parameters SELECT * FROM paramsBckp WHERE version=$version";
-  $res = db_query($qry, $cnnct);
-  if (mysql_affected_rows()>0) { // success
-    $qry = "REPLACE paramsBckp SELECT * FROM parameters WHERE version=".PARAMS_VERSION;
-    mysql_query($qry, $cnnct);
-    $qry = "DELETE FROM parameters WHERE version=".PARAMS_VERSION;
-    db_query($qry, $cnnct);
-  }
-  header("Location: index.php");
-  exit();
+if (count($versions)>=2) // both undo and redo
+  $canUndo = $canRedo = true;
+elseif (count($versions)==1) {
+  $canUndo = $versions[0][0]==PARAMS_VERSION-1;
+  $canRedo = $versions[0][0]==PARAMS_VERSION+1;
 }
+else $canUndo = $canRedo = false;
 
-if (isset($_GET['redoLast']) && $canRedo) { // redo last change
+$version = -1;
+if (isset($_GET['undoLast']) && $canUndo)     // undo last change
+  $version = PARAMS_VERSION-1;
+elseif (isset($_GET['redoLast']) && $canRedo) // redo last change
   $version = PARAMS_VERSION+1;
-  $qry = "REPLACE parameters SELECT * FROM paramsBckp WHERE version=$version";
-  $res = db_query($qry, $cnnct);
-  if (mysql_affected_rows()>0) { // success
-    $qry = "REPLACE paramsBckp SELECT * FROM parameters WHERE version=".PARAMS_VERSION;
-    mysql_query($qry, $cnnct);
-    $qry = "DELETE FROM parameters WHERE version=".PARAMS_VERSION;
-    db_query($qry, $cnnct);
+
+if ($version >= 0) {
+  $qry = "REPLACE {$SQLprefix}parameters SELECT * FROM {$SQLprefix}paramsBckp WHERE version=?";
+  $res = pdo_query($qry, array($version));
+  if ($res->rowCount()>0) { // success
+    $qry = "REPLACE {$SQLprefix}paramsBckp SELECT * FROM {$SQLprefix}parameters WHERE version=?";
+    pdo_query($qry, array(PARAMS_VERSION));
+    pdo_query("DELETE FROM {$SQLprefix}parameters WHERE version=?",array(PARAMS_VERSION));
   }
   header("Location: index.php");
   exit();
@@ -61,7 +53,7 @@ else $fwButton = '';
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 {text-align: center;}
 h2 {text-align: center;}
@@ -86,7 +78,7 @@ example the email setting, the deadlines, etc.)
 If you made any modifications to system parameters since the last phase, all
 these modifications will be reverted when you use the undo functionality.
 <br/><br/>
-<form action="undoLast.php" method=get>
+<form accept-charset="utf-8" action="undoLast.php" method=get>
 $bkButton
 $fwButton
 </form>

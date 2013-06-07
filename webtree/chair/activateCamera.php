@@ -20,7 +20,7 @@ $baseURL = $prot.'://'.BASE_URL;
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 {text-align: center;}
 </style>
@@ -40,7 +40,7 @@ camera-ready submission site will open and the review site will switch to
 a read-only mode. (I.e., PC members will still be able to view the reviews
 and discussions but not to modify them or insert new ones.)</p>
 
-<form name="cameraReady" action="doActivateCamera.php"
+<form accept-charset="utf-8" name="cameraReady" action="doActivateCamera.php"
       enctype="multipart/form-data" method="post">
 <input type="submit" value="Activate Final-Version Submissions">,
 camera-ready deadline is
@@ -61,7 +61,7 @@ title and the comments-to-authors as they appear in the database.
 (To be recognized as keywords, these words MUST include the '<'
 and '>' characters and the dollar-sign.)
 <br/><br/>
-<form name="cameraReady" action="doEmailAuthors.php"
+<form accept-charset="utf-8" name="cameraReady" action="doEmailAuthors.php"
   enctype="multipart/form-data" method="post">
 <input type="hidden" name="emailTo" value="AC">
 Subject: <input type=text name="subject" size=75 value="Final-version submission site for $cName now open">

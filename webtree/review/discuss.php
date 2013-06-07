@@ -25,19 +25,17 @@ if (!$disFlag || ($disFlag == 2 && !has_reviewed_paper($revId, $subId)))
 // a conflict with it. Also get the last time that this reviewer viewed
 // the discussion on this submission.
 
-$cnnct = db_connect();
 $qry = "SELECT s.subId subId, s.title title, s.rebuttal rebuttal,
-      UNIX_TIMESTAMP(s.lastModified) lastModif, s.status status,
-      s.avg avg, s.wAvg wAvg, VAR_POP(r.score) delta,
-      lp.lastSaw lastSaw, a.assign assign, lp.lastVisited lastVisited, s.flags flags
-    FROM submissions s 
-      LEFT JOIN assignments a ON a.revId='$revId' AND a.subId='$subId'
-      LEFT JOIN lastPost lp ON lp.revId='$revId' AND lp.subId='$subId'
-      LEFT JOIN reports r ON r.subId = '$subId' 
-    WHERE s.subId='$subId' AND (status!='Withdrawn' OR (s.flags & ".FLAG_IS_GROUP."))
-	GROUP BY subId";
-$res = db_query($qry, $cnnct);
-if (!($submission = mysql_fetch_assoc($res))
+  UNIX_TIMESTAMP(s.lastModified) lastModif, s.status status, s.avg avg,
+  s.wAvg wAvg, VAR_POP(r.score) delta, lp.lastSaw lastSaw, a.assign assign,
+  lp.lastVisited lastVisited, s.flags flags
+  FROM {$SQLprefix}submissions s 
+    LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=?
+    LEFT JOIN {$SQLprefix}lastPost lp ON lp.revId=? AND lp.subId=?
+    LEFT JOIN {$SQLprefix}reports r ON r.subId=?
+  WHERE s.subId=? AND (status!='Withdrawn' OR (s.flags & ".FLAG_IS_GROUP.")) GROUP BY subId";
+$res = pdo_query($qry,array($revId,$subId,$revId,$subId,$subId,$subId));
+if (!($submission = $res->fetch(PDO::FETCH_ASSOC))
     || $submission['assign']==-1) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
@@ -52,46 +50,44 @@ if(has_group_conflict($revId, $submission['title'])) {
 
 $grades = "r.confidence conf, r.score score";
 $chrCmnts = is_chair($revId) ? "r.comments2chair cmnts2chr, " : "";
-$qry = "SELECT r.subId subId, r.revId revId, c.name PCmember,
-       r.subReviewer subReviewer, r.confidence conf, r.score score,  
-       r.comments2authors cmnts2athr, r.comments2committee cmnts2PC, $chrCmnts
-       UNIX_TIMESTAMP(r.lastModified) modified, r.attachment
-    FROM reports r, committee c WHERE  r.revId=c.revId AND r.subId=$subId
-    GROUP BY revId
-    ORDER BY modified";
-$qryAvg = "SELECT r.revId revId, AVG(r.confidence) avgConf, AVG(r.score) avgScore 
-    FROM reports r, committee c WHERE r.revId = c.revId
-	GROUP BY revId";
-$qry2 = "SELECT revId, gradeId, grade FROM auxGrades WHERE subId=$subId";
-$qry2Avg = "SELECT revId, gradeId, avg(grade) avgGrade 
-			FROM auxGrades
-			GROUP BY gradeId, revId";
-$res = db_query($qry, $cnnct);
-$avgRes = db_query($qryAvg, $cnnct);
-$auxRes = db_query($qry2, $cnnct);
-$aux2Res = db_query($qry2Avg, $cnnct);
+
 // store the auxiliary grades in a more convenient array
+$qry2 = "SELECT revId, gradeId, grade FROM {$SQLprefix}auxGrades WHERE subId=?";
+$auxRes = pdo_query($qry2,array($subId));
 $auxGrades = array();
-while ($row = mysql_fetch_row($auxRes)) {
+while ($row = $auxRes->fetch(PDO::FETCH_NUM)) {
   $rId = (int) $row[0];
   $gId = (int) $row[1];
   $auxGrades[$rId][$gId] = isset($row[2]) ? ((int) $row[2]) : NULL;
 }
+
+$qryAvg = "SELECT r.revId revId, AVG(r.confidence) avgConf, AVG(r.score) avgScore FROM {$SQLprefix}reports r, {$SQLprefix}committee c WHERE r.revId=c.revId GROUP BY revId";
+$avgRes = pdo_query($qryAvg);
 $avgGrades = array();
-while ($row = mysql_fetch_assoc($avgRes)) {
+while ($row = $avgRes->fetch(PDO::FETCH_ASSOC)) {
 	$rId = (int) $row['revId'];
 	$avgGrades[$rId]['avgScore'] = $row['avgScore'];
 	$avgGrades[$rId]['avgConf'] = $row['avgConf'];
 }
+
+$qry2Avg = "SELECT revId, gradeId, avg(grade) avgGrade FROM {$SQLprefix}auxGrades GROUP BY gradeId, revId";
+$aux2Res = pdo_query($qry2Avg);
 $avgAuxGrades = array();
-while ($row = mysql_fetch_assoc($aux2Res)) {
+while ($row = $aux2Res->fetch(PDO::FETCH_ASSOC)) {
 	$rId = (int) $row['revId'];
 	$gId = (int) $row['gradeId'];
 	$avgAuxGrades[$rId][$gId] = $row['avgGrade'];
 }
+
 // store reports for this submission in an array
+$qry = "SELECT r.subId subId, r.revId revId, c.name PCmember,
+ r.subReviewer subReviewer, r.confidence conf, r.score score,
+ r.comments2authors cmnts2athr, r.comments2committee cmnts2PC, $chrCmnts
+ UNIX_TIMESTAMP(r.lastModified) modified, r.attachment
+ FROM {$SQLprefix}reports r, {$SQLprefix}committee c WHERE r.revId=c.revId AND r.subId=? GROUP BY revId ORDER BY modified";
+$res = pdo_query($qry,array($subId));
 $reports = array();
-while ($row = mysql_fetch_assoc($res)) {
+while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   $rId = (int) $row['revId'];
   for ($i=0; $i<count($criteria); $i++) {
     $row["grade_{$i}"] = $auxGrades[$rId][$i];
@@ -103,21 +99,17 @@ while ($row = mysql_fetch_assoc($res)) {
 }
 
 
-
 // Get the posts for this subsmission. (The depth field is initialized
 // to zero and is later set by the logic in make_post_array().)
 
 $qry = "SELECT 0 AS depth, postId, parentId, subject, comments, 
-        UNIX_TIMESTAMP(whenEntered) whenEntered, pc.name name,
-        pst.revId=$revId mine
-    FROM posts pst, committee pc
-    WHERE pst.subId='$subId' AND pc.revId=pst.revId
-    ORDER BY whenEntered";
-$res = db_query($qry, $cnnct);
+  UNIX_TIMESTAMP(whenEntered) whenEntered, pc.name name, (pst.revId=?) mine
+  FROM {$SQLprefix}posts pst, {$SQLprefix}committee pc
+  WHERE pst.subId=? AND pc.revId=pst.revId ORDER BY whenEntered";
+$res = pdo_query($qry,array($revId,$subId));
 $posts = array();
-if ($threaded) { make_post_array($res, $posts); }
-else while ($row = mysql_fetch_array($res)) { $posts[] = $row; }
-
+if ($threaded) make_post_array($res, $posts);
+else           $posts = $res->fetchAll();
 
 // update the lastPost entry for this reviewer and submission
 $lastPost = $lastSaw;
@@ -126,34 +118,32 @@ foreach ($posts as $p) {
 }
 
 if (isset($submission['lastSaw'])) {
-  $qry = "UPDATE lastPost SET lastSaw=$lastPost, lastVisited=NOW()
-  WHERE revId=$revId AND subId=$subId";
+  $qry = "UPDATE {$SQLprefix}lastPost SET lastSaw=?, lastVisited=NOW()
+  WHERE revId=? AND subId=?";
 } else {
-  $qry = "INSERT INTO lastPost SET revId='$revId',
-  subId='$subId', lastSaw='$lastPost'";
+  $qry = "INSERT INTO {$SQLprefix}lastPost SET lastSaw=?, revId=?, subId=?";
 }
-db_query($qry, $cnnct);
+pdo_query($qry,array($lastPost,$revId,$subId));
 
 // If this is not the first time we visit this page, get a list
 // of everything that changed since we last visited
 
 $changeLog = array();
 if (isset($submission['lastSaw'])) {
-  $qry = "SELECT UNIX_TIMESTAMP(entered), description FROM changeLog
-  WHERE subId=$subId AND ((entered > (NOW() - INTERVAL 10 DAY))
-                          OR (entered > '$lastVisited'))
+  $qry = "SELECT UNIX_TIMESTAMP(entered),description FROM {$SQLprefix}changeLog
+  WHERE subId=? AND ((entered > (NOW() - INTERVAL 10 DAY)) OR (entered > ?))
   ORDER BY entered DESC";
-  $res = db_query($qry, $cnnct);
-  while ($row = mysql_fetch_row($res)) $changeLog[] = $row;
+  $res = pdo_query($qry,array($subId,$lastVisited));
+  $changeLog = $res->fetchAll(PDO::FETCH_NUM);
 }
 
 // Now we can display the results to the user
 $pageWidth = 725;
 $links = show_rev_links();
 
-$res1 = db_query("SELECT c.name FROM committee c JOIN assignments a ON a.revId = c.revId WHERE a.subID = '$subId' AND a.assign=1", $cnnct);
+$res1 = pdo_query("SELECT c.name FROM {$SQLprefix}committee c JOIN {$SQLprefix}assignments a ON a.revId=c.revId WHERE a.subId=? AND a.assign=1",array($subId));
 $reviewers = "";
-while($row = mysql_fetch_array($res1)){
+while($row = $res1->fetch()) {
   $reviewers .= $row['name']. ", ";	
 }
 $reviewers = substr($reviewers,0,-2);

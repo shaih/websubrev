@@ -11,14 +11,18 @@ foreach ($lines as $line) {
   if ($i===false || $i==0) continue; // no 'NAME=' found
   $nm = substr($line,0,$i);
   $vl = rtrim(substr($line,$i+1));
-  if ($nm=='MYSQL_HOST'     || $nm=='MYSQL_DB'   || $nm=='MYSQL_USR'
-      || $nm=='MYSQL_PWD'   || $nm=='SUBMIT_DIR' || $nm=='LOG_FILE'
-      || $nm=='ADMIN_EMAIL' || $nm=='CONF_SALT'  || $nm=='BASE_URL'
-      || $nm=='IACR') {
+  if ($nm=='MYSQL_HOST'      || $nm=='MYSQL_DB'   || $nm=='MYSQL_USR'
+      || $nm=='MYSQL_PWD'    || $nm=='SUBMIT_DIR' || $nm=='LOG_FILE'
+      || $nm=='ADMIN_EMAIL'  || $nm=='CONF_SALT'  || $nm=='BASE_URL'
+      || $nm=='MYSQL_PREFIX' || $nm=='IACR') {
     if (empty($vl)) die("<h1>Parameter $nm cannot be empty</h1>");
     define($nm, $vl);
   }
 }
+
+$JQUERY_URL = "../common/jquery-1.9.0.js";
+
+$db = null;  // a global variable holding the database connection
 
 require_once('../includes/confConstants.php');
 require_once('../includes/confUtils.php');
@@ -41,34 +45,33 @@ else {
   define("HAVE_ZEND_PDF", false);
 }
 
-$cnnct = db_connect();
-$qry = "SELECT revId, name, email from committee WHERE (flags & ".FLAG_IS_CHAIR.")>0";
-$res = db_query($qry, $cnnct, "Cannot find chair in database: ");
-
-if(mysql_num_rows($res) == 0)
-  die("Cannot find chair in database.");
 
 $CHAIR_IDS = array();
 $CHAIR_INFO = array();
 $CHAIR_EMAILS = array();
 
-while($row = mysql_fetch_assoc($res)) {
+if (defined('MYSQL_PREFIX')) $SQLprefix = MYSQL_PREFIX;
+else $SQLprefix = '';
+
+$qry = "SELECT revId, name, email FROM {$SQLprefix}committee WHERE (flags & ".FLAG_IS_CHAIR.")>0";
+$res = pdo_query($qry);
+while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   array_push($CHAIR_IDS, $row['revId']);
   array_push($CHAIR_EMAILS, $row['email']);
   $CHAIR_INFO[$row['revId']] = $row;
 }
+if (empty($CHAIR_INFO)) die("Cannot find chair in database.");
 
-reset($CHAIR_INFO);
-$first = key($CHAIR_INFO);
+$firstChair = reset($CHAIR_INFO); // the first chair in the array
 
-define('CHAIR_NAME', $CHAIR_INFO[$first]['name']);
-define('CHAIR_EMAIL', $CHAIR_INFO[$first]['email']);
+define('CHAIR_NAME', $firstChair['name']);
+define('CHAIR_EMAIL', $firstChair['email']);
 
 if (isset($notCustomized) && $notCustomized===true) $row=emptyPrms();
 else {
-  $qry = "SELECT * from parameters ORDER BY version DESC LIMIT 1";
-  $res = db_query($qry, $cnnct, "Cannot load parameters: ");
-  $row = mysql_fetch_assoc($res) or die("No parameters are specified");
+  $qry = "SELECT * from {$SQLprefix}parameters ORDER BY version DESC LIMIT 1";
+  $res = pdo_query($qry);
+  $row = $res->fetch(PDO::FETCH_ASSOC) or die("No parameters are specified");
 }
 
 define('PARAMS_VERSION', $row['version']);
@@ -77,7 +80,7 @@ define('CONF_SHORT', $row['shortName']);
 define('CONF_YEAR', $row['confYear']);
 define('CONF_HOME', $row['confURL']);
 
-if (isset($row['regDeadline'])) {
+if (!empty($row['regDeadline'])) {
   define('USE_PRE_REGISTRATION',true);
   define('REGISTER_DEADLINE',$row['regDeadline']);
 } else  {
@@ -135,8 +138,6 @@ $categories = categoryTable($row['categories']);
 $criteria = criteriaTable($row['extraCriteria']);
 
 define('PERIOD', $row['period']);
-
-$JQUERY_URL = "../common/jquery-1.9.0.js";
 
 switch($row['period']) {
   case PERIOD_FINAL:

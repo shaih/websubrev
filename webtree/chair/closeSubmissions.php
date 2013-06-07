@@ -27,7 +27,7 @@ $revAttach= (CONF_FLAGS & FLAG_REV_ATTACH) ? 'checked="checked"' : '';
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <script language="Javascript" type="text/javascript">
 <!--
 function checkInt( fld, mn, mx )
@@ -86,7 +86,7 @@ the range of grades, etc. These parameters cannot be modified after the
 review site is activated.<br/>
 <br/>
 
-<form name="reviewPrms" action="doCloseSubmissions.php"
+<form accept-charset="utf-8" name="reviewPrms" action="doCloseSubmissions.php"
       enctype="multipart/form-data" method="post">
 
 <input name="reviewPrms" value="on" type="hidden">

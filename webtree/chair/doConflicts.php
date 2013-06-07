@@ -8,36 +8,36 @@
  $needsAuthentication = true; 
 require 'header.php';
 
-// Get current preferences/assignments
-$cnnct = db_connect();
+// Get current preferences/sketch-assignments.
+// We maintain an invariant that sktchAssgn==-1 iff assign==-1
 
 // Prepare an array of submissions and an array of PC members
-$qry = "SELECT subId from submissions ORDER BY subId";
-$res = db_query($qry, $cnnct);
+$res = pdo_query("SELECT subId FROM {$SQLprefix}submissions ORDER BY subId");
 $subArray = array();
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $subId = $row[0];
   $subArray[$subId] = true;
 }
 
-$qry = "SELECT revId from committee WHERE !(flags & " . FLAG_IS_CHAIR . ")
-   ORDER BY revId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT revId FROM {$SQLprefix}committee WHERE !(flags & ". FLAG_IS_CHAIR .") ORDER BY revId";
+$res = pdo_query($qry);
 $committee = array();
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $revId = $row[0];
   $committee[$revId] = true;
 }
 
-$qry = "SELECT subId, revId, sktchAssgn FROM assignments ORDER BY revId, subId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT subId, revId, sktchAssgn FROM {$SQLprefix}assignments ORDER BY revId, subId";
+$res = pdo_query($qry);
 $current = array();
-while ($row = mysql_fetch_row($res)) { 
+while ($row = $res->fetch(PDO::FETCH_NUM)) { 
   list($subId, $revId, $assign) = $row;
   if (!isset($current[$revId])) $current[$revId] = array();
   $current[$revId][$subId] = $assign;
 }
 
+$stmt1 = $db->prepare("INSERT INTO {$SQLprefix}assignments SET subId=?, revId=?, sktchAssgn=-1, assign=-1");
+$stmt2 = $db->prepare("UPDATE {$SQLprefix}assignments SET sktchAssgn=-1, assign=-1 WHERE subId=? AND revId=?");
 foreach ($_POST as $nm => $val) {
   if (empty($nm) || trim($val) != "on") continue;
   $nm = explode('_', $nm);
@@ -46,25 +46,19 @@ foreach ($_POST as $nm => $val) {
   $subId = (int) $nm[2];
   if ($subId <= 0 || $revId <= 0) continue;
 
-  $qry = NULL;
-  if (!isset($current[$revId][$subId])) {    // insert new entry
-    $qry = "INSERT INTO assignments SET subId ='{$subId}', revId='{$revId}', sktchAssgn=-1, assign=-1";
-  }
-  else if ($current[$revId][$subId] != -1) { // modify existing entry
-    $qry = "UPDATE assignments SET sktchAssgn=-1, assign=-1 WHERE subId ='{$subId}' AND revId='{$revId}'";
-  }
-  if (isset($qry)) db_query($qry, $cnnct);
+  if (!isset($current[$revId][$subId]))     // insert new entry
+    $stmt1->execute(array($subId,$revId));
+  else if ($current[$revId][$subId] != -1)  // modify existing entry
+    $stmt2->execute(array($subId,$revId));
 }
 
 // Remove from database all the submission blocks that are not
 // specified by the $_POST array
 
+$stmt1 = $db->prepare("UPDATE {$SQLprefix}assignments SET sktchAssgn=0, assign=0 WHERE subId=? AND revId=?");
 foreach ($current as $revId => $pcmList) foreach ($pcmList as $subId => $a) {
-  $subId = (int) $subId; $revId = (int) $revId;
-  if ($a==-1 && !isset($_POST["b_{$revId}_{$subId}"])) {
-    $qry = "UPDATE assignments SET sktchAssgn=0, assign=0 WHERE subId ='{$subId}' AND revId='{$revId}'";
-    db_query($qry, $cnnct);
-  }
+  if ($a==-1 && !isset($_POST["b_{$revId}_{$subId}"]))
+    $stmt1->execute(array($subId,$revId));
 }
 
 header("Location: index.php");

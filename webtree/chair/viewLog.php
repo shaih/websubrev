@@ -12,7 +12,7 @@ $links = show_chr_links(2);
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <title>View Log File</title>
 </head>
 <body>

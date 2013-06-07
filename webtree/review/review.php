@@ -30,31 +30,30 @@ if ($notMine) {
 }
 // Make sure that this submission exists and the reviewer does not have
 // a conflict with it, and get the review for it (if exists)
-$cnnct = db_connect();
 
 $qry= "SELECT s.title ttl, a.assign assign, r.subReviewer subRev,
       r.lastModified lastModif, r.confidence conf, r.score score,
       r.comments2authors cmnts2athr, r.comments2committee cmnts2PC,
       r.comments2chair cmnts2chair, r.comments2self cmnts2self,
       a.watch watch, r.flags revFlags, r.attachment attachment
-      FROM submissions s
-        LEFT JOIN assignments a ON a.revId=$revId AND a.subId=$subId
-        LEFT JOIN reports r     ON r.revId=$revId AND r.subId=$subId
-    WHERE s.subId='$subId'";
+      FROM {$SQLprefix}submissions s
+        LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId
+        LEFT JOIN {$SQLprefix}reports r     ON r.revId=? AND r.subId=s.subId
+    WHERE s.subId=?";
 
 // get also the auxiliary grades
-$qry2 = "SELECT gradeId, grade from auxGrades WHERE subId=$subId and revId=$revId";
-
-$res = db_query($qry, $cnnct);
-$auxRes = db_query($qry2, $cnnct);
-if (!($row = mysql_fetch_assoc($res)) || $row['assign']==-1) {
+$qry2 = "SELECT gradeId, grade from {$SQLprefix}auxGrades WHERE subId=? and revId=?";
+$res = pdo_query($qry, array($revId,$revId,$subId));
+$auxRes = pdo_query($qry2, array($subId,$revId));
+$row = $res->fetch(PDO::FETCH_ASSOC);
+if (!$row || $row['assign']==-1) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 
 $mxGrades = MAX_GRADE;
 $auxGrades = array();
 if (is_array($criteria) && count($criteria)>0) {
-  while ($auxRow = mysql_fetch_row($auxRes)) {
+  while ($auxRow = $auxRes->fetch(PDO::FETCH_NUM)) {
     $gId = $auxRow[0];
     $auxGrades[$gId] = isset($auxRow[1]) ? ((int)$auxRow[1]) : NULL;
   }
@@ -106,7 +105,7 @@ print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
   "http://www.w3.org/TR/html4/loose.dtd">
 
-<html><head>
+<html><head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 h1 { text-align: center; }
@@ -149,7 +148,7 @@ $links
 <h1>Review of Submission $subId{$update}</h1>
 <h2><a target=_blank href="submission.php?subId=$subId">$title</a></h2>
 
-<form action="doReview.php" enctype="multipart/form-data" method=post>
+<form accept-charset="utf-8" action="doReview.php" enctype="multipart/form-data" method=post>
 
 <table cellspacing="3" cellpadding="2"><tbody>
 <tr><td>Reviewer:    </td> <td>$revName</td></tr>

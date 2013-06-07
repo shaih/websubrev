@@ -12,9 +12,8 @@ if (!USE_PRE_REGISTRATION) { exit("<h1>Pre-registration is Disabled</h1>"); }
 if (PERIOD<PERIOD_PREREG) exit("<h1>Pre-registration is not yet Open</h1>");
 if (PERIOD>PERIOD_PREREG) exit("<h1>Pre-registration is already Closed</h1>");
 
-$cnnct = db_connect();
-backup_conf_params($cnnct, PARAMS_VERSION);
-db_query("UPDATE parameters SET version=version+1,period=".PERIOD_SUBMIT, $cnnct);
+backup_conf_params(PARAMS_VERSION);
+pdo_query("UPDATE {$SQLprefix}parameters SET version=version+1,period=?", array(PERIOD_SUBMIT));
 
 // All went well, go back to administration page
 header("Location: index.php");

@@ -19,72 +19,71 @@ else exit("<h1>No Submission specified</h1>");
 // Check that this reviewer is allowed to discuss submissions
 if ($disFlag != 1 && (!has_reviewed_paper($revId, $subId) && $disFlag == 2)) exit("<h1>$revName cannot discuss submissions yet</h1>");
 
+if (empty($_POST['subject']) && empty($_POST['comments']))
+  exit(); // empty post?
 
 // Make sure that this submission exists and the reviewer does not have
 // a conflict with it. 
-$cnnct = db_connect();
-$qry = "SELECT a.assign FROM submissions s 
-      LEFT JOIN assignments a ON a.revId='$revId' AND a.subId='$subId'
-      WHERE s.subId='$subId'";
-$res = db_query($qry, $cnnct);
-if (!($row = mysql_fetch_row($res)) || $row[0]==-1) {
+$qry = "SELECT a.assign FROM {$SQLprefix}submissions s 
+      LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=?
+      WHERE s.subId=?";
+$res = pdo_query($qry, array($revId,$subId,$subId));
+if (!($row = $res->fetch(PDO::FETCH_NUM)) || $row[0]==-1) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 
-$qry = "INSERT INTO posts SET subId='$subId', revId='$revId',";
+$qry = "INSERT INTO {$SQLprefix}posts SET subId=?,revId=?,";
+$prms = array($subId,$revId);
+if (isset($_POST['parent'])) {
+  $qry .= "parentId=?,";
+  $prms[] = trim($_POST['parent']);
+}
+if (isset($_POST['subject'])) {
+  $qry .= "subject=?,";
+  $prms[] = trim($_POST['subject']);
+}
+if (isset($_POST['comments'])) {
+  $qry.= "\n comments=?,"
+  $prms[] = trim($_POST['comments']);
 
-if (isset($_POST['parent']))
-  $qry .= "parentId='". my_addslashes(trim($_POST['parent']), $cnnct). "',\n";
+$qry .= "\n whenEntered=NOW()";
 
-if (isset($_POST['subject']))
-  $qry .= "  subject='".my_addslashes(trim($_POST['subject']), $cnnct)."',\n";
+pdo_query($qry, $prms);
 
-if (isset($_POST['comments']))
-  $qry.= "  comments='".my_addslashes(trim($_POST['comments']), $cnnct)."',\n";
+// Touch the entry to update the 'lastModified' timestamp
+$qry = "UPDATE {$SQLprefix}submissions SET lastModified=NOW() WHERE subId=?";
+pdo_query($qry, array($subId));
 
-$qry .= "  whenEntered=NOW()";
+// Add this post to list of changes for this submission
+$qry = "INSERT INTO {$SQLprefix}changeLog (subId,revId,changeType,description,entered) VALUES (?,?,'Post',?,NOW())";
 
-if (!empty($_POST['subject']) || !empty($_POST['comments'])) {
-  db_query($qry, $cnnct);
+pdo_query($qry, array($subId,$revId,($pcMember[1].' posted a message')));
 
-  // Touch the entry to update the 'lastModified' timestamp
-  $qry = "UPDATE submissions SET lastModified=NOW() WHERE subId='$subId'";
-  db_query($qry, $cnnct);
+// Send the new post by email to reviewers that have this submission
+// on their watch list and asked to be notified by email of new posts
 
-  // Add this post to list of changes for this submission
-  $name =  mysql_real_escape_string($pcMember[1],$cnnct);
-  $qry = "INSERT INTO changeLog (subId,revId,changeType,description,entered)
-  VALUES ($subId,$revId,'Post','{$name} posted a message',NOW())";
-  db_query($qry, $cnnct);
-
-  // Send the new post by email to reviewers that have this submission
-  // on their watch list and asked to be notified by email of new posts
-
-  $qry = "SELECT c.email, c.flags FROM assignments a, committee c
-  WHERE c.revId=a.revId AND a.subId=$subId AND a.revId!=$revId AND a.assign!=-1 AND a.watch=1";
-  $res = db_query($qry, $cnnct);
-  $notify = $comma = '';
-  while ($row = mysql_fetch_row($res)) {
-    $flags = $row[1];
-    if ($flags & FLAG_EML_WATCH_EVENT) {
-      $notify .= $comma . $row[0];
-      $comma = ', ';
-    }
+$qry = "SELECT c.email, c.flags FROM {$SQLprefix}assignments a, {$SQLprefix}committee c WHERE c.revId=a.revId AND a.subId=? AND a.revId!=? AND a.assign!=-1 AND a.watch=1";
+$res = pdo_query($qry, array($subId,$revId));
+$notify = $comma = '';
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
+  $flags = $row[1];
+  if ($flags & FLAG_EML_WATCH_EVENT) {
+    $notify .= $comma . $row[0];
+    $comma = ', ';
   }
-  if (!empty($notify)) {
-    $qry = "SELECT title from submissions WHERE subId=$subId";
-    $res = db_query($qry, $cnnct);
-    $row = mysql_fetch_row($res); // $row[0] is the submissions title
-    $prot = (defined('HTTPS_ON')||isset($_SERVER['HTTPS']))? 'https' : 'http';
-    $msg = $row[0]."\n";
-    $msg .= "===============================================================\n"
-           . $pcMember[1] . ": " . trim($_POST['subject'])
-           . "\n\n" . trim($_POST['comments']) . "\n\n";
-    $msg .= "---------------------------------------------------------------\n"
-      . "$prot://".BASE_URL."review/discuss.php?subId=$subId\n";
-    $sbjct = "New post for submission $subId to ".CONF_SHORT.' '.CONF_YEAR;
-    my_send_mail($notify, $sbjct, $msg);
-  }
+}
+if (!empty($notify)) {
+  $qry = "SELECT title from {$SQLprefix}submissions WHERE subId=?";
+  $row = pdo_query($qry, array($subId))->fetch(PDO::FETCH_NUM);
+  $prot = (defined('HTTPS_ON')||isset($_SERVER['HTTPS']))? 'https' : 'http';
+  $msg = $row[0]."\n";
+  $msg .= "===============================================================\n"
+    . $pcMember[1] . ": " . trim($_POST['subject'])
+    . "\n\n" . trim($_POST['comments']) . "\n\n";
+  $msg .= "---------------------------------------------------------------\n"
+    . "$prot://".BASE_URL."review/discuss.php?subId=$subId\n";
+  $sbjct = "New post for submission $subId to ".CONF_SHORT.' '.CONF_YEAR;
+  my_send_mail($notify, $sbjct, $msg);
 }
 
 // if this was reply to a previous post, return to that post

@@ -7,7 +7,6 @@
  */
 $needsAuthentication = true;
 require 'header.php';
-$cnnct = db_connect();
 
 $cName = CONF_SHORT.' '.CONF_YEAR;
 $chkAC = (PERIOD>=PERIOD_CAMERA)? ' checked="true"': '';
@@ -16,7 +15,7 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
   h1 {text-align: center;}
 </style>
@@ -39,7 +38,7 @@ The keywords <code>&lt;&#36;title&gt;</code> and
 <code>&lt;&#36;subId&gt;</code> can also be included in the subject
 line.<br/>
 <br/>
-<form name="emailToAuthors" action="doEmailAuthors.php"
+<form accept-charset="utf-8" name="emailToAuthors" action="doEmailAuthors.php"
   enctype="multipart/form-data" method="post">
 Subject: <input type=text size=80 name=subject><br/>
 <textarea cols=80 rows=20 name=message></textarea>

@@ -19,13 +19,18 @@ else                                    $chkCRLF = ' checked="checked"';
 if (CONF_FLAGS & FLAG_EML_HDR_X_MAILER) $chkXmlr = ' checked="checked"';
 if (CONF_FLAGS & FLAG_EML_EXTRA_PRM)    $chkXprm = ' checked="checked"';
 
-if (isset($_GET['tweaked'])) $confirm = '<center>Changes Recorded</center>';
-else                         $confirm = '';
+if (isset($_GET['tweaked'])) 
+     $confirm = '<center color="red">Changes Recorded</center>';
+else $confirm = '';
+
+if (defined('TIME_SHIFT') && TIME_SHIFT>0) 
+     $timeShift = TIME_SHIFT;
+else $timeShift = '';
 
 $links = show_chr_links();print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <title>Tweak Site Settings</title>
 
 <link rel="stylesheet" type="text/css" href="../common/review.css"/>
@@ -47,11 +52,11 @@ you do not mess with these settings unless you know what you are doing, see
 the <a href="../documentation/chair.html#emailSettings" target="documentation">
 documentation</a>.<br/>
 
-<form action=doTweakSite.php enctype="multipart/form-data" method=POST>
+<form accept-charset="utf-8" action=doTweakSite.php enctype="multipart/form-data" method=POST>
 <h3>Server time</h3>
 <ul>
-<li>Add <input name=timeShift type=number> seconds to the server&prime;s time
-(put a negative number to subtract).<br/>
+<li>Add <input name="timeShift" type="number" value="$timeShift"\> seconds
+to the server&prime;s time (put a negative number to subtract).<br/>
 If the server&prime;s clock is off, you can specify a time-shift amount that will be added to the dates that are displayed by the software.</li>
 </ul>
 <h3>Email settings</h3>

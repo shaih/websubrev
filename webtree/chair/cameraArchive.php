@@ -32,7 +32,7 @@ if ($pearAvailable && !isset($_GET['format'])) {
   print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head><title>Create Camera-Ready Archive</title>
+<head><meta charset="utf-8"><title>Create Camera-Ready Archive</title>
 <script type="text/javascript" src="../common/validate.js"></script>
 <script language="Javascript" type="text/javascript">
 <!--
@@ -64,7 +64,7 @@ be placed in the sub-directory <i>XXXX0000</i>.
 </li>
 </ul>
 
-<form action=cameraArchive.php method=GET>
+<form accept-charset="utf-8" action=cameraArchive.php method=GET>
 <input type=radio name=format value="default" checked> Use the default format<br/>
 <input type=radio name=format value="lncs" id=lncs> Use LNCS format 
        with volume number <input type=text name=volume size=5 onchange="return checkInt(this,1,99999);" onfocus="return checklncs();"><br/>
@@ -94,13 +94,12 @@ exit("<h1>Archive file all_in_one.$ext created</h1>\n<a href=\".\">Back to main 
 
 function SYSmkTar()
 {
-  $cnnct = db_connect();
-  $qry = "SELECT subId, format from submissions WHERE status='Accept'
-  ORDER by subId";
-  $res = db_query($qry, $cnnct);
+  global $SQLprefix;
+  $qry = "SELECT subId, format FROM {$SQLprefix}submissions WHERE status='Accept' ORDER by subId";
+  $res = pdo_query($qry);
 
   $submissions = '';
-  while ($row=mysql_fetch_row($res)) {
+  while ($row=$res->fetch(PDO::FETCH_NUM)) {
     $submissions .= $row[0].'.'.$row[1].' ';
   }
   if (empty($submissions)) return NULL;
@@ -126,16 +125,14 @@ function SYSmkTar()
 function PEARmkTar()
 {
   require_once 'Archive/Tar.php';
-  $cnnct = db_connect();
+  global $SQLprefix;
 
   // $lncs is defined if we need touse the LNCS format
   $lncs = (isset($_GET['format']) && $_GET['format']=='lncs')?
     intval($_GET['volume']) : NULL;
-
   
-  $qry = "SELECT s.subId,s.format,a.pOrder,a.nPages FROM submissions s, acceptedPapers a WHERE s.status='Accept' AND a.subId=s.subId ORDER by "
-    . (isset($lncs)? "a.pOrder,s.subId" : "s.subId");
-  $res = db_query($qry, $cnnct);
+  $qry = "SELECT s.subId,s.format,a.pOrder,a.nPages FROM {$SQLprefix}submissions s, {$SQLprefix}acceptedPapers a WHERE s.status='Accept' AND a.subId=s.subId ORDER by " . (isset($lncs)? "a.pOrder,s.subId" : "s.subId");
+  $res = PDO_query($qry);
   // create a tar with temporary name
   chdir(SUBMIT_DIR.'/final');
   if (file_exists("all_in_one.tmp.tar")) unlink("all_in_one.tmp.tar");
@@ -155,7 +152,7 @@ function PEARmkTar()
 
   // Add all the submissions to the tar file
   $curPage = 1;
-  while ($row=mysql_fetch_assoc($res)) {
+  while ($row=$res->fetch(PDO::FETCH_ASSOC)) {
     $subName = $row['subId'].'.'.$row['format'];
     if (isset($lncs)) { // use lncs convention
       if ($row['pOrder']>0) { // paper has defined order in the program

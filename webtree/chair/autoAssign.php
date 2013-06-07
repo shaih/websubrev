@@ -9,15 +9,13 @@ $needsAuthentication = true;
 require 'header.php';
 
 // Get the assignment preferences
-$cnnct = db_connect();
 
 // An array of PC members (for the autoSuggest functionality)
-$qry = "SELECT revId, name from committee WHERE !(flags & ". FLAG_IS_CHAIR .")
-  ORDER BY revId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT revId, name FROM {$SQLprefix}committee WHERE !(flags & ". FLAG_IS_CHAIR .") ORDER BY revId";
+$res = pdo_query($qry);
 $committee = array();
 $nameList = $sep = '';
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $revId = (int) $row[0];
   $committee[$revId] = array(trim($row[1]));
   $nameList .= $sep . '"'.htmlspecialchars(trim($row[1])).'"';
@@ -31,8 +29,8 @@ $coverage=3;
 $spclCvrge=4;
 $startFromScratch = '';
 $startFromCurrent = 'checked="on"';
-$res = db_query("SELECT * FROM assignParams WHERE idx=1", $cnnct);
-if ($row = mysql_fetch_assoc($res)) {
+$res = pdo_query("SELECT * FROM {$SQLprefix}assignParams WHERE idx=1");
+if ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   $excludedRevs = htmlspecialchars($row['excludedRevs']);
   $specialSubs  = htmlspecialchars($row['specialSubs']);
   $coverage  = (int) $row['coverage'];
@@ -47,7 +45,7 @@ $links = show_chr_links(0,array('assignments.php','Assignments'));
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">h1 { text-align:center; }</style>
 <link rel="stylesheet" type="text/css" href="../common/autosuggest.css"/>
 
@@ -96,7 +94,7 @@ print <<<EndMark
 $links
 <hr />
 <h1>Auto-Assignment of Submissions to Reviewers</h1>
-<form name="autoAssign" action="doAutoAssign.php" enctype="multipart/form-data" method="post" autocomplete="off">
+<form accept-charset="utf-8" name="autoAssign" action="doAutoAssign.php" enctype="multipart/form-data" method="post" autocomplete="off">
 Use this page to automatically generate an assignment of submissions to
 reviewers. When you hit the "Compute Assignments" button below, the reviewer
 preferences will be used to compute an assignment of reviewers
@@ -116,7 +114,7 @@ The algorithm never assigns a submission to a reviewer if a conflict-of-interest
 <li><a target=documentation href="../documentation/chair.html#startAssignFrom" title="Click for more information">Start from:</a>
 <input type="radio" name="startFrom" value="scratch" onclick="return resetFile(document.autoAssign.assignmnetFile);" $startFromScratch/>scratch, or 
 <input type="radio" name="startFrom" value="current" onclick="return resetFile(document.autoAssign.assignmnetFile);" $startFromCurrent/>the current assignments, or
-<input type="radio" name="startFrom"/>assignments from text file</br>
+<input type="radio" name="startFrom" value="file"/>assignments from stored text file</br>
 <input name="assignmnetFile" size="80" type="file" onchange="return setRadio(document.autoAssign.startFrom,'file');"><br/>
 If you choose to start from scratch then all existing assignments will
 be cleared, <b>even those of the excluded reviewers from above</b>.<br/>

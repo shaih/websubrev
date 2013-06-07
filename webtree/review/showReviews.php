@@ -8,7 +8,7 @@
 
 function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0, $showStats = true)
 {
-  global $discussIcon1, $discussIcon2, $pcMember;
+  global $discussIcon1, $discussIcon2, $pcMember, $SQLprefix;
 
   $subId = (int) $sub['subId'];
   $isGroup = $sub['flags'] & FLAG_IS_GROUP;
@@ -44,11 +44,10 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0, $sh
   // If this is the chair: allow setting the status of this submission
   // and also provide a list of reviewers that have conflict.
   if (is_chair($revId)) {
-    $cnnct = db_connect();
-    $qry = "SELECT c.name FROM assignments a, committee c WHERE a.subId=$subId AND a.assign=-1 AND c.revId=a.revId";
-    $res = db_query($qry, $cnnct);
+    $qry = "SELECT c.name FROM {$SQLprefix}assignments a, {$SQLprefix}committee c WHERE a.subId=? AND a.assign=-1 AND c.revId=a.revId";
+    $res = pdo_query($qry, array($subId));
     $conflictList = '';
-    while ($row = mysql_fetch_row($res)) {
+    while ($row = $res->fetch(PDO::FETCH_NUM)) {
       $conflictList .= '<br/>&nbsp;&nbsp;'.$row[0];
     }
     print "<table><tbody><tr><td valign=middle>";
@@ -364,7 +363,7 @@ $startHere<a name="p$pid"> </a>
 
 <div style="position: relative; left: 12px; top:6px;">
 $cmnts
-   <form id="r$pid" class="$class" action="doPost.php"
+   <form accept-charset="utf-8" id="r$pid" class="$class" action="doPost.php"
 		enctype="multipart/form-data" method="post">
      Subject:&nbsp;&nbsp;<input style="width: 91%;" type="text"
 		          name="subject" value="$subject">
@@ -446,7 +445,7 @@ function reply_to_thread($subId, $thrdPid, $thrdSubj)
 
   $html .=<<<EndMark
    <a name="rply{$thrdPid}"> </a>
-   <form id="rp{$thrdPid}" class="$class" action="doPost.php"
+   <form accept-charset="utf-8" id="rp{$thrdPid}" class="$class" action="doPost.php"
          enctype="multipart/form-data" method="post">
    <br />
        Subject:&nbsp;&nbsp;<input
@@ -479,7 +478,7 @@ function make_post_array(&$res, &$posts)
   $rows = array();
   $rowIdx = array();
   $i = 1;           // index zero is reserved for the root
-  while ($row = mysql_fetch_assoc($res)) {
+  while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
     $row['subject'] = htmlspecialchars($row['subject'], ENT_QUOTES| ENT_COMPAT);
     $row['comments'] = nl2br(htmlspecialchars($row['comments']));
     $pid = $row['postId'];

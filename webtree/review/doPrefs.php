@@ -10,12 +10,10 @@ require 'header.php';  // defines $pcMember=array(id, name, ...)
 $revId = (int) $pcMember[0];
 
 // Get the current preferences of the reviewer
-$cnnct = db_connect();
-$qry = "SELECT subId, pref from assignments WHERE revId='{$revId}'
-  ORDER BY subId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT subId, pref FROM {$SQLprefix}assignments WHERE revId=? ORDER BY subId";
+$res = pdo_query($qry, array($revId));
 $current = array();
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $subId = $row[0];
   $current[$subId] = (int) $row[1];
 }
@@ -42,16 +40,15 @@ foreach($_POST as $name => $value) {
   else $change[$subId] = $value;
 }
 
+$stmt1 = $db->prepare("UPDATE {$SQLprefix}assignments SET pref=? WHERE subId=? AND revId=?");
+$stmt2 = $db->prepare("INSERT INTO {$SQLprefix}assignments SET subId=?, revId=?, pref=?");
 foreach($change as $subId => $value) {
   if (isset($current[$subId])) { // modify existing entry
-    $qry = "UPDATE assignments SET pref='{$value}'
-    WHERE subId='{$subId}' AND revId='{$revId}'";
+    $stmt1->execute(array($value,$subId,$revId));
   }
   else {                         // insert a new entry
-    $qry = "INSERT INTO assignments SET subId='{$subId}', revId='{$revId}',
-    pref='{$value}'";
+    $stmt2->execute(array($subId,$revId,$value));
   }
-  db_query($qry, $cnnct);
 }
 return_to_caller('prefs.php');
 ?>

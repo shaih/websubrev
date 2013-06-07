@@ -9,47 +9,48 @@ $allow_rebuttal = true;
 $require_author = true;
 require 'header.php';
 
-$cnnct = db_connect();
-
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 
 $max_rebuttal = defined("MAX_REBUTTAL") ? MAX_REBUTTAL : 3000;
 $rebDeadline = defined('REBUTTAL_DEADLINE') ? 
-  ('The rebuttal website will remain open until '
-   . date('Y-n-j G:i e', REBUTTAL_DEADLINE) . '<br/><br/>') : "";
+  ('Rebuttal is open until '. date('r', REBUTTAL_DEADLINE)) : "";
 $rebuttal = $submission["rebuttal"];
-$warnings = array();
 
 if(isset($_POST['rebuttal'])) {
-  if(strlen($_POST['rebuttal']) > $max_rebuttal+100) {
-    $warnings[] = "Rebuttal is too long.";
-    $rebuttal = $_POST['rebuttal'];
+  $rebuttal = trim($_POST['rebuttal']);
+  if (($len=strlen($_POST['rebuttal'])) > $max_rebuttal+100) {
+    exit("Rebuttal is too long ($len characters), only $max_rebuttal characters are allowed.");
   }
   else {
-    $qry = "UPDATE submissions SET rebuttal='".
-      my_addslashes($_POST['rebuttal'])."' 
-     WHERE subId='".$submission["subId"]."'";
-    db_query($qry, $cnnct);
-    header("Location: rebuttal.php?success=true");
-    exit;
+    pdo_query("UPDATE {$SQLprefix}submissions SET rebuttal=? WHERE subId=?",
+	      array($rebuttal, $submission["subId"]));
+    header("Location: rebuttal.php");
+    exit();
   }
+}
+
+$rebuttalBox = nl2br($rebuttal);
+if (!empty($rebuttal)) {
+  $rebuttalBox =<<<EndMark
+<h4>Current rebuttal text:</h4>
+<div style="width: 90%; margin-left: auto; margin-right: auto; background: lightgrey; margin-bottom: 1.5em;">$rebuttalBox</div>
+EndMark;
 }
 
 if(isset($_GET['success'])) {
   $warnings[] = "<h2>Rebuttal Saved</h2>";
 }
 
-$qry = "SELECT comments2authors, status,
-    confidence, score, attachment
-  FROM submissions s LEFT JOIN reports r USING(subId)
-  WHERE s.subId = '".$submission['subId']."' AND s.status!='Withdrawn'
+$qry = "SELECT comments2authors, status, confidence, score, attachment
+  FROM {$SQLprefix}submissions s LEFT JOIN {$SQLprefix}reports r USING(subId)
+  WHERE s.subId = ? AND s.status!='Withdrawn'
   ORDER by s.subId, r.lastModified";
 
-$res = db_query($qry, $cnnct);
-
+$res = pdo_query($qry, array($submission['subId']));
 $comments = array();
-while($row = mysql_fetch_assoc($res)) {
-  $row['comments2authors'] = str_replace("\n", "<br />", $row['comments2authors']);
+while($row = $res->fetch(PDO::FETCH_ASSOC)) {
+  $row['comments2authors'] 
+    = str_replace("\n", "<br/>\n", $row['comments2authors']);
   $comments[] = $row;
 }
 
@@ -75,7 +76,7 @@ $warnings = !empty($warnings) ? "<div style='font-color:red;'>".implode("<br />"
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head>
+<head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/submission.css"/>
 
 <script type="text/javascript" src="../common/validate.js"></script>
@@ -83,32 +84,34 @@ print <<<EndMark
 </head>
 
 <body>
-  <h1>Rebuttal for Submission {$submission["subId"]}</h1>
-  <hr/>
-  Dear Author:<br><br>
+<h1>Rebuttal for Submission {$submission["subId"]}</h1>
+<center>$rebDeadline</center>
 
-Below are the preliminary reports on your submission. Please read them carefully and provide, using the interface provided at the bottom of this page, responses to questions asked and any comments you may have on the reviews. Your response must not be more than 3000 characters long.<br><br>
+$rebuttalBox
 
-$rebDeadline
-During that time, you will be able to enter and continually edit your responses. Please note that the review database is active: While we will try to keep it unchanged during the rebuttal period, some small local changes might occur. This is normal.<br><br>
+Dear Author:
 
-Please keep in mind that the main purpose of this process is to help the program committee improve the quality and accuracy of the reviewing and decision process, by having you point out potential omissions and mistakes (both conceptual and technical) in the reviews. A secondary purpose is to give you early feedback on their submission, thus allowing you more time to improve their work.<br><br>
+<p>Below are the preliminary reports on your submission. Please read them carefully and provide your responses to questions asked and any comments you may have on the reviews, using the interface provided at the bottom of this page. 
+  You are not required to respond, if you feel the reviews are accurate and the reviewers have not asked any questions, then you should not respond. If you do respond, conciseness and clarity will be highly appreciated and most effective.
+<b>Your response must not be more than $max_rebuttal characters long.</b></p>
 
-Consequently, the response will best focus on factual errors, misconceptions, or omissions in the reviews, as well as answering any questions posed by the reviewers. New discoveries and results by the authors will be considered relevant only insofar as they help put the submission or reviews in context. No additional credit will be given to new results that are not reported in the submission.<br><br>
+<p>During the rebuttal period you can enter and continually edit your responses, only the latest edit will be visible to the reviewers at any time. Please note that the review site is active, and while we generally try to keep the reviews unchanged during this period, sometimes they may still change.</p>
 
-No decisions have been made yet. These are preliminary reviews submitted by the PC members, without any coordination between them. Thus, there may be inconsistencies. The reviews will be updated to take into account the author's responses and discussions of the program committee members. We may also find it necessary to solicit additional reviews.<br><br>
+<p>Please keep in mind that the main purpose of this process is to help the program committee improve the quality and accuracy of the reviewing and decision process, by having you point out potential omissions and mistakes (both conceptual and technical) in the reviews. A secondary purpose is to give you early feedback on their submission, thus allowing you more time to improve your work.</p>
 
-Two final notes: First, you are not required to respond. If you feel the reviews are accurate and the reviewers have not asked any questions, then you should not respond. If you do, conciseness and clarity will be highly appreciated and most effective.<br><br>
+<p>Consequently, the response will best focus on factual errors, misconceptions, or omissions in the reviews, as well as answering any questions posed by the reviewers. New discoveries and results by the authors will be considered relevant only insofar as they help put the submission or reviews in context. No additional credit will be given to new results that are not reported in the submission.</p>
 
-Also, please understand that the PC members are doing their best to understand your work in a very limited amount of time. This means that mistakes are bound to happen, and very rarely is any malice involved. So please try to be polite and constructive. Also, please keep in mind that your response will be seen by all PC members who do not have a conflict of interests with your submission.<br><br>
+<p>No decisions have been made yet. These are preliminary reviews submitted by the PC members, without any coordination between them. Thus, there may be inconsistencies. The reviews will be updated to take into account the author's responses and discussions of the program committee members. We may also find it necessary to solicit additional reviews.</p> <!-- ' -->
 
-Sincerely,<br>
-$confName Program Chair(s)<br>
+<p>Please understand that the PC members are doing their best to understand your work in a very limited amount of time. This means that mistakes are bound to happen, and very rarely is any malice involved. So please try to be polite and constructive. Also, please keep in mind that your response will be seen by all PC members who do not have a conflict of interests with your submission.</p>
 
-  <h2>Comments</h2>
-  $comments
-  <hr />
-<form action="rebuttal.php" enctype="multipart/form-data" method="post">
+<p>Sincerely,<br>
+$confName Program Chair(s)</p>
+
+<h2>Comments</h2>
+$comments
+<hr/>
+<form action="rebuttal.php" enctype="multipart/form-data" method="post" accept-charset="utf-8">
   $warnings
   <label>Rebuttal To Comments: ($max_rebuttal character limit)</label><br/>
   <textarea name="rebuttal" rows="10" cols="80">$rebuttal</textarea> 

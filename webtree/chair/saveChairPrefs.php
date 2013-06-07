@@ -9,19 +9,16 @@ $needsAuthentication = true;
 require 'header.php';
 
 // Get the assignment preferences
-$cnnct = db_connect();
 
 // Prepare an array of submissions and an array of PC members
-$qry = "SELECT subId, title, 0 from submissions WHERE status!='Withdrawn' ORDER BY subId";
-$res = db_query($qry, $cnnct);
-$subArray = array();
-while ($row = mysql_fetch_row($res)) { $subArray[] = $row; }
+$qry = "SELECT subId, title, 0 from {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER BY subId";
+$subArray = pdo_query($qry)->fetchAll(PDO::FETCH_NUM);
 
-$qry = "SELECT revId, name from committee WHERE revId NOT IN(".implode(", ", chair_ids()).") ORDER BY revId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT revId, name from {$SQLprefix}committee WHERE revId NOT IN(".implode(", ", chair_ids()).") ORDER BY revId";
+$res = pdo_query($qry);
 $committee = array();
 $nameList = $sep = '';
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $revId = (int) $row[0];
   $committee[$revId] = array(trim($row[1]));
   $nameList .= $sep . '"'.htmlspecialchars(trim($row[1])).'"';
@@ -30,9 +27,9 @@ while ($row = mysql_fetch_row($res)) {
 
 // read current chair-preferences from database
 $curPrefs = array();
-$qry = "SELECT revId, subId, compatible FROM assignments WHERE revId NOT IN(".implode(", ", chair_ids()).") ORDER BY subId, revId";
-$res = db_query($qry, $cnnct);
-while ($row = mysql_fetch_row($res)) {
+$qry = "SELECT revId, subId, compatible FROM {$SQLprefix}assignments WHERE revId NOT IN(".implode(", ", chair_ids()).") ORDER BY subId, revId";
+$res = pdo_query($qry);
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $revId = (int) $row[0];
   $subId = (int) $row[1];
   $compatible = (int) $row[2];
@@ -60,6 +57,8 @@ if (isset($_POST["saveChairPrefs"])) {
     if (!isset($prefs[$subId])) { $prefs[$subId] = array(); }
 
     $x = explode(';', $val); // $val is a semi-colon-separated list
+    $stmt1 = $db->prepare("INSERT INTO {$SQLprefix}assignments SET revId=?, subId=?, compatible=?");
+    $stmt2 = $db->prepare("UPDATE {$SQLprefix}assignments SET compatible=? WHERE revId=? AND subId=?");
     foreach ($x as $revName) {
       $revName = trim($revName); if (empty($revName)) continue;
       $revId = match_PCM_by_name($revName, $committee);
@@ -67,25 +66,20 @@ if (isset($_POST["saveChairPrefs"])) {
 
       $prefs[$subId][$revId] = $compatible;
       if (!isset($curPrefs[$subId][$revId])) {     // inser a new entry
-	$qry = "INSERT INTO assignments SET "
-	  . "revId='{$revId}', subId='{$subId}', compatible={$compatible}";
-	db_query($qry, $cnnct);
+	$stmt1->execute(array($revId,$subId,$compatible));
       }
       else if ($curPrefs[$subId][$revId] != $compatible) {// modify entry
-	$qry = "UPDATE assignments SET compatible={$compatible} "
-	  . "WHERE revId='{$revId}' AND subId='{$subId}'";
-	db_query($qry, $cnnct);
+	$stmt2->execute(array($compatible,$revId,$subId));
 	$curPrefs[$subId][$revId] = $compatible;
       }
     }
   }
   // entries in $curPrefs but not in $prefs should be set to 0 in database
+  $stmt1 = $db->prepare("UPDATE {$SQLprefix}assignments SET compatible=0 WHERE revId=? AND subId=?");
   foreach($curPrefs as $subId => $revList)
     foreach ($revList as $revId => $compatible)
       if ($compatible != 0 && !isset($prefs[$subId][$revId])) {
-	$qry = "UPDATE assignments SET compatible=0 "
-	  . "WHERE revId='{$revId}' AND subId='{$subId}'";
-	db_query($qry, $cnnct);
+	$stmt1->execute(array($revId,$subId));
       }
 }
 header("Location: assignChairPrefs.php");

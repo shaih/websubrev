@@ -12,26 +12,25 @@ $revName = $pcMember[1];
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 
 if (isset($_GET['download'])) { // Display current scorecard
-  $cnnct = db_connect();
 
   // get all the reviews that this reviewer submitted
   $qry = "SELECT subReviewer, confidence conf, score, r.comments2authors cmnt,"
     ." r.comments2committee pcCmnt, r.comments2chair chrCmnt,"
     ." r.comments2self slfCmnt, title, authors, s.subId subId"
-    ." FROM submissions s, reports r"
-    ." WHERE r.subId=s.subId AND r.revId=$revId ORDER BY subId";
+    ." FROM {$SQLprefix}submissions s, {$SQLprefix}reports r"
+    ." WHERE r.subId=s.subId AND r.revId=? ORDER BY subId";
 
-  $qry2 = "SELECT subId, gradeId, grade FROM auxGrades WHERE revId=$revId ORDER BY subId, gradeId";
+  $qry2 = "SELECT subId, gradeId, grade FROM {$SQLprefix}auxGrades WHERE revId=? ORDER BY subId, gradeId";
 
-  $res = db_query($qry, $cnnct);
-  $auxRes = db_query($qry2, $cnnct);
+  $res = pdo_query($qry, array($revId));
+  $auxRes = pdo_query($qry2, array($revId));
   
   $reviews = array();
-  while ($row = mysql_fetch_assoc($res)) {
+  while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
     $subId = (int) $row['subId'];
     $reviews[$subId] = $row;
   }
-  while ($row = mysql_fetch_row($auxRes)) {
+  while ($row = $auxRes->fetch(PDO::FETCH_NUM)) {
     $subId = (int) $row[0];
     $gId = (int) $row[1];
     $grade = isset($row[2]) ? ((int)$row[2]) : NULL;
@@ -39,9 +38,9 @@ if (isset($_GET['download'])) { // Display current scorecard
   }
 
   // add empty reviews for submissions that are assigned to this reviewer
-  $qry = "SELECT a.subId, s.title, s.authors FROM assignments a, submissions s WHERE a.revId=$revId AND a.assign=1 AND s.subId=a.subId";
-  $res = db_query($qry, $cnnct);
-  while ($row = mysql_fetch_row($res)) {
+  $qry = "SELECT a.subId, s.title, s.authors FROM {$SQLprefix}assignments a, {$SQLprefix}submissions s WHERE a.revId=? AND a.assign=1 AND s.subId=a.subId";
+  $res = pdo_query($qry, array($revId));
+  while ($row = $res->fetch(PDO::FETCH_NUM)) {
     $subId = (int) $row[0];
     if (!isset($reviews[$subId])) {
       $reviews[$subId] = array('title'=>$row[1], 'authors'=>$row[2]);
@@ -56,8 +55,9 @@ if (isset($_GET['download'])) { // Display current scorecard
   print <<<EndMark
 # SCORECARD for $revName, reviews for $confName
 #################################################################
-# A line that begins with the symbol '#' is considered a
-# comment line and is ignored by the software. 
+# A line that begins with the symbol '#' is considered a comment
+# line and is ignored by the software <i>except when it is part of
+# the comments to author/committee/chair</i>.
 # 
 # See the bottom of this file for formatting information, and
 # try not to deviate significantly from the specified format.
@@ -155,7 +155,7 @@ print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
   "http://www.w3.org/TR/html4/loose.dtd">
 
-<html><head>
+<html><head><meta charset="utf-8">
 <style type="text/css">
 h1 { text-align: center; }
 </style>
@@ -185,7 +185,7 @@ if you uploaded a review via the web interface and then uploaded from
 here a file that includes an old version of that review, then that "old
 version" will overwrite the "newer version" that was uploaded before.<br/>
 <br/>
-<form action="parseScorecard.php" enctype="multipart/form-data" method=post>
+<form accept-charset="utf-8" action="parseScorecard.php" enctype="multipart/form-data" method=post>
 Scorecard file: <input type=file size=60 name=scorecard>
 <input type=submit value="Upload">
 </form>

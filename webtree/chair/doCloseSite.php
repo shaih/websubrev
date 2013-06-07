@@ -10,11 +10,10 @@ require 'header.php';
 
 if (PERIOD==PERIOD_FINAL) exit("<h1>The Site is Closed</h1>");
 
-$cnnct = db_connect();
 if (isset($_POST['shutdown']) && $_POST['shutdown']=="yes") {
-  backup_conf_params($cnnct, PARAMS_VERSION);
-  $qry = "UPDATE parameters SET version=version+1, period=".PERIOD_FINAL;
-  db_query($qry, $cnnct);
+  backup_conf_params(PARAMS_VERSION);
+  pdo_query("UPDATE {$SQLprefix}parameters SET version=version+1, period=?",
+	    array(PERIOD_FINAL));
 }
 
 // All went well, go back to administration page

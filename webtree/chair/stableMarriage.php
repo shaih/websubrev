@@ -30,12 +30,10 @@ if (isset($_POST['specialSubs'])) { // submissions that need more reviewers
 }
 else $spclSubs = array();
 
-$cnnct = db_connect();
-$qry = "SELECT subId FROM submissions WHERE status!='Withdrawn' "
-     . "ORDER by subPwd";      // pick a fixed random order
-$res = db_query($qry, $cnnct);
+$qry = "SELECT subId FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER by subPwd"; // pick a fixed random order
+$res = pdo_query($qry);
 $subs = array();
-while ($row = mysql_fetch_row($res)) { 
+while ($row = $res->fetch(PDO::FETCH_NUM)) { 
   $subId = (int) $row[0]; 
   if (in_array($subId, $spclSubs))  // this submission is "special"
        $subs[$subId] = $spclCovrg;
@@ -45,12 +43,11 @@ $nReports = array_sum($subs);  // how many reports we need in total
 
 
 // Simillarly record for each reviewer the maximum number of assignments.
-$qry = "SELECT revId, name FROM committee WHERE !(flags & " . FLAG_IS_CHAIR .")
-  ORDER by revPwd";    // pick a fixed random ordera
-$res = db_query($qry, $cnnct);
+$qry = "SELECT revId, name FROM {$SQLprefix}committee WHERE !(flags & " . FLAG_IS_CHAIR .") ORDER by revPwd";    // pick a fixed random order
+$res = pdo_query($qry);
 $revs = array();
 $committee = array();
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $revId = (int)$row[0]; 
   $revs[$revId] = 0;
   $committee[$revId] = array(trim($row[1]));
@@ -61,14 +58,14 @@ while ($row = mysql_fetch_row($res)) {
 // assign submissions to the chair(s)).
 if (isset($_POST['cListExclude'])) {
   $exRevs = explode(';', $_POST['cListExclude']);
+  $stmt = $db->prepare("UPDATE {$SQLprefix}assignments SET sktchAssgn=0 WHERE revId=? AND sktchAssgn=1");
   for ($i=0; $i<count($exRevs); $i++) {
     $name = trim($exRevs[$i]);
     $revId = match_PCM_by_name($name, $committee);
     if ($revId != -1) { 
       unset($revs[$revId]);
       if (!isset($_POST['keepAssignments'])) {
-        $qry = "UPDATE assignments SET sktchAssgn=0 WHERE revId=$revId AND sktchAssgn=1";
-	db_query($qry, $cnnct);
+	$stmt->execute(array($revId));
       }
     }
   }
@@ -113,10 +110,10 @@ foreach ($subs as $subId => $y) {
 
 
 // Get the prefernces from the database and overwrite the above defualt values
-$qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM assignments";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM {$SQLprefix}assignments";
+$res = pdo_query($qry);
 $curAssign = array();
-while ($row = mysql_fetch_assoc($res)) {
+while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   $revId = (int)$row['revId'];
   $subId = (int)$row['subId'];
 
@@ -210,6 +207,8 @@ while (!$done) {
 //exit("<pre>\$subMatches[0]=".print_r($subMatches[0], true)."</pre>"); //debug
 
 // The algorithm is done, all that is left is to record the results
+$stmt1 = $db->prepare("UPDATE {$SQLprefix}assignments SET sktchAssgn=? WHERE revId=? AND subId=?");
+$stmt2 = $db->prepare("INSERT INTO {$SQLprefix}assignments SET revId=?, subId=?, sktchAssgn=1");
 foreach ($revs as $revId => $x) foreach ($subs as $subId => $y) {
   // $aOld is -1, 0, 1 or NULL
   $aOld = isset($curAssign[$revId][$subId])? $curAssign[$revId][$subId]: NULL;
@@ -222,11 +221,10 @@ foreach ($revs as $revId => $x) foreach ($subs as $subId => $y) {
   if ($aNew == (int)$aOld) continue;    // nothing to update
 
   if (isset($aOld)) {    // modify existing entry
-    $qry = "UPDATE assignments SET sktchAssgn={$aNew} WHERE revId={$revId} AND subId={$subId}";
+    $stmt1->execute(array($aNew,$revId,$subId));
   } else if ($aNew==1) { // insert a new entry
-    $qry = "INSERT INTO assignments SET revId={$revId}, subId={$subId}, sktchAssgn=1";
+    $stmt2->execute(array($revId,$subId));
   }
-  db_query($qry, $cnnct);
 }
 header('Location: assignments.php');
 ?>

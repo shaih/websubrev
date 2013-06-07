@@ -50,8 +50,7 @@ if (isset($_POST['emilReview'])) {
 else $flags = $pcmFlags & 0xfeffffff;  
 
 if ($flags != $pcmFlags) {
-  $cnnct = db_connect();
-  db_query("UPDATE committee SET flags=$flags WHERE revId=$revId", $cnnct);
+  pdo_query("UPDATE {$SQLprefix}committee SET flags=? WHERE revId=?", array($flags,$revId));
 }
 
 header("Location: receiptReport.php?subId={$subId}&revId={$revId}");

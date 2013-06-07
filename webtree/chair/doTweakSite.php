@@ -8,7 +8,6 @@
 $needsAuthentication = true; 
 require 'header.php';
 
-$cnnct = db_connect();
 if (isset($_POST['tweakSettings'])) {
   $timeShift = isset($_POST['timeShift'])? intval($_POST['timeShift']): 0;
 
@@ -30,9 +29,8 @@ if (isset($_POST['tweakSettings'])) {
     $newFlags &= ~((int)FLAG_EML_EXTRA_PRM);
 
   if ($newFlags!=CONF_FLAGS || $newSender!=EML_SENDER || $timeShift!=TIME_SHIFT) {
-    $newSender = mysql_real_escape_string($newSender,$cnnct);
-    $qry = "UPDATE parameters SET flags=$newFlags, emlSender='$newSender', timeShift=$timeShift WHERE version=".PARAMS_VERSION;
-    $res = db_query($qry, $cnnct, "Cannot update settings: ");
+    $qry = "UPDATE {$SQLprefix}parameters SET flags=?, emlSender=?, timeShift=? WHERE version=?";
+    $res = pdo_query($qry, array($newFlags,$newSender,$timeShift,PARAMS_VERSION));
   }
 }
 header("Location: tweakSite.php?tweaked=yes");

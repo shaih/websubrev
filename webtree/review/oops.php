@@ -20,7 +20,7 @@ print <<<EndMark
   "http://www.w3.org/TR/html4/loose.dtd">
 
 <html>
-<head>
+<head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 h1 { text-align: center; }
@@ -40,13 +40,11 @@ button.
 <tr><td><b>Choose old review</b></td><td><b>Submission</b></td>
 EndMark;
 
-$qry ="SELECT s.subId subId, title, r.version version, UNIX_TIMESTAMP(r.whenEntered)
-  FROM submissions s, reportBckp r WHERE r.subId=s.subId AND r.revId=$revId
-  ORDER BY subId ASC, version DESC";
-$res = db_query($qry, $cnnct);
+$qry ="SELECT s.subId subId, title, r.version version, UNIX_TIMESTAMP(r.whenEntered) FROM {$SQLprefix}submissions s, {$SQLprefix}reportBckp r WHERE r.subId=s.subId AND r.revId=? ORDER BY subId ASC, version DESC";
+$res = pdo_query($qry, array($revId));
 $subId = -1;
 $title = '';
-while ($row=mysql_fetch_row($res)) {
+while ($row=$res->fetch(PDO::FETCH_NUM)) {
   if ($row[0]!=$subId) {    // finish previous row and start a new one
     if ($subId>0) {
       print "  </select><input type=submit value=View>\n";
@@ -56,7 +54,7 @@ while ($row=mysql_fetch_row($res)) {
     }
     $subId = $row[0];
     $title = $row[1];
-    print "</tr>\n<tr><td><form action=receiptReport.php method=GET>\n";
+    print "</tr>\n<tr><td><form accept-charset=\"utf-8\" action=\"receiptReport.php\" method=\"GET\">\n";
     print "  <SELECT name=bckpVersion>";
   }
   $version = (int) $row[2];

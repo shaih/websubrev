@@ -17,7 +17,7 @@ $cmrDdline = utcDate('r (T)', CAMERA_DEADLINE);
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 {text-align: center;}
 h2 {text-align: center;}
@@ -133,7 +133,7 @@ The keywords <code>&lt;&#36;title&gt;</code> and
 line.
 </p>
 <h3>Acceptance letters</h3>
-<form name="acceptLetters" action="doEmailAuthors.php" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" name="acceptLetters" action="doEmailAuthors.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="saveText_ACC" value="true">
 <input type="hidden" name="emailTo" value="AC">
 Subject: <input type=text name="subject" size=90 maxlength=80 value="$accSbjct">
@@ -146,7 +146,7 @@ or only
 </form>
 
 <h3>Rejection letters</h3>
-<form name="rejectLetters" action="doEmailAuthors.php" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" name="rejectLetters" action="doEmailAuthors.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="saveText_REJ" value="true">
 <input type="hidden" name="emailTo" value="RE">
 Subject: <input type=text name="subject" size=90 maxlength=80 value="$rejSbjct"><br/>

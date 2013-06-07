@@ -76,46 +76,34 @@ else $fileFormat = NULL;
 
 /***** User input vaildated. Next prepare the MySQL query *****/
 
-$cnnct = db_connect();
-/* Get next subId less than 10,000 for insertion */
-$qry = "SELECT max(subId) FROM submissions WHERE subId < 10000";
-$res = db_query($qry, $cnnct);
-$res = mysql_fetch_assoc($res);
-$newSubId = $res['max(subId)'] + 1;
-
-if($newSubId < 101 ) {
-  $newSubId = 101;
-}
-
-// Sanitize user input while preparing the query
-
-$qry = "INSERT INTO submissions SET subId ='"
-  . $newSubId
-  . "',	title='". my_addslashes(substr($title, 0, 255), $cnnct)
-  . "', authors='". my_addslashes($author, $cnnct)
-  . "', contact='". my_addslashes($contact, $cnnct)
-  . "', abstract='". my_addslashes($abstract, $cnnct)
-  . "', ";
+$qry = "INSERT INTO {$SQLprefix}submissions SET subId=?,subPwd=?,title=?,authors=?,contact=?,abstract=?,";
+$prms = array(0,$subPwd,$title,$author,$contact,$abstract);
 
 if (!empty($affiliations)) {
-  $qry .= "affiliations='" . my_addslashes($affiliations, $cnnct) . "', ";
+  $qry .= "affiliations=?,";
+  $prms[] = $affiliations;
 }
 if (!empty($category)) {
-  $qry .= "category='" . my_addslashes(substr($category, 0, 80), $cnnct) . "', ";
+  $qry .= "category=?,";
+  $prms[] = substr($category, 0, 80);
 }
 if (!empty($keywords)) {
-  $qry .= "keyWords='" . my_addslashes(substr($keywords, 0, 255), $cnnct). "', ";
+  $qry .= "keyWords=?,";
+  $prms[] = substr($keywords, 0, 255);
 }
 if (!empty($comment)) {
-  $qry .=  "comments2chair='" . my_addslashes($comment, $cnnct) . "', ";
+  $qry .= "comments2chair=?,";
+  $prms[] = $comment;
 }
 if (isset($fileFormat)) {
-  $qry .= "format='".my_addslashes($fileFormat,$cnnct)."', ";
+  $qry .= "format=?,";
+  $prms[] = $fileFormat;
 }
 if (isset($optin)) {
-  $qry .= "flags = ".FLAG_IS_CHECKED.", ";
+  $qry .= "flags=?,";
+  $prms[] = FLAG_IS_CHECKED;
 }
-$qry .= "subPwd='{$subPwd}', whenSubmitted=NOW()";
+$qry .= "whenSubmitted=NOW()";
 
 /* Now we need to record the new submission. Below we try to minimize the
  * odds of an "inconsistent state": we first move the file to a temporary
@@ -137,42 +125,19 @@ if (!empty($sbFileName)) {
 }
 
 // Insert the new submission to the database 
-db_query($qry, $cnnct, "Cannot insert submission details to database: ");
+
+/* Get next subId for insertion */
+$qry2 = "SELECT 1+MAX(GREATEST(subId,100)) FROM {$SQLprefix}submissions WHERE subId<10000";
+
+$prms[0] = pdo_query($qry2)->fetchColumn();
+pdo_query($qry, $prms, "Cannot insert submission details to database: ");
+$subId = $prms[0];
 
 /**** Submission inserted, all that is left it to rename the submission
- * file to its permannet name. If anything goes wrong below, we will not
+ * file to its permanent name. If anything goes wrong below, we will not
  * reject the submission but rather use the temp file in lieu of the 
  * permanent one until an administrator fixes it.
  ****/
-
-/* We find out the submission number from the database record. (Note that
- * we use the auto_increment mechanism of MySQL to ensure that concurrent
- * submisssions don't get assigned the same numbers. Let's hope that MySQL
- * has a sensible concurrency control.)
- */
-
-// Find this submission in the database
-
-/**** Old implementation, this code does not always work:
-$qry = "SELECT subId FROM submissions WHERE subPwd='{$subPwd}'
-  AND title='"   . my_addslashes(substr($title, 0, 255), $cnnct)."'
-  AND authors='" . my_addslashes($author, $cnnct)."'
-  AND contact='" . my_addslashes(substr($contact, 0, 255), $cnnct)."'";
-$res = db_query($qry, $cnnct);
-$row = mysql_fetch_row($res);
-$subId = $row[0];   // What number was assigned to this submission
-****************** end of old implementation ************************/
-$subId=mysql_insert_id($cnnct);
-if (empty($subId)) { // can't find this submission (transient database problem?)
-  // Send a confirmation email without the submission-id
-  error_log(date('Ymd-His: ')."Can't find new submission: ".mysql_error()."\n", 3, LOG_FILE);  
-  email_submission_details($contact, -1, 0, $subPwd, $title, 
-        $author, $contact, $abstract, $category, $keywords, $comment);
-
-  // Try to use the password as a key for the submission
-  header("Location: receipt.php?subPwd=$subPwd&warning=1");
-  exit();
-}
 
 // Rename the submission file to $subId.$fileFormat
 
@@ -189,8 +154,9 @@ if (!empty($sbFileName)) {
     exit();
   }
   elseif (PERIOD<PERIOD_CAMERA) { // mark new file as needing a stamp
-    $qry = "UPDATE submissions SET flags=(flags|".SUBMISSION_NEEDS_STAMP.") WHERE subId={$subId}";
-    db_query($qry, $cnnct,"Cannot mark file as needing a stamp: ");
+    $qry = "UPDATE {$SQLprefix}submissions SET flags=(flags|?) WHERE subId=?";
+    pdo_query($qry, array(SUBMISSION_NEEDS_STAMP,$subId),
+	     "Cannot mark file as needing a stamp: ");
   }
 }
 

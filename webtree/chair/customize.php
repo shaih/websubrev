@@ -7,7 +7,7 @@
  */
 $needsAuthentication = true; 
 $notCustomized = true;
-require 'header.php';
+require_once('header.php');
 
 if (PERIOD>PERIOD_SETUP) die("<h1>Installation Already Customized</h1>");
 
@@ -37,7 +37,7 @@ print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
  "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head>
+<head><meta charset="utf-8">
 <title>Customizing Submission and Review Site</title>
 
 <link rel="stylesheet" type="text/css" href="../common/review.css"/>
@@ -83,7 +83,7 @@ This form has four sections, corresponding to <a href="#conference">the
 conference</a>, <a href="#submissions">submissions</a>, <a href="#committee">
 program committee</a>, and <a href="#review">reviews</a>.
 <br/>
-<form name="customize" onsubmit="return checkform(this);"
+<form accept-charset="utf-8" name="customize" onsubmit="return checkform(this);"
  action="confirmCustomize.php{$urlParams}" enctype="multipart/form-data" method="post">
 
 <table cellpadding="6"><tbody>
@@ -105,7 +105,8 @@ program committee</a>, and <a href="#review">reviews</a>.
 </tr>
 <tr><td class=rjust>Conference&nbsp;URL:</td>
   <td><input name="confURL" size="90" type="text"><br/>
-    URL of the conference home page, where the call-for-papers is found.</td>
+  URL of the conference home page, where the call-for-papers is found, 
+  for example <tt>http://www.example.edu/basket06</tt>.</td>
 </tr>
 <tr><td colspan="2" class=rjust><hr/></td></tr>
 <!-- ================= Submissions =================== -->
@@ -179,7 +180,7 @@ program committee</a>, and <a href="#review">reviews</a>.
 </tr>
 <tr><td colspan="2" class=rjust><hr /></td></tr>
 <!-- ================= The Program Committee =================== -->
-<tr><td class=rjust><big><b><a NAME="committee">Program&nbsp;Committee:</a></b></big></td><td></td>
+<tr><td class=rjust><big><b><a NAME="committee">Program&nbsp;Committee:</a></b></big></td><td>Specify the email addresses of the program commitee. Each address should be in the format "Name &lt;email-address&gt;". The names that you enter here will be displayed on the reports and discussion boards.</td>
 </tr>
 <tr><td class=rjust>{$star}<a href="../documentation/chair.html#PCemail" target="documentation" title="click for more help">Chair&nbsp;Email(s):</a></td>
   <td><textarea name="chair" rows=5 cols=70>$chrEml</textarea><br/>
@@ -190,7 +191,7 @@ program committee</a>, and <a href="#review">reviews</a>.
   <td><textarea name="committee" rows=15 cols=70>Shaquille O'Neal &lt;shaq@MiamiHeat.nba.com&gt;;
 Larry J. Bird &lt;the-bird@old-timers.org&gt;;
 Jordan, Michael &lt;Air-Jordan@nike.com&gt;</textarea><br/>
-    A <i><b>semi-colon-separated</b></i> list of email addresses. Each address should be in the format "Name &lt;email-address&gt;". (The names that you enter here will be displayed on the reports and discussion boards.)</td>
+    A <i><b>semi-colon-separated</b></i> list of email addresses of the program committee members.</td>
 </tr>
 <tr><td colspan=2 class=rjust><hr /></td></tr>
 <!-- ================= Reviews =================== -->

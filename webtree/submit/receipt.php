@@ -19,6 +19,7 @@ print <<<EndMark
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<meta charset="utf-8">
 <title>Submission/Revision Receipt</title>
 </head>
 
@@ -30,16 +31,9 @@ $links
 EndMark;
 
 if (empty($subId) || empty($subPwd)) generic_receipt($subId, $subPwd);
-if (!($cnnct = @mysql_connect(MYSQL_HOST, MYSQL_USR, MYSQL_PWD))
-    || !@mysql_select_db(MYSQL_DB, $cnnct))
-  generic_receipt($subId, $subPwd);
 
-$subId = my_addslashes($subId);
-$subPwd = my_addslashes($subPwd);
-$qry = "SELECT *, UNIX_TIMESTAMP(whenSubmitted) sbmtd, UNIX_TIMESTAMP(lastModified) revised FROM submissions WHERE subId = '{$subId}' AND subPwd = '{$subPwd}'";
-
-if (!($res=mysql_query($qry, $cnnct)) || !($row=mysql_fetch_array($res)))
-  generic_receipt($subId, $subPwd);
+$qry = "SELECT *, UNIX_TIMESTAMP(whenSubmitted) sbmtd, UNIX_TIMESTAMP(lastModified) revised FROM {$SQLprefix}submissions WHERE subId = ? AND subPwd = ?";
+$row = pdo_query($qry, array($subId,$subPwd))->fetch();
 
 $ttl = htmlspecialchars($row['title']);
 $athr = htmlspecialchars($row['authors']);
@@ -98,9 +92,7 @@ submission.
 EndMark;
 
 if (!defined('REVIEW_PERIOD') || REVIEW_PERIOD!=true) {
-  print "An email confirmation was sent to the contact address below.
-If you do not receive the confirmation email soon, contact the administrator
-at $adminEmail.";
+  print "An email confirmation was sent to the contact address below. If you do not receive the confirmation email soon, please contact the chair.";
 }
 print <<<EndMark
 
@@ -147,16 +139,18 @@ if (!empty($cat)) { print '    <tr>
       <td>'.$cat."</td>
     </tr>\n";
 }
-if (!empty($frmt)) print <<<EndMark
+
+if (!empty($frmt)) { 
+  $subFileLine =<<<EndMark
+<a href="download.php?subId=$subId&amp;subPwd=$subPwd">$frmt</a> (click to download)
+EndMark;
+} 
+else $subFileLine = "<b>No file uploaded yet</b>";
+print <<<EndMark
     <tr>
       <td style="text-align: right;">File format:</td>
-      <td><a href="download.php?subId=$subId&amp;subPwd=$subPwd">$frmt</a> (click to download)</td>
+      <td>$subFileLine</td>
     </tr>
-
-
-
-EndMark;
-print <<<EndMark
     <tr style="vertical-align: top;">
       <td style="text-align: right;">Key words:</td>
       <td>$kwrd</td>
@@ -184,8 +178,8 @@ flush();      // Don't let the user wait while we stamp the file
 if ($needsStamp && PERIOD<PERIOD_CAMERA) {
   include_once('stampFiles.php');
   // re-set the "needs stump" flag for this submission
-  $qry = "UPDATE submissions SET flags=(flags&(~".SUBMISSION_NEEDS_STAMP.")) WHERE subId={$subId}";
-  db_query($qry, $cnnct,"Cannot mark file as stamped: ");
+  $qry = "UPDATE {$SQLprefix}submissions SET flags=(flags&(~".SUBMISSION_NEEDS_STAMP.")) WHERE subId=?";
+  pdo_query($qry, array($subId),"Cannot mark file as stamped: ");
   stampSubmission($subId,$row['format']); // Stump the file (if possible)
 }
 exit();

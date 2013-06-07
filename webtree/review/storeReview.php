@@ -5,7 +5,7 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
 		     $saveDraft=false)
 {
   global $pcMember;
-  global $criteria;
+  global $criteria, $SQLprefix, $db;
   $nCrit = count($criteria);
 
   if (!isset($subId)) return -1;  // error: submission-id not specified
@@ -13,34 +13,32 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
 
   // Make sure that this submission exists and the reviewer does not have
   // a conflict with it, and check if this is a new review or an update.
-  $cnnct = db_connect();
-  $qry= "SELECT s.subId, a.assign FROM submissions s
-  LEFT JOIN assignments a ON a.revId=$revId AND a.subId=s.subId
-  WHERE s.subId=$subId";
+  $qry= "SELECT s.subId, a.assign FROM {$SQLprefix}submissions s
+  LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId
+  WHERE s.subId=?";
 
-  $res = db_query($qry, $cnnct);
-  if (!($row = mysql_fetch_row($res)) || $row[1]==-1)
+  $res = pdo_query($qry, array($revId,$subId));
+  if (!($row = $res->fetch(PDO::FETCH_NUM)) || $row[1]==-1)
     return -3;  // no such submission or reviewer has conflict
 
   if ($watch) { // add the submission to reviewer's watch list
-    $qry ="UPDATE assignments SET watch=1 WHERE subId=$subId AND revId=$revId";
-    db_query($qry, $cnnct);
-    if (mysql_affected_rows()==0) { // insert a new entry to table
-      $qry = "INSERT IGNORE INTO assignments SET subId=$subId,revId=$revId,watch=1";
-      db_query($qry, $cnnct);
+    $qry ="UPDATE {$SQLprefix}assignments SET watch=1 WHERE subId=? AND revId=?";
+    $res = pdo_query($qry, array($subId,$revId));
+    if ($res->rowCount()==0) { // insert a new entry to table
+      $qry = "INSERT IGNORE INTO {$SQLprefix}assignments SET subId=?,revId=?,watch=1";
+      pdo_query($qry, array($subId,$revId));
     }
   }
 
   // Get the details of the existing review (if any)
-  $qry = "SELECT * FROM reports WHERE subId=$subId AND revId=$revId";
-  $res = db_query($qry, $cnnct);
-  $oldReview = mysql_fetch_assoc($res);
+  $qry = "SELECT * FROM {$SQLprefix}reports WHERE subId=? AND revId=?";
+  $res = pdo_query($qry, array($subId,$revId));
+  $oldReview = $res->fetch(PDO::FETCH_ASSOC);
 
-  $qry = "SELECT gradeId,grade FROM auxGrades
-  WHERE subId=$subId AND revId=$revId ORDER BY gradeId";
-  $res = db_query($qry, $cnnct);
+  $qry = "SELECT gradeId,grade FROM {$SQLprefix}auxGrades WHERE subId=? AND revId=? ORDER BY gradeId";
+  $res = pdo_query($qry, array($subId,$revId));
   $oldAuxGrades = array();
-  while ($row=mysql_fetch_row($res)) {
+  while ($row=$res->fetch(PDO::FETCH_NUM)) {
     $gId = (int) $row[0];
     $oldAuxGrades[$gId] = (int) $row[1];
   }
@@ -106,64 +104,71 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
  
 
   // Prepare the query to update the review
-  $qry = " flags=$flags,";
+  $qry = " flags=?,";
+  $prms = array($flags);
 
   if (!empty($subReviewer)) {
-    $qry .= " subReviewer='" .my_addslashes($subReviewer, $cnnct)."',\n";
+    $qry .= "subReviewer=?,";
+    $prms[] = $subReviewer;
   } else {
-    $qry .= " subReviewer=NULL,\n";
+    $qry .= "subReviewer=NULL,";
   }
 
-  if (isset($conf)) $qry .= "    confidence={$conf},\n";
-  else              $qry .= "    confidence=NULL,\n";
+  if (isset($conf)) $qry .= "confidence={$conf},";
+  else              $qry .= "confidence=NULL,";
 
-  if (isset($score)) $qry .= "    score={$score},\n";
-  else               $qry .= "    score=NULL,\n";
+  if (isset($score)) $qry .= "score={$score},\n";
+  else               $qry .= "score=NULL,\n";
 
   if (!empty($authCmnt)) {
-    $qry .= "    comments2authors='" .my_addslashes($authCmnt, $cnnct)."',\n";
+    $qry .= "comments2authors=?,";
+    $prms[] = $authCmnt;
   } else {
-    $qry .= "    comments2authors=NULL,\n";
+    $qry .= "comments2authors=NULL,";
   }
 
   if (!empty($pcCmnt)) {
-    $qry .= "    comments2committee='" .my_addslashes($pcCmnt, $cnnct)."',\n";
+    $qry .= "comments2committee=?,";
+    $prms[] = $pcCmnt;
   } else {
-    $qry .= "    comments2committee=NULL,\n";
+    $qry .= "comments2committee=NULL,";
   }
 
   if (!empty($chrCmnt)) {
-    $qry .= "    comments2chair='" .my_addslashes($chrCmnt, $cnnct) ."',\n";
+    $qry .= "comments2chair=?,";
+    $prms[] = $chrCmnt;
   } else {
-    $qry .= "    comments2chair=NULL,\n";
+    $qry .= "comments2chair=NULL,";
   }
 
   if (!empty($slfCmnt)) {
-    $qry .= "    comments2self='" .my_addslashes($slfCmnt, $cnnct) ."',\n";
+    $qry .= "comments2self=?,";
+    $prms[] = $slfCmnt;
   } else {
-    $qry .= "    comments2self=NULL,\n";
+    $qry .= "comments2self=NULL,";
   }
 
-  if (isset($fileName)) { // 
-   $qry .= "    attachment='$fileName',\n";
-   $ret = "$fileName";
+  if (isset($fileName)) { // attachment
+    $qry .= "attachment=?,";
+    $prms[] = $fileName;
+    $ret = $fileName;
   } else {
-   $qry .= "    attachment=NULL,\n";
+   $qry .= "attachment=NULL,";
    $ret = NULL;
   }
 
   if ($oldReview) {  // existing entry
     if ($cmp2Old === -1) // only change is in comments-to-self
-      $qry .= "    lastModified=lastModified";
+      $qry .= "lastModified=lastModified";
     else
-      $qry .= "    lastModified=NOW()";
+      $qry .= "lastModified=NOW()";
 
-    $qry = "UPDATE reports SET $qry WHERE revId=$revId AND subId=$subId";
+    $qry = "UPDATE {$SQLprefix}reports SET $qry WHERE revId=$revId AND subId=$subId";
 
-    $version = backup_existing_review($subId, $revId, $nCrit, $cnnct);
+    $version = backup_existing_review($subId, $revId, $nCrit);
   } else {
-    $qry .= "    lastModified=NOW(), whenEntered=NOW()";
-    $qry = "INSERT into reports SET revId=$revId, subId=$subId,\n   $qry";
+    $qry .= "lastModified=NOW(), whenEntered=NOW()";
+    $qry = "INSERT into {$SQLprefix}reports SET revId=$revId, subId=$subId, $qry";
     $version = 1;
   }
 
@@ -177,22 +182,19 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
 
   // finally, insert or update the report
 
-  // "BEGIN" is "START TRANSCTION" but works with older versions of MySQL
-  mysql_query("BEGIN", $cnnct);
-  db_query($qry, $cnnct);      // insert/update the review itself
-  db_query("DELETE FROM auxGrades WHERE subId=$subId AND revId=$revId",$cnnct);
+  $db->beginTransaction();
+  pdo_query($qry, $prms);      // insert/update the review itself
+  pdo_query("DELETE FROM {$SQLprefix}auxGrades WHERE subId=? AND revId=?",
+	    array($subId,$revId));
   if (!empty($vals))
-    db_query("INSERT INTO auxGrades (subId,revId,gradeId,grade) VALUES $vals",
-	     $cnnct);
-  mysql_query("COMMIT", $cnnct); // commit changes
+    pdo_query("INSERT INTO {$SQLprefix}auxGrades (subId,revId,gradeId,grade) VALUES $vals");
+  $db->commit();
 
   // Update the statistics in the submissions table
-  $qry = "SELECT AVG(score), MIN(score), MAX(score),
-          SUM(score*confidence), SUM(IF(score IS NULL, 0, confidence))
-  FROM reports WHERE subId=$subId";
-  $res = db_query($qry, $cnnct);
+  $qry = "SELECT AVG(score), MIN(score), MAX(score), SUM(score*confidence), SUM(IF(score IS NULL, 0, confidence)) FROM {$SQLprefix}reports WHERE subId=?";
+  $res = pdo_query($qry, array($subId));
 
-  if ($row = mysql_fetch_row($res)) { // that had better be the case
+  if ($row = $res->fetch(PDO::FETCH_NUM)) { // that had better be the case
 
     $avg = isset($row[0]) ? $row[0] : "NULL";
     $min = isset($row[1]) ? $row[1] : "NULL";
@@ -201,44 +203,30 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
       ($row[3] / ((float)$row[4])) : "NULL"; 
     if (!isset($wAvg)) $wAvg = "NULL";
 
-    $qry = "UPDATE submissions SET avg={$avg},wAvg={$wAvg},minGrade={$min},maxGrade={$max},lastModified=NOW() WHERE subId=$subId";
-    db_query($qry, $cnnct);
+    $qry = "UPDATE {$SQLprefix}submissions SET avg={$avg},wAvg={$wAvg},minGrade={$min},maxGrade={$max},lastModified=NOW() WHERE subId=?";
+    pdo_query($qry,array($subId));
   }
 
   // Add this review to change-log for this submission
-  $name = mysql_real_escape_string($pcMember[1],$cnnct);
-  $qry = "INSERT INTO changeLog (subId,revId,changeType,description,entered)
-  VALUES ($subId,$revId,'Review','$name uploaded a review',NOW())";
-  db_query($qry, $cnnct);
+  $qry = "INSERT INTO {$SQLprefix}changeLog (subId,revId,changeType,description,entered) VALUES (?,?,'Review',?,NOW())";
+  pdo_query($qry, array($subId,$revId,$pcMember[1].' uploaded a review'));
 
   return $ret;
 }
 
-function backup_existing_review($subId, $revId, $nCrit, $cnnct)
+function backup_existing_review($subId, $revId, $nCrit)
 {
+  global $SQLprefix;
   // how many versions are backed-up for this review?
-  $qry = "SELECT MAX(version) FROM reportBckp WHERE subId=$subId AND revId=$revId";
-  $res=db_query($qry, $cnnct);
-  $row = mysql_fetch_row($res);
-  $nextVersion = (($row && $row[0])? $row[0] : 0) + 1;
+  $qry = "SELECT 1+MAX(version) FROM {$SQLprefix}reportBckp WHERE subId=? AND revId=?";
+  $nextVersion = pdo_query($qry,array($subId,$revId))->fetchColumn();
+  if (empty($nextVersion)) $nextVersion = 1;
 
-  /* The loop below is guarding against an extremely unlikely race
-     condition, and it was reported to cause problems in some cases
-     (maybe due to a buggy implementation of mysql_affected_rows?),
-     so I removed it.
-  ********************************************************************
-  while (true) { // keep trying until you manage to insert to database
-   $qry = "INSERT IGNORE INTO reportBckp SELECT subId, revId, subReviewer, confidence, score, comments2authors, comments2committee, comments2chair, lastModified, $nextVersion FROM reports WHERE subId=$subId AND revId=$revId";
-    $res = mysql_query($qry, $cnnct);
-    if ($res && mysql_affected_rows()>0) break; // success
-    else $nextVersion++;                        // try again
-  }
-  *******************************************************************/
-  $qry = "INSERT IGNORE INTO reportBckp SELECT subId, revId, flags, subReviewer, confidence, score, comments2authors, comments2committee, comments2chair, comments2self, attachment, lastModified, $nextVersion FROM reports WHERE subId=$subId AND revId=$revId";
-  mysql_query($qry, $cnnct);
+  $qry = "INSERT IGNORE INTO {$SQLprefix}reportBckp SELECT subId, revId, flags, subReviewer, confidence, score, comments2authors, comments2committee, comments2chair, comments2self, attachment, lastModified, $nextVersion FROM {$SQLprefix}reports WHERE subId=? AND revId=?";
+  pdo_query($qry, array($subId,$revId));
 
-  $qry = "INSERT IGNORE INTO gradeBckp SELECT subId, revId, gradeId, grade, $nextVersion FROM auxGrades WHERE subId=$subId AND revId=$revId";
-  mysql_query($qry, $cnnct);
+  $qry = "INSERT IGNORE INTO {$SQLprefix}gradeBckp SELECT subId, revId, gradeId, grade, $nextVersion FROM {$SQLprefix}auxGrades WHERE subId=? AND revId=?";
+  pdo_query($qry, array($subId,$revId));
 
   return $nextVersion;
 }

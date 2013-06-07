@@ -19,15 +19,13 @@ $links = show_rev_links();
 $voteId = intval($_GET['voteId']);
 if ($voteId <= 0) die("<h1>Vote-ID must be specified</h1>");
 
-$cnnct = db_connect();
-$qry = "SELECT * from votePrms WHERE voteId=$voteId AND voteActive=1";
+$qry = "SELECT * FROM {$SQLprefix}votePrms WHERE voteId=? AND voteActive=1";
 
 // Before the discussion phase, cannot vote on submissions
 if (!$disFlag) $qry .= " AND (voteFlags&1)!=1";
 
-$res = db_query($qry,$cnnct);
-$row = mysql_fetch_array($res)
-     or die("<h1>No Active vote with Vote-ID $voteId</h1>");
+$row = pdo_query($qry,array($voteId))->fetch(PDO::FETCH_ASSOC)
+  or die("<h1>No Active vote with Vote-ID $voteId</h1>");
 
 $voteType  = isset($row['voteType'])
      ? htmlspecialchars($row['voteType']) : 'Choose';
@@ -51,9 +49,9 @@ if ($voteFlags & VOTE_ON_SUBS) { // voting on submissions
 
   // Don't show submissions where there is a conflict
   $forbidden = array();
-  $qry = "SELECT subId from assignments WHERE revId=$revId and assign=-1";
-  $res = db_query($qry, $cnnct);
-  while ($row=mysql_fetch_row($res)) {
+  $qry = "SELECT subId FROM {$SQLprefix}assignments WHERE revId=? and assign=-1";
+  $res = pdo_query($qry, array($revId));
+  while ($row=$res->fetch(PDO::FETCH_NUM)) {
     $subId = (int) $row[0];
     $forbidden[$subId] = true;
   }
@@ -78,15 +76,15 @@ if ($voteFlags & VOTE_ON_SUBS) { // voting on submissions
   if (!empty($voteOnThese)) {
     $where .= " OR s.subId IN (".numberlist($voteOnThese).")"; }
 
-  $qry = "SELECT s.subId, title, vote FROM submissions s
-  LEFT JOIN votes v ON v.voteId=$voteId AND v.revId=$revId AND v.subId=s.subId
+  $qry = "SELECT s.subId, title, vote FROM {$SQLprefix}submissions s
+  LEFT JOIN {$SQLprefix}votes v ON v.voteId=? AND v.revId=? AND v.subId=s.subId
   WHERE $where
   ORDER by s.subId";
 
-  $res = db_query($qry, $cnnct);
+  $res = pdo_query($qry, array($voteId,$revId));
 
   $voteItems = array();
-  while ($row=mysql_fetch_row($res)) {
+  while ($row=$res->fetch(PDO::FETCH_NUM)) {
     $subId = (int) $row[0];
     if (!isset($forbidden[$subId]))
       $voteItems[$subId] = array($row[1], $row[2]);
@@ -103,9 +101,9 @@ else {                           // voting on "other things"
     $i++;
   }
 
-  $qry = "SELECT subId, vote FROM votes WHERE voteId=$voteId AND revId=$revId ORDER by subId";
-  $res = db_query($qry, $cnnct);
-  while ($row=mysql_fetch_row($res)) {
+  $qry = "SELECT subId, vote FROM {$SQLprefix}votes WHERE voteId=? AND revId=? ORDER by subId";
+  $res = pdo_query($qry, array($voteId,$revId));
+  while ($row=$res->fetch(PDO::FETCH_NUM)) {
     $itemId = (int) $row[0];
     $voteItems[$itemId][1] = (int) $row[1];
   }
@@ -125,7 +123,7 @@ print <<<EndMark
   "http://www.w3.org/TR/html4/loose.dtd">
 
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1, td { text-align: center; }
 tr { vertical-align: top; }
@@ -142,7 +140,7 @@ $vInstructions<br/>
 <br/>
 $vDeadline<br/>
 <br/>
-<form action=castVote.php?voteId=$voteId enctype="multipart/form-data" method=post>
+<form accept-charset="utf-8" action=castVote.php?voteId=$voteId enctype="multipart/form-data" method=post>
 <input type=reset>
 <table><tbody>
 <tr>

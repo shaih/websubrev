@@ -17,25 +17,24 @@ if (!isset($_POST['purged']) || !is_array($_POST['purged']) || empty($_POST['pur
   exit("<h1>Nothing to do</h1><a href=\".\">Back to main page</a>");
 }
 
-$cnnct = db_connect();
-$toPurge= my_addslashes(implode(',', array_keys($_POST['purged'])), $cnnct);
+$toPurge = numberlist(array_keys($_POST['purged']));
 
 // Make sure that all these submissions are not already withdrawn
-$qry = "SELECT subId,subPwd,title,authors,contact FROM submissions WHERE subId IN ($toPurge) AND status!='Withdrawn'";
-$res = db_query($qry, $cnnct);
-$subs = array();
+$qry = "SELECT subId,subPwd,title,authors,contact FROM {$SQLprefix}submissions WHERE subId IN ($toPurge) AND status!='Withdrawn'";
+$subs = pdo_query($qry)->fetchAll(PDO::FETCH_ASSOC);
+
+// make a list of only the submission-IDs
 $subIds = array();
-while ($row = mysql_fetch_assoc($res)) {
-  $subs[] = $row;
-  $subIds[] = $row['subId'];
+foreach ($subs as $sb) {
+  $subIds[] = $sb['subId'];
 }
 
 // Now set them all to 'Withdrawn'
 if (!empty($subs)) {
-  $qry = "UPDATE submissions SET status='Withdrawn' WHERE subId IN ("
-    . implode(', ', $subIds) . ")";
-  $res = db_query($qry, $cnnct);
-  
+  $qry = "UPDATE {$SQLprefix}submissions SET status='Withdrawn' WHERE subId IN ("
+    . implode(',', $subIds) . ")";
+  pdo_query($qry);
+
   // Send notification emails
   foreach ($subs as $sb) {
     if (isset($_POST['notifyByEmail']))
@@ -51,7 +50,7 @@ $cName = CONF_SHORT.' '.CONF_YEAR;
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <title>Pre-registrations to $cName purged</title>
 </head>
 <body>

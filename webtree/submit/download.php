@@ -18,15 +18,12 @@ if ($subId<=0 || empty($subPwd)) {
 
 $view_reviews = false;
 
-$cnnct = db_connect();
-$qry= "SELECT format, nPages
-  FROM submissions s LEFT JOIN acceptedPapers a ON a.subId=s.subId
-  WHERE s.subId=$subId AND s.subPwd='$subPwd'";
-$res = db_query($qry, $cnnct);
-if (!$res || mysql_num_rows($res)==0) {
-  die("<h1>Wrong Submission-ID or password</h1>");
-}
-$row = mysql_fetch_row($res);
+$qry= "SELECT format, nPages FROM {$SQLprefix}submissions s
+  LEFT JOIN {$SQLprefix}acceptedPapers a ON a.subId=s.subId
+  WHERE s.subId=? AND s.subPwd=?";
+$res = pdo_query($qry, array($subId,$subPwd));
+$row = $res->fetch(PDO::FETCH_NUM)
+  or die("<h1>Wrong Submission-ID or password</h1>");
 $fmt = strtolower($row[0]);
 $finalVersion = isset($row[1]);
 
@@ -56,13 +53,10 @@ else {
   $fileName = SUBMIT_DIR."/$subId.$fmt";
 }
 
-if($_GET['attachment'] && $view_reviews) {
-  $qry = "SELECT attachment FROM reports WHERE subId='".
-    my_addslashes($subId).
-    "' AND attachment='".my_addslashes($_GET['attachment']). "'";
-  $res = db_query($qry, $cnnct);
-  if(mysql_num_rows($res) > 0) {
-    $row = mysql_fetch_assoc($res);
+if (isset($_GET['attachment']) && $view_reviews) {
+  $qry = "SELECT attachment FROM {$SQLprefix}reports WHERE subId=? AND attachment=?";
+  $res = pdo_query($qry, array($subId,$_GET['attachment']));
+  if ($row = $res->fetch(PDO::FETCH_ASSOC)) {
     $filename = SUBMIT_DIR."/attachments/".$row['attachment'];
   }
 }
@@ -80,6 +74,6 @@ header("Content-Disposition: inline; filename=\"$subId.$fmt\"");
  *   if (!readfile_chunked($fileName)) {
  */
 if (!readfile($fileName)) {
-  exit("<h1>Error readng file</h1>");
+  exit("<h1>Error reading file</h1>");
 }
 ?>

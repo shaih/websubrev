@@ -7,7 +7,6 @@
 */
 $needsAuthentication = true;
 require 'header.php';
-$cnnct = db_connect();
 
 $rebDeadline = defined('REBUTTAL_DEADLINE')? 
   date('Y-n-j G:i e', REBUTTAL_DEADLINE) : "";
@@ -20,13 +19,12 @@ $newMaxRebuttal = isset($_POST['maxRebuttal'])? (int) $_POST['maxRebuttal']: 0;
 if ($newMaxRebuttal>0) $maxRebuttal=$newMaxRebuttal;
 
 if (!empty($_POST['rebuttalOn']))
-  $flags = "flags=(flags | ".FLAG_REBUTTAL_ON.")";
+  $flags = "flags=(flags | ?)";
 else
-  $flags = "flags=(flags & ~ ".FLAG_REBUTTAL_ON.")";
+  $flags = "flags=(flags & ~?)";
 
-$qry = "UPDATE parameters SET rebDeadline=".((int)$rebDeadline)
-  .", maxRebuttal=".((int)$maxRebuttal).", $flags";
-db_query($qry, $cnnct);
+$qry = "UPDATE {$SQLprefix}parameters SET rebDeadline=?, maxRebuttal=?, $flags";
+pdo_query($qry, array($rebDeadline,$maxRebuttal,FLAG_REBUTTAL_ON));
 
 header("Location: rebuttal.php?success=true");
 ?>

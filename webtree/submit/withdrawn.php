@@ -29,6 +29,7 @@ print <<<EndMark
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<meta charset="utf-8">
 <style type="text/css">
 h1 { text-align: center; }
 tr { vertical-align: top; }
@@ -44,10 +45,10 @@ $links
 <b>Your submission to $confName has been withdrawn.</b>
 <br/>
 <br/>
-An email confirmation was sent to the contact address below. If you do
-not receive the confirmation email in the next few minutes, contact the
-administrator at $adminEmail. <br />
-<br />
+An email confirmation was sent to the contact address below. If you do not
+receive the confirmation email in the next few minutes, please contact the
+chair.<br/>
+<br/>
 If you change your mind (or find a way to fix the bug), you can
 "un-withdraw" the submission any time before the deadline by going
 to the <A href="revise.php?subId=$subId&amp;subPwd=$subPwd">
@@ -74,16 +75,11 @@ You can also just click the "Oops" button below.
 EndMark;
 } 
 
-if (!($cnnct = @mysql_connect(MYSQL_HOST, MYSQL_USR, MYSQL_PWD))
-    || !@mysql_select_db(MYSQL_DB, $cnnct))
-  generic_confirm();
+if (empty($subId) || empty($subPwd)) generic_confirm();
 
-if (empty($subId) || empty($subPwd) || !isset($cnnct)) generic_confirm();
+$qry = "SELECT *, UNIX_TIMESTAMP(whenSubmitted) sbmtd, UNIX_TIMESTAMP(lastModified) revised FROM {$SQLprefix}submissions WHERE subId =? AND subPwd =?";
 
-$qry = "SELECT *, UNIX_TIMESTAMP(whenSubmitted) sbmtd, UNIX_TIMESTAMP(lastModified) revised FROM submissions WHERE subId = '{$subId}' AND subPwd = '{$subPwd}'";
-
-if (!($res=@mysql_query($qry, $cnnct)) || !($row=@mysql_fetch_array($res))) 
-  generic_confirm();
+$row = pdo_query($qry, array($subId,$subPwd))->fetch();
 
 $ttl = htmlspecialchars($row['title']);
 $athr = htmlspecialchars($row['authors']);

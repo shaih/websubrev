@@ -12,19 +12,17 @@ if (PERIOD < PERIOD_REVIEW) die("<h1>Too early to produce TOC</h1>");
 
 $cName = CONF_SHORT.' '.CONF_YEAR;
 
-$cnnct = db_connect();
 $qry = "SELECT s.subId subId, title, authors, nPages, pOrder
-    FROM submissions s LEFT JOIN acceptedPapers ac USING(subId)
+    FROM {$SQLprefix}submissions s
+         LEFT JOIN {$SQLprefix}acceptedPapers ac USING(subId)
     WHERE status='Accept' ORDER BY IF(ac.pOrder>0, ac.pOrder, 9999), subId";
-$res = db_query($qry, $cnnct);
-$papers = array();
-while ($row = mysql_fetch_assoc($res)) { $papers[] = $row; }
+$papers = pdo_query($qry)->fetchAll(PDO::FETCH_ASSOC);
 
 $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 {text-align: center;}
 tr { vertical-align: top; }
@@ -48,7 +46,7 @@ You can also correct the titles and author list of papers (for example
 to add LaTeX accent commands for European characters).<br/>
 <br/>
 
-<form action="doMakeTOC.php"  enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" action="doMakeTOC.php"  enctype="multipart/form-data" method="post">
 <table cellspacing=3><tbody>
 <tr><th>subId</th><th>nPages</th><th>order</th>
   <th>title &amp; authors (separate authors by semi-colon)</th>

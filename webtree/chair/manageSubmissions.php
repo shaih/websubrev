@@ -23,7 +23,7 @@ $emlExtraPrm =  EML_EXTRA_PRM;
 $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html><head>
+<html><head><meta charset="utf-8">
 <style type="text/css">
 h1 { text-align: center; }
 tr { vertical-align: top; }
@@ -34,7 +34,7 @@ tr { vertical-align: top; }
 $links
 <hr/>
 <h1>Managing Submissions Site</h1>
-<form action=doManageSubmissions.php enctype="multipart/form-data" method=POST>
+<form accept-charset="utf-8" action=doManageSubmissions.php enctype="multipart/form-data" method=POST>
 <table cellpadding=6><tbody>
 <tr><td><big><b>The&nbsp;Conference:</b></big></td><td></td>
 </tr>
@@ -51,21 +51,16 @@ $links
 </tr>
 <tr><td><big><b>Submission:</b></big></td><td><br></td>
 </tr>
-<tr><td style="text-align: right;">Camera&nbsp;ready&nbsp;Deadline:</td>
-  <td><input name=cameraDeadline size=90 type=text value="$cmrDeadline"></td>
-</tr>  
 EndMark;
 
 if (PERIOD<=PERIOD_SUBMIT) {
   print <<<EndMark
-<tr><td style="text-align: right;">Submission&nbsp;Deadline:</td>
-  <td><input name=subDeadline size=90 type=text value="$subDeadline"></td>
-</tr>
 <tr><td style="text-align: right;">Pre-registraion&nbsp;Deadline:</td>
   <td><input name=regDeadline size=45 type=text value="$regDeadline">
-  (empty field means pre-registration is not required)<br/>
-  Remember that <b>the software does not enforce these deadlines automatically.
-  </b></td>
+  (empty field means pre-registration is not required)</td>
+</tr>
+<tr><td style="text-align: right;">Submission&nbsp;Deadline:</td>
+  <td><input name=subDeadline size=90 type=text value="$subDeadline"></td>
 </tr>
 
 EndMark;
@@ -77,6 +72,10 @@ EndMark;
   $chkaff = USE_AFFILIATIONS ? 'checked="checked"' : '';
   $chkanon = ANONYMOUS ? 'checked="checked"' : '';
   print <<<EndMark
+<tr><td style="text-align: right;">Camera&nbsp;ready&nbsp;Deadline:</td>
+  <td><input name=cameraDeadline size=90 type=text value="$cmrDeadline"><br/>
+  Remember that <b>the software does not enforce the deadlines automatically.</b>
+</td></tr>
 <tr><td style="text-align: right;">Categories:</td>
   <td><textarea name=categories rows=3 cols=70>$cats</textarea><br/>
     A semi-colon-separated list of categories for the submissions

@@ -8,7 +8,6 @@
 $needsAuthentication = true; 
 require 'header.php'; // brings in the contacts file and utils file
 $cName = CONF_SHORT.' '.CONF_YEAR;
-$cnnct = db_connect();
 
 // Read all the fields, stripping spurious white-spaces
 $title   = isset($_POST['title']) ? trim($_POST['title']) : NULL;
@@ -33,45 +32,14 @@ foreach($addresses as $addr) {
 Contact(s) must be a list of email addresses in the format user@domain.");
 }
 
-/***** User input vaildated. Next prepare the MySQL query *****/
+/*** User input vaildated. Next insert the new submission to the database ***/
 
-// Sanitize user input while preparing the query
-$cnnct = db_connect();
-$res = db_query("SELECT MAX(subId) FROM submissions WHERE status!='Withdrawn'", $cnnct);
-$row=mysql_fetch_row($res);
-$subId=1+(int)$row[0];
-$qry = "INSERT INTO submissions SET subId=$subId, title='"
-  . my_addslashes(substr($title, 0, 255), $cnnct)
-  . "', authors='". my_addslashes($author, $cnnct)
-  . "', contact='". my_addslashes($contact, $cnnct)
-  . "', affiliations='" . my_addslashes($affiliations, $cnnct)
-  . "', format='', subPwd='{$subPwd}', status='Accept', whenSubmitted=NOW()";
+$subId = 1+ pdo_query("SELECT MAX(subId) FROM {$SQLprefix}submissions WHERE status!='Withdrawn'")->fetchColumn();
 
-// Insert the new submission to the database 
-db_query($qry, $cnnct, "Cannot insert invited talk to database: ");
+$qry = "INSERT INTO {$SQLprefix}submissions (subId,title,authors,contact,affiliations,format,subPwd,status,whenSubmitted) VALUES (?,?,?,?,?,'',?,'Accept',NOW())";
 
-/* We find out the submission number from the database record. (Note that
- * we use the auto_increment mechanism of MySQL to ensure that concurrent
- * submisssions don't get assigned the same numbers. Let's hope that MySQL
- * has a sensible concurrency control.)
- */
-
-// Find this submission in the database
-$qry = "SELECT subId FROM submissions WHERE subPwd='{$subPwd}'
-  AND title='"   . my_addslashes(substr($title, 0, 255), $cnnct)."'
-  AND authors='" . my_addslashes($author, $cnnct)."'
-  AND contact='" . my_addslashes(substr($contact, 0, 255), $cnnct)."'";
-$res = db_query($qry, $cnnct);
-$row = mysql_fetch_row($res);
-$subId = $row[0];   // What number was assigned to this submission
-
-if (empty($subId)){ // can't find this submission (transient database problem?)
-  error_log(date('Ymd-His: ')."Can't find new submission w/ pwd $subPwd: ".mysql_error()."\n", 3, LOG_FILE);  
-  exit("<h1>Problems adding a submission with password $subPwd to database</h1>");
-}
-
-$qry = "INSERT INTO acceptedPapers SET subId=$subId";
-db_query($qry, $cnnct);
+pdo_query($qry, array($subId,$title,$author,$contact,$affiliations,$subPwd));
+pdo_query("INSERT INTO {$SQLprefix}acceptedPapers SET subId=?", array($subId));
 
 // All went well, send email to the contact author
 $prot = (defined('HTTPS_ON')||isset($_SERVER['HTTPS']))? 'https' : 'http';

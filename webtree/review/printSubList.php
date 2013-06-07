@@ -42,7 +42,7 @@ EndMark;
     $authors = isset($sb['authors']) ? htmlspecialchars($sb['authors']) : ''; 
     $abstract = isset($sb['abstract'])? htmlspecialchars($sb['abstract']):''; 
     $fmt = htmlspecialchars($sb['format']); 
-    $pcAuthor = (has_pc_author($authors, $subId) && $showPCMark) ? $PCicon:''; // in confUtils.php
+    $pcAuthor = ($showPCMark && has_pc_author($authors))? $PCicon: ''; // in confUtils.php
     $hvr = (high_variance_reviews($subId, $thresh) && $showHVR) ? $HVRicon:'';
 
 /*  // kluggy integration with Boneh's system for sending questions to authors

@@ -12,16 +12,12 @@ $now = utcDate('r');
 
 header("Content-Type: text/plain");
 header('Content-Disposition: attachment; filename="sketchAssignments.txt"');
-print <<<EndMark
-# Sketch Assignments for $confName, saved on $now
+print "# Sketch Assignments for $confName, saved on $now\n";
 
-EndMark;
-
-$cnnct = db_connect();
-$qry = "SELECT a.subId,a.revId,s.title,c.name FROM assignments a,submissions s,committee c WHERE sktchAssgn=1 AND s.subId=a.subId AND c.revId=a.revId ORDER BY a.subId,a.revId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT a.subId,a.revId,s.title,c.name FROM {$SQLprefix}assignments a,{$SQLprefix}submissions s,{$SQLprefix}committee c WHERE sktchAssgn=1 AND s.subId=a.subId AND c.revId=a.revId ORDER BY a.subId,a.revId";
+$res = pdo_query($qry);
 $curSubId = -1;
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $subId = (int) $row[0];
   $revId = (int) $row[1];
   if ($subId != $curSubId) {

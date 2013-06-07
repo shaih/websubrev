@@ -29,7 +29,7 @@ $links = show_rev_links(4);
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head>
+<head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 tr { vertical-align: top; }
@@ -68,7 +68,7 @@ h1 { text-align: center; }
 $links
 <hr />
 <h1>Watch List and Preferences for $pcMember[1]</h1>
-<form name="watchListForm" action="doWatchList.php" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" name="watchListForm" action="doWatchList.php" enctype="multipart/form-data" method="post">
 
 <table><tbody>
 <tr><td><input type=checkbox name="emlNewPosts"{$chkEmlNewPosts}></td>
@@ -94,16 +94,15 @@ $links
 
 EndMark;
 
-$cnnct = db_connect();
 $qry = "SELECT s.subId, s.title, s.wAvg, s.status,
                a.pref, a.assign, a.watch, r.whenEntered
-  FROM submissions s
-  LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId
-  LEFT JOIN reports r ON r.revId='$revId' AND r.subId=s.subId
+  FROM {$SQLprefix}submissions s
+  LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId
+  LEFT JOIN {$SQLprefix}reports r ON r.revId=? AND r.subId=s.subId
   WHERE s.status!='Withdrawn'
   ORDER BY s.subId";
-$res = db_query($qry, $cnnct, "Cannot retrieve submission list: ");
-while ($row = mysql_fetch_row($res)) {
+$res = pdo_query($qry, array($revId,$revId));
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   list($subId,$title,$wAvg,$status,$pref,$assign,$watch,$revwed) = $row;
   if ($assign==-1) continue; // conflict
   // Get the submission details

@@ -28,7 +28,7 @@ print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
  "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head>
+<head><meta charset="utf-8">
 <title>Creating a New Submission/Review Site</title>
 <link rel="stylesheet" type="text/css" href="../common/review.css"/>
 <style type="text/css">
@@ -86,7 +86,7 @@ conference.) Here you can only specify sytem parameters, such as
 username/pwd for MySQL, a local directory where the submissions are
 kept, etc.<br/>
 <br/>
-<form action="doInitialize.php"  onsubmit="return checkform(this);" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" action="doInitialize.php"  onsubmit="return checkform(this);" enctype="multipart/form-data" method="post">
 
 <table cellpadding="6">
 <tbody>
@@ -94,42 +94,51 @@ kept, etc.<br/>
   <td><input name="webServer" type="text" value="$webServer" size="60"><br/>
     The DNS name or IP address of the web-server (e.g., <tt>www.myConf.org</tt> or <tt>18.7.22.83</tt>)</td>
 </tr>
-<tr><td class=rjust><a href="../documentation/chair.html#SQLserver" target="documentation" title="click for more help">MySQL&nbsp;Server:</a></td>
+<tr><td class=rjust><a href="../documentation/chair.html#SQLdb" target="documentation" title="click for more help">MySQL&nbsp;Server:</a></td>
   <td><input name="localMySQL" type="radio" value="yes" checked="checked">
     The MySQL server runs on the same host as the web server<br/>
     <input name="localMySQL" type="radio" value="no">The MySQL server runs
     on a different host.<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Host name
     (or IP address) is: <input name="MySQLhost" size="40" type="text"></td>
 </tr>
-<tr><td class=rjust><a href="../documentation/chair.html#SQLuser" target="documentation" title="click for more help">MySQL&nbsp;Administrator:</a></td>
+
+<tr><td class=rjust><a href="../documentation/chair.html#SQLdb" target="documentation" title="click for more help">Database&nbsp;details:</a></td>
+<td><input type="radio" name="newDB" value="newDB" checked="checked"> 
+Create a new database for this installation. You have to specify the MySQL admin details below.<br/>
+<input type="radio" name="newDB" value="newTbls">
+Use an existing database, but create new tables for this installation.<br/>
+<input type="radio" name="newDB" value="existing">
+Use an existing database, which already has all the tables in it. (Use this option if you already created the database manually.)</td>
+</tr>
+<tr><td class=rjust><a href="../documentation/chair.html#SQLdb" target="documentation" title="click for more help">MySQL&nbsp;Database&nbsp;Name:</a></td>
+  <td><input name="confDB" size=40 type=text value="$dbName"> (e.g., FOCS2009)
+<br/>
+Specify here the name of the MYSQL database to use. If this is a new database then you must specify the MySQL administrator below.</td>
+</tr>
+<tr><td class=rjust><a href="../documentation/chair.html#SQLdb" target="documentation" title="click for more help">Table-name&nbsp;prefix:</a></td>
+  <td><input name="SQLprefix" size=40 type=text value="$dbName"> (e.g., FOCS2009)
+<br/>
+If you use the same SQL database for multiple conferences, specify a prefix for the names of the tables used for the current installation.</td>
+</tr>
+<tr><td class=rjust><a href="../documentation/chair.html#SQLdb" target="documentation" title="click for more help">MySQL&nbsp;Administrator:</a></td>
   <td>Name: <input name="rootNm" size="32" value="root" type="text"> 
     &nbsp;&nbsp; Password: <input name="rootPwd" size="32" type="password">
-    <br/>A MySQL user that can create new databases and add new users.
-    Specify these details <br/>(if you know them) to automatically
-    create a database for this installation</td>
+    <br/>A MySQL user that can create new databases and add new users.</td>
 </tr>
-<tr><td></td>
-   <td>You can also use an existing database (e.g. if you do not have the credentials for creating one yourself).<br/>Then enter below the details of this database and a user that can access it (and also create tables etc.).</td>
-</tr>
-<tr><td class=rjust><a href="../documentation/chair.html#SQLuser" target="documentation" title="click for more help">MySQL&nbsp;User:</a></td>
+<tr><td class=rjust><a href="../documentation/chair.html#SQLdb" target="documentation" title="click for more help">MySQL&nbsp;User:</a></td>
   <td>Name: <input name="user" size="32" type="text"> &nbsp; &nbsp;
-    Password: <input name="pwd" size="32" type="password"></td>
-</tr>
-<tr><td class=rjust><a href="../documentation/chair.html#SQLuser" target="documentation" title="click for more help">MySQL&nbsp;Database&nbsp;Name:</a></td>
-  <td><input name=confDB size=40 type=text value="$dbName"> (e.g., FOCS2009)
-    <br/>Either the name of an existing database (if you specified username
-     and password above), or the<br/>name for the newly created database
-     (if you specified the administrator name and password above).</td>
+    Password: <input name="pwd" size="32" type="password"><br/>
+    If you did not specify the MySQL administrator above and you are using an existing database, enter here the details of a user that can access it (and create tables if needed).</td>
 </tr>
 <tr><td class=rjust><a href="../documentation/chair.html#UploadDir" target="documentation" title="click for more help">UPLOAD&nbsp;Directory:</a></td>
   <td><input name="subDir" size="90" type="text"><br/>
     A directory on the server where the submissions would be stored, must
-    be writable by the <br/>web-server. If this field is left empty, it
+    be writable by the web-server. If this field is left empty, it
     defaults to the <tt>subs</tt> subdirectory under the BASE directory.
 </tr>
 <tr><td class=rjust><a href="../documentation/chair.html#chairEmail" target="documentation" title="click for more help">Chair&nbsp;Email:</a></td>
   <td><input name="chair" size="90" type="text" onchange="return checkEmail(this)"><br/>
-    Only one address, e.g., <tt>My Name &lt;chair@myConf.org&gt;</tt> or <tt>My.Email@company.com</tt>.<br/>You will be able to add more PC chairs later.</td>
+    Only one address, e.g., <tt>My Name &lt;chair@myConf.org&gt;</tt> or <tt>My.Email@company.com</tt>. You will be able to add more PC chairs later.</td>
 </tr>
 <tr><td class=rjust><a href="../documentation/chair.html#adminEmail" target="documentation" title="click for more help">Administrator&nbsp;Email:</a></td>
   <td><input name="admin" size="90" type="text" onchange="return checkEmail(this)"><br/>

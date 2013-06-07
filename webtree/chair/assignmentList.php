@@ -7,24 +7,17 @@
  */
  $needsAuthentication = true;
 require 'header.php';
-$cnnct = db_connect();
 
 // Prepare an array of submissions and an array of PC members
-$qry = "SELECT subId, title, 0 from submissions WHERE status!='Withdrawn'
-  ORDER BY subId";
-$res = db_query($qry, $cnnct);
-$subArray = array();
-while ($row = mysql_fetch_row($res)) {
-  $row[1] = htmlspecialchars($row[1]);
-  $subArray[] = $row;
-}
+$qry = "SELECT subId, title, 0 FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER BY subId";
+$res = pdo_query($qry);
+$subArray = $res->fetchAll(PDO::FETCH_NUM);
 
-$qry = "SELECT revId, name from committee WHERE !(flags & " . FLAG_IS_CHAIR .")
-   ORDER BY revId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT revId,name FROM {$SQLprefix}committee WHERE !(flags & ?) ORDER BY revId";
+$res = pdo_query($qry, array(FLAG_IS_CHAIR));
 $committee = array();
 $nameList = $sep = '';
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $revId = (int) $row[0];
   $committee[$revId] = array(trim($row[1]), 0, 0, 0);
   $nameList .= $sep . '"'.htmlspecialchars(trim($row[1])).'"';
@@ -33,10 +26,10 @@ while ($row = mysql_fetch_row($res)) {
 $cmteIds = array_keys($committee);
 
 // Get the assignment preferences
-$qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM assignments";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM {$SQLprefix}assignments";
+$res = pdo_query($qry);
 $prefs = array();
-while ($row = mysql_fetch_row($res)) { 
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   list($revId, $subId, $pref, $compatible, $assign) = $row; 
   if (!isset($prefs[$subId]))  $prefs[$subId] = array();
 
@@ -83,7 +76,7 @@ $links = show_chr_links(0,array('assignments.php','Assignments'));
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/autosuggest.css" />        
 <script type="text/javascript">
   /**
@@ -181,12 +174,13 @@ print <<<EndMark
 </tbody></table>
 
 <h3>List of submissions</h3>
-<form action=doAssignments.php enctype="multipart/form-data" method=post autocomplete=off>
+<form accept-charset="utf-8" action="doAssignments.php" enctype="multipart/form-data" method=post autocomplete="off">
 <ol>
 
 EndMark;
 foreach ($subArray as $sub) { 
   $subId = $sub[0];
+  $title = htmlspecialchars($sub[1]);
   $sbPrefs = &$prefs[$subId];
   $val = $sep = '';
   if (is_array($sbPrefs)) foreach($sbPrefs as $revId => $pcm) {
@@ -199,7 +193,7 @@ foreach ($subArray as $sub) {
   }
   print <<<EndMark
   <li value="$subId">
-    <a href="../review/submission.php?subId=$subId">$sub[1]</a><br/>
+    <a href="../review/submission.php?subId=$subId">$title</a><br/>
     <input type="text" name="cList{$subId}" size=85 value="$val"><br/><br/>
   </li>
 

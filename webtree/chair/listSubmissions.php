@@ -14,7 +14,7 @@ $title = defined('CAMERA_PERIOD') ? 'Accepted Submissions' : 'Submission List';
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 {text-align: center;}
 tr {vertical-align: top;}
@@ -31,33 +31,29 @@ $links
 EndMark;
 
 // Prepare an array of submissions
-$cnnct = db_connect();
 
+$orders = array('subId','category','format');
 $subOrder = isset($_GET['subOrder']) ? trim($_GET['subOrder']) : 'subId';
-$subOrder = my_addslashes($subOrder, $cnnct);
+if (!in_array($subOrder,$orders)) $subOrder = 'subId';
 
 $condition = defined('CAMERA_PERIOD') ? "status='Accept'"
                                       : "status!='Withdrawn'";
 
 $qry = "SELECT subId, title, authors, affiliations, contact, abstract, 
      category, keyWords, comments2chair, format, subPwd, status
-  FROM submissions
-  WHERE {$condition}
-  ORDER BY $subOrder";
-$res = db_query($qry, $cnnct);
-$subArray = array();
-while ($row = mysql_fetch_assoc($res)) {
-  $subArray[] = $row;
-}
+  FROM {$SQLprefix}submissions WHERE {$condition} ORDER BY $subOrder";
+$res = pdo_query($qry);
+$subArray = $res->fetchAll(PDO::FETCH_ASSOC);
+
 
 // in some cases, provide a count per category
 $countByCat = ($subOrder=='status'
 	       || $subOrder=='category' || $subOrder=='format');
 if ($countByCat) {
-  $qry = "SELECT $subOrder, COUNT(*) FROM submissions WHERE {$condition} GROUP BY $subOrder";
-  $res = db_query($qry, $cnnct);
+  $qry = "SELECT $subOrder,COUNT(*) FROM {$SQLprefix}submissions WHERE {$condition} GROUP BY $subOrder";
+  $res = pdo_query($qry);
   $countArray = array();
-  while ($row = mysql_fetch_row($res)) {
+  while ($row = $res->fetch(PDO::FETCH_NUM)) {
     $cat = $row[0];
     if (!isset($cat) || empty($cat)) $cat = "No $subOrder specified";
     $countArray[$cat] = $row[1];

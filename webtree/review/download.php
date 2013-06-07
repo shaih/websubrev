@@ -17,11 +17,10 @@ if (isset($_GET['all_in_one'])) {
   $fmt = file_extension($fileName);
 } else {
   $subId = (int) $_GET['subId'];
-  $cnnct = db_connect();
-  $qry = "SELECT format FROM submissions WHERE subId=$subId";
-  $res = db_query($qry, $cnnct);
-  if (!$res || mysql_num_rows($res)==0) die("<h1>Submission not found</h1>");
-  $row = mysql_fetch_row($res);
+  $qry = "SELECT format FROM {$SQLprefix}submissions WHERE subId=?";
+  $res = pdo_query($qry, array($subId));
+  $row = $res->fetch(PDO::FETCH_NUM)
+    or die("<h1>Submission not found</h1>");
   $fmt = $row[0];
 }
 $fmt = strtolower($fmt);
@@ -58,15 +57,18 @@ if (!file_exists($fileName)) {
   exit("<h1>File not found</h1>");
 }
 
-if (isset($mimeType))  header("Content-Type: $mimeType");
+if (!empty($mimeType))  header("Content-Type: $mimeType");
 header("Content-Disposition: inline; filename=\"$subId.$fmt\"");
+header('Content-Transfer-Encoding: binary');
+header('Content-Length: ' . filesize($fileName));
+ob_clean();
+flush();
 
 /* If you cannot download large files, try replacing the call to
  * readfile by readfile_chunked. Namely, use the line:
  *
- *   if (!readfile_chunked($fileName)) {
+ *   readfile_chunked($fileName)
  */
-if (!readfile_chunked($fileName)) {
-  exit("<h1>Error readng file</h1>");
-}
+@readfile($fileName);
+exit();
 ?>

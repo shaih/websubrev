@@ -68,7 +68,7 @@ $chairNotice
 <h3 class=timeleft>$subDdline<br/>
 $timeleft</h3>
 
-<form name="withdraw" onsubmit="return checkform(this);" action="act-withdraw.php" enctype="multipart/form-data" method="post">
+<form name="withdraw" onsubmit="return checkform(this);" action="act-withdraw.php" enctype="multipart/form-data" method="post" accept-charset="utf-8">
 
 <table cellspacing="6">
 <tbody>

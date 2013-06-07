@@ -66,11 +66,9 @@ if (!empty($sbFileName)) {
 
 // Test that there exists a submission with this subId/subPwd
 
-$cnnct = db_connect();
-$qry = 'SELECT title, authors, affiliations, contact, abstract, category, keyWords, comments2chair, format, status FROM submissions WHERE'
-       . " subId=$subId AND subPwd='{$subPwd}'";
-$res=db_query($qry, $cnnct);
-$row=mysql_fetch_assoc($res)
+$qry = "SELECT title, authors, affiliations, contact, abstract, category, keyWords, comments2chair, format, status FROM {$SQLprefix}submissions WHERE subId=? AND subPwd=?";
+$res=pdo_query($qry,array($subId, $subPwd));
+$row= $res->fetch(PDO::FETCH_ASSOC)
   or exit("<h1>Revision Failed</h1>
            No submission with ID $subId and password $subPwd was found.");
 if ((PERIOD>=PERIOD_CAMERA) && $row['status']!='Accept') {
@@ -84,52 +82,61 @@ $oldFrmt = $row['format'];
 /***** User input vaildated. Next prepare the MySQL query *****/
 
 $updts = '';
+$prms = array();
 if (!empty($title)) {
-  $updts = "title='" . my_addslashes(substr($title, 0, 255), $cnnct)."',\n";
+  $updts .= "title=?,";
+  $prms[] = substr($title, 0, 255);
 }
 else $title = $row['title'];
 
 if (!empty($author)) {
-  $updts .= "  authors='" . my_addslashes($author, $cnnct). "',\n";
+  $updts .= "authors=?,";
+  $prms[] = $author;
 }
 else $author = $row['authors'];
 
 if (!empty($affiliations)) {
-  $updts .= "affiliations='" . my_addslashes($affiliations, $cnnct) . "',\n";
+  $updts .= "affiliations=?,";
+  $prms[] = $affiliations;
 }
 else $affiliations = $row['affiliations'];
 
 if (!empty($contact) && strcasecmp($contact, $oldCntct)!=0) {
   $oldCntct .= ", $contact";  // send email to both old and new contacts
-  $updts .= "  contact='" . my_addslashes($contact, $cnnct)."',\n";
+  $updts .= "contact=?,";
+  $prms[] = $contact;
 }
 else $contact = $row['contact'];
 
 if (!empty($abstract)) {
-  $updts .= "  abstract='" . my_addslashes($abstract, $cnnct)."',\n";
+  $updts .= "abstract=?,";
+  $prms[] = $abstract;
 }
 else $abstract = $row['abstract'];
 
 if (!empty($category)) {
-  $updts .= "  category='" . my_addslashes(substr($category, 0, 80), $cnnct)."',\n";
+  $updts .= "category=?,";
+  $prms[] = substr($category, 0, 80);
 }
 else $category = $row['category'];
 
 if (!empty($keywords)) {
-  $updts .= "  keyWords='" . my_addslashes(substr($keywords, 0, 255), $cnnct)."',\n";
+  $updts .= "keyWords=?,";
+  $prms[] = substr($keywords, 0, 255);
 }
 else $keywords = $row['keyWords'];
 
 if (!empty($comment)) {
-  $updts .= "  comments2chair='" . my_addslashes($comment, $cnnct)."',\n";
+  $updts .= "comments2chair=?,";
+  $prms[] = $comment;
 }
 else $comment = $row['comments2chair'];
 
 
 if (!empty($optin)) {
-  $updts .= " flags = flags | ".FLAG_IS_CHECKED.", \n";
+  $updts .= "flags = flags | ".FLAG_IS_CHECKED.", \n";
 } else {
-  $updts .= " flags = flags & (~".FLAG_IS_CHECKED."), \n";
+  $updts .= "flags = flags & (~".FLAG_IS_CHECKED."), \n";
 }
 
 // If a new file is specified, try to determine its format and then
@@ -137,7 +144,8 @@ if (!empty($optin)) {
 $fileFormat = NULL;
 if (!empty($sbFileName)) {
   $fileFormat = determine_format($_FILES['sub_file']['type'], $sbFileName, $tmpFile);
-  $updts .= "  format='" . my_addslashes($fileFormat, $cnnct)."',\n";
+  $updts .= "format=?,";
+  $prms[] = $fileFormat;
 
   $fileName = SUBMIT_DIR."/tmp.{$subId}." . date('YmdHis');
   if (!empty($fileFormat)) $fileName .= ".{$fileFormat}";
@@ -151,10 +159,12 @@ if (!empty($sbFileName)) {
 // If anything changed, insert changes into the database
 if (!empty($updts) || isset($_POST['reinstate'])) {
   if ((PERIOD<=PERIOD_SUBMIT) || isset($_POST['reinstate']) || $oldStatus=='Withdrawn')
-    $updts .= "status='None', "; 
-  $qry = "UPDATE submissions SET $updts lastModified=NOW()\n"
-    . "WHERE subId=$subId AND subPwd='{$subPwd}'";
-  db_query($qry, $cnnct, 'Cannot insert submission details to database: ');
+    $updts .= "status='None',"; 
+  $qry = "UPDATE {$SQLprefix}submissions SET $updts lastModified=NOW() WHERE subId=? AND subPwd=?";
+  $prms[] = $subId;
+  $prms[] = $subPwd;
+
+  pdo_query($qry, $prms, 'Cannot insert submission details to database: ');
 }
 else { // Hmm.. nothing has changed, why are we here?
   if (PERIOD<PERIOD_CAMERA || !isset($_FILES['pdf_file']))
@@ -186,8 +196,8 @@ if (!empty($sbFileName)) {
     exit();
   }
   if (PERIOD<PERIOD_CAMERA) { // mark new file as needing a stamp
-    $qry = "UPDATE submissions SET flags=(flags|".SUBMISSION_NEEDS_STAMP.") WHERE subId={$subId}";
-    db_query($qry, $cnnct,"Cannot mark file as needing a stamp: ");
+    $qry = "UPDATE {$SQLprefix}submissions SET flags=(flags|".SUBMISSION_NEEDS_STAMP.") WHERE subId=?";
+    pdo_query($qry, array($subId),"Cannot mark file as needing a stamp: ");
   }
 }
 
@@ -214,10 +224,9 @@ if (PERIOD>=PERIOD_CAMERA) {
   }
 
   if (!empty($eprint)) {
-    $eprint = my_addslashes($eprint, $cnnct);
-    $qry = "UPDATE acceptedPapers SET nPages=$nPages, eprint='$eprint' WHERE subId={$subId}";
-    db_query($qry, $cnnct,
-	     "Cannot update ePrint information for submission $subId: ");
+    $qry = "UPDATE {$SQLprefix}acceptedPapers SET nPages=?, eprint=? WHERE subId=?";
+    pdo_query($qry, array($nPages,$eprint,$subId),
+	      "Cannot update ePrint information for submission $subId: ");
   }
 }
 

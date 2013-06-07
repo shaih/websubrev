@@ -7,7 +7,6 @@
  */
 $needsAuthentication = true; 
 require 'header.php';
-$cnnct = db_connect();
 
 /* If chair specified parameters - write them to database
  *******************************************************************/
@@ -28,37 +27,42 @@ if (isset($_POST["setup"])) {
       if (isset($_POST["voteOnRE"])) $voteFlags |= FLAG_VOTE_ON_RE;
     }
   }
-  $values = "voteFlags=$voteFlags";
+  $values = "voteFlags=?";
+  $prms = array($voteFlags);
 
   $instructions = trim($_POST["voteInstructions"]);
   if (!empty($instructions)) {
-    $values .= ", instructions='" . my_addslashes($instructions, $cnnct)."'";
+    $values .= ", instructions=?";
+    $prms[] = $instructions;
   }
   $voteTitle = trim($_POST["voteTitle"]);
   if (!empty($voteTitle)) {
-    $values .= ", voteTitle='".my_addslashes($voteTitle, $cnnct)."'";
+    $values .= ", voteTitle=?";
+    $prms[] = $voteTitle;
   }
   $deadline = trim($_POST["voteDeadline"]);
   if (!empty($deadline)) {
-    $values .= ",deadline='".my_addslashes($deadline, $cnnct)."'";
+    $values .= ",deadline=?";
+    $prms[] = $deadline;
   }
   $voteType = trim($_POST["voteType"]);
   if (!empty($voteType)) {
-    if ($voteType!='Grade') $voteType='Choose';
-    $values .= ",voteType='$voteType'";
+    $values .= ",voteType=?";
+    $prms[] = ($voteType=='Grade')? 'Grade' : 'Choose';
   }
   $voteMaxGrade = trim($_POST["voteMaxGrade"]);
   if (!empty($voteMaxGrade)) {
-    $voteMaxGrade = (int) $voteMaxGrade;
     if ($voteType=='Choose' || $voteMaxGrade < 1 || $voteMaxGrade > 9)
       $voteMaxGrade = 1;
-    $values .= ", voteMaxGrade=".$voteMaxGrade;
+    $values .= ", voteMaxGrade=?";
+    $prms[] = $voteMaxGrade;
   }
+
   $voteBudget = trim($_POST["voteBudget"]);
   if (!empty($voteBudget)) {
-    $voteBudget = (int) $voteBudget;
-    if ($voteBudget < 0) $voteBudget = 0;
-    $values .= ", voteBudget=".$voteBudget;
+    if ($voteBudget <= 0) $voteBudget = 0;
+    $values .= ", voteBudget=?";
+    $prms[] = $voteBudget;
   }
   if (!($voteFlags & FLAG_VOTE_ON_SUBS)) {
     $voteOnThese = trim($_POST["voteItems"]);
@@ -66,25 +70,25 @@ if (isset($_POST["setup"])) {
     $voteOnThese = trim($_POST["voteOnThese"]);
   }
   if (!empty($voteOnThese)) {
-    $values .= ", voteOnThese='".my_addslashes($voteOnThese,$cnnct)."'";
+    $values .= ", voteOnThese=?";
+    $prms[] = $voteOnThese;
   }
 
   $voteId = intval(trim($_POST["voteId"]));
   if ($voteId > 0) { // update an existing entry
-    $qry = "UPDATE votePrms SET $values WHERE voteId=$voteId";
+    $qry = "UPDATE {$SQLprefix}votePrms SET $values WHERE voteId=$voteId";
   } else {           // update insert a new row
-    $qry = "INSERT INTO votePrms SET voteActive=1, $values";
+    $qry = "INSERT INTO {$SQLprefix}votePrms SET voteActive=1, $values";
   }
-  db_query($qry, $cnnct);
+  pdo_query($qry, $prms);
 }  // if (isset($_POST["setup"]))
 
-/* Close the current vote and remove the vote-parameter file
- *******************************************************************/
-if (isset($_POST["closeVote"])) {
+
+if (isset($_POST["closeVote"])) { // Close the current vote
   $voteId = intval(trim($_POST["voteId"]));
   $hide = (isset($_POST["hideVote"]) && $_POST["hideVote"]=="on")? -1 :0;
   if ($voteId > 0) {
-    db_query("UPDATE votePrms SET voteActive=$hide WHERE voteId=$voteId", $cnnct);
+    pdo_query("UPDATE {$SQLprefix}votePrms SET voteActive=$hide WHERE voteId=$voteId");
   }
   header("Location: voteDetails.php?voteId=$voteId");
 }

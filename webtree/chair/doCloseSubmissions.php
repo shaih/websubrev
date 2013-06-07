@@ -11,25 +11,27 @@ require 'header.php';
 if (PERIOD<PERIOD_SUBMIT) exit("<h1>Submissions Site is not yet Open</h1>");
 if (PERIOD>PERIOD_SUBMIT) exit("<h1>Submissions Site is already Closed</h1>");
 
+$updates = "version=version+1, period=?";
+$prms = array(PERIOD_REVIEW);
 
-$updates = "version=version+1";
 if (isset($_POST['revPrefsFlag'])) {
+  $updates .= ", flags=?";
   if (isset($_POST['revPrefs'])) $confFlags = CONF_FLAGS | FLAG_PCPREFS;
   else                           $confFlags = CONF_FLAGS & (~FLAG_PCPREFS);
-  if (isset($_POST['revAttach'])) $confFlags= CONF_FLAGS | FLAG_REV_ATTACH;
-  else                           $confFlags = CONF_FLAGS & (~FLAG_REV_ATTACH);
-  $updates .= ", flags=$confFlags";
+  if (isset($_POST['revAttach'])) $confFlags |= FLAG_REV_ATTACH;
+  else                           $confFlags &= ~FLAG_REV_ATTACH;
+  $prms[] = $confFlags;
 }
 
 $x = isset($_POST['maxGrade']) ? (int) trim($_POST['maxGrade']) : 0;
 if ($x>=2 && $x<=9 && $x!=MAX_GRADE) {
-  $updates .= ", maxGrade=$x";
+  $updates .= ", maxGrade=?";
+  $prms[] = intval($x);
 }
 
-$updates .= ", period=".PERIOD_REVIEW;
-
+$crtriaString = $sc = '';
 if (isset($_POST['setCriteria'])) { // Create an array of criteria
-  $crtriaString = $sc = '';
+  $updates .= ",\n extraCriteria=?";
   $x = isset($_POST['criteria']) ? explode(';', $_POST['criteria']) : NULL;
   if (is_array($x) && count($x)>0) {
     foreach ($x as $c) {
@@ -38,17 +40,13 @@ if (isset($_POST['setCriteria'])) { // Create an array of criteria
 	$sc = ';';
       }
     }
-    $crtriaString = "'".my_addslashes($crtriaString, $cnnct)."'";
   }
-  else $crtriaString = 'NULL';
-
-  $updates .= ",\n extraCriteria=$crtriaString";
+  $prms[] = $crtriaString;
 }
 
 // This is where we close the submission site
-$cnnct = db_connect();
-backup_conf_params($cnnct, PARAMS_VERSION);
-db_query("UPDATE parameters SET $updates", $cnnct);
+backup_conf_params(PARAMS_VERSION);
+pdo_query("UPDATE {$SQLprefix}parameters SET $updates", $prms);
 
 // All went well, go back to administration page
 header("Location: index.php");

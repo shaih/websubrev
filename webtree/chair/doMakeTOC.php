@@ -43,44 +43,45 @@ if (isset($_POST['makeTOC'])) {
   }
   
   // Update database with the given user input
-  $cnnct = db_connect();
   foreach ($papers as $subId => $ppr) {
     
     if (isset($papers[$subId]['nPages']) || isset($papers[$subId]['pOrder'])) {
       $updates = $sep = '';
       if (isset($papers[$subId]['nPages'])) {
-	$updates = "nPages=".$papers[$subId]['nPages']; $sep = ', ';
+	$updates = "nPages=".$papers[$subId]['nPages']; $sep = ',';
       }
       if (isset($papers[$subId]['pOrder'])) {
-	$updates .= "{$sep}pOrder=".$papers[$subId]['pOrder']; $sep = ', ';
+	$updates .= "{$sep}pOrder=".$papers[$subId]['pOrder']; $sep = ',';
       }
-      $qry = "UPDATE acceptedPapers SET $updates WHERE subId=$subId";
-      db_query($qry, $cnnct);
+      pdo_query("UPDATE {$SQLprefix}acceptedPapers SET $updates WHERE subId=$subId");
     }
 
     if (isset($papers[$subId]['title']) || isset($papers[$subId]['authors'])) {
       $updates = $sep = '';
+      $prms = array();
       if (isset($papers[$subId]['title'])) {
-	$updates = "title='"
-	         . my_addslashes($papers[$subId]['title'], $cnnct). "'";
-	$sep = ', ';
+	$updates = "title=?";
+	$prms[] = $papers[$subId]['title'];
+	$sep = ',';
       }
       if (isset($papers[$subId]['authors'])) {
-	$updates .= "{$sep}authors='"
-	         . my_addslashes($papers[$subId]['authors'], $cnnct). "'";
-	$sep = ', ';
+	$updates .= "{$sep}authors=?";
+	$prms[] = $papers[$subId]['authors'];
+	$sep = ',';
       }
-
-      $qry = "UPDATE submissions SET $updates WHERE subId=$subId";
-      db_query($qry, $cnnct);
+      $qry = "UPDATE {$SQLprefix}submissions SET $updates WHERE subId=?";
+      $prms[] = $subId;
+      pdo_query($qry, $prms);
     }
   }
 
-  // Get the sub-reviewer list and list of PC members from the database
-  $res = db_query("SELECT subReviewer from reports WHERE !ISNULL(subReviewer)",
-		  $cnnct);
+  // Get the sub-reviewer list and list of PC members from the database. The
+  // condition subReviewer>'' is met when subReviewer is neither NULL nor empty.
+
+  $qry = "SELECT subReviewer FROM {$SQLprefix}reports WHERE subReviewer>''";
+  $res = pdo_query($qry);
   $subRevs = array();
-  while ($row = mysql_fetch_row($res)) {
+  while ($row = $res->fetch(PDO::FETCH_NUM)) {
     $names = trim($row[0]);
     if (empty($names)) continue;
     $names = explode(';', $names);
@@ -90,9 +91,10 @@ if (isset($_POST['makeTOC'])) {
         $subRevs[$nameKey] = $nm;
       }
   }
-  $res = db_query("SELECT name from committee WHERE flags & ".FLAG_IS_CHAIR." = 0", $cnnct);
+  $qry = "SELECT name FROM {$SQLprefix}committee WHERE !(flags & ?)";
+  $res = pdo_query($qry, array(FLAG_IS_CHAIR));
   $pcMembers = array();
-  while ($row = mysql_fetch_row($res)) {
+  while ($row = $res->fetch(PDO::FETCH_NUM)) {
     $name = trim($row[0]);
     if (empty($name)) continue;
     $nameKey = lastNameFirst($name); // use "Last, First M." as key to array
@@ -251,7 +253,7 @@ EndMark;
 
 }
 
-header("Content-Type: application/x-tex");
+header("Content-Type: application/x-tex; charset=utf-8");
 header("Content-Disposition: inline; filename=$cNameLowCase.tex");
 print $ltxFile;
 //print "<pre>" . htmlspecialchars($ltxFile) . "</pre>\n"; //debug
@@ -271,7 +273,7 @@ function lastNameFirst($name)
   }
 
   // we assume that the last name appears after the last space
-  $surName = substr($name, $pos+1);  // persumably thats the last name
+  $surName = substr($name, $pos+1);  // persumably this is the last name
   $given = substr($name, 0, $pos);   // and thats the rest of the name
 
   return $surName . ', ' . rtrim($given);

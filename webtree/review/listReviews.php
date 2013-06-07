@@ -35,11 +35,10 @@ if ($disFlag != 1 && !has_reviewed_anything($revId)) exit("<h1>$revName cannot d
 // Get a list of submissions for which this reviewer already saw all
 // the discussions/reviews. Everything else is considered "new"
 
-$cnnct = db_connect();
 $seenSubs = array();
-$qry = "SELECT s.subId FROM submissions s, lastPost lp WHERE lp.revId=$revId AND s.subId=lp.subId AND s.lastModified<=lp.lastVisited";
-$res = db_query($qry, $cnnct);
-while ($row = mysql_fetch_row($res)) { $seenSubs[$row[0]] = true; }
+$qry = "SELECT s.subId FROM {$SQLprefix}submissions s, {$SQLprefix}lastPost lp WHERE lp.revId=? AND s.subId=lp.subId AND s.lastModified<=lp.lastVisited";
+$res = pdo_query($qry, array($revId));
+while ($row = $res->fetch(PDO::FETCH_NUM)) { $seenSubs[$row[0]] = true; }
 
 // Prepare the ORDER BY clause (order_clause() defined in revFunctions.php)
 list($order, $heading,$flags) = order_clause();
@@ -54,7 +53,7 @@ $qry = "SELECT s.subId subId, s.title title,
        UNIX_TIMESTAMP(s.lastModified) lastModif, s.status status, 
        s.avg avg, s.wAvg wAvg, s.minGrade minGrade, s.maxGrade maxGrade,
        maxGrade-minGrade delta, s.flags flags,
-       a.assign assign, a.watch watch, \n";
+       a.assign assign, a.watch watch,\n";
 
 // Next the review details
 $qry .="       r.revId revId, r.confidence conf, r.score score, 
@@ -70,10 +69,10 @@ $qry .= ",s.contact contact";
 
 // Next comes the JOIN conditions (not for the faint of heart)
 //You said it! -AU
-$qry .= "\n  FROM submissions s
-       LEFT JOIN reports r ON r.subId=s.subId
-       LEFT JOIN committee c ON c.revId=r.revId
-       LEFT JOIN assignments a ON a.revId='$revId' AND a.subId=s.subId ";
+$qry .= "\n  FROM {$SQLprefix}submissions s
+       LEFT JOIN {$SQLprefix}reports r ON r.subId=s.subId
+       LEFT JOIN {$SQLprefix}committee c ON c.revId=r.revId
+       LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId ";
 
 // Finally the WHERE and ORDER clauses
 $qry .= "  WHERE (status!='Withdrawn' OR (s.flags & ".FLAG_IS_GROUP." ))\n";
@@ -85,41 +84,39 @@ if (isset($_GET['ignoreWatch'])) {
   $flags |= 32;
 }
 $qry .= "  GROUP BY subId, revId ORDER BY $order";
+$res = pdo_query($qry, array($revId));
 
 // Get also the auxiliary grades
 $qry2 = "SELECT z.subId, z.revId, z.gradeId, z.grade"
-     . " FROM auxGrades z, submissions s"
-     . " WHERE s.subId=z.subId AND s.status!='Withdrawn' "
+     . " FROM {$SQLprefix}auxGrades z, {$SQLprefix}submissions s"
+     . " WHERE s.subId=z.subId AND s.status!='Withdrawn'"
      . " ORDER BY z.subId, z.revId, z.gradeId";
-$qryAvg = "SELECT r.revId revId, AVG(r.confidence) avgConf, AVG(r.score) avgScore
-    FROM reports r, committee c WHERE r.revId = c.revId
-	GROUP BY revId";
-$qry2Avg = "SELECT revId, gradeId, avg(grade) avgGrade
-			FROM auxGrades
-			GROUP BY gradeId, revId";
-$res = db_query($qry, $cnnct);
-$auxRes = db_query($qry2, $cnnct);
-$avgRes = db_query($qryAvg, $cnnct);
-$aux2Res = db_query($qry2Avg, $cnnct);
+$auxRes = pdo_query($qry2);
+
+$qryAvg = "SELECT r.revId revId, AVG(r.confidence) avgConf, AVG(r.score) avgScore FROM {$SQLprefix}reports r, {$SQLprefix}committee c WHERE r.revId = c.revId GROUP BY revId";
+$avgRes = pdo_query($qryAvg);
+
+$qry2Avg = "SELECT revId, gradeId, avg(grade) avgGrade FROM {$SQLprefix}auxGrades GROUP BY gradeId, revId";
+$aux2Res = pdo_query($qry2Avg);
 
 // store aux grades in a more convenient array
 $auxGrades = array();
-while ($row = mysql_fetch_row($auxRes)) {
+while ($row = $auxRes->fetch(PDO::FETCH_NUM)) {
   $sId = (int) $row[0];
   $rId = (int) $row[1];
   $gId = (int) $row[2];
   $auxGrades[$sId][$rId][$gId] = isset($row[3]) ? ((int) $row[3]) : NULL;
 }
-while ($row = mysql_fetch_assoc($avgRes)) {
-	$rId = (int) $row['revId'];
-	$avgGrades[$rId]['avgScore'] = $row['avgScore'];
-	$avgGrades[$rId]['avgConf'] = $row['avgConf'];
+while ($row = $avgRes->fetch(PDO::FETCH_ASSOC)) {
+  $rId = (int) $row['revId'];
+  $avgGrades[$rId]['avgScore'] = $row['avgScore'];
+  $avgGrades[$rId]['avgConf'] = $row['avgConf'];
 }
 $avgAuxGrades = array();
-while ($row = mysql_fetch_assoc($aux2Res)) {
-	$rId = (int) $row['revId'];
-	$gId = (int) $row['gradeId'];
-	$avgAuxGrades[$rId][$gId] = $row['avgGrade'];
+while ($row = $aux2Res->fetch(PDO::FETCH_ASSOC)) {
+  $rId = (int) $row['revId'];
+  $gId = (int) $row['gradeId'];
+  $avgAuxGrades[$rId][$gId] = $row['avgGrade'];
 }
 
 // Store the reviews in a tables
@@ -127,7 +124,7 @@ $subs = array();
 $watch = array();
 $others = array();
 $currentId = -1; // make sure that it does not equal $row['subId'] below
-while ($row = mysql_fetch_assoc($res)) {
+while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   if ($row['assign']==-1 || has_group_conflict($revId, $row['title']))
     continue;                  // don't show conflict-of-interest subs
   //  print "<pre>".print_r($row, true)."</pre>";
@@ -196,11 +193,11 @@ if (isset($_GET['withDiscussion'])) { // get also the discussions
   $flags |= 128;
   $qry = "SELECT 0 AS depth, postId, parentId, subject, comments, 
      UNIX_TIMESTAMP(whenEntered) whenEntered, pc.name name, subId
-  FROM posts pst, committee pc
+  FROM {$SQLprefix}posts pst, {$SQLprefix}committee pc
   WHERE pc.revId=pst.revId
   ORDER BY subId, whenEntered";
-  $res = db_query($qry, $cnnct);
-  while ($row = mysql_fetch_array($res)) {
+  $res = pdo_query($qry);
+  while ($row = $res->fetch()) {
     $subId = (int) $row['subId'];
     if (!isset($subs[$subId])) continue; // make sure there is such submission
 
@@ -220,7 +217,7 @@ print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
   "http://www.w3.org/TR/html4/loose.dtd">
 
-<html><head>
+<html><head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
 <style type="text/css">
@@ -282,7 +279,8 @@ EndMark;
 if (isset($_GET['showRevBox'])) { // remember setting for next time
   $pcmFlags &= 0xffff00ff;
   $pcmFlags |= ($flags << 8);
-  db_query("UPDATE committee SET flags=$pcmFlags WHERE revId=$revId", $cnnct);
+  pdo_query("UPDATE {$SQLprefix}committee SET flags=? WHERE revId=?", 
+	    array($pcmFlags,$revId));
 }
 /*********************************************************************/
 ?>

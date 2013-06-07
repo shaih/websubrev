@@ -23,7 +23,7 @@ print <<<EndMark
 <!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head>
+<head><meta charset="utf-8">
 <title>Installation Customized</title>
 </head>
 
@@ -102,11 +102,10 @@ if (is_array($criteria) && (count($criteria)>0)) {
 }
 print "  <tr><td>&nbsp;</td><td></td></tr>\n";
 
-$cnnct = db_connect();
-$qry = "SELECT revId, name, email FROM committee";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT revId, name, email FROM {$SQLprefix}committee";
+$res = pdo_query($qry);
 $hdr = "Program Committee:";
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   print "  <tr><td>$hdr &nbsp;</td>\n";
   print "      <td>$row[1] &lt;$row[2]&gt;</td>\n  </tr>\n";
   $hdr = "";

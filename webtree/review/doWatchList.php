@@ -11,29 +11,32 @@ $revId = (int) $pcMember[0];
 $pcmFlags= (int) $pcMember[5];
 
 if (isset($_POST['updateWatchList'])) {
-  $cnnct = db_connect();
 
-  if (isset($_POST['watch'])) {   // Some submissions to be watched
-    $watchSubs = array_keys($_POST['watch']);
+  if (isset($_POST['watch']) && is_array($_POST['watch'])) { // Some submissions to be watched
+    $watchSubs = array();
+    foreach($_POST['watch'] as $subId => $s) {
+      $subId = intval($subId);
+      if ($subId>0) $watchSubs[] = $subId;
+    }
     $vals = '('
       .implode(",$revId,3,0,0,0,1),(", $watchSubs).",$revId,3,0,0,0,1)";
     $watchList = implode(', ', $watchSubs);
 
-    // Insert records to the database (existing records will not be effected)
-    $qry = "INSERT IGNORE INTO assignments VALUES{$vals}";
-    db_query($qry, $cnnct);
+    // Insert records to the database (existing records will not be affected)
+    $qry = "INSERT IGNORE INTO {$SQLprefix}assignments VALUES{$vals}";
+    pdo_query($qry);
 
     // Update existing recors: first set watch=1 for records in the list,
-    $qry = "UPDATE assignments SET watch=1 WHERE revId=$revId AND subId IN ($watchList)";
-    db_query($qry, $cnnct);
+    $qry = "UPDATE {$SQLprefix}assignments SET watch=1 WHERE revId=? AND subId IN ($watchList)";
+    pdo_query($qry, array($revId));
 
     // ... then set watch=0 for records not in the list,
-    $qry = "UPDATE assignments SET watch=0 WHERE revId=$revId AND subId NOT IN ($watchList)";
-    db_query($qry, $cnnct);
+    $qry = "UPDATE {$SQLprefix}assignments SET watch=0 WHERE revId=? AND subId NOT IN ($watchList)";
+    pdo_query($qry, array($revId));
   }
   else {  // No submissions to be watched
-    $qry = "UPDATE assignments SET watch=0 WHERE revId=$revId";
-    db_query($qry, $cnnct);
+    $qry = "UPDATE {$SQLprefix}assignments SET watch=0 WHERE revId=?";
+    pdo_query($qry, array($revId));
   }
 
   $newPCMflags = $pcmFlags;
@@ -46,8 +49,8 @@ if (isset($_POST['updateWatchList'])) {
   else $newPCMflags &= (~FLAG_ORDER_REVIEW_HOME);
 
   if ($newPCMflags != $pcmFlags) {
-    $qry = "UPDATE committee SET flags=$newPCMflags WHERE revId=$revId";
-    db_query($qry, $cnnct);
+    $qry = "UPDATE {$SQLprefix}committee SET flags=? WHERE revId=?";
+    pdo_query($qry, array($newPCMflags,$revId));
   }
 }
 header("Location: .");

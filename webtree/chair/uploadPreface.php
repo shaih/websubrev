@@ -17,7 +17,7 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 {text-align: center;}
 tr { vertical-align: top; }
@@ -41,7 +41,7 @@ were used to generate the peface, TOC, author-index, and anything else
 that you want to upload, and then upload this one archive file to the
 server using the form below.<br/>
 <br/>
-<form action=doUploadPreface.php method=POST enctype="multipart/form-data">
+<form accept-charset="utf-8" action=doUploadPreface.php method=POST enctype="multipart/form-data">
 <input type=hidden name="MAX_FILE_SIZE" value=200000000>
 Preface archive file:<input name=preface_archive size=50 type="file">
 <input name=submit type=submit value="Upload">

@@ -11,10 +11,8 @@ require 'header.php';
 $voteId = intval($_GET['voteId']);
 if ($voteId <= 0) die("<h1>Vote-ID must be specified</h1>");
 
-$cnnct = db_connect();
-$res = db_query("SELECT * FROM votePrms WHERE voteId=$voteId", $cnnct);
-$row = mysql_fetch_array($res)
-     or die("<h1>No vote with Vote-ID $voteId</h1>");
+$res = pdo_query("SELECT * FROM {$SQLprefix}votePrms WHERE voteId=?", array($voteId));
+$row = $res->fetch();
 
 $active = (isset($row['voteActive'])&& $row['voteActive']>0) ? 'in progress' : 'closed';
 $voteType  = isset($row['voteType'])  ? htmlspecialchars($row['voteType']) : 'Choose';
@@ -32,10 +30,10 @@ else $voteTitles = explode(';', ';'.$voteOnThese);
 // Get the names of PC membes that voted in the current ballot
 $voters = array();
 $qry = "SELECT c.revId revId, c.name name, COUNT(v.vote) dummy
-  FROM committee c, votes v
-  WHERE v.voteId=$voteId AND c.revId=v.revId GROUP BY revId ORDER BY revId";
-$res = db_query($qry, $cnnct);
-while ($row=mysql_fetch_row($res)) {
+  FROM {$SQLprefix}committee c, {$SQLprefix}votes v
+  WHERE v.voteId=? AND c.revId=v.revId GROUP BY revId ORDER BY revId";
+$res = pdo_query($qry, array($voteId));
+while ($row=$res->fetch(PDO::FETCH_NUM)) {
   $revId = (int)$row[0];
   $name = explode(' ', $row[1]);
   if (is_array($name)) {
@@ -50,16 +48,16 @@ $vItems = array();
 $voteResults = array();
 if ($voteFlags & VOTE_ON_SUBS) {
   $qry = "SELECT v.subId vId, v.revId revId, v.vote vote, s.title title
-  FROM votes v, submissions s
-  WHERE v.voteId=$voteId AND s.subId=v.subId AND vote>0
+  FROM {$SQLprefix}votes v, {$SQLprefix}submissions s
+  WHERE v.voteId=? AND s.subId=v.subId AND vote>0
   ORDER BY v.subId, v.revId";
 } else {
   $qry = "SELECT v.subId vId, v.revId revId, v.vote vote
-  FROM votes v WHERE v.voteId=$voteId AND vote>0
+  FROM {$SQLprefix}votes v WHERE v.voteId=? AND vote>0
   ORDER BY v.subId, v.revId";
 }
-$res = db_query($qry, $cnnct);
-while ($row=mysql_fetch_assoc($res)) {
+$res = pdo_query($qry, array($voteId));
+while ($row=$res->fetch(PDO::FETCH_ASSOC)) {
   $vId   = (int)$row['vId'];
   $revId = (int)$row['revId'];
 
@@ -78,7 +76,7 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 { text-align: center;}
 th { font: bold 10px ariel; text-align: center; }
@@ -93,7 +91,7 @@ $links
 EndMark;
 
 // Print the voting tally for this vote
-summaryResults($cnnct, $voteId,($voteFlags & VOTE_ON_SUBS), $voteTitles);
+summaryResults($voteId,($voteFlags & VOTE_ON_SUBS), $voteTitles);
 
 print "<h2>Detailed Results</h2>\n";
 print "<table cellspacing=0 cellpadding=0 border=1><tbody>\n";
@@ -136,30 +134,28 @@ $links
 EndMark;
 
 
-function summaryResults($cnnct, $voteId, $voteOnSubmissions, $voteTitles)
+function summaryResults($voteId, $voteOnSubmissions, $voteTitles)
 {
-  $cnnct = db_connect();
+  global $SQLprefix;
   $noVotes = true;
 
   if ($voteOnSubmissions) {
-    $qry = "SELECT s.subId, SUM(v.vote) sum, title
-  FROM submissions s, votes v WHERE v.voteId=$voteId AND s.subId=v.subId
-  GROUP BY s.subId ORDER BY sum DESC, s.subId ASC";
-    $res = db_query($qry, $cnnct);
+    $qry = "SELECT s.subId, SUM(v.vote) sum, title FROM {$SQLprefix}submissions s, {$SQLprefix}votes v WHERE v.voteId=? AND s.subId=v.subId GROUP BY s.subId ORDER BY sum DESC, s.subId ASC";
+
+    $res = pdo_query($qry, array($voteId));
 
     $voteItems = array();
-    while ($row=mysql_fetch_row($res)) {
+    while ($row=$res->fetch(PDO::FETCH_NUM)) {
       if ($row[1] < 0) continue;
       $noVotes = false;
       $voteItems[] = $row;
     }
   } else {
-    $qry = "SELECT subId, SUM(vote) sum FROM votes
-    WHERE voteId=$voteId GROUP BY subId ORDER BY sum DESC, subId ASC";
-    $res = db_query($qry, $cnnct);
+    $qry = "SELECT subId, SUM(vote) sum FROM {$SQLprefix}votes WHERE voteId=? GROUP BY subId ORDER BY sum DESC, subId ASC";
+    $res = pdo_query($qry, array($voteId));
 
     $voteItems = array();
-    while ($row=mysql_fetch_row($res)) {
+    while ($row=$res->fetch(PDO::FETCH_NUM)) {
       if ($row[1] < 0) continue;
       $noVotes = false;
 

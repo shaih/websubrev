@@ -34,17 +34,15 @@ if (empty($title)) exit("Title of work is required");
 $authors = trim($_POST["authors"]);
 if (empty($authors)) exit("Authors must be specified");
 
-$cnnct = db_connect();
 $subId = isset($_POST['subId']) ? ((int)trim($_POST['subId'])) : '';
 $subPwd = isset($_POST['subPwd']) ? trim($_POST['subPwd']) : '';
 
 if ($subId<=0 || empty($subPwd))
   exit("submission-ID and password are required");
 
-$pw = my_addslashes($subPwd, $cnnct);
-$qry = "SELECT contact, flags FROM submissions WHERE subId=$subId AND subPwd='$pw' AND status='Accept'";
-$res=db_query($qry, $cnnct);
-$row=mysql_fetch_row($res)
+$qry = "SELECT contact, flags FROM {$SQLprefix}submissions WHERE subId=? AND subPwd=? AND status='Accept'";
+$res=pdo_query($qry, array($subId,$subPwd));
+$row=$res->fetch(PDO::FETCH_NUM)
   or exit("No accepted submission with ID $subId and password $subPwd was found.");
 $email = $row[0];
 $flags = (int) $row[1];
@@ -112,12 +110,8 @@ if (isset($_POST["auxiliary"]))
      $flags |= FLAG_CONSENT_OTHER;
 else $flags &= ~(FLAG_CONSENT_OTHER);
 
-$cprt = my_addslashes($copyright, $cnnct);
-$title = my_addslashes($title, $cnnct);
-$authors = my_addslashes($authors, $cnnct);
-
-$qry = "UPDATE submissions sb, acceptedPapers ac SET title='$title', authors='$authors', flags=$flags, copyright='$cprt', copyrightTime=NOW() WHERE ac.subId=sb.subId AND sb.subId=$subId";
-db_query($qry, $cnnct);
+$qry = "UPDATE {$SQLprefix}submissions sb, {$SQLprefix}acceptedPapers ac SET title=?, authors=?, flags=?, copyright=?, copyrightTime=NOW() WHERE ac.subId=sb.subId AND sb.subId=?";
+pdo_query($qry, array($title,$authors,$flags,$copyright,$subId));
 
 // Send by email
 $subject = "[$confName] Copyright signed for '$title'";

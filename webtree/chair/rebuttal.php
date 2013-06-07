@@ -23,14 +23,14 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><title>Rebuttals</title>
+<head><meta charset="utf-8"><title>Rebuttals</title>
 </head>
 <body>
 $links
 <hr />
 $succ
 <h1>Set Rebuttal Parameters</h1>
-<form action="doRebuttal.php" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" action="doRebuttal.php" enctype="multipart/form-data" method="post">
   <p>Once the rebuttal is active, authors will be able to make a single rebuttal to comments made by reviewers (until you close it). As usual, the deadline you enter here is only for informational purposes, <b>the software does not enforce it automatically.</b></p>
   <label>Rebuttal Deadline:</label>
   <input type="text" name="rebDeadline" size="40" value="{$rebDeadline}"/>

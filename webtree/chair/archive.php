@@ -61,7 +61,7 @@ print <<<EndMark
   "http://www.w3.org/TR/html4/loose.dtd">
 
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 { text-align: center; }
 </style>
@@ -108,7 +108,7 @@ server, you can download all the submission files to your local machine,
 then create the archive file locally and upload it to the server. The
 extension of the local archive file must be either .tgz, .tar, or .zip
 for this method to work.<br/> 
-<form action="uploadArchive.php" enctype="multipart/form-data" method=post>
+<form accept-charset="utf-8" action="uploadArchive.php" enctype="multipart/form-data" method="post">
 <input type=hidden name="MAX_FILE_SIZE" value=200000000>
 Local archive file:<input name=sub_archive size=50 type="file">
 <input name=submit type=submit value="Upload">
@@ -132,14 +132,13 @@ EndMark;
 function PEARmkTar()
 {
   require_once 'Archive/Tar.php';
+  global $SQLprefix;
 
-  // Notice: the utility functions db_connect and db_query must be 
-  // called BEFORE the chdir command for their error reporting to work
+  // Notice: the database query must be called BEFORE the chdir command
+  // for its error reporting to work
 
-  $cnnct = db_connect();
-  $qry = "SELECT subId, format from submissions WHERE status!='Withdrawn'
-  ORDER by subId";
-  $res = db_query($qry, $cnnct);
+  $qry = "SELECT subId, format FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER by subId";
+  $res = pdo_query($qry);
 
   chdir(SUBMIT_DIR);
 
@@ -152,7 +151,7 @@ function PEARmkTar()
   }
   $tar_object->setErrorHandling(PEAR_ERROR_PRINT, "%s<br />\n");// print errors
 
-  while ($row=mysql_fetch_row($res)) {
+  while ($row = $res->fetch(PDO::FETCH_NUM)) {
     $subName = $row[0].'.'.$row[1];
     if (!($tar_object->addModify($subName, "submissions"))) {
       error_log(date('Y.m.d-H:i:s ')."Cannot add $subName to tar file",
@@ -165,13 +164,12 @@ function PEARmkTar()
 
 function SYSmkTar()
 {
-  $cnnct = db_connect();
-  $qry = "SELECT subId, format from submissions WHERE status!='Withdrawn'
-  ORDER by subId";
-  $res = db_query($qry, $cnnct);
+  global $SQLprefix;
+  $qry = "SELECT subId, format FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER by subId";
+  $res = pdo_query($qry);
 
   $submissions = '';
-  while ($row=mysql_fetch_row($res)) {
+  while ($row = $res->fetch(PDO::FETCH_NUM)) {
     $submissions .= $row[0].'.'.$row[1].' ';
   }
   if (empty($submissions)) return NULL;

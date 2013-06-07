@@ -12,38 +12,15 @@ if (PERIOD!=PERIOD_REVIEW) exit("<h1>Review Site Is Not Active</h1>");
 
 // Get assignments and reviews
 if (isset($_POST["setDiscussFlags"])) {
-  $cnnct = db_connect();
-  $qry = "SELECT revId, canDiscuss from committee ORDER BY revId";
-  $res = db_query($qry, $cnnct);
-  $changed = '';
-  $flags = '';
-  while ($row = mysql_fetch_row($res)) {
-    $revId = (int) $row[0];
-    $oldFlag = (int) $row[1];
-    if(isset($_POST["dscs"][$revId])){
-    	$newFlag = $_POST["dscs"][$revId];
-    } else {
-    	$newFlag = $oldFlag;
+  $qry = "SELECT revId, canDiscuss FROM {$SQLprefix}committee ORDER BY revId";
+  $res = pdo_query($qry);
+
+  $stmt = $db->prepare("UPDATE {$SQLprefix}committee SET canDiscuss=? WHERE revId=?");
+  while ($row = $res->fetch(PDO::FETCH_NUM)) {
+    $revId = $row[0];
+    if (isset($_POST["dscs"][$revId]) && $_POST["dscs"][$revId] != $row[1]) {
+      $stmt->execute(array($_POST["dscs"][$revId], $revId));
     }
-    if ($newFlag!=$oldFlag) {
-    	$changed .= $revId.",";
-    	$flags .= $newFlag.",";
-    }
-  }
-  substr($changed,0,-1);
-  substr($flags,0,-1);
-  $changed = explode(',', $changed);
-  $flags = explode(',', $flags);
-  $i = 0;
-  if (!empty($changed)) {
-  	for ($i = 0; $i < count($flags); $i++) {
-  		echo $i;
-  		$fl = $flags[$i];
-  		$ch = $changed[$i];
-  		if(!$ch) continue;		
-    	$qry = "UPDATE committee SET canDiscuss= ".$fl." WHERE revId = ".$ch;
-    	db_query($qry, $cnnct);
-  	}
   }
 }
 header("Location: overview.php");

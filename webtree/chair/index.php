@@ -17,7 +17,7 @@ $links = show_chr_links(1);
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 {text-align: center;}
 h2 {text-align: center;}
@@ -60,7 +60,8 @@ exit("</body>\n</html>\n");
 
 function manage_submissions($period)
 {
-  global $categories;
+  global $categories, $SQLprefix;
+
   if (is_array($categories) && count($categories)>0) {
     $catLink='<a href="listSubmissions.php?subOrder=category">category</a>, ';
   }
@@ -89,11 +90,9 @@ EndMark;
     $reg = "";
     $closeLink = '<a href="closeSubmissions.php">Close Submissions and Activate Review Site...</a>';
   }
-  $cnnct = db_connect();
-  $qry = "SELECT count(subId) FROM submissions WHERE status!='Withdrawn'";
-  $res = db_query($qry, $cnnct);
-  $row = mysql_fetch_row($res); 
-  $nSubs = $row[0];
+  $res = pdo_query("SELECT count(subId) FROM {$SQLprefix}submissions WHERE status!='Withdrawn'");
+  $nSubs = $res->fetchColumn(); 
+
   print <<<EndMark
 <h3><span style="background-color: red;">Submission Site is Active:</span></h3>
 {$reg}Deadline is <big>$ddline</big>
@@ -122,6 +121,7 @@ EndMark;
 
 function manage_reviews($period)
 {
+  global $SQLprefix;
   if ($period < PERIOD_REVIEW) return;
   if ($period == PERIOD_REVIEW) { 
 
@@ -129,11 +129,8 @@ function manage_reviews($period)
     // Check if there are any submissions that needs to be purged
     $purgeLink = '';
     if (USE_PRE_REGISTRATION) {
-      $cnnct = db_connect();
-      $qry = "SELECT COUNT(*) FROM submissions WHERE status!='Withdrawn' AND format IS NULL";
-      $res = db_query($qry,$cnnct);
-      $row = mysql_fetch_row($res);
-      if ($row[0]>0) $purgeLink = '<a href="purgeNonSubmissions.php">Purge submissions that did not upload a submission file</a><br/>';
+      $qry = "SELECT COUNT(*) FROM {$SQLprefix}submissions WHERE status!='Withdrawn' AND format IS NULL";
+      if (pdo_query($qry)->fetchColumn()>0) $purgeLink = '<a href="purgeNonSubmissions.php">Purge submissions that did not upload a submission file</a><br/>';
     }
 print <<<EndMark
 <h3><span style="background-color: red;">Review Site is Active</span></h3>

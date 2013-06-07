@@ -7,25 +7,24 @@
  */
 $needsAuthentication = true;
 require 'header.php';
-$cnnct = db_connect();
 
 // Update Information Given to Script
 
 if(isset($_POST['changes']) && is_array($_POST['changes'])) {
   // Prepare an array of submissions and an array of PC members
-  $qry = "SELECT subId, title, 0 from submissions WHERE status!='Withdrawn' ORDER BY subId";
-  $res = db_query($qry, $cnnct);
+  $qry = "SELECT subId, title, 0 FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER BY subId";
+  $res = pdo_query($qry);
   $subArray = array();
-  while ($row = mysql_fetch_row($res)) {
+  while ($row = $res->fetch(PDO::FETCH_NUM)) {
     $row[1] = htmlspecialchars($row[1]);
     $subArray[] = $row;
   }
   
-  $qry = "SELECT revId, name from committee WHERE !(flags & ". FLAG_IS_CHAIR. ") ORDER BY revId";
-  $res = db_query($qry, $cnnct);
+  $qry = "SELECT revId, name FROM {$SQLprefix}committee WHERE !(flags & ". FLAG_IS_CHAIR. ") ORDER BY revId";
+  $res = pdo_query($qry);
   $committee = array();
   $nameList = $sep = '';
-  while ($row = mysql_fetch_row($res)) {
+  while ($row = $res->fetch(PDO::FETCH_NUM)) {
     $revId = (int) $row[0];
     $committee[$revId] = array(trim($row[1]), 0);
     $nameList .= $sep . '"'.htmlspecialchars(trim($row[1])).'"';
@@ -36,10 +35,10 @@ if(isset($_POST['changes']) && is_array($_POST['changes'])) {
   // Make sure that there is a record for each (revId,subId) pair
 
   // Get the assignment preferences
-  $qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM assignments";
-  $res = db_query($qry, $cnnct);
+  $qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM {$SQLprefix}assignments";
+  $res = pdo_query($qry);
   $prefs = array();
-  while ($row = mysql_fetch_row($res)) { 
+  while ($row = $res->fetch(PDO::FETCH_NUM)) { 
     list($revId, $subId, $pref, $compatible, $assign) = $row; 
     if (!isset($prefs[$subId])) $prefs[$subId] = array();
     
@@ -51,27 +50,24 @@ if(isset($_POST['changes']) && is_array($_POST['changes'])) {
     if(!isset($_POST['changes']["chk_{$subId}_{$revId}"]))
       continue;
     
-    $assgn = $_POST['changes']["chk_{$subId}_{$revId}"];
+    $assgn = (int) $_POST['changes']["chk_{$subId}_{$revId}"];
     
     // do not override a conflict
     if (isset($prefs[$subId][$revId][2])
 	&& $prefs[$subId][$revId][2] == -1) $assgn=-1;
     
     if (isset($prefs[$subId][$revId])  // modify existing entry
-	&& (isset($_POST["visible"]) || $prefs[$subId][$revId][2]!=$assgn)){
+	&& $prefs[$subId][$revId][2]!=$assgn) {
       $prefs[$subId][$revId][2] = $assgn;
-      $qry = "UPDATE assignments SET sktchAssgn={$assgn}";
-      if (isset($_POST["visible"])) $qry .= ", assign={$assgn}";
-      $qry .= " WHERE revId='{$revId}' AND subId='{$subId}'";
-      db_query($qry, $cnnct);
+      $qry = "UPDATE {$SQLprefix}assignments SET sktchAssgn=? WHERE revId=? AND subId=?";
+      pdo_query($qry,array($assgn, $revId,$subId));
     }
-    
+
     if (!isset($prefs[$subId][$revId]) && $assgn!=0) {// insert a new entry
       if (!isset($prefs[$subId])) { $prefs[$subId] = array(); }
       $prefs[$subId][$revId] = array(3, 0, $assgn);
-      $qry = "INSERT INTO assignments SET revId={$revId}, subId={$subId}, sktchAssgn={$assgn}";
-      if (isset($_POST["visible"])) $qry .= ", assign={$assgn}";
-      db_query($qry, $cnnct);
+      $qry = "INSERT INTO {$SQLprefix}assignments SET revId=?, subId=?, sktchAssgn=?";
+      pdo_query($qry,array($revId,$subId,$assgn));
     }
   }
 }
@@ -79,12 +75,12 @@ if(isset($_POST['changes']) && is_array($_POST['changes'])) {
 // Fetch Current Information
 
 // Prepare an array of submissions and an array of PC members
-$qry = "SELECT subId, title, 0 from submissions WHERE status!='Withdrawn'
+$qry = "SELECT subId, title, 0 FROM {$SQLprefix}submissions WHERE status!='Withdrawn'
   ORDER BY subId";
-$res = db_query($qry, $cnnct);
+$res = pdo_query($qry);
 $subArray = array();
 $minSubId = null;
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   if (!isset($minSubId)) $minSubId = $row[0];
   $row[1] = htmlspecialchars($row[1]);
   $subArray[] = $row;
@@ -93,13 +89,13 @@ while ($row = mysql_fetch_row($res)) {
 $nSubmissions = count($subArray);
 $numHdrIdx=(2+intval(($nSubmissions-1)/6));
 
-$qry = "SELECT revId, name from committee WHERE flags & ".FLAG_IS_CHAIR." = 0 ORDER BY revId";
+$qry = "SELECT revId, name FROM {$SQLprefix}committee WHERE flags & ".FLAG_IS_CHAIR." = 0 ORDER BY revId";
 
-$res = db_query($qry, $cnnct);
+$res = pdo_query($qry);
 $committee = array();
 $minRevId = null;
 $nameList = $sep = '';
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $revId = (int) $row[0];
   if (!isset($minRevId)) $minRevId = $revId;
   $committee[$revId] = array(trim($row[1]), 0, 0, 0);
@@ -110,10 +106,10 @@ $maxRevId = $revId;
 $cmteIds = array_keys($committee);
 
 // Get the assignment preferences
-$qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM assignments";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM {$SQLprefix}assignments";
+$res = pdo_query($qry);
 $prefs = array();
-while ($row = mysql_fetch_row($res)) { 
+while ($row = $res->fetch(PDO::FETCH_NUM)) { 
   list($revId, $subId, $pref, $compatible, $assign) = $row; 
   if (!isset($prefs[$subId]))  $prefs[$subId] = array();
   

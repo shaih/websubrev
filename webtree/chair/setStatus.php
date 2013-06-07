@@ -17,47 +17,60 @@ $sttsCodes = array("None"=>"NO",
 		   "Accept"=>"AC");
 
 // Read the current status before changing it
-$cnnct = db_connect();
-$qry = "SELECT subId, scratchStatus, status FROM submissions WHERE status!='Withdrawn' ORDER BY subId";
-$res = db_query($qry,$cnnct);
+$qry = "SELECT subId, scratchStatus, status FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER BY subId";
+$res = pdo_query($qry);
 
 $oldStts = array();
 $oldScStts = array();
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $subId = (int) $row[0];
   $oldScStts[$subId] = $row[1];
   $oldStts[$subId] = $row[2];
 }
 
-foreach ($_POST as $key => $val) {
-  if (strncmp($key, 'scrsubStts', 10)!=0 || empty($val))
+// update the scratch status first, don't update lastModified
+$stmt = $db->prepare("UPDATE {$SQLprefix}submissions SET scratchStatus=?, lastModified=lastModified WHERE subId=?");
+foreach ($_POST as $key => $status) {
+  if (strncmp($key, 'scrsubStts', 10)!=0 || empty($status))
     continue;
 
   $subId = (int) substr($key, 10);
   if ($subId<=0) continue;
 
-  $status = my_addslashes(trim($val), $cnnct);
-  if ($status==$oldStts[$subId] && $status==$oldScStts[$subId]) continue; // no change
-  $stCode = $sttsCodes[$status];
-  $oldStCode = $sttsCodes[$oldStts[$subId]];
+  if ($status!=$oldScStts[$subId])
+    $stmt->execute(array($status,$subId));
+}
 
-  if ($status!=$oldScStts[$subId]) { // save scratch copy, don't update lastModified
-    $qry = "UPDATE submissions SET scratchStatus='$status', lastModified=lastModified WHERE subId={$subId} AND scratchStatus!='$status'";
-    db_query($qry, $cnnct);
-  }
+// If needed, update also the real status
+if (!empty($_POST['visible'])) {
 
-  // save also to visible status, if needed
-  if (isset($_POST['noAnchor']) && $status!=$oldStts[$subId]) {
-    $qry = "UPDATE submissions SET status='$status', lastModified=NOW() WHERE subId={$subId} AND status!='$status'";
-    db_query($qry, $cnnct);
+  $stmt = $db->prepare("UPDATE {$SQLprefix}submissions SET status=?, lastModified=lastModified WHERE subId=?");
 
-    // If status changed, send email to those who asked for it, and record change in log
-    if (mysql_affected_rows($cnnct)==1) {
+  // Record in the changes log and send email to people who asked for it
+
+  $stmt1 = $db->prepare("SELECT c.email,c.flags FROM {$SQLprefix}assignments a, {$SQLprefix}committee c WHERE c.revId=a.revId AND a.subId=? AND c.revId!=$revId AND a.assign!=-1 AND a.watch=1");
+
+  $stmt2 = $db->prepare("INSERT INTO {$SQLprefix}changeLog (subId,revId,changeType,description,entered) VALUES (?,?,'Status',?,NOW())");
+
+  $stmt3 = $db->prepare("INSERT IGNORE INTO {$SQLprefix}acceptedPapers SET subId=?");
+  foreach ($_POST as $key => $status) {
+    if (strncmp($key, 'scrsubStts', 10)!=0 || empty($status))
+      continue;
+
+    $subId = (int) substr($key, 10);
+    if ($subId<=0) continue;
+
+    $stCode = $sttsCodes[$status];
+    $oldStCode = $sttsCodes[$oldStts[$subId]];
+
+    if ($stCode != $oldStCode) { // status has changed
+
+      $stmt->execute(array($status,$subId));
+
       // make a list of reviewers to send email to
-      $qry = "SELECT c.email, c.flags FROM assignments a, committee c WHERE c.revId=a.revId AND a.subId=$subId AND a.revId!=$revId AND a.assign!=-1 AND a.watch=1";
-      $res = db_query($qry, $cnnct);
       $notify = $comma = '';
-      while ($row = mysql_fetch_row($res)) {
+      $stmt1->execute(array($subId));
+      while ($row = $stmt1->fetch(PDO::FETCH_NUM)) {
         $flags = $row[1];
         if ($flags & FLAG_EML_WATCH_EVENT) {
           $notify .= $comma . $row[0];
@@ -71,23 +84,14 @@ foreach ($_POST as $key => $val) {
       }
 
       // Add a change-log record
-      $qry = "INSERT INTO changeLog (subId,revId,changeType,description,entered) VALUES ($subId,$revId,'Status','$oldStCode => $stCode',NOW())";
-      db_query($qry, $cnnct);
+      $stmt2->execute(array($subId,$revId,"$oldStCode => $stCode"));
 
       // Insert an entry to the acceptedPapers table if needed (note: there
       // is no real need to remove from that table if status changes back to
       // something other than accept).
-      if ($status='Accept') {
-        $qry = "SELECT 1 from acceptedPapers where subId={$subId}";
-        $res = db_query($qry, $cnnct);
-        if (mysql_num_rows($res)<=0)
-          db_query("INSERT INTO acceptedPapers SET subId={$subId}", $cnnct);
-      }
+      if ($status=='Accept') $stmt3->execute(array($subId));
     }
   }
 }
-if ($subId>0 && !isset($_POST['noAnchor']))
-     $anchor="#stts{$subId}";
-else $anchor="";
-return_to_caller('index.php', '', $anchor);
+return_to_caller('.');
 ?>

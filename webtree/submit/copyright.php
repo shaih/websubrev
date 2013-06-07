@@ -7,7 +7,6 @@
  */
 require 'header.php'; // brings in the constants file and utils file
 
-$cnnct = db_connect();
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 if (PERIOD<PERIOD_CAMERA)
      die("<h1>Final-version submission site for $confName is not open</h1>");
@@ -21,10 +20,9 @@ if (!file_exists($file)) die("Cannot find copyright form");
 $copyright = file_get_contents($file);
 
 if ($subId > 0 && !empty($subPwd)) {
-  $pw = my_addslashes($subPwd, $cnnct);
-  $qry = "SELECT title, authors FROM submissions WHERE subId=$subId AND subPwd='$pw' AND status='Accept'";
-  $res=db_query($qry, $cnnct);
-  if ($row=mysql_fetch_row($res)) {
+  $qry = "SELECT title, authors FROM {$SQLprefix}submissions WHERE subId=? AND subPwd=? AND status='Accept'";
+  $res=pdo_query($qry, array($subId,$subPwd));
+  if ($row=$res->fetch(PDO::FETCH_NUM)) {
     $subPwd = htmlspecialchars($subPwd);
     $title = htmlspecialchars($row[0]);
     $authors  = htmlspecialchars($row[1]);
@@ -32,7 +30,6 @@ if ($subId > 0 && !empty($subPwd)) {
   }
   else $subId = $subPwd = '';
 }
-
 $substitutions = array
   ('[$title]' => $title,
    '[$confName]' => $confName,

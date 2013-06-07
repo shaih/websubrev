@@ -7,7 +7,6 @@
  */
 $needsAuthentication = true; // Just a precaution
 require 'header.php';
-$cnnct = db_connect();
 
 $subject = trim($_POST['subject']);
 $message = trim($_POST['message']);
@@ -25,14 +24,12 @@ if (isset($_POST['saveText_ACC']) || isset($_POST['saveText_REJ'])) {
     $textFld = 'rejectLtr';
   }
   if (!empty($subject)) {
-    $qry = "UPDATE parameters SET $subjFld='"
-      . my_addslashes($subject,$cnnct)."' WHERE version=".PARAMS_VERSION;
-    db_query($qry, $cnnct);
+    $qry = "UPDATE {$SQLprefix}parameters SET $subjFld=? WHERE version=?";
+    pdo_query($qry, array($subject,PARAMS_VERSION));
   }
   if (!empty($message)) {
-    $qry = "UPDATE parameters SET $textFld='"
-      . my_addslashes($message,$cnnct)."' WHERE version=".PARAMS_VERSION;
-    db_query($qry, $cnnct);
+    $qry = "UPDATE {$SQLprefix}parameters SET $textFld=? WHERE version=?";
+    pdo_query($qry, array($message,PARAMS_VERSION));
   }
 }
 
@@ -50,20 +47,20 @@ else if ($emailTo=="NO") $cond = "status='None'";
 else if ($emailTo=="MR") $cond = "status='Perhaps Reject'";
 else if ($emailTo=="RE") $cond = "status='Reject'";
 else if ($emailTo=="these") { // send only to certain submissions
-  $IDs = my_addslashes(trim($_POST['subIDs']),$cnnct);
-  if (!empty($IDs)) $cond = "subId IN (".$IDs.")";
+  $IDs = numberlist($_POST['subIDs']);
+  $cond = "subId IN ($IDs)";
 }
 
 $qry = "SELECT s.subId, subPwd, title, authors, contact,
   comments2authors, confidence, score, attachment
-  FROM submissions s LEFT JOIN reports r USING(subId)
+  FROM {$SQLprefix}submissions s LEFT JOIN {$SQLprefix}reports r USING(subId)
   WHERE $cond
   ORDER by s.subId, SHA1(CONCAT('".CONF_SALT."',s.subId,r.revId))";
 
-$res = db_query($qry, $cnnct);
+$res = pdo_query($qry);
 
 $submissions = array();
-while ($row=mysql_fetch_row($res)) {
+while ($row=$res->fetch(PDO::FETCH_NUM)) {
   $subId = (int) $row[0];
   if ($subId<=0) continue;
 
@@ -97,7 +94,7 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <title>Email to Authors Sent</title>
 </head>
 <body>

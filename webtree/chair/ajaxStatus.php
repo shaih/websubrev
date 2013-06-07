@@ -18,93 +18,41 @@ $sttsCodes = array("None"=>"NO",
 		   "Accept"=>"AC");
 
 // Read the current status before changing it
-$cnnct = db_connect();
-$qry = "SELECT subId, scratchStatus FROM submissions WHERE status!='Withdrawn' ORDER BY subId";
-$res = db_query($qry,$cnnct);
+$qry = "SELECT subId, scratchStatus FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER BY subId";
+$res = pdo_query($qry);
 
 $oldStts = array();
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $subId = $row[0];
   $oldStts[$subId] = $row[1];
 }
 
-if(isset($_POST['changes']) && is_array($_POST['changes'])) {
+if (isset($_POST['changes']) && is_array($_POST['changes'])) {
+  $stmt = $db->prepare("UPDATE {$SQLprefix}submissions SET scratchStatus=?, lastModified=lastModified WHERE subId=? AND scratchStatus!=?");
+  foreach ($_POST['changes'] as $key => $val) {  
+    if (strncmp($key, 'scrsubStts', 10)!=0 || empty($val))
+      continue;
 
-foreach ($_POST['changes'] as $key => $val) {
-  
-        if (strncmp($key, 'scrsubStts', 10)!=0 || empty($val))
-          continue;
-	$subId = (int) substr($key, 10);
-	if ($subId<=0) continue;
-	
-	$status = my_addslashes(trim($val), $cnnct);
-	//if ($status==$oldStts[$subId]) continue;
-	$stCode = $sttsCodes[$status];
-	$oldStCode = $sttsCodes[$oldStts[$subId]];
-	$qry = "UPDATE submissions SET scratchStatus='$status', lastModified=lastModified WHERE subId={$subId} AND scratchStatus!='$status'";
-	db_query($qry, $cnnct);
-	if (isset($_POST['noAnchor'])){ 
-          $qry = "UPDATE submissions SET status='$status', lastModified=NOW() WHERE subId={$subId} AND status!='$status'";
-          db_query($qry, $cnnct);
-		// If status changed, send email to those who asked for it
-		if (mysql_affected_rows($cnnct)==1 && isset($_POST['noAnchor'])) {
-			$qry = "SELECT c.email, c.flags FROM assignments a, committee c
-			WHERE c.revId=a.revId AND a.subId=$subId AND a.revId!=$revId AND a.assign!=-1 AND a.watch=1";
-			$res = db_query($qry, $cnnct);
-			$notify = $comma = '';
-			while ($row = mysql_fetch_row($res)) {
-				$flags = $row[1];
-				if ($flags & FLAG_EML_WATCH_EVENT) {
-					$notify .= $comma . $row[0];
-					$comma = ', ';
-				}
-			}
-			if (!empty($notify)) {
-				$sbjct = "Submission $subId to ".CONF_SHORT.' '.CONF_YEAR
-				.': moved to '.$stCode;
-				my_send_mail($notify, $sbjct, '');
-			}
-			if (isset($_POST['noAnchor'])){
-				// Add a change-log record
-				$qr = "INSERT INTO changeLog (subId,revId,changeType,description,entered)
-				VALUES ($subId,$revId,'Status','$oldStCode => $stCode',NOW())";
-				db_query($qry, $cnnct);
-			}
-		}
-	
-		// Insert an entry to the acceptedPapers table if needed (note: there
-		// is no real need to remove from that table if status changes back to
-		// something other than accept).
-		if (isset($_POST['noAnchor'])) {
-			if ($status='Accept') {
-				$qry = "SELECT 1 from acceptedPapers where subId={$subId}";
-				$res = db_query($qry, $cnnct);
-				if (mysql_num_rows($res)<=0) {
-					db_query("INSERT INTO acceptedPapers SET subId={$subId}", $cnnct);
-				}
-			}
-		}
-	}
-}
-
+    $subId = (int) substr($key, 10);
+    if ($subId>0) $stmt->execute(array($val,$subId,$val));
+  }
 }
 
 //Get the most up to date information.
 $statuses = array();
-$qry = "SELECT scratchStatus, COUNT(subId) from submissions WHERE status!='Withdrawn'
-  GROUP BY scratchStatus";
-$res = db_query($qry, $cnnct);
-while ($row = mysql_fetch_row($res)) {
+$qry = "SELECT scratchStatus, COUNT(subId) FROM {$SQLprefix}submissions WHERE status!='Withdrawn' GROUP BY scratchStatus";
+$res = pdo_query($qry);
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $stts = $row[0];
   $statuses[$stts] = $row[1];
 }
 
 // Prepare an array of submissions
-$qry = "SELECT subId, scratchStatus, status from submissions WHERE status!='Withdrawn' ORDER BY subId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT subId, scratchStatus, status FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER BY subId";
+$res = pdo_query($qry);
 $data = array();
 
-while ($row=mysql_fetch_assoc($res)) {
+while ($row=$res->fetch(PDO::FETCH_ASSOC)) {
   $maxSubId = $row['subId'];
   $subId = $row['subId'];
   $data["scrsubStts$subId"] = $row['scratchStatus'];

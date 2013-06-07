@@ -13,7 +13,6 @@ if (defined('SHUTDOWN')) {
 }
 
 $changeParams = false;
-$cnnct = db_connect();
 
 $longName    = CONF_NAME;
 $shortName   = CONF_SHORT;
@@ -44,16 +43,19 @@ if (!empty($x)) {
   $trg = strtotime($x);
   if ($trg===false || $trg==-1)
      die ("<h1>Unrecognized time format for pre-registration deadline</h1>");
-  if ($trg!=$regDeadline) { $changeParams=true; $regDeadline=$trg; }
-  //  $period = PERIOD_PREREG;
+  if ($trg!=$regDeadline) { 
+    $changeParams=true;
+    $regDeadline=$trg;
+    if ($trg>time()) $period = PERIOD_PREREG;
+  }
 }
-else if (USE_PRE_REGISTRATION && $period <= PERIOD_SUBMIT){ // chair decided not to use pre-reg after all
+else {
+  if (USE_PRE_REGISTRATION && $period <= PERIOD_SUBMIT){ // chair decided not to use pre-reg after all
   $changeParams=true;
-  $regDeadline = "NULL";
-  //  $period = PERIOD_SUBMIT;
-}
-if (!isset($regDeadline)) $regDeadline = "NULL";
-     
+  $regDeadline = NULL;
+  $period = PERIOD_SUBMIT;
+  }}
+
 $x = isset($_POST['subDeadline']) ?  trim($_POST['subDeadline']) : NULL;
 if (!empty($x)) {
   $tsb = strtotime($x);
@@ -70,16 +72,16 @@ if (!empty($x)) {
   if ($tcr!=$cmrDeadline) { $changeParams=true; $cmrDeadline=$tcr; }
 }
 
-
-$x = isset($_POST['categories']) ? explode(';', $_POST['categories']) : NULL;
-if (is_array($x)) {
+$x = isset($_POST['categories']) ? trim($_POST['categories']) : NULL;
+if (!empty($x)) {
+  $x = explode(';', $x);
   $categories = array();
-  foreach ($x as $cat)
-    $categories[] = trim($cat);
+  foreach ($x as $cat) $categories[] = trim($cat);
   $changeParams = true;
+} else {
+  if (!empty($categories)) $changeParams = true;
+  $categories = NULL;
 }
-else $categories = NULL;
-
 
 if (isset($_POST['formats'])) {
 
@@ -114,25 +116,21 @@ if (isset($_POST['subFlags'])) {
   $anonymous = ANONYMOUS;
 }
 
-############ modified upto here ##############
 if ($changeParams) {
-  $qry = "UPDATE parameters SET\n"
-    . "  longName='"  .my_addslashes($longName, $cnnct)."',\n"
-    . "  shortName='" .my_addslashes($shortName, $cnnct)."', "
-    . "  confYear="   .intval($confYear).",\n";
-
   if (empty($confURL)) $confURL = '.';
-  $qry .= "  confURL='"   .my_addslashes($confURL, $cnnct)."',\n"
-    . "  regDeadline=$regDeadline,\n"
-    . "  subDeadline=".intval($subDeadline).",\n"
-    . "  cmrDeadline=".intval($cmrDeadline).",\n";
 
   $flags = CONF_FLAGS & ~(FLAG_ANON_SUBS | FLAG_AFFILIATIONS);
   if ($anonymous)      $flags |= FLAG_ANON_SUBS;
   if ($affiliations)   $flags |= FLAG_AFFILIATIONS;
-  $qry .= "  flags=$flags,\n";
 
-  //  if ($period != PERIOD) $qry .= "  period=$period,\n";
+  $qry = "UPDATE {$SQLprefix}parameters SET longName=?,shortName=?,confYear=?,confURL=?,subDeadline=?,cmrDeadline=?,flags=?,period=?";
+  $prms = array($longName,$shortName,$confYear,$confURL,$subDeadline,$cmrDeadline,$flags,$period);
+
+  if (!empty($regDeadline)) {
+    $qry .=",regDeadline=?";
+    $prms[] = $regDeadline;
+  }
+  else $qry .= ",regDeadline=NULL";
 
   if (is_array($confFormats) && count($confFormats)>0) {
     $fmtString = $sc = '';
@@ -140,21 +138,24 @@ if ($changeParams) {
       $fmtString .= $sc.$f[0]."($ext,".$f[1].")";
       $sc = ';';
     }
-    $qry .= "  formats='".my_addslashes($fmtString, $cnnct)."',\n";
+    $qry .= ",formats=?";
+    $prms[] = $fmtString;
   }
-  else $qry .= "  formats=NULL,\n";
+  else $qry .= ",formats=NULL";
 
-  if (is_array($categories) && count($categories)>0) {
+  if (!empty($categories) && count($categories)>0) {
     $catString = $sc = '';
     foreach ($categories as $c) {
       $catString .= $sc.$c;
       $sc = ';';
     }
-    $qry .= "  categories='".my_addslashes($catString, $cnnct)."'";
+    $qry .= ",categories=?";
+    $prms[] = $catString;
   }
-  else $qry .= "  categories=NULL";
+  else $qry .= ",categories=NULL";
 
-  db_query($qry, $cnnct, "Cannot UPDATE conference parameters: ");
+  //  exit("$qry<pre>".print_r($prms,true)."</pre>");
+  pdo_query($qry, $prms, "Cannot UPDATE conference parameters: ");
 
 } /* if ($changeParams) */
 

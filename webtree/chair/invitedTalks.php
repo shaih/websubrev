@@ -13,7 +13,7 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <title>Add an invited talk for $cName</title>
 
 <link rel="stylesheet" type="text/css" href="../common/submission.css"/>
@@ -32,7 +32,7 @@ camera-ready submission form to upload a writeup to the server, just like
 any other accepted submision. This could be useful if you want to add an
 invited talk to the program.<br/>
 
-<form action=doInvitedTalks.php enctype="multipart/form-data" method=POST>
+<form accept-charset="utf-8" action=doInvitedTalks.php enctype="multipart/form-data" method=POST>
 <table cellpadding=6>
 <tbody>
   <tr>

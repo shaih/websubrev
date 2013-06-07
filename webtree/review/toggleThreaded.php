@@ -15,9 +15,8 @@ $threaded= (int) $pcMember[4];
 if ($disFlag != 1 && !has_reviewed_anything($revId)) exit("<h1>$revName cannot discuss submissions yet</h1>");
 
 $threaded = ($threaded != 0) ? 0 : 1;   // toggle 0<-->1
-$cnnct = db_connect();
-$qry= "UPDATE committee SET threaded=$threaded WHERE revId='{$revId}'";
-db_query($qry, $cnnct);
+$qry= "UPDATE {$SQLprefix}committee SET threaded=$threaded WHERE revId=?";
+pdo_query($qry, array($revId));
 
 return_to_caller('discuss.php', '', '#discuss');
 ?>

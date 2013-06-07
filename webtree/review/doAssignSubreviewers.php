@@ -11,28 +11,21 @@ if(!isset($_POST['assignSubreviewers'])) die();
 
 $papers = (isset($_POST['subId']) && is_array($_POST['subId'])) ? $_POST['subId'] : array();
 
-$filter_papers = array();
+$filter_papers = '0';
 foreach($papers as $p) {
-  if (ctype_digit($p))
-    $filter_papers[] = $p;
+  if (ctype_digit($p)) $filter_papers .= ",$p";
 }
 
 if(empty($_POST['sendTo']) || empty($filter_papers)) {
-	header("Location: assignSubreviewer.php?fail=true");
-	exit();
+  header("Location: assignSubreviewer.php?fail=true");
+  exit();
 }
 
-$cnnct = db_connect();
-
-$qry = "SELECT subId, format, contact from submissions where status!='Withdrawn' AND subID IN(".
-  implode(", ", $filter_papers).
-  ")";
-
-$res = db_query($qry, $cnnct);
+$res = pdo_query("SELECT subId, format, contact FROM {$SQLprefix}submissions WHERE status!='Withdrawn' AND subID IN($filter_papers)");
 
 $emails = explode(',',$_POST['sendTo']);
 $attachments = array();
-while($row = mysql_fetch_assoc($res)) {
+while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   $base = SUBMIT_DIR."/";
   $filename = $row['subId'].".".$row['format'];
   $attachments[] = array($base, $filename);

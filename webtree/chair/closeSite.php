@@ -15,7 +15,7 @@ $links= show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 {text-align: center;}
 h2 {text-align: center;}
@@ -33,7 +33,7 @@ $links
 </tbody></table>
 
 <h2>Are you sure you want to close the submission site?</h2>
-<form action="doCloseSite.php"  enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" action="doCloseSite.php"  enctype="multipart/form-data" method="post">
 <input type="hidden" name="shutdown" value="yes">
 <input type="submit" value="Yes, Shutdown Final-Version Submission Site">
 </form>

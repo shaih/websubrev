@@ -7,99 +7,85 @@
  */
  // SQL statements to create all the database tables
 
-function create_tabels($cnnct, $prefix='')
-{
-  /* The conference parameters table.
-   * The field flags is for bit-flags, currently supporting the following flags
-   *     1 - PC members can specify their reviewing preferences
-   *     2 - submissions are anonymous
-   *     4 - submitters should supply affiliations
-   *     8 - use LF instead of CRLF for email header
-   *    16 - drop the "X-Sender: PHP/version" header line
-   *    32 - add "-f chairEmail" as an extra parameter to sendmail
-   *    64 - site is available over SSL (https vs. http)
-   *   128 - Allow attachments with the reviews
-   *
-   *  period can assume the following values:
-   *     0 - setup: initial setup of the site
-   *     1 - pre-registration
-   *     2 - paper submission
-   *     3 - review period
-   *     4 - final-version submission
-   *     5 - shutdown (read-only), after the final-version submission is over
-   */
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}parameters (
-    version     smallint(3) NOT NULL auto_increment,
-    longName    text NOT NULL,
-    shortName   varchar(20) NOT NULL,
-    confYear    smallint(4) NOT NULL,
-    confURL     text,
-    regDeadline int,
-    subDeadline int NOT NULL,
-    cmrDeadline int NOT NULL,
-    maxGrade    tinyint(2) NOT NULL DEFAULT 6,
-    maxConfidence tinyint(1) NOT NULL DEFAULT 3,
-    flags       int NOT NULL DEFAULT 1,
-    emlSender   text,
-    timeShift   int NOT NULL DEFAULT 0,
-    period      tinyint(1) NOT NULL DEFAULT 0,
-    formats     text NOT NULL,
-    categories  text,
-    extraCriteria text,
-    cmrInstrct text,
-    acceptLtr text,
-    rejectLtr text,
-    acptSbjct varchar(80),
-    rjctSbjct varchar(80),
-    rebDeadline int(11),
-    maxRebuttal smallint,
-    optIn text,
-    PRIMARY KEY (version)
-)";
-  db_query($qry, $cnnct, "Cannot CREATE parameter table: ");
+// In some cases we use the same field list in multiple tables, so
+// we keep it in a separate variable to make it easier to change
 
-  /* A table to backup parameter-sets */
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}paramsBckp (
-    version     smallint(3) NOT NULL,
-    longName    text NOT NULL,
-    shortName   varchar(20) NOT NULL,
-    confYear    smallint(4) NOT NULL,
-    confURL     text,
-    regDeadline int,
-    subDeadline int NOT NULL,
-    cmrDeadline int NOT NULL,
-    maxGrade    tinyint(2) NOT NULL DEFAULT 6,
+/* The conference parameters table.
+ * The field flags is for bit-flags, currently supporting the following flags
+ *     1 - PC members can specify their reviewing preferences
+ *     2 - submissions are anonymous
+ *     4 - submitters should supply affiliations
+ *     8 - use LF instead of CRLF for email header
+ *    16 - drop the "X-Sender: PHP/version" header line
+ *    32 - add "-f chairEmail" as an extra parameter to sendmail
+ *    64 - site is available over SSL (https vs. http)
+ *   128 - Allow attachments with the reviews
+ *
+ *  period can assume the following values:
+ *     0 - setup: initial setup of the site
+ *     1 - pre-registration
+ *     2 - paper submission
+ *     3 - review period
+ *     4 - final-version submission
+ *     5 - shutdown (read-only), after the final-version submission is over
+ ****************************************************************************/
+$prms = 'version smallint(3) NOT NULL auto_increment,
+    longName     text NOT NULL,
+    shortName    varchar(20) NOT NULL,
+    confYear     smallint(4) NOT NULL,
+    confURL      text,
+    regDeadline  int,
+    subDeadline  int NOT NULL,
+    cmrDeadline  int NOT NULL,
+    maxGrade     tinyint(2) NOT NULL DEFAULT 6,
     maxConfidence tinyint(1) NOT NULL DEFAULT 3,
-    flags       int NOT NULL DEFAULT 1, 
-    emlSender   text,
-    timeShift   int NOT NULL DEFAULT 0, 
-    period      tinyint(1) NOT NULL DEFAULT 0,
-    formats     text NOT NULL,
-    categories  text,
+    flags        int NOT NULL DEFAULT 1,
+    emlSender    text,
+    timeShift    int NOT NULL DEFAULT 0,
+    period       tinyint(1) NOT NULL DEFAULT 0,
+    formats      text NOT NULL,
+    categories   text,
     extraCriteria text,
-    cmrInstrct text,
-    acceptLtr text,
-    rejectLtr text,
-    acptSbjct varchar(80),
-    rjctSbjct varchar(80),
-    rebDeadline int(11),
-    maxRebuttal smallint,
-    optIn text,
-    PRIMARY KEY (version)
-)";
-  db_query($qry, $cnnct, "Cannot CREATE parameter backup table: ");  
-  
-  /* The submission table. The numReviewers lets the chair specify how many
-   * reviewers should be assigned to review the submission initally (to be
-   * used by the "matching" algorithm). The revisionOf and oldVersionOf are
-   * meant to deal with revisions (e.g., if this is used for jounral reviews)
-   *
+    cmrInstrct   text,
+    acceptLtr    text,
+    rejectLtr    text,
+    acptSbjct    varchar(80),
+    rjctSbjct    varchar(80),
+    rebDeadline  int(11),
+    maxRebuttal  smallint,
+    optIn        text,
+    PRIMARY KEY (version)';
+
+// The reports table(s)
+// The only flag currently is status (0 - draft, 1- "final")
+$reports = "subId smallint(5) NOT NULL,
+    revId smallint(3) NOT NULL,
+    flags int NOT NULL DEFAULT 1,
+    subReviewer varchar(255),
+    confidence tinyint(1),
+    score tinyint(2),
+    comments2authors text,
+    comments2committee text,
+    comments2chair text,
+    comments2self text,
+    attachment text,
+    whenEntered datetime NOT NULL";
+
+/*****************************************************************************
+ * We keep the database schema in an array with structure
+ * ('tableName' => field-list). This makes it easier to manipulate.
+ *****************************************************************************/
+$dbTables = array(
+  'parameters' => $prms,
+  'paramsBckp' => $prms,
+
+  /* The submission table. 
    * The status titles were chosen so that alphabetical order coninsides
-   * with logical order, to overcome this "feature" of MySQL that only lets
-   * you sort by alphabetical order.
+   * with logical order, to overcome this "feature" of old MySQL that only
+   * lets you sort by alphabetical order.
    */
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}submissions (
-    subId smallint(5) NOT NULL auto_increment,
+  'submissions' => 
+   "subId smallint(5) NOT NULL auto_increment,
     title varchar(255) NOT NULL,
     authors text NOT NULL,
     affiliations text,
@@ -110,13 +96,10 @@ function create_tabels($cnnct, $prefix='')
     comments2chair text,
     format varchar(32),
     subPwd varchar(32) BINARY,
-    status enum('Accept',
-                'Maybe Accept',
-                'Needs Discussion',
-                'None',
-                'Perhaps Reject',
-                'Reject',
-                'Withdrawn') NOT NULL DEFAULT 'None',
+    status enum('Accept','Maybe Accept','Needs Discussion','None',
+                'Perhaps Reject','Reject','Withdrawn') NOT NULL DEFAULT 'None',
+    scratchStatus enum('Accept','Maybe Accept','Needs Discussion','None',
+                'Perhaps Reject','Reject','Withdrawn') NOT NULL DEFAULT 'None',
     whenSubmitted datetime NOT NULL,
     lastModified timestamp,
     flags int NOT NULL DEFAULT 0,
@@ -124,30 +107,20 @@ function create_tabels($cnnct, $prefix='')
     wAvg float,
     minGrade tinyint(1),
     maxGrade tinyint(1),
-    scratchStatus enum('Accept',	 
-                'Maybe Accept',
-                'Needs Discussion',
-                'None',
-                'Perhaps Reject',
-                'Reject',
-                'Withdrawn') NOT NULL DEFAULT 'None',
     rebuttal text,
     PRIMARY KEY (subId),
-    KEY pwd (subPwd(2))
-)";
-  db_query($qry, $cnnct, "Cannot CREATE submissions table: ");
+    KEY pwd (subPwd(2))",
 
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}acceptedPapers (
-    subId smallint(5) NOT NULL,
+  // The accepted-papers table
+  'acceptedPapers' =>
+   "subId smallint(5) NOT NULL,
     nPages smallint(3),
     pOrder smallint(3) DEFAULT 0 NOT NULL,
     copyright text,
     copyrightTime datetime DEFAULT NULL,
     eprint varchar(10),
     PRIMARY KEY (subId),
-    INDEX (pOrder)
-  )";
-  db_query($qry, $cnnct, "Cannot CREATE acceptedPapers table: ");
+    INDEX (pOrder)",
 
   /* The committee table.
    * The field flags is for bit-flags, currently supporting the following flags
@@ -182,8 +155,8 @@ function create_tabels($cnnct, $prefix='')
    *         submission list (when unset then order on review home is always
    *         by number)
    */
-  $qry ="CREATE TABLE IF NOT EXISTS {$prefix}committee (
-    revId smallint(3) NOT NULL auto_increment,
+  'committee' =>
+   "revId smallint(3) NOT NULL auto_increment,
     revPwd varchar(255) BINARY NOT NULL,
     name varchar(255) NOT NULL,
     email varchar(255) NOT NULL,
@@ -191,64 +164,37 @@ function create_tabels($cnnct, $prefix='')
     threaded tinyint(1) NOT NULL DEFAULT 1, 
     flags int NOT NULL DEFAULT 0,
     PRIMARY KEY (revId),
-    KEY pw (revPwd(2))
-  )";
-  db_query($qry, $cnnct, "Cannot CREATE committee table: ");
-
-  // The reports table(s)
-  // The only flag currently is status (0 - draft, 1- "final")
-  $reports = "subId smallint(5) NOT NULL,
-    revId smallint(3) NOT NULL,
-    flags int NOT NULL DEFAULT 1,
-    subReviewer varchar(255),
-    confidence tinyint(1),
-    score tinyint(2),
-    comments2authors text,
-    comments2committee text,
-    comments2chair text,
-    comments2self text,
-    attachment text,
-    whenEntered datetime NOT NULL,";
+    KEY pw (revPwd(2))",
 
   // The main table for reports
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}reports (
-    $reports
+  'reports' =>
+   "$reports,
     lastModified datetime NOT NULL,
-    PRIMARY KEY (subId, revId)
-  )";
-  db_query($qry, $cnnct, "Cannot CREATE reports table: ");
+    PRIMARY KEY (subId, revId)",
 
   // A table to store backup of old reports
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}reportBckp (
-    $reports
+  'reportBckp' =>
+   "$reports,
     version smallint(3) NOT NULL DEFAULT 0,
-    PRIMARY KEY (subId, revId, version)
-  )";
-  db_query($qry, $cnnct, "Cannot CREATE report backup table: ");
+    PRIMARY KEY (subId, revId, version)",
 
   // Table for additional evaluation criteria
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}auxGrades (
-    subId smallint(5) NOT NULL,
+  'auxGrades' =>
+   "subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL,
     gradeId smallint(3) NOT NULL,
     grade tinyint,
-    PRIMARY KEY (subId, revId, gradeId)
-  )";
-  db_query($qry, $cnnct, "Cannot CREATE auxGrades table: ");
+    PRIMARY KEY (subId, revId, gradeId)",
 
-  
   // Backup of additional evaluation criteria
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}gradeBckp (
-    subId smallint(5) NOT NULL,
+  'gradeBckp' =>
+   "subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL,
     gradeId smallint(3) NOT NULL,
     grade tinyint,
     version smallint(3) NOT NULL DEFAULT 0,
-    PRIMARY KEY (subId, revId, gradeId, version)
-  )";
-  db_query($qry, $cnnct, "Cannot CREATE auxGrades table: ");
+    PRIMARY KEY (subId, revId, gradeId, version)",
 
-  
   // The assignments table, relating PC members to submissions.
   //
   // The pref column is the reviewer's preferences, ranging from 0 
@@ -265,22 +211,19 @@ function create_tabels($cnnct, $prefix='')
   //
   // The watch field (0/1) is used to let reviewers specify a list of
   // papers that they want to watch during the discussion phase.
-
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}assignments (
-    subId smallint(5) NOT NULL,
+  'assignments' =>
+   "subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL, 
     pref tinyint(1) NOT NULL DEFAULT 3, 
     compatible tinyint(1) NOT NULL DEFAULT 0,
     sktchAssgn tinyint(1) NOT NULL DEFAULT 0,
     assign tinyint(1) NOT NULL DEFAULT 0,
     watch tinyint(1) NOT NULL DEFAULT 0,
-    PRIMARY KEY (revId, subId)
-  )";
-  db_query($qry, $cnnct, "Cannot CREATE assignments table: ");
+    PRIMARY KEY (revId, subId)",
 
   // The post table: inividual posts in a discussion
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}posts (
-    postId smallint(5) NOT NULL auto_increment,
+  'posts' =>
+   "postId smallint(5) NOT NULL auto_increment,
     parentId smallint(5),
     subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL,
@@ -288,25 +231,20 @@ function create_tabels($cnnct, $prefix='')
     comments text,
     whenEntered datetime NOT NULL,
     PRIMARY KEY (postId),
-    INDEX (subId)
-  )";
-  db_query($qry, $cnnct, "Cannot CREATE posts table: ");
+    INDEX (subId)",
 
   // The lastPost table is used to keep track of the last post for each
   // submission that a reviewer saw, so we can mark posts as "unread"
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}lastPost (
-    subId smallint(5) NOT NULL,
+  'lastPost' =>
+   "subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL, 
     lastSaw smallint(5) NOT NULL,
     prevSaw smallint(5) DEFAULT NULL,
     lastVisited timestamp, 
-    PRIMARY KEY (revId, subId)
-  )";
-  db_query($qry, $cnnct, "Cannot CREATE lastPost table: ");
+    PRIMARY KEY (revId, subId)",
 
-  // The vote tables lets the chair set up votes on submissions
-
-  /* voteFlags is a bit-flag field, currently supporting the following fields
+  /* The vote tables lets the chair set up votes on submissions.
+   * voteFlags is a bit-flag field, currently supporting the following fields
    *     1 - vote on submissions (otherwise vote on "other things")
    *     2 - vote on all submission
    *     4 - vote on submission with status RE
@@ -327,8 +265,8 @@ function create_tabels($cnnct, $prefix='')
    * field MUST include a description of things to vote on, in the form of a
    * semi-colon-separated list.
    */
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}votePrms (
-    voteId smallint(3) NOT NULL auto_increment,
+  'votePrms' =>
+   "voteId smallint(3) NOT NULL auto_increment,
     voteActive tinyint(1) NOT NULL default 0,
     voteType enum ('Choose','Grade') NOT NULL default 'Choose',
     voteFlags integer NOT NULL default 0,
@@ -338,22 +276,19 @@ function create_tabels($cnnct, $prefix='')
     voteTitle text,
     instructions text,
     deadline text,
-    PRIMARY KEY (voteId)
-  )";
-  db_query($qry, $cnnct, "Cannot CREATE vote-params table: ");
+    PRIMARY KEY (voteId)",
 
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}votes (
-    voteId smallint(3) NOT NULL default 1, 
+  // a table to keep individual cast ballots
+  'votes' =>
+   "voteId smallint(3) NOT NULL default 1, 
     revId smallint(3) NOT NULL, 
     subId smallint(5) NOT NULL,
     vote tinyint NOT NULL,
-    PRIMARY KEY (voteId, revId, subId)
-  )";
-  db_query($qry, $cnnct, "Cannot CREATE votes table: ");
+    PRIMARY KEY (voteId, revId, subId)",
 
   // Keep a list of all the modifications for any submission
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}changeLog (
-    changeId smallint(5) NOT NULL auto_increment,
+  'changeLog' =>
+   "changeId smallint(5) NOT NULL auto_increment,
     subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL, 
     changeType enum ('Post','Review','Status') NOT NULL,
@@ -361,20 +296,25 @@ function create_tabels($cnnct, $prefix='')
     entered datetime NOT NULL,
     PRIMARY KEY (changeId),
     INDEX (subId),
-    INDEX (changeType)
-  )";
-  db_query($qry, $cnnct, "Cannot CREATE changeLog table: ");
+    INDEX (changeType)",
 
   // A small table to hold parameters of the auto-assign form
-  $qry = "CREATE TABLE IF NOT EXISTS {$prefix}assignParams (
-    idx smallint(1) NOT NULL auto_increment,
+  'assignParams' =>
+   "idx smallint(1) NOT NULL auto_increment,
     excludedRevs text NOT NULL default '',
     specialSubs text NOT NULL default '',
     coverage tinyint(2) NOT NULL default 3,
     spclCvrge tinyint(2) NOT NULL default 4,
     startFrom enum('scratch','current','file') NOT NULL default 'current',
-    PRIMARY KEY (idx)
-  )";
-  db_query($qry, $cnnct, "Cannot CREATE assignParams table: ");
+    PRIMARY KEY (idx)"
+);
+
+function create_tabels($db, $prefix='')
+{
+  global $dbTables;
+  foreach($dbTables as $tblName => $fields) {
+    pdo_query("CREATE TABLE IF NOT EXISTS {$prefix}{$tblName} (\n{$fields})",
+	      null, "Cannot create table $tblName: ", $db);
+  }
 }
 ?>

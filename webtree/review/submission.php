@@ -16,15 +16,14 @@ else exit("<h1>No Submission specified</h1>");
 
 $qry ="SELECT s.title, s.authors, s.abstract, s.category, s.keyWords,
        s.format, a.assign, a.watch, r.revId, s.affiliations
-    FROM submissions s
-       LEFT JOIN assignments a ON a.revId=$revId AND a.subId=s.subId
-       LEFT JOIN reports r ON r.revId='$revId' AND r.subId=s.subId
-    WHERE s.subId=$subId AND status!='Withdrawn'";
+    FROM {$SQLprefix}submissions s
+       LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId
+       LEFT JOIN {$SQLprefix}reports r ON r.revId=? AND r.subId=s.subId
+    WHERE s.subId=? AND status!='Withdrawn'";
 
-$cnnct = db_connect();
-$res = db_query($qry, $cnnct);
-if (!($submission = mysql_fetch_assoc($res))
-    || $submission['assign']==-1) {
+$submission = 
+  pdo_query($qry, array($revId,$revId,$subId))->fetch(PDO::FETCH_ASSOC);
+if (!$submission || $submission['assign']==-1) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 
@@ -47,13 +46,14 @@ $watch    = (int) $submission['watch'];
 if ($disFlag == 1) { 
 
   // Check for things in the discussion board that the reviewe didn't see yet
-  $qry = "SELECT 1 FROM submissions s, lastPost lp WHERE s.subId=$subId AND lp.revId=$revId AND lp.subId=$subId AND s.lastModified<=lp.lastVisited";
-  $res = db_query($qry, $cnnct);
+  $qry = "SELECT COUNT(*) FROM {$SQLprefix}submissions s, {$SQLprefix}lastPost lp WHERE s.subId=? AND lp.revId=? AND lp.subId=s.subId AND s.lastModified<=lp.lastVisited";
+  $res = pdo_query($qry, array($subId,$revId));
 
   // If there are matches to the query above, it means that there are
   // no new items in the discussoin board. The vars $discussIcon1 and
   // $discussIcon2 are defined in confUtils.php
-  $discussText = (mysql_num_rows($res)>0) ? $discussIcon1 : $discussIcon2;
+  $discussText = ($res->fetchColumn()>0) ? $discussIcon1 : $discussIcon2;
+
   $discussLine = '<span class="Discuss"><a href="discuss.php?subId='.$subId.'" target="_blank">'.$discussText.'</a></span>';
 
   $toggleWatch = "<a href=\"toggleWatch.php?subId={$subId}\">\n";
@@ -85,7 +85,7 @@ print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
   "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1, h2, h3 {text-align: center;}
 div.fixed { font: 14px monospace; width: 90%; }

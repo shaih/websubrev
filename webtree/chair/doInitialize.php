@@ -57,7 +57,18 @@ $sqlDB       = trim($_POST['confDB']);
 $sqlRoot     = trim($_POST['rootNm']);
 $sqlRootPwd  = trim($_POST['rootPwd']);
 $sqlUsr      = trim($_POST['user']);
-$sqlPwd      = trim($_POST['pwd']) ;
+$sqlPwd      = trim($_POST['pwd']);
+$SQLprefix   = trim($_POST['SQLprefix']);
+
+$sqlDB = makeName($sqlDB); // make sure these are valid names
+$SQLprefix = makeName($SQLprefix);
+
+if (!empty($_POST['newDB'])) $newDB = trim($_POST['newDB']);
+else {  // this shouldn't happen, try to use sensible defaults
+  if (!empty($sqlRoot) && !empty($sqlRootPwd))
+       $newDB = "newDB";
+  else $newDB = "newTbls";
+}
 
 $subDir      = trim($_POST['subDir']) ;
 if (empty($subDir)) { $subDir = $baseDir.'/subs'; }
@@ -94,74 +105,56 @@ fclose($fd);
 error_log(date('Y.m.d-H:i:s ')."Log file created\n", 3, LOG_FILE);
 
 // We generate some randomness for salting the password hashes
-$salt = alphanum_encode(sha1(uniqid(rand()).mt_rand()));
+$salt = alphanum_encode(sha1(uniqid($sqlDB.rand()).mt_rand()));
 
-// If MySQL user & pwd are not specified, create a new database and user
-if (empty($sqlUsr) || empty($sqlPwd)) {
+// If MySQL admin details are specified, use them to create database/user
+if (!empty($sqlRoot) && !empty($sqlRootPwd)) {
 
   // Test that we can actually connect using the root username/pwd
-  $cnnct = db_connect($sqlHost, $sqlRoot, $sqlRootPwd, NULL);
+  $rootDB = new PDO("mysql:host=$sqlHost;charset=utf8", $sqlRoot, $sqlRootPwd,
+		    array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 
-  // Create the database
-  $sqlDB = makeName($sqlDB); // make sure this is a valid name
-  $qry = 'DROP DATABASE IF EXISTS '.$sqlDB;
-  db_query($qry, $cnnct, "Cannot create a new database $sqlDB: ");
-  $qry = 'CREATE DATABASE IF NOT EXISTS '.$sqlDB;
-  db_query($qry, $cnnct, "Cannot create a new database $sqlDB: ");
+  // Create the database if needed
+  if ($newDB == 'newDB') {
+    $rootDB->query('CREATE DATABASE IF NOT EXISTS '.$sqlDB);
+  }
+  $rootDB->query("use $sqlDB");
 
-  mysql_select_db($sqlDB, $cnnct);
-  create_tabels($cnnct); // from database.php, create the tables in the DB
+  if ($newDB == 'newDB' || $newDB == 'newTbls')
+    create_tabels($rootDB,$SQLprefix); // from database.php
 
   // Create new user if not specified
   if (empty($sqlUsr)) $sqlUsr = $sqlDB;
-  else                $sqlUsr = my_addslashes($sqlUsr, $cnnct);
-  $sqlPwd = sha1(uniqid(rand()). mt_rand(). $sqlUsr); // returns hex string
-  $sqlPwd = alphanum_encode(substr($sqlPwd, 0, 12)); // "compress" a bit
-
-  if ($sqlHost=='localhost') {
-    $qry = "GRANT SELECT, INSERT, UPDATE, DELETE ON {$sqlDB}.* "
-      ."TO '$sqlUsr'@'localhost' IDENTIFIED BY '{$sqlPwd}'";
-  } else {
-    $qry = "GRANT SELECT, INSERT, UPDATE, DELETE ON {$sqlDB}.* "
-      ."TO '$sqlUsr' IDENTIFIED BY '{$sqlPwd}'";
+  if (empty($sqlPwd)) {
+    $sqlPwd = sha1(uniqid(rand()). mt_rand(). $sqlUsr); // returns hex string
+    $sqlPwd = alphanum_encode(substr($sqlPwd, 0, 12));  // "compress" a bit
   }
-  db_query($qry, $cnnct, "Cannot GRANT privileges: ");
-
-  mysql_close($cnnct);
+  $host = ($sqlHost=='localhost')? "@'localhost'" : "";
+  $tbls = array_keys($dbTables);
+  foreach ($tbls as $tblName) {
+    $qry = "GRANT SELECT, INSERT, UPDATE, DELETE ON $sqlDB.{$SQLprefix}{$tblName} TO ?{$host} IDENTIFIED BY ?";
+    pdo_query($qry, array($sqlUsr,$sqlPwd),'Cannot GRANT privileges: ',$rootDB);
+  }
+  $rootDB = null; // close the connection
 }
+else { // no admin password, try to use the user name/password if needed
+  if ($newDB == 'newDB')
+    exit('<h1>SQL Admin Details Needed to Create New Database</h1>');
 
-// The database and user should already exist by now
-$cnnct = db_connect($sqlHost, $sqlUsr, $sqlPwd, $sqlDB);
+  if ($newDB == 'newTbls') {
+    // Try to connect using the user's credentials
+    $db = new PDO("mysql:host=$sqlHost;dbname=$sqlDB;charset=utf8",
+		  $sqlUsr, $sqlPwd,
+		  array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+    create_tabels($db,$SQLprefix); // from database.php
+    $db = null;                    // close the connection
+  }
+}
 
 // If we got here, then database and all tables were created
-
-// Store database parameters in file
-if (file_exists($prmsFile)) unlink($prmsFile); // just in case
-if (!($fd = fopen($prmsFile, 'w'))) {          // Open for write
-  exit("<h1>Cannot create the parameters file at $prmsFile</h1>\n");
-}
-
-$iacr = empty($_POST['iacr'])? '': ("IACR=".$_POST['iacr']."\n");
-$prmsString = "<?php\n"
-  . "/* Parameters for a new installation: this file is formatted as a PHP\n"
-  . " * file to ensure that accessing it directly by mistake does not cause\n"
-  . " * the server to send this information to a client.\n"
-  . "MYSQL_HOST=$sqlHost\n"
-  . "MYSQL_DB=$sqlDB\n"
-  . "MYSQL_USR=$sqlUsr\n"
-  . "MYSQL_PWD=$sqlPwd\n"
-  . "SUBMIT_DIR=$subDir\n"
-  . "LOG_FILE=$logFile\n"
-  . "ADMIN_EMAIL=$adminEmail\n"
-  . "CONF_SALT=$salt\n"
-  . "BASE_URL=$baseURL\n".$iacr
-  . " ********************************************************************/\n"
-  . "?>\n";
-if (!fwrite($fd, $prmsString)) {
-  exit ("<h1>Cannot write into parameters file $tFile</h1>\n");
-}
-fclose($fd);
-chmod($prmsFile, 0440);
+$db = new PDO("mysql:host=$sqlHost;dbname=$sqlDB;charset=utf8",
+	      $sqlUsr, $sqlPwd,
+	      array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 
 // Create the submission sub-directories
 if (!mkdir("$subDir/scratch", 0775)) { 
@@ -191,11 +184,42 @@ copy('../init/index.html', $subDir.'/attachments/index.html');
 $chrPwd = sha1(uniqid(rand()).mt_rand());           // returns hex string
 $chrPwd = alphanum_encode(substr($chrPwd, 0, 15));  // "compress" a bit
 $chairEmail = strtolower($chairEmail);
-$chrEml = my_addslashes($chairEmail, $cnnct);
-$chrNam = my_addslashes($chairName, $cnnct);
 
-$qry = "INSERT INTO committee SET revId=1, revPwd='$chrPwd', name='$chrNam', email='$chrEml', canDiscuss=1, flags=".FLAG_IS_CHAIR;
-db_query($qry, $cnnct, "Cannot insert program chair to database: ");
+$qry = "INSERT INTO {$SQLprefix}committee SET revId=?, revPwd=?, name=?, email=?, canDiscuss=?, flags=?";
+pdo_query($qry, array(1,$chrPwd,$chairName,$chairEmail,1,FLAG_IS_CHAIR),
+	  "Cannot insert program chair to database: ");
+
+// Store database parameters in file
+
+$iacr = empty($_POST['iacr'])? '': ("IACR=".$_POST['iacr']."\n");
+$prmsString = "<?php\n"
+  . "/* Parameters for a new installation: this file is formatted as a PHP\n"
+  . " * file to ensure that accessing it directly by mistake does not cause\n"
+  . " * the server to send this information to a client.\n"
+  . "MYSQL_HOST=$sqlHost\n"
+  . "MYSQL_DB=$sqlDB\n"
+  . "MYSQL_PREFIX=$SQLprefix\n"
+  . "MYSQL_USR=$sqlUsr\n"
+  . "MYSQL_PWD=$sqlPwd\n"
+  . "SUBMIT_DIR=$subDir\n"
+  . "LOG_FILE=$logFile\n"
+  . "ADMIN_EMAIL=$adminEmail\n"
+  . "CONF_SALT=$salt\n"
+  . "BASE_URL=$baseURL\n".$iacr
+  . " ********************************************************************/\n"
+  . "?>\n";
+
+// Check that you can create the parameter file
+
+if (!($fd = fopen($prmsFile, 'w')) || !fwrite($fd, $prmsString)) {
+  print "<h1>Cannot write into parameters file $prmsFile</h1>\n";
+  print "Parameter file is as follows:\n<pre>\n{$prmsString}\n</pre>\n";
+  print "After creating this file, you need to accees {$baseURL}chair/<br/>\n";
+  print "using username $chairEmail and password $chrPwd";
+  exit();
+}
+fclose($fd);
+chmod($prmsFile, 0440);
 
 // Send email to chair and admin with the password for using this site
 $hdr   = "From: $adminEmail";

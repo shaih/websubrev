@@ -7,15 +7,13 @@
  */
 $needsAuthentication = true;
 require 'header.php';
-$cnnct = db_connect();
 
 // Prepare an array of submissions and an array of PC members
-$qry = "SELECT subId, title, 0 from submissions WHERE status!='Withdrawn'
-  ORDER BY subId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT subId, title, 0 FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER BY subId";
+$res = pdo_query($qry);
 $subArray = array();
 $minSubId = null;
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   if (!isset($minSubId)) $minSubId = $row[0];
   $row[1] = htmlspecialchars($row[1]);
   $subArray[] = $row;
@@ -24,13 +22,13 @@ while ($row = mysql_fetch_row($res)) {
 $nSubmissions = count($subArray);
 $numHdrIdx=(2+intval(($nSubmissions-1)/6));
 
-$qry = "SELECT revId, name from committee WHERE flags & ".FLAG_IS_CHAIR." = 0 ORDER BY revId";
+$qry = "SELECT revId, name FROM {$SQLprefix}committee WHERE !(flags & ".FLAG_IS_CHAIR.") ORDER BY revId";
 
-$res = db_query($qry, $cnnct);
+$res = pdo_query($qry);
 $committee = array();
 $minRevId = null;
 $nameList = $sep = '';
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $revId = (int) $row[0];
   if (!isset($minRevId)) $minRevId = $revId;
   $committee[$revId] = array(trim($row[1]), 0, 0, 0);
@@ -41,10 +39,10 @@ $maxRevId = $revId;
 $cmteIds = array_keys($committee);
 
 // Get the assignment preferences
-$qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM assignments";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT revId, subId, pref, compatible, sktchAssgn FROM {$SQLprefix}assignments";
+$res = pdo_query($qry);
 $prefs = array();
-while ($row = mysql_fetch_row($res)) { 
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   list($revId, $subId, $pref, $compatible, $assign) = $row; 
   if (!isset($prefs[$subId]))  $prefs[$subId] = array();
 
@@ -92,7 +90,7 @@ $links = show_chr_links(0,array('assignments.php','Assignments'));
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/chair.css" />
 <style type="text/css">
 h1 { text-align:center; }
@@ -173,7 +171,7 @@ to reset all the assignments and start from scratch, or to upload a
 backup copy of the assignments that you stored on your local machine.
 </p>
 <a name="matrix"></a>
-<form id="saveAssignments" action="doAssignments.php" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" id="saveAssignments" action="doAssignments.php" enctype="multipart/form-data" method="post">
 <button class="submit-assignment" style="margin-right:50px" type="button">Save changes to sketch</button>
 <table cellspacing=0 cellpadding=0 border=1><tbody>
 

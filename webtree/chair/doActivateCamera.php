@@ -25,10 +25,8 @@ $updates .= ", period=".PERIOD_CAMERA;
 
 $updates .= ",\n formats='tar(tar, application/x-tar);Compressed tar(tar.gz, application/x-tar-gz);Compressed tar(tgz, application/x-compressed-tar);zip(zip, application/x-zip)'";
 
-$cnnct = db_connect();
-backup_conf_params($cnnct, PARAMS_VERSION);
-$qry = "UPDATE parameters SET $updates";
-db_query($qry, $cnnct, "Cannot reset parameters: ");
+backup_conf_params(PARAMS_VERSION);
+pdo_query("UPDATE {$SQLprefix}parameters SET $updates");
 
 // All went well, go back to caller
 return_to_caller("activateCamera.php");

@@ -7,7 +7,6 @@
  */
 require 'header.php'; // brings in the constants file and utils file
 
-$cnnct = db_connect();
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 if (PERIOD<PERIOD_CAMERA)
      die("<h1>Final-version submission site for $confName is not open</h1>");
@@ -26,10 +25,9 @@ $title = $authors = $affiliations = $contact = $abstract
   = $nPages = $copyright = $urlPrms = $eprint = '';
 
 if (!empty($subId) && !empty($subPwd)) {
-  $pw = my_addslashes($subPwd, $cnnct);
-  $qry = "SELECT title, authors, affiliations, contact, abstract, nPages, copyright, eprint FROM submissions sb LEFT JOIN acceptedPapers ac USING(subId) WHERE sb.subId=$subId AND subPwd='$pw' AND status='Accept'";
-  $res=db_query($qry, $cnnct);
-  if (!($row = mysql_fetch_row($res))) {
+  $qry = "SELECT title, authors, affiliations, contact, abstract, nPages, copyright, eprint FROM {$SQLprefix}submissions sb LEFT JOIN {$SQLprefix}acceptedPapers ac USING(subId) WHERE sb.subId=? AND subPwd=? AND status='Accept'";
+  $res=pdo_query($qry, array($subId,$subPwd));
+  if (!($row = $res->fetch(PDO::FETCH_NUM))) {
     exit("<h1>Non-Existent Accepted Submission</h1>\n"
 	 . "No accepted submission with ID $subId and password $subPwd found");
   }
@@ -59,6 +57,7 @@ print <<<EndMark
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<meta charset="utf-8">
 <style type="text/css">
 tr { vertical-align: top; }
 </style>
@@ -96,7 +95,7 @@ $h1text
 <h3 class=timeleft>$deadline<br/>
 $timeleft</h3>
 
-<form name="cameraready" onsubmit="return checkform(this);" action="act-revise.php" enctype="multipart/form-data" method="post">
+<form name="cameraready" onsubmit="return checkform(this);" action="act-revise.php" enctype="multipart/form-data" method="post" accept-charset="utf-8">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
 <input type="hidden" name="referer" value="cameraready.php">
 <table cellspacing="6">

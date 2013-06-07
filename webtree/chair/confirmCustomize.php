@@ -174,7 +174,7 @@ $confURLHtml   = htmlspecialchars($confURL);
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head>
+<head><meta charset="utf-8">
 <title>Confirm Customization</title>
 <link rel="stylesheet" type="text/css" href="../common/review.css"/>
 <style type="text/css">
@@ -281,7 +281,7 @@ print <<<EndMark
 <tr><td colspan="2">$anonymous</td></tr>
 <tr><td colspan="2">$revPrefs</td></tr>
 <tr><td colspan="2">$revAttach</td></tr>
-<tr><td class=rjust>Overall Grades:</td><td><b>From 1 to $maxGrade</b></td>
+<tr><td class=rjust>Overall&nbsp;Score:</td><td><b>From 1 to $maxGrade</b></td>
 </tr>
 <tr><td class=rjust>Confidence&nbsp;Level:</td><td><b>From 1 to 3</b></td>
 </tr>
@@ -301,7 +301,7 @@ print <<<EndMark
 
 </tbody></table>
 <br/>
-<form action="doCustomize.php{$urlParams}" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" action="doCustomize.php{$urlParams}" enctype="multipart/form-data" method="post">
 
 <input name="longName"  type="hidden" value="$longName">
 <input name="shortName" type="hidden" value="$shortName">

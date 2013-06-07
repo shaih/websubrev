@@ -12,12 +12,11 @@ $revId  = (int) $pcMember[0];
 $disFlag = (int) $pcMember[3];
 $pcmFlags= (int) $pcMember[5];
 
-$cnnct = db_connect();
 $links = show_rev_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 { text-align: center;}
 th { font: bold 10px ariel; text-align: center; }
@@ -29,31 +28,32 @@ $links
 <hr/>
 EndMark;
 
-$qry = "SELECT * FROM votePrms WHERE voteActive=0";
+$qry = "SELECT * FROM {$SQLprefix}votePrms WHERE voteActive=0";
 // If a vote is specified, display results of this vote
 if (isset($_GET['voteId']) && $_GET['voteId']>0) {
-  $voteId = $_GET['voteId'];
+  $voteId = (int) $_GET['voteId'];
   $qry .= " AND voteId=$voteId";
 }
 // Before the discussion phase, cannot see votes on submissions
 if (!$disFlag) $qry .= " AND (voteFlags&1)!=1";
 $qry .= " ORDER by voteId DESC";
-$res = db_query($qry, $cnnct) or die('No results found</body></html>');
-if (mysql_num_rows($res)<= 0) die('No results found</body></html>');
+$elections = pdo_query($qry)->fetchAll(PDO::FETCH_ASSOC);
+if (count($elections)==0) die('No results found</body></html>');
 
 // If more than one vote matches, display a list of them
-if (mysql_num_rows($res) > 1) {
+if (count($elections) > 1) {
   print "<h1>Vote Results</h1>\nChoose the vote results to see\n<ul>\n";
-  while ($row = mysql_fetch_array($res)) {
+  foreach ($elections as $row) {
     $voteId = intval($row['voteId']);
     if (isset($row['voteTitle'])) $voteTitle=htmlspecialchars($row['voteTitle']);
     else $voteTitle = "Ballot #".$voteId;
     print "<li><a href=\"voteResults.php?voteId=$voteId\">$voteTitle</a></li>\n";
   }
-  print "</ul>\n<hr/>\n$links\n</body></html>";
+  exit ("</ul>\n<hr/>\n$links\n</body></html>");
 }
 
-$row = mysql_fetch_array($res);
+// Just one vote, display the results here
+$row = $elections[0];
 $voteId = intval($row['voteId']);
 $voteTitle = isset($row['voteTitle']) ? htmlspecialchars($row['voteTitle']):'';
 $voteFlags = isset($row['voteFlags']) ? intval($row['voteFlags']) : 0;
@@ -67,26 +67,27 @@ $noVotes = true;
 
 // Print the voting tally for this vote
 
-if ($voteFlags & VOTE_ON_SUBS) {
+if ($voteFlags & VOTE_ON_SUBS) { // voting on submissions
   $qry = "SELECT s.subId, SUM(v.vote) sum, title, a.assign
-  FROM submissions s, votes v LEFT JOIN assignments a ON a.subId=v.subID AND a.revId=$revId
-  WHERE v.voteId=$voteId AND s.subId=v.subId
+  FROM {$SQLprefix}submissions s, {$SQLprefix}votes v
+    LEFT JOIN {$SQLprefix}assignments a ON a.subId=v.subID AND a.revId=?
+  WHERE v.voteId=? AND s.subId=v.subId
   GROUP BY s.subId ORDER BY sum DESC, s.subId ASC";
-  $res = db_query($qry, $cnnct);
+  $res = pdo_query($qry, array($revId,$voteId));
 
   $voteItems = array();
-  while ($row=mysql_fetch_row($res)) {
+  while ($row=$res->fetch(PDO::FETCH_NUM)) {
     if ($row[1] < 0 || $row[3]==-1) continue;
     $noVotes = false;
     $voteItems[] = $row;
   }
-} else {
-  $qry = "SELECT subId, SUM(vote) sum FROM votes
-  WHERE voteId=$voteId GROUP BY subId ORDER BY sum DESC, subId ASC";
-  $res = db_query($qry, $cnnct);
+} else {  // voting on soemthing other than submissions
+  $qry = "SELECT subId, SUM(vote) sum FROM {$SQLprefix}votes WHERE voteId=?
+  GROUP BY subId ORDER BY sum DESC, subId ASC";
+  $res = pdo_query($qry, array($voteId));
 
   $voteItems = array();
-  while ($row=mysql_fetch_row($res)) {
+  while ($row=$res->fetch(PDO::FETCH_NUM)) {
     if ($row[1] < 0) continue;
     $noVotes = false;
 

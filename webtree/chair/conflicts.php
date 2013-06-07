@@ -9,31 +9,30 @@ $needsAuthentication = true;
 require 'header.php';
 
 // Get current preferences/assignments
-$cnnct = db_connect();
 
 // Prepare an array of submissions and an array of PC members
-$qry = "SELECT subId, title, authors from submissions WHERE status!='Withdrawn' ORDER BY subId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT subId, title, authors FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER BY subId";
+$res = pdo_query($qry);
 $subArray = array();
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   list($subId, $title, $authors) = $row;
   $subId = (int) $subId;
   $subArray[$subId] = array($title, $authors);
 }
 
-$qry = "SELECT revId, name from committee WHERE !(flags & " . FLAG_IS_CHAIR . ") ORDER BY revId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT revId, name FROM {$SQLprefix}committee WHERE !(flags & " . FLAG_IS_CHAIR . ") ORDER BY revId";
+$res = pdo_query($qry);
 $committee = array();
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $revId = (int) $row[0];
   $name = $row[1];
   $committee[$revId] = $name;
 }
 
-$qry = "SELECT subId, revId, pref, sktchAssgn FROM assignments ORDER BY revId, subId";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT subId, revId, pref, sktchAssgn FROM {$SQLprefix}assignments ORDER BY revId, subId";
+$res = pdo_query($qry);
 $current = array();
-while ($row = mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $subId = (int) $row[0];
   $revId = (int) $row[1];
   $pref = (int) $row[2];
@@ -50,9 +49,15 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 {text-align: center;}
+.submitButton {
+    height:40px;
+    font-family:verdana,arial,helvetica,sans-serif;
+    font-size:16px;
+    font-weight:bold;
+}
 </style>
 <title>Blocking Access To Specific Submissions</title>
 </head>
@@ -101,8 +106,9 @@ if (isset($_POST['blockAccess'])) {
 
   // Ask the user to confirm the blocks
   print <<<EndMark
-<h2>Please confirm the list of blocked submissions:</h2>
-<form action="doConflicts.php" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" action="doConflicts.php" enctype="multipart/form-data" method="post">
+<h2>Please confirm:
+<input type="submit" class="submitButton" value="Yes, block the submissions below"/></h2>
 <dl>
 
 EndMark;
@@ -122,7 +128,7 @@ EndMark;
   }
   print <<<EndMark
 </dl>
-<input type="submit" value="Confirm these blocked submissions">
+<input type="submit" class="submitButton" value="Confirm: Block the submissions above"/>
 </form>
 <hr />
 <hr />
@@ -139,7 +145,7 @@ For each PC member, put a comma-separated list of submission-IDs
 that this member should NOT have access to. A list of submissions and
 their IDs is found <a href="#sublist">at the bottom of this page</a>.
 
-<form action="conflicts.php" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" action="conflicts.php" enctype="multipart/form-data" method="post">
 <table>
 <tbody>
 <tr><th>PC member</th><th>Blocked</th><th>Asked to block</th></tr>

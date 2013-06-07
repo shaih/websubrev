@@ -172,70 +172,59 @@ function my_send_mail($sendTo, $subject, $msg,
 // as array(id, name, email). Otherwise returns false.
 function auth_PC_member($eml, $pwd, $id=NULL, $pwdInClear=false)
 {
+  global $SQLprefix;
   // Test the username and password parameters
   if (!isset($eml) || !isset($pwd))
     return false;
-
-  $cnnct = db_connect();
 
   // Create a digest of the password and sanitize the email address
   $eml = strtolower(trim($eml));
 
   // exit("$eml:$pwd => ".sha1(CONF_SALT . $eml . $pwd));
   if (!$pwdInClear) $pwd = sha1(CONF_SALT . $eml . $pwd);
-  $eml = my_addslashes($eml, $cnnct);
 
   // Formulate the SQL find the user
-  $qry = "SELECT revId, name, email, canDiscuss, threaded, flags FROM committee WHERE";
-  if (isset($id)) {
-    //Could be array or int
-    if (is_numeric($id)) 
-      $qry .= " revId=$id AND";
-    elseif (is_array($id) && count($id)>=1) {
-      $ids = $comma = '';
+  $qry = "SELECT revId, name, email, canDiscuss, threaded, flags FROM {$SQLprefix}committee WHERE ";
+  if (isset($id) && is_numeric($id)) { // a single reviewer-ID was specified
+    $qry .= "revId=? AND email=? AND revPwd=?";
+    $prms = array($id, $eml, $pwd); // three parameters
+  } else {
+    $ids = $comma = '';
+    if (is_array($id)) // multiple ID's, include them in the statement itself
       foreach ($id as $n) if ($n>0) {
-	$ids .= "{$comma}{$n}";
+	$ids .= ($comma . intval($n));
 	$comma = ',';
       }
-      $qry .= " revId IN ($ids) AND";
-    }
+    if (!empty($ids)) $qry .= "revId IN ($ids) AND ";
+    $qry .= "email=? AND revPwd=?";
+    $prms = array($eml, $pwd);      // only two parameters
   }
-  $qry .= " email = '{$eml}' AND revPwd = '{$pwd}'";
 
   // Go to the database to look for the user
-  $res = db_query($qry, $cnnct, "Cannot authenticate against database: ");
+  $res = pdo_query($qry, $prms, "Cannot authenticate against database: ");
+  return $res->fetch();
 
-  // exactly one row? if not then we failed
-  if (mysql_num_rows($res) != 1)
-    return false;
-
-  // return the user details
-  return mysql_fetch_array($res);
+  // If there are multiple matches, only the first is returned
 }
 
-function auth_author($subId, $password) {
-  $cnnct = db_connect();
-  $qry = "SELECT subId, subPwd, title, authors, abstract, rebuttal FROM submissions WHERE subPwd='".my_addslashes($password)."'";
-  $res = db_query($qry, $cnnct);
-  
-  if(mysql_num_rows($res) < 1)
-    return false;
+function auth_author($subId, $password) 
+{
+  global $SQLprefix;
+  $qry = "SELECT subId, subPwd, title, authors, abstract, rebuttal FROM {$SQLprefix}submissions WHERE subId=? AND subPwd=?";
 
-  $row = mysql_fetch_assoc($res);
-  return $row;
+  $res = pdo_query($qry, array($subId,$password));
+  return $res->fetch(PDO::FETCH_ASSOC);
 }
 
-function active_rebuttal() {
-  if (defined('REBUTTAL_FLAG') && REBUTTAL_FLAG) {
-    return true;
-  } 
-  return false;
+function active_rebuttal()
+{
+  return (defined('REBUTTAL_FLAG') && REBUTTAL_FLAG);
 }
 
 function my_addslashes($str, $cnnct=NULL)
 {
   if (!isset($cnnct))
-      $cnnct=@mysql_connect(MYSQL_HOST, MYSQL_USR, MYSQL_PWD);
+      $cnnct=mysql_connect(MYSQL_HOST, MYSQL_USR, MYSQL_PWD);
   return mysql_real_escape_string($str, $cnnct);
 }
 
@@ -269,6 +258,39 @@ function db_query($qry, $cnnct, $desc='')
 	 . " " . htmlspecialchars($php_errormsg));
   }
   return $res;
+}
+
+function pdo_connect()
+{
+  $host=MYSQL_HOST;
+  $dbname=MYSQL_DB;
+  return new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", // the database
+		 MYSQL_USR, MYSQL_PWD,                      // username/password
+		 array(PDO::ATTR_EMULATE_PREPARES => false, // other options
+		       PDO::ATTR_ERRMODE          => PDO::ERRMODE_EXCEPTION));
+}
+
+// Handle a query in PDO ?-mode with parameters
+function pdo_query($qry, $prms=null, $errMsg='', $useDb=null)
+{
+  global $db;
+  if (!isset($useDb) && !isset($db)) // connect to the database, if not done yet
+    $db = pdo_connect();
+
+  if (isset($useDb))
+    $stmt = $useDb->prepare($qry);
+  else 
+    $stmt = $db->prepare($qry);
+
+  try {
+    if (isset($prms)) $stmt->execute($prms);
+    else              $stmt->execute();
+  }
+  catch(PDOException $ex) {
+    error_log((date('Y.m.d-H:i:s ').$ex->getMessage()), 3, LOG_FILE);
+    exit($errMsg . $ex->getMessage());
+  }
+  return $stmt;
 }
 
 function make_link($linkto, $text, $notLink=false)
@@ -606,80 +628,67 @@ function show_status($status, $scratch = false)
   }
 }
 
-function has_pc_author($authors, $subId)
+function has_pc_author($authors)
 {
-  $cnnct = db_connect();	
-  $authors = my_addslashes($authors);
-  $res = db_query("SELECT * FROM committee c JOIN submissions s on '$authors' LIKE CONCAT('%',c.name,'%') WHERE s.subId = '$subId';", $cnnct);	
-  if (mysql_num_rows($res)> 0) {
-  	return true;
-  }
-  return false;
+  global $SQLprefix;
+  $res = pdo_query("SELECT revId FROM {$SQLprefix}committee WHERE INSTR(?,name)>0", array($authors));
+
+  $PCmembers = $res->fetchAll(PDO::FETCH_NUM);
+  if (empty($PCmembers)) return false;
+  return $PCmembers;
 }
 
 function has_reviewed_paper($revId, $subId)
 {
-  $cnnct = db_connect();
-  $res = db_query("SELECT score FROM reports WHERE subId=$subId AND revId=$revId", $cnnct);
-  $reviewed = (mysql_num_rows($res) > 0);
+  global $SQLprefix;
+  $res = pdo_query("SELECT COUNT(*) FROM {$SQLprefix}assignments WHERE subId=? AND revId=? AND assign>0", array($subId, $revId));
+  if ($res->fetchColumn() == 0) return false; // was not assigned to review it
 
-  $res = db_query("SELECT assign FROM assignments WHERE subId=$subId AND revId=$revId", $cnnct);
-  $row = mysql_fetch_row($res);
-  $assigned = ($row[0] > 0);
-
-  return (!$assigned || $reviewed);
-  /*
-  $res = db_query("SELECT flags from submissions s where s.subId = '$subId'", $cnnct);
-  $sb = mysql_fetch_assoc($res);
-  return ($sb['flags'] && FLAG_IS_GROUP);
-  */
+  $res = pdo_query("SELECT COUNT(*) FROM {$SQLprefix}reports WHERE subId=? AND revId=?", array($subId ,$revId));
+  return ($res->fetchColumn() > 0);           // uploads a report for it
 }
 
 function has_reviewed_anything($revId)
 {
-  $cnnct = db_connect();
-  $res = db_query("SELECT score FROM reports WHERE revId=$revId", $cnnct);
-  return (mysql_num_rows($res) > 0);
+  global $SQLprefix;
+  $res = pdo_query("SELECT COUNT(*) FROM {$SQLprefix}reports WHERE revId=?", array($revId));
+  return ($res->fetchColumn() > 0);
 }
 
 function has_discussed($revId, $subId)
 {
-  $cnnct = db_connect();
-  $res = db_query("SELECT postId FROM posts WHERE revId=$revId AND subId=$subId", $cnnct);
-  return (mysql_num_rows($res) > 0);
+  global $SQLprefix;
+  $res = pdo_query("SELECT COUNT(*) FROM {$SQLprefix}posts WHERE revId=? AND subId=?", array($revId,$subId));
+  return ($res->fetchColumn() > 0);
 }
 
 function high_variance_reviews($subId, $thresh = 2.0)
 {
-  $cnnct = db_connect();
-  $res = db_query("SELECT VAR_POP(score) avg FROM reports WHERE subId=$subId",$cnnct);
-  return (mysql_result($res, 0) > $thresh);
+  global $SQLprefix;
+  $res = pdo_query("SELECT VAR_POP(score) FROM {$SQLprefix}reports WHERE subId=?", array($subId));
+  return ($res->fetchColumn() > $thresh);
 }
 
-function has_group_conflict($revId, $title) {
-	$title = htmlspecialchars($title);
-	$tArr = explode(',', $title);
-	$cnnct = db_connect();
-	foreach($tArr as $sId) {
-		$sId = my_addslashes($sId, $cnnct);
-		$qry1 = "SELECT a.assign assign FROM assignments a WHERE a.revId='$revId' ";
-		$qry1 .= "AND a.subId='$sId'";
-		$row = mysql_fetch_assoc(db_query($qry1, $cnnct));
-		if($row['assign'] < 0) {
-			return true;
-		}
-	}
-	return false;
+// returns true is reviewer has conflict with any of the submissions
+function has_group_conflict($revId, $subList)
+{
+  global $SQLprefix;
+
+  $subList = numberlist($subList); // sanitize
+  if (empty($subList)) return false;
+
+  $res = pdo_query("SELECT COUNT(*) FROM {$SQLprefix}assignments WHERE revId=? AND subId IN($subList) AND assign<0", array($revId));
+  return ($res->fetchColumn() > 0);
 }
 
+// returns a list of URL to discussion boards, one per submission
 function get_sub_links($subs) {
-	$subs = explode(',',$subs); 
-	$ret = '';
-	foreach($subs as $s) {
-		$ret.="<a href='discuss.php?subId=".$s."'>".$s."</a>, ";
-	}
-	$ret = substr($ret, 0, -2);
-	return $ret;
+  $ret = $comma = '';
+  foreach (explode(",",numberlist($subs)) as $subId) {
+    $ret .= "{$comma}<a href='discuss.php?subId=$subId'>$subId</a>";
+    $comma = ", ";
+  }
+  return $ret;
 }
 
 // Each entry in the PCMs array is $revId => array(name, ...)
@@ -714,8 +723,10 @@ function numberlist($lst)
   $a = explode(',', $lst);
   $s = $comma = '';
   foreach ($a as $n) {
-    if (is_numeric($n)) {
-      $s .= $comma.$n;
+    $n = trim($n);
+    $in = intval($n);
+    if ($n == $in) {
+      $s .= $comma.$in;
       $comma = ',';
     }
   }

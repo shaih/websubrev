@@ -10,18 +10,14 @@ require 'header.php';
 
 if (defined('CAMERA_PERIOD')) { exit("<h1>Review Site is Closed</h1>"); }
 
-$cnnct = db_connect();
-$qry = "SELECT revId, revPwd, name, email, flags FROM committee ORDER BY revId";
-$res = db_query($qry, $cnnct);
-
 // Store the committee details in an array
-$cmmtee = array();
-while ($row = mysql_fetch_row($res)) { array_push($cmmtee, $row); }
+$qry = "SELECT revId, revPwd, name, email, flags FROM {$SQLprefix}committee ORDER BY revId";
+$cmmtee = pdo_query($qry)->fetchAll(PDO::FETCH_NUM);
 
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <script language="Javascript" type="text/javascript">
 <!--
 function checkEmail( fld )
@@ -88,7 +84,7 @@ correct any errors</i>. Note the following:
   will be CCed on all these emails.</li>
 </ul>
 
-<form action=doManagePCmembership.php enctype="multipart/form-data" method=post>
+<form accept-charset="utf-8" action=doManagePCmembership.php enctype="multipart/form-data" method=post>
 
 <input name="reviewSite" value="on" type="hidden">
 <table cellpadding="3" cellspacing="0"><tbody>

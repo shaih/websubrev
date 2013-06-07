@@ -18,7 +18,7 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 { text-align: center; }
 </style>
@@ -40,7 +40,7 @@ To close the pre-registration, click on "Close Pre-Registration" below.
 Authors who already registered their submission will still be able to
 submit their paper (and revise it) until you close the submission site.
 <p> </p>
-<form action="doClosePrereg.php">
+<form accept-charset="utf-8" action="doClosePrereg.php">
 <input value="Close Pre-Registration" type="submit">
 </form>
 <hr/>

@@ -14,23 +14,21 @@ else return_to_caller('listSubmissions.php');
 
 // Make sure that this submission exists and the reviewer does not have
 // a conflict with it. 
-$cnnct = db_connect();
-$qry = "SELECT a.assign, a.watch FROM submissions s 
-      LEFT JOIN assignments a ON a.revId='{$revId}' AND a.subId='{$subId}'
-      WHERE s.subId='{$subId}'";
-$res = db_query($qry, $cnnct);
-if (!($row = mysql_fetch_row($res)) || $row[0]==-1) {
+$qry = "SELECT a.assign, a.watch FROM {$SQLprefix}submissions s 
+      LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId
+      WHERE s.subId=?";
+$ror = pdo_query($qry, array($revId,$subId))->fetch(PDO::FETCH_NUM);
+if (!$row || $row[0]==-1) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 
 if (isset($row[1])) { // modify existing entry
   $watch = 1 - $row[1];
-  $qry = "UPDATE assignments SET watch={$watch}
-  WHERE revId={$revId} AND subId='{$subId}'";
+  $qry = "UPDATE {$SQLprefix}assignments SET watch={$watch} WHERE revId=? AND subId=?";
 } else {              // insert a new entry
-  $qry = "INSERT INTO assignments SET revId=$revId, subId=$subId, watch=1";
+  $qry = "INSERT INTO {$SQLprefix}assignments SET revId=?, subId=?, watch=1";
 }
-db_query($qry, $cnnct);
+pdo_query($qry,array($revId,$subId));
 
 return_to_caller('listSubmissions.php');
 ?>

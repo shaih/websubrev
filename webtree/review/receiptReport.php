@@ -15,41 +15,42 @@ else exit("<h1>No Submission specified</h1>");
 // The chair is allowed to see the reciept of other people's reviews
 $isChair = (is_chair($revId)
 	    && isset($_GET['revId']) && $revId!=$_GET['revId']);
-if  ($isChair)  $revId = (int) trim($_GET['revId']);
+if ($isChair)  $revId = (int) trim($_GET['revId']);
 
-$cnnct = db_connect();
-$old = '';
-if (isset($_GET['bckpVersion']) && $_GET['bckpVersion']>0) {
+// Is this a new report or an existing one?
+if (isset($_GET['bckpVersion']) && $_GET['bckpVersion']>0) { // an existing one
   $table = "reportBckp";
   $ztable = "gradeBckp";
   $version = (int) $_GET['bckpVersion'];
   $old = '(old version)';
-} else {
+} else {                                                     // a new report
   $table = "reports";
   $ztable = "auxGrades";
-  $qry = "SELECT MAX(version) FROM reportBckp WHERE subId=$subId AND revId=$revId";
-  $res=db_query($qry, $cnnct);
-  $row = mysql_fetch_row($res);
-  $version = (($row && $row[0])? $row[0] : 0) + 1;
+  $old = '';
+  /*
+  $qry = "SELECT 1+MAX(version) FROM {$SQLprefix}reportBckp WHERE subId=? AND revId=?";
+  $version = pdo_query($qry, array($subId,$revId))->fetchColumn();
+  if (!isset($version)) $version = 1;
+  */
 }
 
 $qry = "SELECT s.title, c.name, r.subReviewer, r.confidence, r.score,
    r.comments2authors, r.comments2committee, r.comments2chair,
    r.comments2self, r.attachment
-FROM submissions s, committee c, $table r
-WHERE s.subId=$subId AND c.revId=$revId AND r.subId=$subId AND r.revId=$revId";
+FROM {$SQLprefix}submissions s, {$SQLprefix}committee c, {$SQLprefix}$table r
+WHERE s.subId=? AND c.revId=? AND r.subId=s.subId AND r.revId=c.revId";
 
-$qry2 = "SELECT gradeId, grade FROM $ztable WHERE subId=$subId AND revId=$revId";
+$qry2 = "SELECT gradeId, grade FROM {$SQLprefix}$ztable WHERE subId=? AND revId=?";
 
 if (isset($_GET['bckpVersion']) && $_GET['bckpVersion']>0) {
   $qry .= " AND version=$version";
   $qry2 .= " AND version=$version";
 }
 
-$res = db_query($qry, $cnnct);
-$auxRes = db_query($qry2, $cnnct);
+$res = pdo_query($qry, array($subId,$revId));
+$auxRes = pdo_query($qry2, array($subId,$revId));
 
-if (!($row=mysql_fetch_row($res))) {
+if (!($row=$res->fetch(PDO::FETCH_NUM))) {
   exit("<h1>Review Not Found in Database</h1>");
 }
 $title             = htmlspecialchars($row[0]);
@@ -68,7 +69,7 @@ $attachment = $row[9];
 $ext = strtoupper(file_extension($attachment));
 
 $zGrades = array();
-while ($row=mysql_fetch_row($auxRes)) {
+while ($row=$auxRes->fetch(PDO::FETCH_NUM)) {
   $gId = (int) $row[0];
   $zGrades[$gId] = $row[1]; // no cast to int, NULL remains NULL
 }
@@ -83,7 +84,7 @@ print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
   "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1, h2 { text-align: center;}
 .rjust { text-align: right; }

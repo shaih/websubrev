@@ -9,31 +9,28 @@
 require 'header.php';
 $cName = CONF_SHORT.' '.CONF_YEAR;
 
-$cnnct = db_connect();
 $statuses = array();
-$qry = "SELECT status, COUNT(subId) from submissions WHERE status!='Withdrawn'
-  GROUP BY status";
-$res = db_query($qry, $cnnct);
-while ($row = mysql_fetch_row($res)) {
+$qry = "SELECT status, COUNT(subId) FROM {$SQLprefix}submissions WHERE status!='Withdrawn' GROUP BY status";
+$res = pdo_query($qry);
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $stts = $row[0];
   $statuses[$stts] = $row[1];
 }
 $scstatuses = array();
-$qry = "SELECT scratchStatus, COUNT(subId) from submissions WHERE status!='Withdrawn'
-  GROUP BY scratchStatus";
-$res = db_query($qry, $cnnct);
-while ($row = mysql_fetch_row($res)) {
+$qry = "SELECT scratchStatus, COUNT(subId) FROM {$SQLprefix}submissions WHERE status!='Withdrawn' GROUP BY scratchStatus";
+$res = pdo_query($qry);
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $stts = $row[0];
   $scstatuses[$stts] = $row[1];
 }
 
 // Prepare a list of status modifications
-$qry = "SELECT subId, description, UNIX_TIMESTAMP(entered) from changeLog WHERE changeType='Status' ORDER BY entered DESC";
-$res = db_query($qry, $cnnct);
+$qry = "SELECT subId, description, UNIX_TIMESTAMP(entered) FROM {$SQLprefix}changeLog WHERE changeType='Status' ORDER BY entered DESC";
+$res = pdo_query($qry);
 $infoHist = '';
 $historyHTML = '';
 $history = array();
-while ($row=mysql_fetch_row($res)) {
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $subId = $row[0];
   $when = utcDate('M-d H:i', $row[2]);
 
@@ -52,12 +49,11 @@ if (!empty($historyHTML)) {
   $infoHist = '<span style="font-size: 80%;"><br/>Hover mouse over<br/>bullets for history</span>';
 }
 
-
 $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/chair.css" />
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
@@ -100,24 +96,22 @@ $links
 <hr />
 <h1>$cName Set Submission Status</h1>
 <p>
-On this form you can works with a scratch copy of submissions' status, which
-is only visible to the chair(s), by using the button on the bottom-left to
-"Save ONLY Scratch status". Alternatively, by pressing the button on the
+On this form you can works with a scratch copy of submissions&prime; status,
+which is only visible to the chair(s), by using the button on the bottom-left
+to "Save ONLY Scratch status". Alternatively, by pressing the button on the
 bottom-right to "Save Scratch and Visible Status", you can update both the
 scratch status and the "actual" status which is visible to all PC members.
 </p>
 
 <center>
-
 EndMark;
 print status_summary($statuses,$scstatuses); // defined in header.php
-
 print <<<EndMark
 </center>
 $infoHist
 <br/>
 <div style="width: 100%;">
-<form id="setStatus" action="setStatus.php" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" id="setStatus" action="setStatus.php" enctype="multipart/form-data" method="post">
 <table style="width: 100%;"><tbody><tr style="vertical-align: top;">
   <th style="width: 90px;">Status:<br/><small>&nbsp;&nbsp;visible/scratch</small></th>
   <th>Num</th>
@@ -133,13 +127,11 @@ $infoHist
 EndMark;
 
 // Prepare an array of submissions
-$qry = "SELECT subId,title,status,scratchStatus from submissions WHERE status!='Withdrawn' ORDER BY subId";
-$res = db_query($qry, $cnnct);
-$subArray = array();
-while ($row=mysql_fetch_assoc($res)) {
-  $maxSubId = $row['subId'];
-  $subArray[] = $row;
-}
+$qry = "SELECT subId,title,status,scratchStatus FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER BY subId";
+$res = pdo_query($qry);
+$subArray = $res->fetchAll(PDO::FETCH_ASSOC);
+$maxSubId = end($subArray)['subId'];
+reset($subArray);
 
 foreach($subArray as $sb) {
   $subId = $sb['subId'];
@@ -197,8 +189,7 @@ foreach($subArray as $sb) {
 EndMark;
 }
 
-//$submit = '<button class="send-form" data-form="setStatus" style="float:right;" type="button" name="noAnchor">Save Scratch and Visible Status</button>';
-$submit = '<input type="submit" style="float:right;" name="noAnchor" value="Save Scratch and Visible Status">';
+$submit = '<input type="submit" style="float:right;" name="visible" value="Save Scratch and Visible Status"/>';
 $submitScr = '<button style="float:left;" type ="button" name="scrSubmit"/>Save ONLY Scratch Status</button>';
 
 if (PERIOD==PERIOD_FINAL) $submit="<!-- $submit -->";
@@ -209,6 +200,7 @@ print <<<EndMark
 <div class="cb"></div>
 $submitScr $submit
 <div class="cb"></div>
+<input type="hidden" name="noAnchor" value="noAnchor"/>
 </form>
 </div>
 $historyHTML

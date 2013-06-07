@@ -10,15 +10,15 @@ require 'header.php';
 
 if (PERIOD==PERIOD_FINAL) exit("<h1>The Site is Closed</h1>");
 
-$cnnct = db_connect();
-
 // Manage access to the review cite
 if (isset($_POST['reviewSite'])) {
   $mmbrs2remove = isset($_POST['mmbrs2remove'])? $_POST['mmbrs2remove']: NULL;
-  if (is_array($mmbrs2remove)) foreach ($mmbrs2remove as $revId => $x) {
+  if (is_array($mmbrs2remove)) {
+    $stmt = $db->prepare("DELETE from {$SQLprefix}committee WHERE revId=?");
+    foreach ($mmbrs2remove as $revId => $x) {
       if (is_chair($revId)) continue;    // Cannot remove the chair(s)
-    $qry = "DELETE from committee WHERE revId=".intval($revId);
-    db_query($qry, $cnnct, "Cannot remove member with revId=$revId: ");
+      $stmt->execute(array($revId));
+    }
   }
 
   // Compare PC member details from the databse with the details from
@@ -27,8 +27,8 @@ if (isset($_POST['reviewSite'])) {
 
   if (is_array($members)) { 
 
-    $res = db_query("SELECT revId, revPwd, name, email, flags FROM committee ORDER BY revId", $cnnct);
-    while ($row = mysql_fetch_row($res)) {
+    $res = pdo_query("SELECT revId,revPwd,name,email,flags FROM {$SQLprefix}committee ORDER BY revId");
+    while ($row = $res->fetch(PDO::FETCH_NUM)) {
       $revId = (int) $row[0];
       $m = $members[$revId]; // $m = array(name, email, reset-flag, isChair)
       if (isset($m)) {
@@ -42,7 +42,7 @@ if (isset($_POST['reviewSite'])) {
 	else          $flags = (~FLAG_IS_CHAIR) & (int) $row[4];
 	$oldEml= strtolower($row[3]);
 	if ($nm!=$oldNm || $eml!=$oldEml || $reset || $flags!=$row[4]) {
-	  update_committee_member($cnnct, $nm, $eml, $revId,
+	  update_committee_member($nm, $eml, $revId,
 				  $oldPw, $oldNm, $oldEml, $reset, $flags);
 	}
       }
@@ -52,23 +52,22 @@ if (isset($_POST['reviewSite'])) {
                                   explode(';', $_POST['mmbrs2add']) : NULL;
   if (is_array($mmbrs2add)) foreach ($mmbrs2add as $m) {
     if ($m = parse_email($m))
-      update_committee_member($cnnct, $m[0], $m[1]);
-    }
+      update_committee_member($m[0], $m[1]);
+  }
 } // if (isset($_POST['reviewSite']))
 
 header("Location: index.php");
 exit();
 
-function update_committee_member($cnnct, $name, $email,
+function update_committee_member($name, $email,
 				 $revId=false, $revPwd=NULL,
 				 $oldName=NULL, $oldEml=NULL,
 				 $reset=false, $flags=0)
 {
-  if (!empty($name)) $nm = my_addslashes(trim($name), $cnnct);
-  if (!empty($email)) {
+  global $SQLprefix;
+
+  if (!empty($email))
     $email = strtolower(trim($email));
-    $eml = my_addslashes($email, $cnnct);
-  }
 
   if (!$revId) { // insert a new member
     if (empty($email)) return;  // member cannot have an empty email
@@ -76,20 +75,21 @@ function update_committee_member($cnnct, $name, $email,
     if (empty($name)) { // set to username from email address if missing
       $name = substr($email, 0, strpos($email, '@'));
       if (empty($name)) return; // email address without '@' ??
-      $nm = my_addslashes(trim($name), $cnnct);
     }
     
     $pwd = sha1(uniqid(rand()).mt_rand());          // returns hex string
     $pwd = alphanum_encode(substr($pwd, 0, 15));   // "compress" a bit
     $pw = sha1(CONF_SALT. $email . $pwd);
     
-    $qry = "INSERT INTO committee SET name='$nm', email='$eml', revPwd='$pw', flags=$flags";
-    db_query($qry, $cnnct, "Cannot add PC member $name <$email>: ");
+    $qry = "INSERT INTO {$SQLprefix}committee SET name=?,email=?,revPwd=?,flags=?";
+    pdo_query($qry, $array($name,$email,$pw,$flags),
+	      "Cannot add PC member $name <$email>: ");
     email_password($email, $pwd);
     return;
   }
 
   // Modify an existing member: first get current details
+  $prms = array();
   $updates = $comma = '';
   if (empty($revPwd)) $reset=true;                   // Set initial password
   if (isset($email) && $email!=$oldEml) $reset=true; // Change email address
@@ -98,23 +98,28 @@ function update_committee_member($cnnct, $name, $email,
     $pwd = sha1(uniqid(rand()).mt_rand());       // returns hex string
     $pwd = alphanum_encode(substr($pwd, 0, 15)); // "compress" a bit
     $pw = sha1(CONF_SALT. $email . $pwd);
-    $updates .= "revPwd='$pw'";
-    $comma = ", ";
+    $updates .= "revPwd=?";
+    $prms[] = $pw;
+    $comma = ",";
   }
 
   if (!empty($name) && $name!=$oldName) {
-    $updates .= $comma . "name='$nm'";
-    $comma = ", ";
+    $updates .= $comma . "name=?";
+    $prms[] = $name;
+    $comma = ",";
   }
 
   if (!empty($email) && $email!=$oldEml) {
-    $updates .= $comma . "email='$eml'";
-    $comma = ", ";
+    $updates .= $comma . "email=?";
+    $prms[] = $email;
+    $comma = ",";
   }
   $canDiscuss = ($flags & FLAG_IS_CHAIR)? 1: 0;  
 
-  $qry = "UPDATE committee SET $updates{$comma} flags=$flags, canDiscuss=$canDiscuss WHERE revId='{$revId}'";
-  db_query($qry, $cnnct, "Cannot update PC member $name <$email>: ");
+  $qry = "UPDATE {$SQLprefix}committee SET $updates{$comma} flags=?, canDiscuss=$canDiscuss WHERE revId=?";
+  $prms[] = $flags;
+  $prms[] = $revId;
+  pdo_query($qry, $prms, "Cannot update PC member $name <$email>: ");
   if ($reset) email_password($email, $pwd, $flags & FLAG_IS_CHAIR);
 }
 
@@ -149,6 +154,6 @@ as username $emailTo and with password $pwd
 
 EndMark;
 
-  $success = my_send_mail($emailTo, $sbjct, $msg, $cc, "password $pwd to $emailTo");
+  my_send_mail($emailTo, $sbjct, $msg, $cc, "password $pwd to $emailTo");
 }
 ?>

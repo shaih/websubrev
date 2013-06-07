@@ -113,7 +113,7 @@ function showReviewsBox($flags=0)
   $dscsChk  = ($flags & 128) ? ' checked="checked"' : '';
 
   $html =<<<EndMark
-<form action="listReviews.php" method="get">
+<form accept-charset="utf-8" action="listReviews.php" method="get">
 <div class="frame">
 <table><tbody>
 <tr style="background: blue; color: white;">
@@ -208,7 +208,7 @@ function listSubmissionsBox($canDiscuss, $flags=0)
   }
   
   $html =<<<EndMark
-<form action="listSubmissions.php" method="get">
+<form accept-charset="utf-8" action="listSubmissions.php" method="get">
 <div class="frame">
 <table><tbody>
 <tr style="background: blue; color: white; text-align: center;">
@@ -279,10 +279,10 @@ function setFlags_table($subId, $status)
   } else { 	$chk0 = "checked=\"checked\""; }
 
   $html = <<<EndMark
-<form action="../chair/setStatus.php{$params}"
-		enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" action="../chair/setStatus.php{$params}" name="sttsForm{$subId}"
+      id="sttsForm{$subId}" enctype="multipart/form-data" method="post">
   <table border=1><tbody>
-     <tr><td><input type="submit" name="noAnchor" value="Set status:"></td>
+     <tr><td><input type="submit" name="visible" value="Set status:"></td>
        <td class="setNO"><input type="radio" name="scrsubStts{$subId}" value="None" $chk0><b>None</b></td>
        <td class="setRE"><input type="radio" name="scrsubStts{$subId}" value="Reject" $chk2><b>Reject</b></td>
        <td class="setMR"><input type="radio" name="scrsubStts{$subId}" value="Perhaps Reject" $chk3>

@@ -19,9 +19,8 @@ if (defined('CAMERA_PERIOD')) {
 }
 
 // Read fields, stripping spurious white-spaces
-$cnnct = db_connect();
 $subId = (int)$_POST['subId'];
-$subPwd = my_addslashes(trim($_POST['subPwd']));
+$subPwd = trim($_POST['subPwd']);
 
 // Check that mandatory subID and subPwd are specified
 if (empty($subId) || empty($subPwd))
@@ -29,10 +28,9 @@ if (empty($subId) || empty($subPwd))
 
 // Test that there exists a submission with this subId/subPwd
 
-$qry = 'SELECT title, authors, contact FROM submissions' 
-       . " WHERE subId='{$subId}' AND subPwd='{$subPwd}'";
-$res=db_query($qry, $cnnct);
-$row=@mysql_fetch_row($res)
+$qry = "SELECT title, authors, contact FROM {$SQLprefix}submissions WHERE subId=? AND subPwd=?";
+$res=pdo_query($qry, array($subId,$subPwd));
+$row=$res->fetch(PDO::FETCH_NUM)
   or exit("<h1>Withdrawal Failed</h1>
            No submission with ID $subId and password $subPwd was found.");
 
@@ -42,8 +40,8 @@ $cntct = $row[2];
 
 /***** User input vaildated. Next modify the status *****/
 
-$qry = "UPDATE submissions SET status='Withdrawn' WHERE subId='{$subId}' AND subPwd='{$subPwd}'";
-db_query($qry, $cnnct);
+$qry = "UPDATE {$SQLprefix}submissions SET status='Withdrawn' WHERE subId=? AND subPwd=?";
+pdo_query($qry, array($subId,$subPwd));
 
 // Tell the client that the submission is withdrawn
 

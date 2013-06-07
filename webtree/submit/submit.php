@@ -78,6 +78,7 @@ print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/submission.css"/>
 
 <style type="text/css">
@@ -123,7 +124,7 @@ $chairNotice
 <h3 class=timeleft>$subDdline<br/>
 $timeleft</h3>
 
-<form name="submit" onsubmit="return checkform(this);" action="act-submit.php" enctype="multipart/form-data" method="post">
+<form name="submit" onsubmit="return checkform(this);" action="act-submit.php" enctype="multipart/form-data" method="post" accept-charset="utf-8">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
 
 <table cellpadding="6">

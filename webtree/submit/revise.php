@@ -41,13 +41,9 @@ $title = $authors  = $affiliations
 $optin = 0;
 
 if ($subId > 0 && !empty($subPwd)) {
-  $cnnct = db_connect();
-  $qry = "SELECT title, authors, affiliations, contact, abstract, category,\n"
-    . "   keyWords, comments2chair,flags\n"
-    . "FROM submissions WHERE subId='" . my_addslashes($subId, $cnnct) .
-    "' AND subPwd='" . my_addslashes($subPwd, $cnnct) . "'";
-  $res=db_query($qry, $cnnct);
-  $row=@mysql_fetch_row($res);
+  $qry = "SELECT title, authors, affiliations, contact, abstract, category, keyWords, comments2chair,flags FROM {$SQLprefix}submissions WHERE subId=? AND subPwd=?";
+
+  $row=pdo_query($qry, array($subId, $subPwd))->fetch(PDO::FETCH_NUM);
   if (!$row) {
     $h1text="<h1>Cannot Revise a Non-Existent Submission</h1>\n"
       . "<span style=\"color: red;\">\n"
@@ -78,7 +74,6 @@ if(defined("OPTIN_TEXT")) {
   $checkbox_text = OPTIN_TEXT;
 }
 
-
 if (is_array($confFormats) && count($confFormats)>0) {
   $supportedFormats = '';
   foreach ($confFormats as $ext => $f) {
@@ -101,6 +96,7 @@ print <<<EndMark
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<meta charset="utf-8">
 <style type="text/css">
 h1 { text-align: center; }
 h3 { text-align: center; color: blue; }
@@ -139,7 +135,7 @@ $chairNotice
 $h1text
 <h3 class=timeleft>$subDdline<br/>
 $timeleft</h3>
-<form name="revise" onsubmit="return checkform(this);" action="act-revise.php" enctype="multipart/form-data" method="post">
+<form name="revise" onsubmit="return checkform(this);" action="act-revise.php" enctype="multipart/form-data" method="post" accept-charset="utf-8">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
 <input type="hidden" name="referer" value="revise.php">
 <table cellspacing="6">

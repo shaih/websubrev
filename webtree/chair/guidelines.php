@@ -55,7 +55,7 @@ $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 {text-align: center;}
 </style>
@@ -71,7 +71,7 @@ local machine, then editing this template file and uploading it back to
 the server. You can also see the <a href="$current">last file that
 you uploaded</a> (if any).<br/>
 <br/>
-<form action="guidelines.php" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" action="guidelines.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
 <input type="hidden" name="what" value="$what">
 <input name="guidelinesFile" size="60" type="file">

@@ -32,7 +32,7 @@ print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
   "http://www.w3.org/TR/html4/loose.dtd">
 
-<html><head>
+<html><head><meta charset="utf-8">
 <style type="text/css">
 h1 { text-align: center; }
 </style>
@@ -188,9 +188,8 @@ function getAuxGrade(&$auxGrades, $line)
 function saveReview($subId,$title,$subrev,
 		     $score,$conf,$auxGrades,$cmnt,$pcCmnt,$chrCmnt,$slfCmnt)
 {
-  global $revId;
-  global $criteria;
-  global $disFlag;
+  global $revId, $criteria, $disFlag;
+  global $SQLprefix;
 
   if (!isset($subId) || $subId<=0) return true;
 
@@ -234,10 +233,9 @@ function saveReview($subId,$title,$subrev,
 
   // warn if title is specified but "too far from the right one"
   if (!empty($title)) {
-    $cnnct = db_connect();
-    $qry= "SELECT title FROM submissions WHERE subId='$subId'";
-    $res = db_query($qry, $cnnct);
-    $row = mysql_fetch_row($res);
+    $qry= "SELECT title FROM {$SQLprefix}submissions WHERE subId=?";
+    $res = pdo_query($qry, array($subId));
+    $row = $res->fetch(PDO::FETCH_NUM);
     $title1 = strtolower(substr($title, 0, 35));
     $title2 = trim($row[0]);
     $title2 = strtolower(substr($title2, 0, 35));

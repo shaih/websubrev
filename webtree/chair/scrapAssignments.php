@@ -8,17 +8,16 @@
 $needsAuthentication = true;
 require 'header.php';
 require 'parseAssignments.php';
-$cnnct = db_connect();
 
 if (isset($_POST["clearAll"])) {
-  db_query("UPDATE assignments SET sktchAssgn=0 WHERE sktchAssgn!=-1", $cnnct);
+  pdo_query("UPDATE {$SQLprefix}assignments SET sktchAssgn=0 WHERE sktchAssgn!=-1");
 }
 elseif (isset($_POST["reset2visible"])) {
-  db_query("UPDATE assignments SET sktchAssgn=assign", $cnnct);
+  pdo_query("UPDATE {$SQLprefix}assignments SET sktchAssgn=assign");
 }
 elseif (isset($_POST["upload"])
 	&& !empty($_FILES['assignmnetFile']['tmp_name'])) {
-  parse_assignment_file($_FILES['assignmnetFile']['tmp_name'],$cnnct);
+  parse_assignment_file($_FILES['assignmnetFile']['tmp_name']);
 }
 header('Location: assignmentMatrix.php');
 ?>

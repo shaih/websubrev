@@ -23,20 +23,18 @@ if (is_chair($revId)) $phase .= ' (Program Chair)';
 if (defined('CAMERA_PERIOD')) $phase = 'Read Only';
 $legend = '';
 
-$cnnct = db_connect();
-
 // A box listing the current active votes
-$qry = "SELECT voteId, voteTitle, deadline FROM votePrms WHERE voteActive=1";
+$qry = "SELECT voteId, voteTitle, deadline FROM {$SQLprefix}votePrms WHERE voteActive=1";
 // Before the discussion phase, cannot vote on submissions
 if (!$disFlag) $qry .= " AND (voteFlags&1)!=1";
-$res = db_query($qry, $cnnct);
-if (mysql_num_rows($res)<= 0) $ballotsText='';
+$elections =  pdo_query($qry)->fetchAll(PDO::FETCH_NUM);
+if (count($elections) <= 0) $ballotsText='';
 else {
   $ballotsText = "You can participate in the current active ballots:\n"
     . "<blockquote><table border=1><tbody>\n"
     . "<tr align=left><th>Title</th><th>Deadline</th>\n";
 
-  while ($row=mysql_fetch_row($res)) {
+  foreach ($elections as $row) {
     $voteId = intval($row[0]);
     $voteTitle = trim($row[1]);
     if (empty($voteTitle)) $voteTitle = 'Ballot #'.$voteId;
@@ -48,10 +46,9 @@ else {
 }
 
 // A link to see the results of completed ballots
-$qry = "SELECT COUNT(*) FROM votePrms WHERE voteActive=0";
-$res = db_query($qry, $cnnct);
-$row=mysql_fetch_row($res);
-if ($row[0]>0) $seeVoteRes = '&nbsp;o&nbsp;&nbsp;<a target=_blank href="voteResults.php">See results of completed votes</a><br/>';
+$qry = "SELECT COUNT(*) FROM {$SQLprefix}votePrms WHERE voteActive=0";
+$completed = pdo_query($qry)->fetchColumn();
+if ($completed>0) $seeVoteRes = '&nbsp;o&nbsp;&nbsp;<a target=_blank href="voteResults.php">See results of completed votes</a><br/>';
 else $seeVoteRes = '';
 
 print <<<EndMark
@@ -59,7 +56,7 @@ print <<<EndMark
   "http://www.w3.org/TR/html4/loose.dtd">
 
 <html>
-<head>
+<head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
 body { width: 900px; }
@@ -123,7 +120,7 @@ $listSubmissions = listSubmissionsBox($disFlag,$pcmFlags);
 
 $showReviews = $allReviews = $uploadScores= '';
 if ($disFlag) {         // Reviewer in the discussion phase
-  $watchedSubs = discussion_phase($cnnct, $revId, empty($ballotsText), $pcmFlags);
+  $watchedSubs = discussion_phase($revId, empty($ballotsText), $pcmFlags);
   if ($watchedSubs) {
     $legend = show_legend(); // defined in confUtils.php
   }
@@ -137,8 +134,8 @@ if ($disFlag) {         // Reviewer in the discussion phase
 href="listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on">html</a> or <a href="listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on&amp;format=ascii">ascii</a>
 <br/>';
 } else  if (PERIOD==PERIOD_REVIEW) { // Reviewer still in the individual review phase
-  individual_review($cnnct, $revId);
-  $uploadScores = '<form target=_blank action="parseScorecard.php"
+  individual_review($revId);
+  $uploadScores = '<form accept-charset="utf-8" target=_blank action="parseScorecard.php"
 enctype="multipart/form-data" method=POST>
 Scorecard file: <input type=file size=40 name=scorecard>
 <input type=submit value="Upload">
@@ -190,22 +187,23 @@ function show_message()
   return '';
 }
 
-function individual_review($cnnct, $revId)
+function individual_review($revId)
 {
+  global $SQLprefix;
   $subs = array();
   $reviewed = array();
 
   $qry ="SELECT s.subId subId, title, s.format format, status, 
       UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
       a.watch watch, r.revId revId, r.flags revFlags, s.flags flags, s.contact
-    FROM submissions s
-      INNER JOIN assignments a ON a.revId={$revId} AND a.subId=s.subId
-      LEFT JOIN reports r ON r.subId=s.subId AND r.revId={$revId}
-    WHERE (s.status!='Withdrawn' OR (s.flags & ".FLAG_IS_GROUP.")) AND a.assign=1";
-  $res = db_query($qry, $cnnct);
+    FROM {$SQLprefix}submissions s
+      INNER JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId
+      LEFT JOIN {$SQLprefix}reports r ON r.subId=s.subId AND r.revId=?
+    WHERE (s.status!='Withdrawn' OR (s.flags & ?)) AND a.assign=1";
+  $res = pdo_query($qry, array($revId,$revId,FLAG_IS_GROUP));
 
   $nReviewed = $total = 0;
-  while ($row = mysql_fetch_assoc($res)) {
+  while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
     if (isset($row["revId"])) { // already reviewed
       $subId = (int) $row["subId"];
       $notDraft = (int) $row["revFlags"];
@@ -220,10 +218,8 @@ function individual_review($cnnct, $revId)
     . " submissions that were assigned to you.\n";
 
   // Show reviewer his/her total, just to make him/her happy
-  $qry = "SELECT COUNT(1) FROM reports WHERE revId={$revId} AND flags>0";
-  $res = db_query($qry, $cnnct);
-  $row = mysql_fetch_row($res);
-  $extra = ((int) $row[0]) - $nReviewed;
+  $qry = "SELECT COUNT(1) FROM {$SQLprefix}reports WHERE revId=? AND flags>0";
+  $extra = pdo_query($qry, array($revId))->fetchColumn() - $nReviewed;
   if ($extra > 0) print "You also reviewed $extra other submissions. ";
 
   if ($total>0) {
@@ -233,23 +229,23 @@ function individual_review($cnnct, $revId)
   else print "<br/>\n";
 }
 
-function discussion_phase($cnnct, $revId, $extraSpace, $pcmFlags)
+function discussion_phase($revId, $extraSpace, $pcmFlags)
 {
-  global $discussIcon1, $discussIcon2, $disFlag;
+  global $discussIcon1, $discussIcon2, $disFlag, $SQLprefix;
 
   // Get a list of submissions for which this reviewer already saw all
   // the discussions/reviews. Everything else is considered "new"
-  $qry = "SELECT s.subId FROM submissions s, lastPost lp WHERE lp.revId=$revId AND s.subId=lp.subId AND s.lastModified<=lp.lastVisited";
-  $res = db_query($qry, $cnnct);
+  $qry = "SELECT s.subId FROM {$SQLprefix}submissions s, {$SQLprefix}lastPost lp WHERE lp.revId=? AND s.subId=lp.subId AND s.lastModified<=lp.lastVisited";
+  $res = pdo_query($qry, array($revId));
   $seenSubs = array();
-  while ($row = mysql_fetch_row($res)) { $seenSubs[$row[0]] = true; }
+  while ($row = $res->fetch(PDO::FETCH_NUM)) { $seenSubs[$row[0]] = true; }
 
   // a list of submissions that this reviewer reviewed
   $reviewed = array();
-  $qry = "SELECT subId, flags FROM reports WHERE revId={$revId}";
-  $res = db_query($qry, $cnnct);
+  $qry = "SELECT subId, flags FROM {$SQLprefix}reports WHERE revId=?";
+  $res = pdo_query($qry, array($revId));
   $reviewed = array();
-  while ($row = mysql_fetch_row($res)) {
+  while ($row = $res->fetch(PDO::FETCH_NUM)) {
     $subId = (int) $row[0];
     $notDraft = (int) $row[1];
     $reviewed[$subId] = $notDraft;
@@ -274,15 +270,15 @@ function discussion_phase($cnnct, $revId, $extraSpace, $pcmFlags)
   $qry ="SELECT s.subId subId, title, s.format format, status,
       UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
       a.watch watch, s.wAvg avg, s.flags flags, s.contact
-    FROM submissions s, assignments a
-    WHERE (status!='Withdrawn' OR (s.flags & ".FLAG_IS_GROUP.")) AND a.revId={$revId} AND a.subId=s.subId AND a.watch=1
+    FROM {$SQLprefix}submissions s, {$SQLprefix}assignments a
+    WHERE (status!='Withdrawn' OR (s.flags & ?)) AND a.revId=? AND a.subId=s.subId AND a.watch=1
     ORDER BY $order";
-  $res = db_query($qry, $cnnct);
+  $res = pdo_query($qry, array(FLAG_IS_GROUP,$revId));
 
   $needsDiscussion = 0;
   $subs = array();
   $subs2 = array();
-  while ($row = mysql_fetch_assoc($res)) {
+  while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
     $subId = $row['subId'];
     $row['hasNew'] = !isset($seenSubs[$subId]);
     if ($row['status']=='Needs Discussion') $needsDiscussion++;
@@ -319,19 +315,20 @@ function discussion_phase($cnnct, $revId, $extraSpace, $pcmFlags)
   return false;
 }
 
-function votingText($cnnct, $disFlag)
+function votingText($disFlag)
 {
-  $qry = "SELECT voteId, voteTitle, deadline FROM votePrms WHERE voteActive=1";
+  global $SQLprefix;
+  $qry = "SELECT voteId, voteTitle, deadline FROM {$SQLprefix}votePrms WHERE voteActive=1";
   // Before the discussion phase, cannot vote on submissions
   if (!$disFlag) $qry .= " AND (voteFlags&1)!=1";
-  $res = db_query($qry, $cnnct);
-  if (mysql_num_rows($res)<= 0) return '';
+  $elections = pdo_query($qry)->fetchAll(PDO::FETCH_NUM);
+  if (count($elections)<= 0) return '';
 
   $html = "You can participate in the current active ballots:\n";
   $html .= "<blockquote><table border=1><tbody>\n"
     . "<tr align=left><th>Title</th><th>Deadline</th>\n";
   
-  while ($row=mysql_fetch_row($res)) {
+  foreach ($elections as $row) {
     $voteId = intval($row[0]);
     $voteTitle = trim($row[1]);
     if (empty($voteTitle)) $voteTitle = 'Ballot #'.$voteId;

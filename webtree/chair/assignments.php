@@ -7,12 +7,11 @@
  */
 $needsAuthentication = true;
 require 'header.php';
-$cnnct = db_connect();
 $links = show_chr_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
+<head><meta charset="utf-8">
 <style type="text/css">
 h1 { text-align:center; }
 </style>
@@ -31,7 +30,7 @@ box next to the submit buttons in the matrix or list interfaces.
 (<a target=documentation href="../documentation/chair.html#scratchAssign"
 title="Click for more information">explain this</a>)
 
-<form action="scrapAssignments.php" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" action="scrapAssignments.php" enctype="multipart/form-data" method="post">
 <ul>
 <li>
 <a href="assignmentMatrix.php">The matrix interface</a> displays a matrix of reviewers and submissions, and lets you check boxes to assign submissions to reviewers.
