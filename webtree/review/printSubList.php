@@ -83,16 +83,16 @@ EndMark;
     if(!$isGroup) {
 	    // Styles defined in ../common/review.css, text constants in ../includes/getParams.php
       if (defined('CAMERA_PERIOD')) {
-        $width = "70px";
+        $width = "80px";
         $revStyle = "none";
         $revText = "";
       }
       else if (isset($reviewed[$subId])) {
-        $width = "150px";
+        $width = "160px";
         $revStyle = "Revise";
         $revText = (($reviewed[$subId]==REPORT_NOT_DRAFT)? $reviseIcon : $revise2Icon);
       } else {
-        $width = "150px";
+        $width = "160px";
         $revStyle = "Review";
         $revText = $reviewIcon;
       }
@@ -107,6 +107,12 @@ EndMark;
       $disText = ($sb['hasNew']) ? $discussIcon2 : $discussIcon1;
       if ($disFlag==2 && isset($sb['noDiscuss'])) $disText='';
 
+      if (!empty($disText)) {
+	$markRead = ($sb['hasNew'])? 0 : 1;
+	$toggleText = "<a href='toggleMarkRead.php?subId=$subId&amp;markRead=$markRead' class='toggleRead' title='Toggle Read/Unread' ID='toggle$subId' rel='$markRead'>&bull;</a>"; 
+	// we use the rel attribute to pass data to javascript
+      }
+
       print <<<EndMark
    <tr class="submission">$index<td style="width:20px;">
    <button class="watch $watchclass" type="button" data-subId="$subId"></button>
@@ -116,11 +122,12 @@ EndMark;
  <input type="checkbox" class="download" name="download[]" value="$subId" />
 EndMark;
 }
-   print "</td>\n<td style=\"width:$width;\">";
+   if ($width>0) print "</td>\n<td style=\"width:$width;\">";
+   else          print "</td>\n<td>";
    if(!$isGroup) {
-      print '<span class='.$revStyle.'><a href="review.php?subId='.$subId.'" target="_blank">'.$revText.'</a></span>';
+      print '<span class='.$revStyle.'><a href="review.php?subId='.$subId.'" target="_blank">'.$revText."</a></span>\n";
     }
-   print "<span class=\"Discuss\"><a target=\"_blank\" href=\"discuss.php?subId=$subId#start{$subId}\">$disText</a></span>";
+   print "<span class=\"Discuss\"><a target=\"_blank\" href=\"discuss.php?subId=$subId#start{$subId}\">$disText</a>\n$toggleText</span>";
     print <<<EndMark
    </td>
 <!--

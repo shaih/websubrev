@@ -99,9 +99,7 @@ if (isset($_GET['onlyDiscussed'])) $flags |= 1024;
 $links = show_rev_links(3);
 
 print <<<EndMark
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
-  "http://www.w3.org/TR/html4/loose.dtd">
-
+<!DOCTYPE HTML>
 <html><head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <style type="text/css">
@@ -112,6 +110,7 @@ h1 { text-align: center; }
 <title>Submission List (by $heading)</title>
 <script type="text/javascript" src="{$JQUERY_URL}"></script>
 <script type="text/javascript" src="../common/ui.js"></script>
+<script type="text/javascript" src="toggleMarkRead.js"></script>
 </head>
 <body>
 $links

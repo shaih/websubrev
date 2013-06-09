@@ -17,7 +17,11 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0, $sh
   $avg   = isset($sub['avg']) ? round($sub['avg'],1) : '*';
   $wAvg  = isset($sub['wAvg']) ? round($sub['wAvg'],1) : '*';
   $delta = isset($sub['delta']) ? ($sub['delta']) : '*'; 
-  $disText = (isset($sub['hasNew'])&&$sub['hasNew']) ? $discussIcon2 : $discussIcon1;
+
+  $markRead = (isset($sub['hasNew']) && $sub['hasNew']);
+  $disText =  $markRead? $discussIcon2 : $discussIcon1;
+  $toggleText = "<a href='toggleMarkRead.php?subId=$subId&amp;markRead=$markRead' class='toggleRead' title='Toggle Read/Unread' ID='toggle$subId' rel='$markRead'>&bull;</a>";
+
   $minGrade = isset($sub['minGrade']) ? round($sub['minGrade'],1) : '*';
   $maxGrade = isset($sub['maxGrade']) ? round($sub['maxGrade'],1) : '*';
   $lastModif = isset($sub['lastModif']) ? utcDate('M\&\n\b\s\p\;j H:i', ((int)$sub['lastModif'])) : '';
@@ -70,11 +74,10 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0, $sh
   print "<table style=\"width: 100%;\"><tbody><tr style=\"vertical-align: middle;\">\n";
 
   if (!empty($extra))
-    print "    <td style=\"vertical-align: top;\">$extra</td>\n";
+    print "  <td style=\"vertical-align: top;\">$extra</td>\n";
 
   if ($showDiscussButton) {
-    print '    <td style="width: 25px;"><span class="Discuss"><a target="_blank" href="discuss.php?subId='.$subId.'#start'.$subId."\">$disText</a></span>
-    </td>"."\n";
+    print '  <td style="width: 80px;"><span class="Discuss"><a target="_blank" href="discuss.php?subId='.$subId.'#start'.$subId."\">$disText</a>\n{$toggleText}</span></td>\n";
   }
   
     // Submission name and statistics

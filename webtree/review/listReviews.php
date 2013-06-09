@@ -214,12 +214,12 @@ if (isset($_GET['withDiscussion'])) { // get also the discussions
 
 $links = show_rev_links();
 print <<<EndMark
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
-  "http://www.w3.org/TR/html4/loose.dtd">
-
+<!DOCTYPE HTML>
 <html><head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
+<script type="text/javascript" src="{$JQUERY_URL}"></script>
+<script type="text/javascript" src="toggleMarkRead.js"></script>
 <style type="text/css">
 h1 {text-align: center; }
 tr { vertical-align: top; }

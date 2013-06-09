@@ -282,14 +282,19 @@ CREATE TABLE IF NOT EXISTS posts (
     INDEX (subId)
 );
 
-  /* The lastPost table is used to keep track of the last post for each
-   * submission that a reviewer saw, so we can mark posts as "unread"
-   */
+/* The lastPost table is used to keep track of the last post for each
+ * submission that a reviewer saw, so we can mark posts as "unread"
+ * The lastSaw field contains the last postId that this reviewer saw,
+ * posts with larger ID's will be displayed with a bold subject line.
+ *
+ * The lastVisited field contains the last time that the reviewer visited
+ * the discussion page (or clicked "mark as read" for this discussion), it
+ * controls the apparance of the 'Discuss' icon in lists of submissions.
+ */
 CREATE TABLE IF NOT EXISTS lastPost (
     subId smallint(5) NOT NULL,
     revId smallint(3) NOT NULL, 
     lastSaw smallint(5) NOT NULL,
-    prevSaw smallint(5) DEFAULT NULL,
     lastVisited timestamp, 
     PRIMARY KEY (revId, subId)
 );

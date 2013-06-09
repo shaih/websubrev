@@ -52,9 +52,7 @@ if ($completed>0) $seeVoteRes = '&nbsp;o&nbsp;&nbsp;<a target=_blank href="voteR
 else $seeVoteRes = '';
 
 print <<<EndMark
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
-  "http://www.w3.org/TR/html4/loose.dtd">
-
+<!DOCTYPE HTML>
 <html>
 <head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
@@ -67,6 +65,7 @@ tr { vertical-align: top; }
 <title>$confName Review homepage for $revName</title>
 <script type="text/javascript" src="{$JQUERY_URL}"></script>
 <script type="text/javascript" src="../common/ui.js"></script>
+<script type="text/javascript" src="toggleMarkRead.js"></script>
 </head>
 <body>
 $message
