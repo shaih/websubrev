@@ -23,9 +23,9 @@ elseif (isset($_GET['success']))
   $msg = 'Success! A group was created/modified ('.htmlspecialchars($_GET['success']).")";
 
 // Get a list of all the groups, these are submissions with large
-// submiddion-ID (>10000) and status 'Withdrawn'
+// submiddion-ID (>9000) and status 'Withdrawn'
 
-$qry = "SELECT title,subId FROM {$SQLprefix}submissions s WHERE s.subId >= 10000 AND status='Withdrawn' AND (flags & ?)";
+$qry = "SELECT title,subId FROM {$SQLprefix}submissions s WHERE s.subId >= 9000 AND status='Withdrawn' AND (flags & ?)";
 $res = pdo_query($qry, array(FLAG_IS_GROUP));
 
 $groups = '';

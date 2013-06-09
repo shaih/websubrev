@@ -61,14 +61,7 @@ define('FLAG_CONSENT_VIDEO', 16);
 define('FLAG_CONSENT_OTHER', 32);
 define('FLAG_PCM_SUBMISSION', 64);
 
-/* //Colors for topics
-$COLORS = array(0=>'00CCCC', 1=>'FF66FF', 
- 2=>'FFCC00',  3=>'99FF00',  4=>'FF0000',  5=>'FFFF33',  6=>'CC6600', 
- 7=>'FF3399',  8=>'990099',  9=>'3399FF', 10=>'33FFFF', 11=>'009933',
-12=>'990033', 13=>'FF9933', 14=>'CCCCCC', 15=>'E9C2A6', 16=>'00FF99',
-17=>'FAFAD2', 18=>'CCFFCC', 19=>'F5F5DC', 20=>'E7C6A5', 21=>'FC1501', 
-22=>'EED5D2', 23=>'FF8247', 24=>'FF9955', 25=>'33FF33', 26=>'003399');
-
+/*
 //Kept as reference for colors
 define('0_COLOR', '00CCCC'); //BLUE2_TOPIC
 define('1_COLOR', 'FF66FF'); //PINK2_TOPIC

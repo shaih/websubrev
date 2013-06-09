@@ -28,9 +28,9 @@ function arrayOfIDs($list)
 if (isset($_POST['EditGroups'])) {
   $success = '';
   // Get a list of all the groups, these are submissions with large
-  // submiddion-ID (>10000) and status 'Withdrawn'
+  // submiddion-ID (>9000) and status 'Withdrawn'
 
-  $qry = "SELECT subId,title FROM {$SQLprefix}submissions s WHERE s.subId >= 10000 AND status='Withdrawn' AND (flags & ".FLAG_IS_GROUP.")";
+  $qry = "SELECT subId,title FROM {$SQLprefix}submissions s WHERE s.subId >= 9000 AND status='Withdrawn' AND (flags & ".FLAG_IS_GROUP.")";
   $res = pdo_query($qry);
 
   // modify/remove groups if needed
@@ -72,7 +72,7 @@ if (isset($_POST['newGroup']) && !empty($_POST['IDs'])) {
   }
   // Create the new group in the database
   $maxSubId = pdo_query("SELECT MAX(subId) FROM {$SQLprefix}submissions")->fetchColumn();
-  $newId = ($maxSubId < 10000)? 10000 : ($maxSubId+1);
+  $newId = ($maxSubId < 9000)? 9000 : ($maxSubId+1);
   $ids = implode(",", $ids);
 
   $qry = "INSERT INTO {$SQLprefix}submissions (subId, title, status, flags) VALUES (?,?,'Withdrawn',".FLAG_IS_GROUP.")";
