@@ -54,7 +54,7 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0, $sh
     while ($row = $res->fetch(PDO::FETCH_NUM)) {
       $conflictList .= '<br/>&nbsp;&nbsp;'.$row[0];
     }
-    print "<table><tbody><tr><td valign=middle>";
+    print "<table><tbody><tr><td class='nowrp'>";
     if (!empty($conflictList)) {
       $zIx = 2000 - $subId;
       print "<a name=\"stts{$subId}"
@@ -74,42 +74,40 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0, $sh
   print "<table style=\"width: 100%;\"><tbody><tr style=\"vertical-align: middle;\">\n";
 
   if (!empty($extra))
-    print "  <td style=\"vertical-align: top;\">$extra</td>\n";
+    print "  <td class='nowrpTop'>$extra</td>\n";
 
   if ($showDiscussButton) {
-    print '  <td style="width: 80px;"><span class="Discuss"><a target="_blank" href="discuss.php?subId='.$subId.'#start'.$subId."\">$disText</a>\n{$toggleText}</span></td>\n";
+    print '  <td class="nowrp"><span class="Discuss"><a target="_blank" href="discuss.php?subId='.$subId.'#start'.$subId."\">$disText</a>\n{$toggleText}</span></td>\n";
   }
   
     // Submission name and statistics
     print <<<EndMark
-    <td style="width: 25px; text-align: right;"><strong>$subId.</strong>&nbsp;
+    <td class="nowrp" style="text-align: right;"><strong>$subId.</strong>&nbsp;
     </td>
-    <td><big><a href="submission.php?subId=$subId">$title</a></big></td>
+    <td width="90%"><big><a href="submission.php?subId=$subId">$title</a></big></td>
 EndMark;
-  if($showStats) {
+  if($showStats && !$isGroup) {
     print <<<EndMark
-    <td style="width: 50px; text-align: center;">
+    <td class="stats">
 	<small>Average<br />$avg</small>
     </td>
-    <td style="width: 50px; text-align: center;">
+    <td class="stats">
 	<small>Weighted<br />$wAvg</small>
     </td>
-<!--    <td style="width: 50px; text-align: center;">
-	<small>Variance<br />$delta</small>
-    </td> -->
-    <td style="width: 50px; text-align: center;">
-	<small>Max Score<br />$maxGrade</small>
+    <td class="stats">
+	<small>Max Score<br/>$maxGrade</small>
     </td>
-   	<td style="width: 50px; text-align: center;">
+   	<td class="stats">
 	<small>Min Score<br />$minGrade</small>
     </td>
     
-    <td style="text-align: right;"><div style='float: left;'>$sttus</div></td>
-    <td style="width: 50px; text-align: center;"><small>$lastModif</small>
+    <td id="statCode$subId" class="nowrp" style="text-align: right;">$sttus</td>
+    <td class="stats"><small>$lastModif</small>
    
     </td> 
 EndMark;
   }
+
   print <<<EndMark
     </tr>
     

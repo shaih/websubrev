@@ -279,10 +279,10 @@ function setFlags_table($subId, $status)
   } else { 	$chk0 = "checked=\"checked\""; }
 
   $html = <<<EndMark
-<form accept-charset="utf-8" action="../chair/setStatus.php{$params}" name="sttsForm{$subId}"
-      id="sttsForm{$subId}" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" action="../chair/setStatus.php{$params}" name="sttsForm{$subId}" id="sttsForm{$subId}" enctype="multipart/form-data" onsubmit="return ajaxSetStatus(this);" method="POST">
+  <input type="hidden" name="visible" value="true">
   <table border=1><tbody>
-     <tr><td><input type="submit" name="visible" value="Set status:"></td>
+     <tr><td><input type="submit" value="Set status:"></td>
        <td class="setNO"><input type="radio" name="scrsubStts{$subId}" value="None" $chk0><b>None</b></td>
        <td class="setRE"><input type="radio" name="scrsubStts{$subId}" value="Reject" $chk2><b>Reject</b></td>
        <td class="setMR"><input type="radio" name="scrsubStts{$subId}" value="Perhaps Reject" $chk3>

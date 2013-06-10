@@ -30,6 +30,8 @@ while ($row = $res->fetch(PDO::FETCH_NUM)) {
 
 // update the scratch status first, don't update lastModified
 $stmt = $db->prepare("UPDATE {$SQLprefix}submissions SET scratchStatus=?, lastModified=lastModified WHERE subId=?");
+
+$changes = array();
 foreach ($_POST as $key => $status) {
   if (strncmp($key, 'scrsubStts', 10)!=0 || empty($status))
     continue;
@@ -37,8 +39,11 @@ foreach ($_POST as $key => $status) {
   $subId = (int) substr($key, 10);
   if ($subId<=0) continue;
 
-  if ($status!=$oldScStts[$subId])
-    $stmt->execute(array($status,$subId));
+  if ($status!=$oldScStts[$subId]) { // scratch status has changed
+    $stmt->execute(array($status,$subId));  // record new scratch status
+    $changes[$subId] = show_status($status); // add to list of changes
+    // show_status returns HTML code to show the new status (in confUtils.php)
+  }
 }
 
 // If needed, update also the real status
@@ -65,7 +70,7 @@ if (!empty($_POST['visible'])) {
 
     if ($stCode != $oldStCode) { // status has changed
 
-      $stmt->execute(array($status,$subId));
+      $stmt->execute(array($status,$subId)); // record new status in database
 
       // make a list of reviewers to send email to
       $notify = $comma = '';
@@ -93,5 +98,10 @@ if (!empty($_POST['visible'])) {
     }
   }
 }
-return_to_caller('.');
+if (isset($_POST['ajax'])) {
+  header("Content-Type: application/json");
+  header("Cache-Control: no-cache");
+  exit(json_encode($changes));
+}
+else return_to_caller('.');
 ?>

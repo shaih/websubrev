@@ -14,7 +14,6 @@
 .setMA { background: rgb(102,255,0); }
 .setAC { background: rgb(0,136,0); }
 
-
 .Review { color: rgb(0,0,255); font-family: "bold Verdana"; }
 .Revise { color: rgb(255,0,0); font-family: "bold Verdana"; }
 .Discuss { color: rgb(0,128,0); font-family: "bold Verdana"; }
@@ -28,6 +27,11 @@
 .sbjct   { color: maroon; font-size: large; } 
 .fixed { font: 14px monospace; width: 90%; }
 .ctr   { text-align: center; }
+
+.nowrp {white-space: nowrap; vertical-align:middle;}
+.nowrpTop {white-space: nowrap; vertical-align:top;}
+
+.stats {white-space: nowrap; vertical-align:middle; text-align: center;}
 
 .cb {
     clear: both;

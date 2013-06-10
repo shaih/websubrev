@@ -28,6 +28,7 @@ $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
 $disFlag= (int) $pcMember[3];
 $pcmFlags=  (int) $pcMember[5];
+$isChair = is_chair($revId);
 
 // Check that this reviewer is allowed to discuss submissions
 if ($disFlag != 1 && !has_reviewed_anything($revId)) exit("<h1>$revName cannot discuss submissions yet</h1>");
@@ -63,7 +64,7 @@ if (isset($_GET['withReviews'])) { // get also the comments
   $flags |= 64;
   $qry .= ",\n       r.comments2authors cmnts2athr,
        r.comments2committee cmnts2PC";
-  if (is_chair($revId)) $qry .= ",\n       r.comments2chair cmnts2chr";
+  if ($isChair) $qry .= ",\n       r.comments2chair cmnts2chr";
 }
 $qry .= ",s.contact contact";
 
@@ -183,7 +184,7 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
     if (isset($_GET['withReviews'])) { // get also the comments
       $review["cmnts2athr"] = $row["cmnts2athr"];
       $review["cmnts2PC"] = $row["cmnts2PC"];
-      if (is_chair($revId)) $review["cmnts2chr"] = $row["cmnts2chr"];
+      if ($isChair) $review["cmnts2chr"] = $row["cmnts2chr"];
     }
     array_push($subs[$currentId]['reviews'], $review);
   }
@@ -211,6 +212,10 @@ if (isset($_GET['withDiscussion'])) { // get also the discussions
 }
 
 // Display results to the user
+if ($isChair) {
+  $chairExtra = '<link rel="stylesheet" type="text/css" href="../common/chair.css"/>';
+}
+else $chairExtra = "";
 
 $links = show_rev_links();
 print <<<EndMark
@@ -220,6 +225,8 @@ print <<<EndMark
 <link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
 <script type="text/javascript" src="{$JQUERY_URL}"></script>
 <script type="text/javascript" src="toggleMarkRead.js"></script>
+<script type="text/javascript" src="setStatusFromList.js"></script>
+$chairExtra
 <style type="text/css">
 h1 {text-align: center; }
 tr { vertical-align: top; }
@@ -244,6 +251,7 @@ EndMark;
 
 if (count($watch)>0) {
   print "<h2>Submissions on {$revName}'s Watch List:</h2>\n";
+  print '<div class="revList">';
   $i=1;
   foreach ($watch as $sub) {
     $subHeader_fnc($sub, $revId, true, $i++);
@@ -253,11 +261,13 @@ if (count($watch)>0) {
     }
     $otherTtl = true;
   }
+  print '</div>';
 }
 else { $otherTtl = false; }
 
 if (count($others)>0) {
   if($otherTtl) print "<br /><br /><h2>Other Submissions:</h2>\n";
+  print '<div class="revList">';
   $i=1;
   foreach ($others as $sub) {
     $subHeader_fnc($sub, $revId, true, $i++);
@@ -267,6 +277,7 @@ if (count($others)>0) {
       $showPosts_fnc($sub['posts'], $sub['subId'], false, $bigNumber);
     }
   }
+  print '</div>';
 }
 print <<<EndMark
 <hr />

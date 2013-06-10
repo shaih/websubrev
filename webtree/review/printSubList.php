@@ -112,6 +112,7 @@ EndMark;
 	$toggleText = "<a href='toggleMarkRead.php?subId=$subId&amp;markRead=$markRead' class='toggleRead' title='Toggle Read/Unread' ID='toggle$subId' rel='$markRead'>&bull;</a>"; 
 	// we use the rel attribute to pass data to javascript
       }
+      else $toggleText = '';
 
       print <<<EndMark
    <tr class="submission">$index<td style="width:20px;">
