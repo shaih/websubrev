@@ -121,7 +121,7 @@ EndMark;
    <td style="width:20px;">
 EndMark;
    if(!$isGroup){ print <<<EndMark
- <input type="checkbox" class="download" name="download[]" value="$subId" />
+ <input type="checkbox" class="download" title="Select to download" name="download[]" value="$subId" />
 EndMark;
 }
    if ($width>0) print "</td>\n<td style=\"width:$width;\">";
@@ -158,7 +158,7 @@ EndMark;
     <td></td><td style="width:20px;">
 EndMark;
     if(!$isGroup) {print <<<EndMark
-   <input type="checkbox" class="download" name="download[]" value="$subId" /></td>
+   <input type="checkbox" class="download" title="Select to download" name="download[]" value="$subId" /></td>
    <td style="width:60px;"><span class=$revStyle><a href="review.php?subId=$subId" target="_blank">$revText</a></span>
     
 EndMark;
@@ -200,9 +200,9 @@ EndMark;
     </tbody></table>
 
 <div>
+<button class="download-btn" type="button">Download Selected</button>
 <button class="select-all" type="button">Select All</button>
 <button class="deselect-all" type="button">Deselect All</button>
-<button class="download-btn" type="button">Download Selected</button>
 </div>
 
 EndMark;

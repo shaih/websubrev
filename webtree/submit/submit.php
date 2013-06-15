@@ -117,7 +117,7 @@ Comma-separated list with <b>at least one valid email address</b> of the form us
 <tbody id="authorFields"> <!-- Grouping together the author-related fields -->
 <td style="text-align: right;"><small>(*)</small> Authors:</td>
 <td>List authors in the order they appear on the paper, using names of the form <tt>GivenName M. FamilyName</tt>.
-<ol id="authorList" class="compactList">
+<ol class="authorList compactList">
   <li class="oneAuthor">
   Name:<input name="authors[]" size="42" type="text" class="author required"/>,
   Affiliations:<input name="affiliations[]" size="32" type="text" class="affiliation{$affRequired}"/>

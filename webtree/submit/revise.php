@@ -156,11 +156,15 @@ print <<<EndMark
 <tbody id="authorFields"> <!-- Grouping together the author-related fields -->
   <td style="text-align: right;">Authors:</td>
   <td>List authors in the order they appear on the paper, using names of the form <tt>GivenName M. FamilyName</tt>.
-<ol id="authorList" class="compactList">
+<ol class="compactList authorList">
 
 EndMark;
 
-foreach ($authors as $i=> $name) {
+$nAuthors = count($authors);
+if (isset($_GET['nAuthors']) && $_GET['nAuthors']>$nAuthors)
+  $nAuthors = (int) $_GET['nAuthors'];
+for ($i=0; $i<$nAuthors; $i++) {
+  $name= isset($authors[$i])?      $authors[$i]:      '';
   $aff = isset($affiliations[$i])? $affiliations[$i]: '';
   $authID = isset($authorIDs[$i])? $authorIDs[$i]:    '';
 print '  <li class="oneAuthor">
@@ -168,14 +172,13 @@ print '  <li class="oneAuthor">
     Affiliations:<input name="affiliations[]" size="32" type="text" class="affiliation" value="'.$aff."\">
     <input type='hidden' name='authID[]' class='authID' value='$authID'></li>\n";
 }
-$rel = count($authors);
 if ($subId>0 && !empty($subPwd))
-  $url = "./revise.php?subId={$subId}&subPwd={$subPwd}&nAuthors=".($rel+3);
+  $url = "./revise.php?subId={$subId}&subPwd={$subPwd}&nAuthors=".($nAuthors+3);
 else 
-  $url = "./revise.php?nAuthors=".($rel+3);
+  $url = "./revise.php?nAuthors=".($nAuthors+3);
 print <<<EndMark
 </ol>
-<a style="float: right;" class="moreAuthors" href="$url" rel="$rel">more authors</a><br/>
+<a style="float: right;" class="moreAuthors" href="$url" rel="$nAuthors">more authors</a><br/>
 If the list above is not empty, it will replace the curret author list even if these lists have different number of authors.
 </td></tr>
 </tbody> <!-- End of group of author-related fields -->

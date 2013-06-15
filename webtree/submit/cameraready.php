@@ -127,17 +127,23 @@ $ePrintHTML
   <td style="text-align: right;"><small>(*)</small>&nbsp;<b>Authors:</b><br/>
   <a href='../documentation/submitter.html#cryptodb' target='_blank'>CryptoDB help</a>&nbsp;</td>
   <td>List authors in the order they appear on the paper, using names of the form <tt>GivenName M. FamilyName</tt>.
-<ol id="authorList" class="compactList">
+<ol class="authorList compactList">
 
 EndMark;
 
-foreach ($authors as $i=> $name) {
+$nAuthors = count($authors);
+if (isset($_GET['nAuthors']) && $_GET['nAuthors']>$nAuthors)
+  $nAuthors = (int) $_GET['nAuthors'];
+for ($i=0; $i<$nAuthors; $i++) {
+  $name= isset($authors[$i])?      $authors[$i]:      '';
   $aff = isset($affiliations[$i])? $affiliations[$i]: '';
   $authID = isset($authorIDs[$i])? $authorIDs[$i]:    '';
   if (defined('IACR')) {
-    $idLine ="<br/><input type='checkbox' name='authChk[]' class='authChk' value='on' checked='checked' title='UNcheck if author does not have a record in CryptoDB'>
+    $chk = !empty($authID)? " checked='checked'" : "";
+    $shown = !empty($authID)? "shown" : "hidden";
+    $idLine ="<br/><input type='checkbox' name='authChk[]' class='authChk' value='on' title='UNcheck if author does not have a record in CryptoDB'{$chk}>
   Author has a record in CryptoDB with autor-ID:<input type='text' size='3' name='authID[]' class='authID' value={$authID}>
-  <a href='http://www.iacr.org/cryptodb/data/author.php?authorkey={$authID}' class='authLink' target='_blank' title='Lookup this author in CryptoDB'> Is this the right author?</a>";
+  <a href='http://www.iacr.org/cryptodb/data/author.php?authorkey={$authID}' class='authLink $shown' target='_blank' title='Lookup this author in CryptoDB'> Is this the right author?</a>";
   } else {
     $idLine = "<input type='hidden' name='authID[]' class='authID' value='$authID'>";
   }
@@ -146,14 +152,13 @@ foreach ($authors as $i=> $name) {
   Affiliations:<input name='affiliations[]' size='32' type='text' class='affiliation' value='$aff'>
   $idLine</li>\n";
 }
-$rel = count($authors);
 if ($subId>0 && !empty($subPwd))
-  $url = "./cameraready.php?subId={$subId}&subPwd={$subPwd}&nAuthors=".($rel+3);
+  $url = "./cameraready.php?subId={$subId}&subPwd={$subPwd}&nAuthors=".($nAuthors+3);
 else 
-  $url = "./cameraready.php?nAuthors=".($rel+3);
+  $url = "./cameraready.php?nAuthors=".($nAuthors+3);
 print <<<EndMark
 </ol>
-<a style="float: right;" class="moreAuthors" href="$url" rel="$rel">more authors</a><br/>
+<a style="float: right;" class="moreAuthors" href="$url" rel="$nAuthors">more authors</a><br/>
 If the list above is not empty, it will replace the curret author list even if these lists have different number of authors.
 </td></tr>
 </tr><tr><td colspan="2" style="border-bottom: 1px black solid;"></td></tr>

@@ -48,14 +48,13 @@ function moreAuthors(e)
 {
   e.preventDefault();
   var nAuthors = parseInt(this.rel,10);  // how many authors we have so far
-
-  var lastAuthor = $('#authorList li:last-child'); // the last author
+  // find the last author
+  var lastAuthor = $(this).prev('.authorList').children('li:last-child');
   // alert(lastAuthor.prop("nodeName"));
   var newAuthor = lastAuthor.clone(false); // add another author
-  newAuthor.children('.required').removeClass('required'); // not required
-  newAuthor.children('.error').removeClass('error');       // nor error
-  newAuthor.find('.author').autocomplete(autoComParams);   // set autocomplete
-  newAuthor.find('input,hidden').val('');   // remove input values
+  newAuthor.children().removeClass('required error'); // not required nor error
+  newAuthor.find('.author').autocomplete(autoComParams); // set autocomplete
+  newAuthor.find('input,hidden').val(''); // remove input values
   newAuthor.insertAfter(lastAuthor); // finally place it after the last one
 
   this.rel = nAuthors +1;  // update the link

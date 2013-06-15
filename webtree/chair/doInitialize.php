@@ -213,7 +213,7 @@ $prmsString = "<?php\n"
 
 if (!($fd = fopen($prmsFile, 'w')) || !fwrite($fd, $prmsString)) {
   print "<h1>Cannot write into parameters file $prmsFile</h1>\n";
-  print "Parameter file is as follows:\n<pre>\n{$prmsString}\n</pre>\n";
+  print "Parameter file is as follows:\n<pre>\n".htmlspecialchars($prmsString)."\n</pre>\n";
   print "After creating this file, you need to accees {$baseURL}chair/<br/>\n";
   print "using username $chairEmail and password $chrPwd";
   exit();
