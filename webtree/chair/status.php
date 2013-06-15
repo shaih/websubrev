@@ -54,7 +54,7 @@ print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head><meta charset="utf-8">
-<link rel="stylesheet" type="text/css" href="../common/chair.css" />
+<link rel="stylesheet" type="text/css" href="../common/saving.css" />
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
 <style type="text/css">
@@ -65,7 +65,7 @@ a.tooltips:hover span { width: 250px; }
 
 <script type="text/javascript" src="{$JQUERY_URL}"></script>
 <script type="text/javascript" src="../common/ui.js"></script>
-
+<script type="text/javascript" src="status.js"></script>
 <script type="text/javascript" language="javascript">
 <!--
   function expandCollapse(fid) {
@@ -97,17 +97,22 @@ $links
 <h1>$cName Set Submission Status</h1>
 <p>
 On this form you can works with a scratch copy of submissions&prime; status,
-which is only visible to the chair(s), by using the button on the bottom-left
-to "Save ONLY Scratch status". Alternatively, by pressing the button on the
-bottom-right to "Save Scratch and Visible Status", you can update both the
-scratch status and the "actual" status which is visible to all PC members.
-</p>
+which is only visible to the chair(s). Alternatively, by checking the box next
+to the submit button you can update both the scratch status and the "actual"
+status which is visible to all PC members.</p>
 
 <center>
 EndMark;
 print status_summary($statuses,$scstatuses); // defined in header.php
 print <<<EndMark
 </center>
+<p class="jsEnabled hidden">
+If Javascript is enabled in your browser, then the sums above will be updated
+whenever you make a change, and the page will try to post your changes to
+the server asynchronously as you make them. This is a "best effort" approach,
+however, you will <b>not be notified</b> of communication errors with the
+server. To ensure that the server has all the changes, please submit the
+form using the submit button at the bottom.</p>
 $infoHist
 <br/>
 <div style="width: 100%;">
@@ -154,60 +159,53 @@ foreach($subArray as $sb) {
   } else if ($scstatus == 'Accept') {
     $chk6 = "checked=\"checked\"";
   } else { 	$chk0 = "checked=\"checked\""; }
-  $status = show_status($status);
-  $scstatus = show_status($scstatus, true);
+  $statusHTML = show_status($status);
+  $scstatusHTML = show_status($scstatus);
 
   print '<tr><td>';
-  if (empty($history[$subId])) print '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+  if (empty($history[$subId])) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n";
   else {
-    print '<a style="z-index: '.$zIdx.';" class=tooltips href="#openHistory" onclick="return expand(\'history\');">&nbsp;&bull;&nbsp;&nbsp;<span>'.$history[$subId].'</span></a>';
+    print '<a style="z-index: '.$zIdx.';" class=tooltips href="#openHistory" onclick="return expand(\'history\');">&nbsp;&bull;&nbsp;&nbsp;<span>'.$history[$subId]."</span></a>\n";
   }
   print <<<EndMark
-  $status/$scstatus</td>
+  $statusHTML/<span title="$scstatus" id="sc{$subId}">$scstatusHTML</span></td>
   <th style="width: 20px;">$subId.</th>
   <td class="setNO" style="width: 20px;">
-    <input type="radio" data-acronym='NO' name="scrsubStts{$subId}" value="None" $chk0>
+    <input type="radio" name="scrsubStts{$subId}" class="statusRadio" value="None" $chk0>
   </td>
   <td class="setRE" style="width: 20px;">
-    <input type="radio" data-acronym='RE' name="scrsubStts{$subId}" value="Reject" $chk2>
+    <input type="radio" name="scrsubStts{$subId}" class="statusRadio" value="Reject" $chk2>
   </td>
   <td class="setMR" style="width: 20px;">
-    <input type="radio" data-acronym='MR' name="scrsubStts{$subId}" value="Perhaps Reject" $chk3>
+    <input type="radio" name="scrsubStts{$subId}" class="statusRadio" value="Perhaps Reject" $chk3>
   </td>
   <td class="setDI" style="width: 20px;">
-    <input type="radio" data-acronym='DI' name="scrsubStts{$subId}" value="Needs Discussion" $chk4>
+    <input type="radio" name="scrsubStts{$subId}" class="statusRadio" value="Needs Discussion" $chk4>
   </td>
   <td class="setMA" style="width: 20px;">
-    <input type="radio" data-acronym='MA' name="scrsubStts{$subId}" value="Maybe Accept" $chk5>
+    <input type="radio" name="scrsubStts{$subId}" class="statusRadio" value="Maybe Accept" $chk5>
   </td>
   <td class="setAC" style="width: 20px;">
-    <input type="radio" data-acronym='AC' name="scrsubStts{$subId}" value="Accept" $chk6>
+    <input type="radio" name="scrsubStts{$subId}" class="statusRadio" value="Accept" $chk6>
   </td>
   <td>$title</td>
 </tr>
 
 EndMark;
 }
+print "</tbody></table>\n";
 
-$submit = '<input type="submit" style="float:right;" name="visible" value="Save Scratch and Visible Status"/>';
-$submitScr = '<button style="float:left;" type ="button" name="scrSubmit"/>Save ONLY Scratch Status</button>';
+if (PERIOD<PERIOD_FINAL) 
+  print '<br/>&nbsp;<input type="submit" value="Save Status"/>
+<input type="checkbox" name="visible" value="yes"/>
+Make these status assignments visible to reviewers';
 
-if (PERIOD==PERIOD_FINAL) $submit="<!-- $submit -->";
-if (PERIOD==PERIOD_FINAL) $submitScr="<!-- $submitScr -->";
 print <<<EndMark
-</tbody></table>
-
-<div class="cb"></div>
-$submitScr $submit
-<div class="cb"></div>
-<input type="hidden" name="noAnchor" value="noAnchor"/>
 </form>
 </div>
 $historyHTML
 <hr />
 {$links}
-
 </body></html>
-
 EndMark;
 ?>

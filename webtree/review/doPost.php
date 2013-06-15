@@ -32,6 +32,10 @@ if (!($row = $res->fetch(PDO::FETCH_NUM)) || $row[0]==-1) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 
+// Find the latest post-ID for that submission
+$qry = "SELECT MAX(postId) FROM {$SQLprefix}posts WHERE subId=$subId";
+$lastPost = $db->query($qry)->fetchColumn();
+
 $qry = "INSERT INTO {$SQLprefix}posts SET subId=?,revId=?,";
 $prms = array($subId,$revId);
 if (isset($_POST['parent'])) {
@@ -43,12 +47,19 @@ if (isset($_POST['subject'])) {
   $prms[] = trim($_POST['subject']);
 }
 if (isset($_POST['comments'])) {
-  $qry.= "\n comments=?,"
+  $qry.= "\n comments=?,";
   $prms[] = trim($_POST['comments']);
-
+}
 $qry .= "\n whenEntered=NOW()";
 
 pdo_query($qry, $prms);
+$newPost = array('depth'  => $_POST['depth'], 
+		 'postId' => $db->lastInsertId(),
+		 'mine'   => true,
+		 'subject'  => $_POST['subject'], 
+		 'comments' => $_POST['comments'], 
+		 'whenEntered' => utcDate('j/n H:i'),
+		 'name' => $revName);
 
 // Touch the entry to update the 'lastModified' timestamp
 $qry = "UPDATE {$SQLprefix}submissions SET lastModified=NOW() WHERE subId=?";
@@ -84,6 +95,18 @@ if (!empty($notify)) {
     . "$prot://".BASE_URL."review/discuss.php?subId=$subId\n";
   $sbjct = "New post for submission $subId to ".CONF_SHORT.' '.CONF_YEAR;
   my_send_mail($notify, $sbjct, $msg);
+}
+
+if (isset($_POST['ajax'])) { // return HTML sniplet only for this post
+  include 'showReviews.php';
+  $html = show_posts(array($newPost), $subId, true, $_POST['lastSaw'],
+		     $_POST['pageWidth'], isset($_POST['newThread']));
+  $json = json_encode(array('html'   => $html, 
+			    'postId' => $newPost['postId'],
+			    'hasNew' => ($_POST['lastSaw']<$lastPost)));
+  header("Content-Type: application/json; charset=utf-8");
+  header("Cache-Control: no-cache");
+  exit($json);
 }
 
 // if this was reply to a previous post, return to that post

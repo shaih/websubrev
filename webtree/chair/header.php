@@ -55,42 +55,40 @@ $php_errormsg = ''; // just so we don't get notices when it is not defined.
 
 function status_summary($statuses, $scstatuses=NULL)
 {
-  if (isset($scstatuses)) {
+  $stts = array('NO'=>'None', 'RE'=>'Reject', 'MR'=>'Perhaps Reject',
+		'DI'=>'Needs Discussion','MA'=>'Maybe Accept','AC'=>'Accept');
+  foreach ($stts as $st) if (empty($statuses[$st])) $statuses[$st] = 0;
+
+  $legend = '';
+  $txtNO = 'None<br/><span class="statusSummary" ID="sumNO">'.$statuses['None'].'</span>';
+  $txtRE = 'Reject<br/><span class="statusSummary" ID="sumRE">'.$statuses['Reject'].'</span>';
+  $txtMR = 'Maybe Reject<br/><span class="statusSummary" ID="sumMR">'.$statuses['Perhaps Reject'].'</span>';
+  $txtDI = 'Discuss<br/><span class="statusSummary" ID="sumDI">'.$statuses['Needs Discussion'].'</span>';
+  $txtMA = 'Maybe Accept<br/><span class="statusSummary" ID="sumMA">'.$statuses['Maybe Accept'].'</span>';
+  $txtAC = 'Accept<br/><span class="statusSummary" ID="sumAC">'.$statuses['Accept'].'</span>';
+
+  if (!empty($scstatuses)) {
+    foreach ($stts as $st) if (empty($scstatuses[$st])) $scstatuses[$st] = 0;
+
     $legend = '<td><br/>visible<br/>scratch</td>';
-    $scNO = '<br/><span class="summary" data-status="None">'.(isset($scstatuses['None']) ? $scstatuses['None'] : 0).'</span>';
-    $scRE = '<br/><span class="summary" data-status="Reject">'.(isset($scstatuses['Reject']) ? $scstatuses['Reject'] : 0).'</span>';
-    $scMR = '<br/><span class="summary" data-status="Perhaps Reject">'.(isset($scstatuses['Perhaps Reject']) ? $scstatuses['Perhaps Reject'] : 0).'</span>';
-    $scDI = '<br/><span class="summary" data-status="Needs Discussion">'.(isset($scstatuses['Needs Discussion']) ? $scstatuses['Needs Discussion'] : 0).'</span>';
-    $scMA = '<br/><span class="summary" data-status="Maybe Accept">'.(isset($scstatuses['Maybe Accept']) ? $scstatuses['Maybe Accept'] : 0).'</span>';
-    $scAC = '<br/><span class="summary" data-status="Accept">'.(isset($scstatuses['Accept']) ? $scstatuses['Accept'] : 0).'</span>';
+    $txtNO .= '<br/><span class="statusSummary" ID="scSumNO">'.$scstatuses['None'].'</span>';
+    $txtRE .= '<br/><span class="statusSummary" ID="scSumRE">'.$scstatuses['Reject'].'</span>';
+    $txtMR .= '<br/><span class="statusSummary" ID="scSumMR">'.$scstatuses['Perhaps Reject'].'</span>';
+    $txtDI .= '<br/><span class="statusSummary" ID="scSumDI">'.$scstatuses['Needs Discussion'].'</span>';
+    $txtMA .= '<br/><span class="statusSummary" ID="scSumMA">'.$scstatuses['Maybe Accept'].'</span>';
+    $txtAC .= '<br/><span class="statusSummary" ID="scSumAC">'.$scstatuses['Accept'].'</span>';
   }
-  else {
-    $legend = '';
-    $scNO = '';
-    $scRE = '';
-    $scMR = '';
-    $scDI = '';
-    $scMA = '';
-    $scAC = '';
-  }
-  $html = '<table style="text-align: center;" border=1><tbody><tr>'.$legend.'
-  <td class="setNO"><b>None<br />'
-    . (isset($statuses['None']) ? $statuses['None'] : 0).$scNO.'</b></td>
-  <td class="setRE"><b>Reject<br />'
-    . (isset($statuses['Reject']) ? $statuses['Reject'] : 0).$scRE.'</b></td>
-  <td class="setMR"><b>Maybe Reject<br />'
-    . (isset($statuses['Perhaps Reject']) ? $statuses['Perhaps Reject'] : 0)
-    .$scMR. '</b></td>
-  <td class="setDI"><b>Discuss<br />'
-    . (isset($statuses['Needs Discussion'])? $statuses['Needs Discussion']: 0)
-    .$scDI. '</b></td>
-  <td class="setMA"><b>Maybe Accept<br />'
-    . (isset($statuses['Maybe Accept'])? $statuses['Maybe Accept']: 0)
-    .$scMA. '</b></td>
-  <td class="setAC"><b>Accept<br />'
-    . (isset($statuses['Accept'])? $statuses['Accept'] : 0).$scAC.'</b></td>
-</tr>';
-  $html .= '</tbody></table>';
+  $html = <<<EndMark
+<table style="text-align: center;" border=1><tbody><tr>
+  $legend
+  <td class="setNO"><b>$txtNO</b></td>
+  <td class="setRE"><b>$txtRE</b></td>
+  <td class="setMR"><b>$txtMR</b></td>
+  <td class="setDI"><b>$txtDI</b></td>
+  <td class="setMA"><b>$txtMA</b></td>
+  <td class="setAC"><b>$txtAC</b></td>
+</tr></tbody></table>
+EndMark;
   return $html;
 }
 

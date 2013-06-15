@@ -32,43 +32,18 @@ $chkAnon = (CONF_FLAGS & FLAG_ANON_SUBS) ? ' checked="checked"' : '';
 if (CHAIR_NAME=='') $chrEml = CHAIR_EMAIL;
 else $chrEml = CHAIR_NAME.' <'.CHAIR_EMAIL.'>';
 
-$star = "<span class=notice>(*)</span>";
+$star = "<span class='star'>(*)</span>";
 print <<<EndMark
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
- "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML>
 <html>
 <head><meta charset="utf-8">
 <title>Customizing Submission and Review Site</title>
-
 <link rel="stylesheet" type="text/css" href="../common/review.css"/>
+<script src="../common/ui.js"></script>
 <style type="text/css">
 tr {vertical-align: top;}
 h1 {text-align: center;}
 </style>
-
-<script type="text/javascript" src="../common/validate.js"></script>
-<script language="Javascript" type="text/javascript">
-<!--
-function checkform( form ) {
-  // Checking that all the mandatory fields are present
-  var pat = /^\s*$/;
-  var st = 0;
-  if (pat.test(form.longName.value))    { st |= 1; }
-  if (pat.test(form.shortName.value))   { st |= 2; }
-  if (pat.test(form.confYear.value))    { st |= 4; }
-
-  if (st != 0) {
-    alert( "You must specify all the fields that are marked with (*)" );
-    if (st & 1)        { form.longName.focus();  }
-    else if (st & 2)   { form.shortName.focus(); }
-    else if (st & 4)   { form.confYear.focus();  }
-
-    return false ;
-  }
-  return true ;
-}
-// -->
-</script>
 </head>
 <body>
 
@@ -83,8 +58,7 @@ This form has four sections, corresponding to <a href="#conference">the
 conference</a>, <a href="#submissions">submissions</a>, <a href="#committee">
 program committee</a>, and <a href="#review">reviews</a>.
 <br/>
-<form accept-charset="utf-8" name="customize" onsubmit="return checkform(this);"
- action="confirmCustomize.php{$urlParams}" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" name="customize" action="confirmCustomize.php{$urlParams}" enctype="multipart/form-data" method="POST">
 
 <table cellpadding="6"><tbody>
 <!-- ============== Details of the conference ================== -->
@@ -96,12 +70,12 @@ program committee</a>, and <a href="#review">reviews</a>.
 <tr><td class=rjust><big><b><a NAME="conference">The&nbsp;Conference:</a></b></big></td> <td></td>
 </tr>
 <tr><td class=rjust>{$star}Conference&nbsp;Name:</td>
-  <td><input name="longName" size="90" type="text"><br/>
+  <td><input name="longName" size="90" type="text" class="required"><br/>
     E.g., The 18th NBA Annual Symposium on Theory of Basketball</td>
 </tr>
 <tr><td class=rjust>{$star}Short&nbsp;Name:</td>
-  <td><input name="shortName" size="30" type="text" value="$shortName">e.g., BASKET, &nbsp;
-    &nbsp; &nbsp; {$star}Year:&nbsp;<input name="confYear" size="4" type="text" value="$year" maxlength="4" onchange="return checkInt(this, 1970, 2099)" value="$year"></td>
+  <td><input name="shortName" size="30" type="text" value="$shortName" class="required">e.g., BASKET, &nbsp;
+    &nbsp; &nbsp; {$star}Year:&nbsp;<input name="confYear" size="4" type="text" value="$year" maxlength="4" value="$year" class="required"></td>
 </tr>
 <tr><td class=rjust>Conference&nbsp;URL:</td>
   <td><input name="confURL" size="90" type="text"><br/>
@@ -183,7 +157,7 @@ program committee</a>, and <a href="#review">reviews</a>.
 <tr><td class=rjust><big><b><a NAME="committee">Program&nbsp;Committee:</a></b></big></td><td>Specify the email addresses of the program commitee. Each address should be in the format "Name &lt;email-address&gt;". The names that you enter here will be displayed on the reports and discussion boards.</td>
 </tr>
 <tr><td class=rjust>{$star}<a href="../documentation/chair.html#PCemail" target="documentation" title="click for more help">Chair&nbsp;Email(s):</a></td>
-  <td><textarea name="chair" rows=5 cols=70>$chrEml</textarea><br/>
+  <td><textarea name="chair" rows=5 cols=70 class="required">$chrEml</textarea><br/>
      A <i><b>semi-colon-separated</b></i> list of email addresses of the
      program chairs. A separate PC-chair account is created for each address.
 </td></tr>

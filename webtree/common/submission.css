@@ -5,3 +5,10 @@ h1 { text-align: center; }
 
 .hidden  { display: none; }
 .shown   { display: inline; }
+
+.error { background-color: #ffe0e0; }
+
+.compactList { 
+    margin-top:1px;
+    margin-bottom:0px;
+}

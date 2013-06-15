@@ -13,6 +13,7 @@ $revName = htmlspecialchars($pcMember[1]);
 $revEmail= htmlspecialchars($pcMember[2]);
 $disFlag = (int) $pcMember[3];
 $threaded= (int) $pcMember[4];
+$isChair = is_chair($revId);
 
 if (isset($_GET['subId'])) { $subId = (int) trim($_GET['subId']); }
 else exit("<h1>No Submission specified</h1>");
@@ -49,7 +50,7 @@ if(has_group_conflict($revId, $submission['title'])) {
 // Get the reviews for this subsmission
 
 $grades = "r.confidence conf, r.score score";
-$chrCmnts = is_chair($revId) ? "r.comments2chair cmnts2chr, " : "";
+$chrCmnts = $isChair ? "r.comments2chair cmnts2chr, " : "";
 
 // store the auxiliary grades in a more convenient array
 $qry2 = "SELECT revId, gradeId, grade FROM {$SQLprefix}auxGrades WHERE subId=?";
@@ -155,18 +156,16 @@ if($submission['flags'] & FLAG_IS_GROUP) {
 <h5> Reviewers assigned to submisssion '.$subId.' : '.$reviewers.'</h5>';
 }
 
-$js_params = "window.params = {};";
-if(isset($_GET['allowEdit'])) {
-  $js_params .= "window.params.edit = true;";
-}
+$chairExtra = $isChair ?
+  '<script type="text/javascript" src="setStatusFromList.js"></script>' : '';
 
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
   "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head>
+<head><meta charset="utf-8">
 <title>Discussion of Submission $subId</title>
-
+<link rel="stylesheet" type="text/css" href="../common/saving.css"/>
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
 <style type="text/css">
@@ -175,26 +174,22 @@ h1, h2 {text-align: center;}
 table { width: 100%; }
 a.tooltips:hover span { width: 400px;}
 </style>
-
 <script type="text/javascript">
-$js_params
+  window.params = {lastSaw: $lastPost, pageWidth: $pageWidth};
 </script>
-
 <script type="text/javascript" src="$JQUERY_URL"></script>
-<script type="text/javascript" src="../common/ui.js"></script>
+$chairExtra
+<script type="text/javascript" src="postComment.js"></script>
 <script type="text/javascript" language="javascript">
-<!--
-  function expandcollapse (postid) {
-    post = document.getElementById(postid);
-    if (post.className=="shown") { post.className="hidden"; }
-    else { post.className="shown"; }
-    return false;
+function expandcollapse (postid) {
+  post = document.getElementById(postid);
+  if (post.className=="shown") { post.className="hidden"; }
+  else { post.className="shown"; }
+  return false;
 }
-// -->
 </script>
 </head>
 <body>
-<div id="sub-id" data-id="$subId"></div>
 $links
 <hr />
 $headers
@@ -223,38 +218,41 @@ if (is_array($posts) && count($posts)>0) {
 
 EndMark;
 }
+
 print $chngeLogHtml;
 show_reviews($reports, $revId);
+print '<div id="discuss'.$subId.'" class="discussion">';
 if (is_array($posts) && count($posts)>0) {
   print '<h2 style="text-align: left;"><a name="discuss">Discussion</a></h2>';
+  print show_posts($posts, $subId, $threaded, $lastSaw, $pageWidth);
 }
-else {
-	print "<br/>\n";
-}
-if (PERIOD <= PERIOD_REVIEW) {
-  	$active = 'true';
-} else {  	
-	$active = 'false';
-}
-print "<div class=\"discussion\" data-width=\"725\" data-subId=\"$subId\" data-threaded=\"$threaded\" data-active=\"$active\"></div>";
-  //show_posts($posts, $subId, $threaded, $lastSaw, $pageWidth);
+else print "<br/>\n";
 
 if (PERIOD <= PERIOD_REVIEW) {
 print <<<EndMark
-<a name="endDiscuss"></a>
-<big><b>Start a new discussion thread:</b></big><br />
-<form class="new-thread" enctype="multipart/form-data" method="post">
-<span>Subject:</span>
-  <input style="width: 640px;" type="text" name="subject"></td>
-  <textarea name="comments" style="width: 100%;" rows="9">
-  </textarea>
-  <br />
-  <button class="post-btn" type="button">Post Comment</button>
-</form>
+<div id="newDiscussionThread" width="{$pageWidth}px">
+<a name="endDiscuss"></a><big><b>Start a new discussion thread:</b></big><br/>
+<form accept-charset="utf-8" action="doPost.php" enctype="multipart/form-data"
+ id="replyToX" method="POST" onsubmit="return ajaxPostComment(this);">
+<table><tbody>
+<tr><td class="rjust">Subject:</td>
+    <td style="text-align: left; width: 99%;">
+      <input style="width: 100%;" type="text" name="subject"></td>
+</tr>
+</tbody></table>
+<textarea name="comments" style="width: 100%;" rows="9">
+</textarea>
+<br />
+<input type="hidden" name="subId" value="$subId">
+<input type="hidden" name="parent" value="0">
+<input type="hidden" name="depth" value="0">
+<input type="hidden" name="newThread" value="true">
+<input type="submit" value="Post Comments">
+</form></div>
 
 EndMark;
 }
-print "<hr size=4 noshade=noshade/>\n";
+print "</div>\n<hr size=4 noshade=noshade/>\n";
 
 $rebuttal = trim($submission['rebuttal']);
 if (!empty($rebuttal)) {

@@ -8,8 +8,6 @@
 $needsAuthentication = true;
 require 'header.php';
 
-$subId=0;
-$revId = (int) $chair[0];
 $sttsCodes = array("None"=>"NO",
 		   "Reject"=>"RE",
 		   "Perhaps Reject"=>"MR",
@@ -17,6 +15,29 @@ $sttsCodes = array("None"=>"NO",
 		   "Maybe Accept"=>"MA",
 		   "Accept"=>"AC");
 
+if (isset($_POST['updateOne'])) { // update a single record
+  $subId = (int) $_POST['subId'];
+  $newStatus = $_POST['status'];
+  if ($subId <= 0 || !isset($sttsCodes[$newStatus])) {
+    header('HTTP/1.0 400 Bad Request', true, 400);
+    exit();
+  }
+  // update the status in the database
+  $res = pdo_query("UPDATE {$SQLprefix}submissions SET scratchStatus=? WHERE subId=?", array($newStatus,$subId));
+  if ($res->rowCount() <= 0) { // no such submissions?
+    header('HTTP/1.0 400 Bad Request', true, 400);
+    exit();
+  }
+  // return the result to the user
+  $json = json_encode(array('status' => $newStatus,
+			    'html' => show_status($newStatus)));
+  header("Content-Type: application/json");
+  header("Cache-Control: no-cache");
+  exit($json);
+}
+/***
+$subId=0;
+$revId = (int) $chair[0];
 // Read the current status before changing it
 $qry = "SELECT subId, scratchStatus FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER BY subId";
 $res = pdo_query($qry);
@@ -67,3 +88,4 @@ echo json_encode(
                        "data"=> $data, 
                        "stats"=>$statuses)
                  );
+***/

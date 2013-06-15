@@ -492,23 +492,28 @@ assignment (using the reviewer's preferences) that you can later adjust.
 There are two interfaces that you can use to manually specify the reviewing assignments. You can use either of these interfaces as you see fit, and once you "save the assignments" with one interface, the other interface is automatically updated as well. 
 <a name="happy"></a>
 <ul>
-<li><b>The matrix interface:</b> This interface consists of a matrix
-of check-boxes, with one column for each PC member and one row for each
-submission. Throughout each column there are running headers that lets
-you see the number of submissions that are assigned to that PC member
-as well as a heuristic indication as to "how happy" this PC member will
-be with this assignment. Also, at the right end of each row you can see
-how many reviewers are assigned to that submission. If you have Javascript
-enabled in your browser, then these sums and indicater are updated every
-time that you check or clear a check-box. <i>Note, however, that you
-must use the "save assignments" button to have these changes recorded
-by the server.</i><br/>
-<br/>
+<li><b>The matrix interface:</b>
+This interface consists of a matrix of check-boxes, with one column for each
+PC member and one row for each submission. Throughout each column there are
+running headers that lets you see the number of submissions that are assigned
+to that PC member as well as a heuristic indication as to "how happy" this PC
+member will be with this assignment. Also, at the right end of each row you
+can see how many reviewers are assigned to that submission.
+<p>
+If you have Javascript enabled in your browser, then these sums and indicater
+are updated every time that you check or clear a check-box, and the page trys
+to asynchronously update the sketch assignments on the server with your changes
+as you make them. This is a "best effort" approach, however, you <b>will not
+be notified</b> of communication errors with the server. To ensure that the
+assignment is recorded at the server you should use the "save assignments"
+button at the bottom of the matrix, and this will also reload the page with
+all the updated information. (To import changes made by another chair into
+your matrix, just reload/refresh the page in your browser.)</p>
+<p>
 The heuristic "indication of happiness" is computed as follows: The software computes the fraction of requested papers from all the assigned ones, and the faction of assigned papers from all the requested ones, and the "happiness level" is taken as the largest of these two fractions.  A level below 50% is "Angry" <img
-src="../common/angry.gif">, 50-64% is "Sad" <img src="../common/sad.gif">, 65-79% is "Satisfied" <img src="../common/ok.gif">, and 80% and up is "Happy" <img src="../common/laugh.gif">.<br/>
-<br/>
-Every entry in the matrix also displays the preferences that the PC member specified for that submission, encoded as a number between 0 and 5 and colored from red to green (if nothing appears in the entry, it means that the PC member specified the default number 3). Also, if you <a href="#chairPrefs">specified some preferences of your own</a> from the chair-preferences page, then the checkbox itself will be colored either red (should not review) or green (should review).<br/>
-<br/>
+src="../common/angry.gif">, 50-64% is "Sad" <img src="../common/sad.gif">, 65-79% is "Satisfied" <img src="../common/ok.gif">, and 80% and up is "Happy" <img src="../common/laugh.gif">.</p>
+<p>
+Every entry in the matrix also displays the preferences that the PC member specified for that submission, encoded as a number between 0 and 5 and colored from red to green (if nothing appears in the entry, it means that the PC member specified the default number 3). Also, if you <a href="#chairPrefs">specified some preferences of your own</a> from the chair-preferences page, then the checkbox itself will be colored either red (should not review) or green (should review).</p>
 </li>
 <li><b>The submission-list interface:</b>
 This interface consists of a list of submissions, where for each submission

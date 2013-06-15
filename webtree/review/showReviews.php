@@ -18,9 +18,9 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0, $sh
   $wAvg  = isset($sub['wAvg']) ? round($sub['wAvg'],1) : '*';
   $delta = isset($sub['delta']) ? ($sub['delta']) : '*'; 
 
-  $markRead = (isset($sub['hasNew']) && $sub['hasNew']);
+  $markRead = (isset($sub['hasNew']) && $sub['hasNew'])? 0: 1;
   $disText =  $markRead? $discussIcon2 : $discussIcon1;
-  $toggleText = "<a href='toggleMarkRead.php?subId=$subId&amp;markRead=$markRead' class='toggleRead' title='Toggle Read/Unread' ID='toggle$subId' rel='$markRead'>&bull;</a>";
+  $toggleText = "<a href='toggleMarkRead.php?subId=$subId&current=$markRead' class='toggleRead' title='Toggle Read/Unread' ID='toggleRead$subId' rel='$markRead'>&bull;</a>";
 
   $minGrade = isset($sub['minGrade']) ? round($sub['minGrade'],1) : '*';
   $maxGrade = isset($sub['maxGrade']) ? round($sub['maxGrade'],1) : '*';
@@ -284,25 +284,28 @@ EndMark;
 /********************************************************************
  * $postsArray is an array of posts, each post is defined as
  * $post = array(depth, postId, parentId,
- *               subject, comments, whenEntered, name)
+ *               subject, comments, whenEntered, reviewerName)
  ********************************************************************/
 function show_posts($postsArray, $subId, $threaded=true, 
-		    $lastSaw=0, $pageWidth=720)
+		    $lastSaw=0, $pageWidth=720, $closeLast=true)
 {
   // exit("<pre>".print_r($postsArray, true)."</pre>");
-  if (!is_array($postsArray)) return;
+  if (!is_array($postsArray)) return '';
 
+  $html = '';
   $thrdPid = $thrdSubj = NULL;
   $newPosts = false;
   foreach($postsArray as $post) {
+
+    if (!is_array($post)) continue;
 
     $depth = isset($post['depth']) ? $post['depth'] : 0;
     if ($depth > 3) $depth = 3;
 
     if ($depth==0) {          // first post in a thread
       if ($threaded && isset($thrdPid)) {// not the first thread, close prior one
-	print reply_to_thread($subId, $thrdPid, $thrdSubj);
-	print "<hr />\n\n";
+	// print reply_to_thread($subId, $thrdPid, $thrdSubj);
+	$html .= "<hr />\n\n";
       }
       // reset the thread-pid and thread-subject 
       $thrdPid = $post['postId'];
@@ -311,19 +314,23 @@ function show_posts($postsArray, $subId, $threaded=true,
     } // end if ($depth==0)
 
     // Display the current post
-    $depth *= 20;
-    $width = $pageWidth - $depth;
-
+    $nextPXdepth = $PXdepth =  $depth * 20;
+    $nextWidth = $width = $pageWidth - $PXdepth;
+    if ($threaded && $depth < 3) {
+      $depth++;  // The depth of a reply
+      $nextPXdepth += 20;
+      $nextWidth -= 20;
+    }
     $pid = (int) $post['postId'];
     if (isset($_GET['rply2post']) && $_GET['rply2post']==$pid) { // show the reply box
       $class = "shown";
       $reply = "[<a target=\"_blank\" href=\"discuss.php?subId=$subId#p$pid\""
-	. " onclick=\"return expandcollapse('r$pid');\">Reply</a>]";
+	. " onclick=\"return expandcollapse('replyTo$pid');\">Reply</a>]";
     }
     else {                          // initially hide the reply box
       $class = "hidden";
       $reply = "[<a target=\"_blank\" href=\"discuss.php?subId=$subId&amp;rply2post=$pid#p$pid\""
-	. " onclick=\"return expandcollapse('r$pid');\">Reply</a>]";
+	. " onclick=\"return expandcollapse('replyTo$pid');\">Reply</a>]";
     }
 
     $nameWhen = htmlspecialchars($post['name']);
@@ -348,14 +355,14 @@ function show_posts($postsArray, $subId, $threaded=true,
     $cmnts = trim($post['comments']);
     $cmnts = (empty($cmnts)) ? '<br/>'
       : nl2br(htmlspecialchars($cmnts)).'<br/><br/>';
-    $subject = isset($post['subject']) ? htmlspecialchars($post['subject']) : '';
+    $subject = isset($post['subject'])? htmlspecialchars($post['subject']) :'';
     if (strncasecmp($subject, "re:", 3)!=0)
       $subject = 'Re: ' . $subject;
 
     // Print the subject line
-    print <<<EndMark
+    $html .= <<<EndMark
 <!-- =========================================================== -->
-<div style="position: relative; left: {$depth}px; width: {$width}px;">
+<div style="position: relative; left: {$PXdepth}px; width: {$width}px;">
 <div style="float: right;">
 $nameWhen $reply
 </div>
@@ -364,26 +371,27 @@ $startHere<a name="p$pid"> </a>
 
 <div style="position: relative; left: 12px; top:6px;">
 $cmnts
-   <form accept-charset="utf-8" id="r$pid" class="$class" action="doPost.php"
-		enctype="multipart/form-data" method="post">
-     Subject:&nbsp;&nbsp;<input style="width: 91%;" type="text"
-		          name="subject" value="$subject">
-     <br /><textarea style="width: 100%;" rows="9" name="comments"></textarea>
-     <br /><input type="submit" value="Submit Reply">
-     <input type="hidden" name="subId" value="$subId">
-     <input type="hidden" name="parent" value="$pid">
-   <br />
-   <br />
-   </form>
-</div>
+</div></div>
+<div style="position: relative; left: {$nextPXdepth}px; width: {$nextWidth}px;">
+  <form accept-charset="utf-8" enctype="multipart/form-data" id="replyTo$pid"
+   class="$class" action="doPost.php" method="POST"
+   onsubmit="return ajaxPostComment(this);">
+   Subject:&nbsp;&nbsp;<input size="80" type="text" name="subject" value="$subject">
+   <br/><textarea style="width: 100%;" rows="9" name="comments"></textarea>
+   <input type="submit" value="Submit Reply">
+   <input type="hidden" name="subId" value="$subId">
+   <input type="hidden" name="parent" value="$pid">
+   <input type="hidden" name="depth" value="$depth"><br/><br/>
+  </form>
 </div>
 
 EndMark;
   }
-  if ($threaded && isset($thrdPid)) {// close last thread
-    print reply_to_thread($subId, $thrdPid, $thrdSubj);
-    print "<hr />\n\n";
+  if ($threaded && isset($thrdPid) && $closeLast) {// close last thread
+    // print reply_to_thread($subId, $thrdPid, $thrdSubj);
+    $html .= "<hr/>\n\n";
   }
+  return $html;
 }
 
 /********************************************************************
@@ -391,7 +399,7 @@ EndMark;
  * $post = array(depth, postId, parentId,
  *               subject, comments, whenEntered, name)
  * Intended to be used by Javascript for front-end.
- ********************************************************************/
+ ********************************************************************
 function show_posts_json($postsArray, $subId, $threaded=true,
                          $lastSaw=0) {
   if (!is_array($postsArray)) return json_encode(array());
@@ -399,26 +407,12 @@ function show_posts_json($postsArray, $subId, $threaded=true,
   $thrdPid = $thrdSubj = NULL;
   $newPosts = false;
 
-  /*
-  foreach($postsArray as $post) {
-    $depth = isset($post['depth']) ? $post['depth'] : 0;
-    if ($depth > 3) $depth = 3;
-    
-    if ($depth==0) {
-      if ($threaded && isset($thrdPid)) {
-        reply_thread_json();
-      }
-      
-      $thrdPid = $post['postId'];
-      $thrdSubj = isset($post['subject']) ? $post['subject'] : '';
-    } // end if ($depth==0)
-    
-    $pid = (int) $post['postId'];
-  }
-  */
   return json_encode(array('posts'=>$postsArray, 'subId'=>$subId, 'threaded'=>$threaded, 'lastSaw'=>$lastSaw));
 }
+ ********************************************************************/
 
+
+/********************************************************************
 function reply_to_thread($subId, $thrdPid, $thrdSubj)
 {
   if (defined('CAMERA_PERIOD')) return ''; // read-only mode: cannot reply
@@ -460,6 +454,7 @@ function reply_to_thread($subId, $thrdPid, $thrdSubj)
 EndMark;
   return $html;
 }
+ ********************************************************************/
 
 // a basic "node" class to be able to do Depth-First-Search
 class Node {
@@ -480,8 +475,6 @@ function make_post_array(&$res, &$posts)
   $rowIdx = array();
   $i = 1;           // index zero is reserved for the root
   while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
-    $row['subject'] = htmlspecialchars($row['subject'], ENT_QUOTES| ENT_COMPAT);
-    $row['comments'] = nl2br(htmlspecialchars($row['comments']));
     $pid = $row['postId'];
     $rows[$i] = $row;
     $rowIdx[$pid] = $i;
@@ -536,6 +529,7 @@ function depth_first_search($idx, $depth, &$rows, &$graph, &$posts)
     $d = depth_first_search($node->childIdx, 
 				$depth+1, $rows, $graph, $posts);
   }
+  //  $posts[] = $rows[$idx]['postId']; // just a marker for the reply box
   if ($node->nxtSibIdx > 0) {
     $depth=depth_first_search($node->nxtSibIdx, $depth, $rows, $graph, $posts);
     if ($d > $depth) $depth = $d;

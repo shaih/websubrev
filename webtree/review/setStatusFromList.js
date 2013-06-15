@@ -2,11 +2,9 @@ function ajaxSetStatus(form)
 {
   // Get the submission-ID from the element id ('sttsFormNNN'), and the new
   // status from the form itself
-  var subId = form.id.substring(8); // get the submission-ID
-  form.ajax = 'true'; // let the serve know we are using ajax
-    //tell server we're using ajax
-  var postData = $(form).serialize()+'&ajax=true';
-  var theURL = form.action.split("?")[0];
+  var subId = form.id.substring(8);  // get the submission-ID
+  var postData = $(form).serialize()+'&ajax=true';//tell server we're using ajax
+  var theURL = form.action.split("?")[0]; // remove query parameters
 
   // Put a yellow box saying that w are saving the status
   $(".notice").remove();

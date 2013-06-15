@@ -5,6 +5,8 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
+//exit("<pre>".print_r($_POST,true)."</pre>");
+
 require 'header.php'; // brings in the contacts file and utils file
 
 if (defined('CAMERA_PERIOD')) exit("<h1>Submission Deadline Expired</h1>");
@@ -22,22 +24,25 @@ if (USE_PRE_REGISTRATION && PERIOD>PERIOD_PREREG) {
 
 // Read all the fields, stripping spurious white-spaces 
 
-$title   = isset($_POST['title']) ? trim($_POST['title']) : NULL;
-$author  = isset($_POST['authors']) ? trim($_POST['authors']) : NULL;
-$affiliations  = isset($_POST['affiliations']) ? trim($_POST['affiliations']) : NULL;
-$contact = isset($_POST['contact']) ? trim($_POST['contact']) : NULL;
-$abstract= isset($_POST['abstract']) ? trim($_POST['abstract']) : NULL;
-$category= isset($_POST['category']) ? trim($_POST['category']) : NULL;
-$keywords= isset($_POST['keywords']) ? trim($_POST['keywords']) : NULL;
-$comment = isset($_POST['comment']) ? trim($_POST['comment']) : NULL;
-
-$optin = isset($_POST['optin']) ? trim($_POST['optin']) : NULL;
+$title   = isset($_POST['title'])?    trim($_POST['title'])    : NULL;
+$author  = isset($_POST['authors'])?  $_POST['authors']        : NULL;
+$affiliations  = isset($_POST['affiliations'])? $_POST['affiliations'] : NULL;
+$authIDs = isset($_POST['authID'])?   $_POST['authID']        : NULL;
+$contact = isset($_POST['contact'])?  trim($_POST['contact'])  : NULL;
+$abstract= isset($_POST['abstract'])? trim($_POST['abstract']) : NULL;
+$category= isset($_POST['category'])? trim($_POST['category']) : NULL;
+$keywords= isset($_POST['keywords'])? trim($_POST['keywords']) : NULL;
+$comment = isset($_POST['comment'])?  trim($_POST['comment'])  : NULL;
+$optin = isset($_POST['optin'])?      trim($_POST['optin'])    : NULL;
 
 if (isset($_FILES['sub_file'])) {
   $sbFileName = trim($_FILES['sub_file']['name']);
   $tmpFile = $_FILES['sub_file']['tmp_name'];
 }
 else $sbFileName = NULL;
+
+// convert arrays to semi-colon separated lists
+list($author,$affiliations,$authIDs) = arraysToStrings($author,$affiliations,$authIDs);
 
 // Assign random (?) password to the new submission
 $subPwd = sha1(uniqid(rand()) . mt_rand().$title.$author); // returns hex string
@@ -102,6 +107,10 @@ if (isset($fileFormat)) {
 if (isset($optin)) {
   $qry .= "flags=?,";
   $prms[] = FLAG_IS_CHECKED;
+}
+if (!empty($authIDs)) {
+  $qry .= "authorIDs=?,";
+  $prms[] = $authIDs;
 }
 $qry .= "whenSubmitted=NOW()";
 

@@ -35,13 +35,13 @@ $subDdline = 'Deadline is '
 
 $subId = isset($_GET['subId']) ? trim($_GET['subId']) : '';
 $subPwd = isset($_GET['subPwd']) ? trim($_GET['subPwd']) : '';
-$title = $authors  = $affiliations  
-  = $contact = $abstract= $category = $keywords = $comment = '';
+$title = $authors  = $affiliations = $contact
+  = $abstract= $category = $keywords = $comment = $authorIDs = '';
 
 $optin = 0;
 
 if ($subId > 0 && !empty($subPwd)) {
-  $qry = "SELECT title, authors, affiliations, contact, abstract, category, keyWords, comments2chair,flags FROM {$SQLprefix}submissions WHERE subId=? AND subPwd=?";
+  $qry = "SELECT title, authors, affiliations, contact, abstract, category, keyWords, comments2chair,flags,authorIDs FROM {$SQLprefix}submissions WHERE subId=? AND subPwd=?";
 
   $row=pdo_query($qry, array($subId, $subPwd))->fetch(PDO::FETCH_NUM);
   if (!$row) {
@@ -55,17 +55,20 @@ if ($subId > 0 && !empty($subPwd)) {
     $subId = (int) $subId;
     $subPwd = htmlspecialchars($subPwd);
     $title = htmlspecialchars($row[0]);
-    $authors  = htmlspecialchars($row[1]);
-    $affiliations  = htmlspecialchars($row[2]);
+    $authors  = explode('; ',htmlspecialchars($row[1]));
+    $affiliations  = explode('; ',htmlspecialchars($row[2]));
     $contact = htmlspecialchars($row[3]);
     $abstract= htmlspecialchars($row[4]);
     $category= htmlspecialchars($row[5]);
     $keywords= htmlspecialchars($row[6]);
     $comment = htmlspecialchars($row[7]);
     $flags = $row[8];
+    $authorIDs     = explode('; ',htmlspecialchars($row[9]));
     $optin = $flags & FLAG_IS_CHECKED;
   }
 }
+
+$affRequired= (defined('USE_AFFILIATIONS')&& USE_AFFILIATIONS)? ' required':'';
 
 $checkbox = $checkbox_text = "";
 if(defined("OPTIN_TEXT")) {
@@ -92,38 +95,19 @@ if (is_array($confFormats) && count($confFormats)>0) {
 
 $links = show_sub_links(4); 
 print <<<EndMark
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta charset="utf-8">
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="../common/submission.css"/>
+<link rel="stylesheet" type="text/css" href="../common/saving.css"/>
 <style type="text/css">
-h1 { text-align: center; }
 h3 { text-align: center; color: blue; }
 tr { vertical-align: top; }
 </style>
-
-<script type="text/javascript" src="../common/validate.js"></script>
-<script type="text/javascript" language="Javascript">
-<!--
-function checkform( form )
-{
-  var pat = /^\s*$/;
-  // Checking that all the mandatory fields are present
-  st = 0;
-  if (pat.test(form.subId.value)) { st |= 1; }
-  if (pat.test(form.subPwd.value))   { st |= 2; }
-
-  if (st != 0) {
-    alert( "You must specify the submission-ID and password" );
-    if (st & 1) { form.subId.focus(); }
-    else if (st & 2) { form.subPwd.focus(); }
-    return false;
-  }
-  return true ;
-}
-//-->
-</script>
+<link rel="stylesheet" type="text/css" href="$JQUERY_CSS"> 
+<script src="$JQUERY_URL"></script>
+<script src="$JQUERY_UI_URL"></script>
+<script src="../common/ui.js"></script>
+<script src="../common/authNames.js"></script>
 
 <title>$titleText</title>
 <link rel="stylesheet" type="text/css" href="../common/submission.css"/>
@@ -135,92 +119,73 @@ $chairNotice
 $h1text
 <h3 class=timeleft>$subDdline<br/>
 $timeleft</h3>
-<form name="revise" onsubmit="return checkform(this);" action="act-revise.php" enctype="multipart/form-data" method="post" accept-charset="utf-8">
+<form name="revise" action="act-revise.php" enctype="multipart/form-data" method="post" accept-charset="utf-8">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
 <input type="hidden" name="referer" value="revise.php">
 <table cellspacing="6">
-<tbody>
-  <tr>
-    <td style="text-align: right;">
-         <small>(*)</small>&nbsp;Submission&nbsp;ID:</td>
-    <td> <input name="subId" size="4" type="text"
-                value="$subId">
-         The submission-ID, as returned when the paper was first $submitted.
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align: right;"><small>(*)</small> Password:</td>
-    <td><input name="subPwd" size="11" value="$subPwd" type="text">
-        The password that was returned with the original $submission.
-    </td>
-  </tr>
-
+<tr><td style="text-align: right;"><small>(*)</small>&nbsp;Submission&nbsp;ID:</td>
+  <td><input name="subId" size="4" type="text" value="$subId">
+    The submission-ID, as returned when the paper was first $submitted.</td>
+</tr><tr>
+  <td style="text-align: right;"><small>(*)</small> Password:</td>
+  <td><input name="subPwd" size="11" value="$subPwd" type="text">
+    The password that was returned with the original $submission.</td>
+</tr>
 EndMark;
 
 if (empty($subId) || empty($subPwd)) {// put button to Load submission details
-  print '  <tr>
-    <td></td>
-    <td><input value="Reload Form with Submission Details (Submission-ID and Password must be specified)" type="submit" name="loadDetails">
-    (<a href="../documentation/submitter.html#revise" target="documentation" title="this button reloads the revision form with all the submission details filled-in">what\'s this?</a>)
-    </td>
-  </tr>';
+  print '<tr>
+  <td></td><td><input value="Reload Form with Submission Details (Submission-ID and Password must be specified)" type="submit" name="loadDetails">
+    (<a href="../documentation/submitter.html#revise" target="documentation" title="this button reloads the revision form with all the submission details filled-in">what\'s this?</a>)</td>
+</tr>';
 }
 
 print <<<EndMark
-
-  <tr>
-    <td colspan="2" style="text-align: center;"><hr />
-        <big>Any input below will overwrite existing information;
-             no input means the old content remains intact.</big><br/><br/>
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">Title:</td>
-    <td><input name="title" size="90" type="text" value="$title"><br/>
-        The title of your submission</td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">Authors:</td>
-    <td><input name="authors" size="90" type="text" value="$authors"><br />
-        Separate multiple authors with '<i>and</i>' (e.g., Alice First 
-	<i>and</i> Bob T. Second <i>and</i> C. P. Third). <br />
-    </td>
-  </tr>
+<tr><td colspan="2" style="text-align: center;"><hr/>
+ <big>Any input below will overwrite existing information;
+ no input means the old content remains intact.</big><br/><br/></td>
+</tr><tr>
+  <td style="text-align: right;">Submission&nbsp;Title:</td>
+<td><input name="title" size="90" type="text" value="$title" class="required">
+  <br/>The title of your submission</td>
+</tr><tr>
+<td style="text-align: right;">Contact Email(s):</td>
+<td><input name="contact" size="90" type="text" value="$contact" class="required"><br/>
+  Comma-separated list of email addresses of the form user@domain</td>
+</tr><tr>
+<tbody id="authorFields"> <!-- Grouping together the author-related fields -->
+  <td style="text-align: right;">Authors:</td>
+  <td>List authors in the order they appear on the paper, using names of the form <tt>GivenName M. FamilyName</tt>.
+<ol id="authorList" class="compactList">
 
 EndMark;
-if (USE_AFFILIATIONS) {
-  print <<<EndMark
-  <tr>
-    <td style="text-align: right;">Affiliations:</td>
-        <td><input name="affiliations" size="70" type="text" value="$affiliations">
-  </tr>
 
-EndMark;
+foreach ($authors as $i=> $name) {
+  $aff = isset($affiliations[$i])? $affiliations[$i]: '';
+  $authID = isset($authorIDs[$i])? $authorIDs[$i]:    '';
+print '  <li class="oneAuthor">
+  Name:<input name="authors[]" size="42" type="text" class="author" value="'.$name.'">,
+    Affiliations:<input name="affiliations[]" size="32" type="text" class="affiliation" value="'.$aff."\">
+    <input type='hidden' name='authID[]' class='authID' value='$authID'></li>\n";
 }
-
+$rel = count($authors);
+if ($subId>0 && !empty($subPwd))
+  $url = "./revise.php?subId={$subId}&subPwd={$subPwd}&nAuthors=".($rel+3);
+else 
+  $url = "./revise.php?nAuthors=".($rel+3);
 print <<<EndMark
-  <tr>
-    <td style="text-align: right;">Contact Email(s):</td>
-    <td><input name="contact" size="70" type="text"  value="$contact" onchange="return checkEmailList(this)"><br/>
-    Comma-separated list with <b>at least one valid email address</b> of the form user@domain; for example:<br/>
-    <tt>first-author@university.edu, secondAuthor@company.com, third.one@somewhere.org</tt><br/>
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">Abstract:</td>
-    <td><textarea name="abstract" rows="15" cols="80">$abstract</textarea><br/>
-        Use only plain ASCII and LaTeX conventions for math, but no HTML tags.
-        <br /> <br />
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">Submission&nbsp;File: </td>
-    <td><input name="sub_file" size="70" type="file"><br />
-        The submission itself, in one of the supported formats
-	($supportedFormats).
-        <br />
-    </td>
-  </tr>
+</ol>
+<a style="float: right;" class="moreAuthors" href="$url" rel="$rel">more authors</a><br/>
+If the list above is not empty, it will replace the curret author list even if these lists have different number of authors.
+</td></tr>
+</tbody> <!-- End of group of author-related fields -->
+<tr><td style="text-align: right;">Abstract:</td>
+  <td><textarea name="abstract" rows="15" cols="80">$abstract</textarea><br/></td>
+</tr><tr>
+  <td style="text-align: right;">Submission&nbsp;File:</td>
+  <td><input name="sub_file" size="70" type="file"><br/>
+    The submission itself, in one of the supported formats ($supportedFormats).
+</td></tr>
 
 EndMark;
 
@@ -239,27 +204,18 @@ if (is_array($categories) && (count($categories)>1)) {
 }
 
 print <<<EndMark
-  <tr>
-    <td style="text-align: right;">Keywords:</td>
-    <td><input name="keywords" size="90" type="text" value="$keywords">
-        <br/><br/></td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">Comments to Chair: </td>
-    <td><textarea name="comment" rows="4" cols="80">$comment</textarea><br/>
-        This message will only be seen by the program chair(s).
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">$checkbox</td>
-    <td>$checkbox_text</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td><input value="{$submit}Revise Submission" type="submit" name="reviseSub">
-    </td>
-  </tr>
-</tbody>
+<tr>
+  <td style="text-align: right;">Keywords:</td>
+  <td><input name="keywords" size="90" type="text" value="$keywords"></td>
+</tr><tr>
+  <td style="text-align: right;">Comments to Chair: </td>
+  <td><textarea name="comment" rows="4" cols="80">$comment</textarea><br/>
+    This message will only be seen by the program chair(s).</td>
+</tr><tr>
+  <td style="text-align: right;">$checkbox</td><td>$checkbox_text</td>
+</tr><tr>
+  <td></td><td><input value="{$submit}Revise Submission" type="submit" name="reviseSub"></td>
+</tr>
 </table>
 </form>
 <hr />

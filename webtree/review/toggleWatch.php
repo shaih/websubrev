@@ -10,25 +10,33 @@ require 'header.php';     // defines $pcMember=array(id, name, ...)
 $revId = (int) $pcMember[0];
 
 if (isset($_GET['subId'])) { $subId = (int) trim($_GET['subId']); }
-else return_to_caller('listSubmissions.php');
+else exit('no submission specified');
 
 // Make sure that this submission exists and the reviewer does not have
 // a conflict with it. 
-$qry = "SELECT a.assign, a.watch FROM {$SQLprefix}submissions s 
-      LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId
-      WHERE s.subId=?";
-$ror = pdo_query($qry, array($revId,$subId))->fetch(PDO::FETCH_NUM);
+$qry = "SELECT a.assign,a.watch FROM {$SQLprefix}submissions s LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId WHERE s.subId=?";
+$row = pdo_query($qry,array($revId,$subId))->fetch(PDO::FETCH_NUM);
 if (!$row || $row[0]==-1) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 
-if (isset($row[1])) { // modify existing entry
-  $watch = 1 - $row[1];
+$watch = 0;
+if (!empty($_GET['current'])) $watch = (int) trim($_GET['current']);
+elseif (!empty($row[1]))      $watch = (int) $row[1];
+
+$watch = 1 - $watch;
+if (isset($row[0])) {  // modify existing entry
   $qry = "UPDATE {$SQLprefix}assignments SET watch={$watch} WHERE revId=? AND subId=?";
-} else {              // insert a new entry
+} elseif ($watch==1) { // insert a new entry
   $qry = "INSERT INTO {$SQLprefix}assignments SET revId=?, subId=?, watch=1";
 }
 pdo_query($qry,array($revId,$subId));
 
-return_to_caller('listSubmissions.php');
+if (!empty($_GET['ajax'])) { // Ajax call, just return the new markRead status
+  header("Content-Type: application/json; charset=utf-8");
+  header("Cache-Control: no-cache");
+  echo json_encode(array('current'=>$watch));
+} else {
+  return_to_caller('listSubmissions.php');
+}
 ?>

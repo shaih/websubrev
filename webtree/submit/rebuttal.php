@@ -78,8 +78,6 @@ print <<<EndMark
 <html>
 <head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/submission.css"/>
-
-<script type="text/javascript" src="../common/validate.js"></script>
   <title>Author Rebuttal $confName </title>
 </head>
 

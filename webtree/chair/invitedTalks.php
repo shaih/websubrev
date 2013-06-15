@@ -11,7 +11,7 @@ $cName = CONF_SHORT.' '.CONF_YEAR;
 
 $links = show_chr_links();
 print <<<EndMark
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML>
 <html>
 <head><meta charset="utf-8">
 <title>Add an invited talk for $cName</title>
@@ -20,7 +20,6 @@ print <<<EndMark
 <style type="text/css">
 tr { vertical-align: top; }
 </style>
-<script type="text/javascript" src="../common/validate.js"></script>
 </head>
 <body>
 $links
@@ -37,19 +36,19 @@ invited talk to the program.<br/>
 <tbody>
   <tr>
     <td style="text-align: right;">Title:</td>
-    <td><input name="title" size="90" type="string">
+    <td><input name="title" size="90" type="text">
   </tr>
   <tr>
     <td style="text-align: right;">Speaker:</td>
-    <td><input name="authors" size="70" type="string">
+    <td><input name="authors" size="70" type="text">
   </tr>
   <tr>
     <td style="text-align: right;">Affiliations:</td>
-        <td><input name="affiliations" size="70" type="string">
+        <td><input name="affiliations" size="70" type="text">
   </tr>
   <tr>
     <td style="text-align: right;">Contact Email:</td>
-    <td><input name="contact" size="70" type="string" onchange="return checkEmailList(this)"><br/>
+    <td><input name="contact" size="70" type="text"><br/>
     The email address of the person who will upload this talk to the server
     </td>
   </tr>

@@ -68,14 +68,15 @@ EndMark;
     $avg = isset($sb['avg']) ? round((float)$sb['avg'], 1) : NULL ;
     if (isset($lastMod)) $lastMod = utcDate('d/m\&\n\b\s\p\;H:i', $lastMod);
     if ($watch == 1) {
-      $watchclass = "open";
-      //$src = '../common/openeye.gif'; $alt = 'W';
-      $tooltip = "Click to remove from watch list";
+      //      $watchclass = "openEye";
+      $eyeSrc = '../common/openeye.gif'; $alt = 'W';
+      $watchTooltip = "Click to remove from watch list";
     }
     else {
-      $watchclass = "close";
-      //$src = '../common/shuteye.gif'; $alt = 'X';
-      $tooltip = "Click to add to watch list";
+      $watch = 0; // just making sure
+      //      $watchclass = "closeEye";
+      $eyeSrc = '../common/shuteye.gif'; $alt = 'X';
+      $watchTooltip = "Click to add to watch list";
     }
     $revStyle = "none";
     $revText = "";
@@ -109,15 +110,15 @@ EndMark;
 
       if (!empty($disText)) {
 	$markRead = ($sb['hasNew'])? 0 : 1;
-	$toggleText = "<a href='toggleMarkRead.php?subId=$subId&amp;markRead=$markRead' class='toggleRead' title='Toggle Read/Unread' ID='toggle$subId' rel='$markRead'>&bull;</a>"; 
+	$toggleText = "<a href='toggleMarkRead.php?subId=$subId&current=$markRead' class='toggleRead' title='Toggle Read/Unread' ID='toggleRead$subId' rel='$markRead'>&bull;</a>"; 
 	// we use the rel attribute to pass data to javascript
       }
       else $toggleText = '';
 
       print <<<EndMark
    <tr class="submission">$index<td style="width:20px;">
-   <button class="watch $watchclass" type="button" data-subId="$subId"></button>
-   </td> <td style="width:20px;">
+   <a rel='$watch' href='toggleWatch.php?subId={$subId}&current={$watch}'><img src='$eyeSrc' id='toggleWatch$subId' alt='$alt' title='$watchTooltip' border='0'></a></td> 
+   <td style="width:20px;">
 EndMark;
    if(!$isGroup){ print <<<EndMark
  <input type="checkbox" class="download" name="download[]" value="$subId" />
@@ -150,13 +151,11 @@ EndMark;
    </tr>
 
 EndMark;
-    }  // end if ($disFlag == 1)
+    }  // end if ($disFlag)
 
     else { print <<<EndMark
     <tr class="submission" data-subId="$subId">$index
-    <td style="width:20px;">
-    <button class="watch $watchclass" type="button" data-subId="$subId"></button>
-    </td><td style="width:20px;">
+    <td></td><td style="width:20px;">
 EndMark;
     if(!$isGroup) {print <<<EndMark
    <input type="checkbox" class="download" name="download[]" value="$subId" /></td>

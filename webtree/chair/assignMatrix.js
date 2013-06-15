@@ -3,13 +3,12 @@
 
 function initMatrix()
 {
-    document.getElementById('jsEnabled').className='shown';
-
+    $('.jsEnabled').show();
     // Check for the hidden recompute box before recomputing everything
     var recomp = document.getElementById('recompMatrix');
     if (recomp==null || !recomp.checked) return true;
 
-    alert('Recomputing matrix: this could take some time');
+    clickableNote('Recomputing matrix: this could take some time');
     var revId;
     var subId;
     // initialize a records for all reviewers
@@ -41,14 +40,20 @@ function initMatrix()
     // update the headers and smilies on the page
     for (revId=minRevId; revId<=maxRevId; revId++) updateColumn(revId);
 
+    $(".notice").remove(); // remove the clickable note
+
     return true;
 }
 
 function updateBox(box)
 {
-    // something changed: re-compute all if the page is reloaded
+    // Something changed, but the server does not know about it. Remember
+    // this so we know to re-compute all if the page is ever reloaded
     var recomp = document.getElementById('recompMatrix');
-    if (recomp!=null) recomp.checked= true;
+    if (recomp) {
+	var saveRecomp = recomp.checked;
+	recomp.checked= "checked";
+    }
 
     // Get the submission-ID, reviewer-ID, and reviewer preference
     var i = box.name.indexOf('_',2);     // the name is a_subId_revId
@@ -76,6 +81,14 @@ function updateBox(box)
     // update load/happiness everywhere on the page
     updateColumn(revId);
     subSum.innerHTML = sum;
+
+    // make an asynchronous call to the server to update this assignment. If
+    // succeeds then we are synchronyzed again and can reset the recomp value.
+    var assign = box.checked? 1 : 0;
+    data = 'checkbox=true&revId='+revId+'&subId='+subId+'&assign='+assign;
+    $.post('ajaxMatrix.php', data, 
+	   function(){ if (recomp!=null) recomp.checked= saveRecomp; }
+	  );
     return true;
 }
 
@@ -113,8 +126,8 @@ function updateColumn(revId)
     var src;
     if (happy == null)  src = '../common/empty.gif';
     else if (happy>=80) src = '../common/laugh.gif';
-    else if (happy>=60) src = '../common/ok.gif';
-    else if (happy>=40) src = '../common/sad.gif';
+    else if (happy>=65) src = '../common/ok.gif';
+    else if (happy>=50) src = '../common/sad.gif';
     else                src = '../common/angry.gif';
     for (i=0; i<2; i++) {
         var smily = document.getElementById('smily'+revId+'_'+i);

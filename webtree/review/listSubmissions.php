@@ -110,7 +110,7 @@ h1 { text-align: center; }
 <title>Submission List (by $heading)</title>
 <script type="text/javascript" src="{$JQUERY_URL}"></script>
 <script type="text/javascript" src="../common/ui.js"></script>
-<script type="text/javascript" src="toggleMarkRead.js"></script>
+<script type="text/javascript" src="toggleImage.js"></script>
 </head>
 <body>
 $links

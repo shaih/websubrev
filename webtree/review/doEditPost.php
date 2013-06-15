@@ -12,8 +12,6 @@ $revName = htmlspecialchars($pcMember[1]);
 $revEmail= htmlspecialchars($pcMember[2]);
 $disFlag = (int) $pcMember[3];
 
-// Check that this reviewer is allowed to discuss submissions
-if ($disFlag != 1 && (!has_reviewed_paper($revId, $subId) && $disFlag == 2)) exit("<h1>$revName cannot discuss submissions yet</h1>");
 if (isset($_POST['postId'])) { $postId = (int) trim($_POST['postId']); }
 else exit("<h1>No post specified</h1>");
 
@@ -27,6 +25,11 @@ if (!($post = $res->fetch(PDO::FETCH_NUM))) {
 	exit("<h1>Post not found</h1>");
 }
 $subId = $post[0];
+
+// Check that this reviewer is allowed to discuss submissions
+if ($disFlag < 1 || ($disFlag == 2 && !has_reviewed_paper($revId,$subId)))
+  exit("<h1>$revName cannot discuss this submissiont</h1>");
+
 $postRevId = $post[1];
 $qry = "UPDATE {$SQLprefix}posts SET subject=?, comments=? WHERE postId=? AND revId=?";
 pdo_query($qry, array(trim($_POST['subject']), trim($_POST['comments']),

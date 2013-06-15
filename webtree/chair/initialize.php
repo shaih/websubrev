@@ -35,47 +35,7 @@ print <<<EndMark
 tr {vertical-align: top;}
 h1 {text-align: center;}
 </style>
-<script type="text/javascript" src="../common/validate.js"></script>
-<script language="Javascript" type="text/javascript">
-<!--
-function checkform( form )
-{
-  // Checking that all the mandatory fields are present
-  var pat = /^\s*$/;
-  var st = 0;
-  if (pat.test(form.webServer.value))   { st |= 1; }
-  if (form.localMySQL[1].checked &&
-      pat.test(form.MySQLhost.value))   { st |= 2; }
-  if (pat.test(form.chair.value))       { st |= 4; }
-  if (pat.test(form.admin.value))       { st |= 8; }
-  if (pat.test(form.confDB.value))      { st |= 16; }
-
-  if (st != 0) {
-    alert( "Some mandatory fields are missing" );
-    if (st & 1)       { form.webServer.focus(); }
-    else if (st & 2)  { form.MySQLhost.focus(); }
-    else if (st & 4)  { form.chair.focus();     }
-    else if (st & 8)  { form.admin.focus();     }
-    else if (st & 16) { form.confDB.focus();    }
-
-    return false ;
-  }
-
-  st = 0;
-  if (pat.test(form.rootNm.value))  { st |= 1; }
-  if (pat.test(form.rootPwd.value)) { st |= 2; }
-  if (pat.test(form.user.value))    { st |= 4; }
-  if (pat.test(form.pwd.value))     { st |= 8; }
-
-  if ((st & 3) && (st & 12)) {
-    alert( "You must specify either the MySQL administrator name and password, or the name and password of a user that can access the conference database" );
-    form.rootPwd.focus();
-    return false ;
-  }
-  return true ;
-}
-//-->
-</script>
+<script src="../common/ui.js"></script>
 </head>
 <body>
 
@@ -86,12 +46,12 @@ conference.) Here you can only specify sytem parameters, such as
 username/pwd for MySQL, a local directory where the submissions are
 kept, etc.<br/>
 <br/>
-<form accept-charset="utf-8" action="doInitialize.php"  onsubmit="return checkform(this);" enctype="multipart/form-data" method="post">
+<form accept-charset="utf-8" action="doInitialize.php"  enctype="multipart/form-data" method="POST">
 
 <table cellpadding="6">
 <tbody>
 <tr><td class=rjust><a href="../documentation/chair.html#webServer" target="documentation" title="click for more help">Web&nbsp;Server:</a></td>
-  <td><input name="webServer" type="text" value="$webServer" size="60"><br/>
+  <td><input name="webServer" type="text" value="$webServer" size="60" class="required"><br/>
     The DNS name or IP address of the web-server (e.g., <tt>www.myConf.org</tt> or <tt>18.7.22.83</tt>)</td>
 </tr>
 <tr><td class=rjust><a href="../documentation/chair.html#SQLdb" target="documentation" title="click for more help">MySQL&nbsp;Server:</a></td>
@@ -116,7 +76,7 @@ Use an existing database, which already has all the tables in it. (Use this opti
 Specify here the name of the MYSQL database to use. If this is a new database then you must specify the MySQL administrator below.</td>
 </tr>
 <tr><td class=rjust><a href="../documentation/chair.html#SQLdb" target="documentation" title="click for more help">Table-name&nbsp;prefix:</a></td>
-  <td><input name="SQLprefix" size=40 type=text value="$dbName"> (e.g., FOCS2009)
+  <td><input name="SQLprefix" size=40 type=text value="$dbName" class="required"> (e.g., FOCS2009)
 <br/>
 If you use the same SQL database for multiple conferences, specify a prefix for the names of the tables used for the current installation.</td>
 </tr>
@@ -137,11 +97,11 @@ If you use the same SQL database for multiple conferences, specify a prefix for 
     defaults to the <tt>subs</tt> subdirectory under the BASE directory.
 </tr>
 <tr><td class=rjust><a href="../documentation/chair.html#chairEmail" target="documentation" title="click for more help">Chair&nbsp;Email:</a></td>
-  <td><input name="chair" size="90" type="text" onchange="return checkEmail(this)"><br/>
+  <td><input name="chair" size="90" type="text" class="required"><br/>
     Only one address, e.g., <tt>My Name &lt;chair@myConf.org&gt;</tt> or <tt>My.Email@company.com</tt>. You will be able to add more PC chairs later.</td>
 </tr>
 <tr><td class=rjust><a href="../documentation/chair.html#adminEmail" target="documentation" title="click for more help">Administrator&nbsp;Email:</a></td>
-  <td><input name="admin" size="90" type="text" onchange="return checkEmail(this)"><br/>
+  <td><input name="admin" size="90" type="text" class="required"><br/>
     Who should get the angry emails when there are problems with the site?</td>
 </tr>
 $iacr

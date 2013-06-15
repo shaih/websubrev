@@ -20,7 +20,9 @@ foreach ($lines as $line) {
   }
 }
 
-$JQUERY_URL = "../common/jquery-1.9.0.js";
+$JQUERY_URL   = "//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js";
+$JQUERY_UI_URL= "//ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js";
+$JQUERY_CSS   = "//ajax.googleapis.com/ajax/libs/jqueryui/1/themes/redmond/jquery-ui.css";
 
 $db = null;  // a global variable holding the database connection
 

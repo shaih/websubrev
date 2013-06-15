@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-
+//exit("<pre>".print_r($_POST,true)."</pre>");
 require 'header.php'; // brings in the contacts file and utils file
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 
@@ -27,8 +27,9 @@ if (isset($_POST['loadDetails'])) {
 // Read all the fields, stripping spurious white-spaces
 
 $title   = isset($_POST['title'])    ? trim($_POST['title'])    : NULL;
-$author  = isset($_POST['authors'])  ? trim($_POST['authors'])  : NULL;
-$affiliations  = isset($_POST['affiliations']) ? trim($_POST['affiliations']) : NULL;
+$author  = isset($_POST['authors'])  ? $_POST['authors']  : NULL;
+$affiliations  = isset($_POST['affiliations']) ? $_POST['affiliations'] : NULL;
+$authIDs = isset($_POST['authID'])?   $_POST['authID']        : NULL;
 $contact = isset($_POST['contact'])  ? trim($_POST['contact'])  : NULL;
 $abstract= isset($_POST['abstract']) ? trim($_POST['abstract']) : NULL;
 $category= isset($_POST['category']) ? trim($_POST['category']) : NULL;
@@ -44,6 +45,9 @@ if (isset($_FILES['sub_file'])) {
   $fileSize = $_FILES['sub_file']['size'];
 }
 else $fileSize = $tmpFile = $sbFileName = NULL;
+
+// convert arrays to semi-colon separated lists
+list($author,$affiliations,$authIDs) = arraysToStrings($author,$affiliations,$authIDs);
 
 // Check that contact has valid format user@domain (if specified)
 if (!empty($contact)) {
@@ -66,7 +70,7 @@ if (!empty($sbFileName)) {
 
 // Test that there exists a submission with this subId/subPwd
 
-$qry = "SELECT title, authors, affiliations, contact, abstract, category, keyWords, comments2chair, format, status FROM {$SQLprefix}submissions WHERE subId=? AND subPwd=?";
+$qry = "SELECT title, authors, affiliations, contact, abstract, category, keyWords, comments2chair, format, status, authorIDs FROM {$SQLprefix}submissions WHERE subId=? AND subPwd=?";
 $res=pdo_query($qry,array($subId, $subPwd));
 $row= $res->fetch(PDO::FETCH_ASSOC)
   or exit("<h1>Revision Failed</h1>
@@ -131,6 +135,12 @@ if (!empty($comment)) {
   $prms[] = $comment;
 }
 else $comment = $row['comments2chair'];
+
+if (!empty($authIDs)) {
+  $updts .= "authorIDs=?,";
+  $prms[] = $authIDs;
+}
+else $authIDs = $row['authorIDs'];
 
 
 if (!empty($optin)) {

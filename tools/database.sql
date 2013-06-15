@@ -126,7 +126,8 @@ CREATE TABLE IF NOT EXISTS submissions (
                 'Perhaps Reject',
                 'Reject',
                 'Withdrawn') NOT NULL DEFAULT 'None',
-    rebuttal text,
+    rebuttal text DEFAULT NULL,
+    authorIDs text DEFAULT NULL,
     PRIMARY KEY (subId),
     KEY pwd (subPwd(2))
 );

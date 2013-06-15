@@ -91,7 +91,7 @@ print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head><meta charset="utf-8">
-<link rel="stylesheet" type="text/css" href="../common/chair.css" />
+<link rel="stylesheet" type="text/css" href="../common/saving.css" />
 <style type="text/css">
 h1 { text-align:center; }
 th { font: bold 10px ariel; text-align: center; }
@@ -104,12 +104,12 @@ td { font: bold 16px ariel; text-align: center; }
 .five { background: green; }
 .darkbg  { background-color: lightgrey; }
 .hidden  { display: none; }
-.shown   { display: inline; }
+.shown   { display: block; }
 </style>
 
 <script type="text/javascript" src="{$JQUERY_URL}"></script>
 <script type="text/javascript" src="../common/ui.js"></script>
-<script type="text/javascript" src="../common/assignMatrix.js"></script>
+<script type="text/javascript" src="assignMatrix.js"></script>
 <script type="text/javascript">
 <!--
 var numHdrIdx=$numHdrIdx;
@@ -153,26 +153,24 @@ well as any preference that you entered: the check-boxes themselves are
 colored <span style="color: green;">green</span>  if you indicated a
 preference for the PC-member to review the submission or <span
 style="color: red;">red</span> if you indicated a preference that the
-PC-member do not review the submission.
-</p>
-<p id="jsEnabled" class="hidden">
-If Javascript is enabled in your browser, then the various sums are
-updated immediately when you check or clear any check-box. Remember,
-however, that <b>you still must submit the form in order for these
-changes to be recorded by the server!!</b> 
-Pressing the 'Save changes to sketch' will  update only the value of
-changed checkboxes to the sketch copy, and not reload the page.
-Pressing the button to 'Save All Assignments' at the bottom of the
-table will update the value of every checkbox, and reload the page.		
-</p>
+PC-member do not review the submission.</p>
+<blockquote class="jsEnabled hidden">
+<i>If Javascript is enabled in your browser, then the various sums are updated
+immediately when you check or clear any check-box, and the page will try to
+asynchronously update the sketch assignments on the server with your changes
+as you make them.</i> (This is a "best effort" approach, however, you will
+<b>not be notified</b> of communication errors with the server.)</blockquote>
 <p>
-You can go back to the <a href="assignments.php">main assignment page</a>
-to reset all the assignments and start from scratch, or to upload a
-backup copy of the assignments that you stored on your local machine.
-</p>
+Once you are happy with the assignment you should use the button to 'Save
+All Assignments' at the bottom of the table to upload the complete assignment
+to the server, and this will also reload the page with all the updated
+information. You can go back to the <a href="assignments.php">main assignment
+page</a> to reset all the assignments and start from scratch, or to upload a
+backup copy of the assignments that you stored on your local machine.</p>
+
 <a name="matrix"></a>
+<button class="jsEnabled hidden" onclick="location.reload();">Reload Matrix from Server</button>
 <form accept-charset="utf-8" id="saveAssignments" action="doAssignments.php" enctype="multipart/form-data" method="post">
-<button class="submit-assignment" style="margin-right:50px" type="button">Save changes to sketch</button>
 <table cellspacing=0 cellpadding=0 border=1><tbody>
 
 EndMark;
@@ -283,14 +281,12 @@ print <<<EndMark
 </tbody></table>
 <a name="saveMatrix"></a>
 <input type="hidden" name="saveAssign" value="on">
-<button class="send-form" data-form="saveAssignments">Save Assignments in Matrix Interface</button>
-<input type="checkbox" name="visible" value="on">
+<input type="submit" value="Save Assignments in Matrix Interface"/>
+<input type="checkbox" name="visible" value="on"/>
 Make these assignments visible to the reviewers
 </form>
-<p class="hidden"> Ignore this check-box: there is something
-wrong with your browser if you see it.
-<input type="checkbox" id="recompMatrix"></p>
-
+<p class="hidden"> Ignore this check-box: there is something wrong with
+your browser if you see it.<input type="checkbox" id="recompMatrix"/></p>
 <hr/>
 $links
 </body>

@@ -18,8 +18,7 @@
 .Revise { color: rgb(255,0,0); font-family: "bold Verdana"; }
 .Discuss { color: rgb(0,128,0); font-family: "bold Verdana"; }
 
-.notice  { color: red; font-size: small; }
-.rjust   { text-align: right; }
+.rjust   { text-align: right; white-space: nowrap; }
 .hidden  { display: none; }
 .shown   { display: inline; }
 .lightbg { background-color: rgb(245,245,245); } 
@@ -48,11 +47,11 @@
     height: 19px;
 }
 
-.open {
+.openEye {
     background-image:url('../common/openeye.gif');
 }
 
-.close {
+.closeEye {
     background-image:url('../common/shuteye.gif');
 }
 

@@ -11,7 +11,7 @@ require 'showReviews.php';
 
 $revId = (int) $pcMember[0];
 $subId = (int) trim($_GET['subId']);
-$markRead = (int) trim($_GET['markRead']); // should be 0 or 1
+$markRead = (int) trim($_GET['current']); // should be 0 or 1
 
 // Check if a row exists in the laspPost table
 $qry = "SELECT COUNT(*) FROM {$SQLprefix}lastPost WHERE revId=$revId AND subId=$subId";
@@ -19,7 +19,7 @@ $qry = "SELECT COUNT(*) FROM {$SQLprefix}lastPost WHERE revId=$revId AND subId=$
 if ($db->query($qry)->fetchColumn()<=0) { // no such row, insert one
   // Check that this submission exists
   $qry = "SELECT COUNT(*) FROM {$SQLprefix}submissions WHERE subId=$subId";
-  if ($db->query($qry)->fetchColumn() >0){ // check that the submission exists
+  if ($db->query($qry)->fetchColumn() >0) {
     $db->exec("INSERT IGNORE INTO {$SQLprefix}lastPost SET lastSaw=0,revId=$revId,subId=$subId,lastVisited=NOW()");
     $markRead = 1;
   }
@@ -40,7 +40,7 @@ else { // row exists in lastPost table, toggle the read status
 if (!empty($_GET['ajax'])) { // Ajax call, just return the new markRead status
   header("Content-Type: application/json; charset=utf-8");
   header("Cache-Control: no-cache");
-  echo json_encode(array('markRead'=>$markRead));
+  echo json_encode(array('current'=>$markRead));
   // error_log(date('Y.m.d-H:i:s ' ).$_SERVER['QUERY_STRING']."\n",3,LOG_FILE);
 } else {
   return_to_caller('listSubmissions.php'); // non-Ajax, redirect back

@@ -22,10 +22,10 @@ $deadline = 'Deadline is '. utcDate('r (T)', CAMERA_DEADLINE);
 $subId = isset($_GET['subId']) ? ((int)trim($_GET['subId'])) : '';
 $subPwd = isset($_GET['subPwd']) ? trim($_GET['subPwd']) : '';
 $title = $authors = $affiliations = $contact = $abstract 
-  = $nPages = $copyright = $urlPrms = $eprint = '';
+  = $nPages = $copyright = $urlPrms = $authorIDs = $eprint = '';
 
 if (!empty($subId) && !empty($subPwd)) {
-  $qry = "SELECT title, authors, affiliations, contact, abstract, nPages, copyright, eprint FROM {$SQLprefix}submissions sb LEFT JOIN {$SQLprefix}acceptedPapers ac USING(subId) WHERE sb.subId=? AND subPwd=? AND status='Accept'";
+  $qry = "SELECT title, authors, affiliations, contact, abstract, nPages, copyright, eprint, authorIDs FROM {$SQLprefix}submissions sb LEFT JOIN {$SQLprefix}acceptedPapers ac USING(subId) WHERE sb.subId=? AND subPwd=? AND status='Accept'";
   $res=pdo_query($qry, array($subId,$subPwd));
   if (!($row = $res->fetch(PDO::FETCH_NUM))) {
     exit("<h1>Non-Existent Accepted Submission</h1>\n"
@@ -33,13 +33,14 @@ if (!empty($subId) && !empty($subPwd)) {
   }
   $subPwd = htmlspecialchars($subPwd);
   $title = htmlspecialchars($row[0]);
-  $authors  = htmlspecialchars($row[1]);
-  $affiliations  = htmlspecialchars($row[2]);
+  $authors  = explode('; ',htmlspecialchars($row[1]));
+  $affiliations  = explode('; ',htmlspecialchars($row[2]));
   $contact = htmlspecialchars($row[3]);
   $abstract= htmlspecialchars($row[4]);
   $nPages = (int) $row[5];
   $copyright = htmlspecialchars($row[6]);
   $eprint =  htmlspecialchars($row[7]);
+  $authorIDs     = explode('; ',htmlspecialchars($row[8]));
   if ($nPages <= 0) $nPages = '';
   $urlPrms = "?subId=$subId&subPwd=$subPwd";
 }
@@ -53,37 +54,19 @@ if (file_exists($file) && empty($copyright) && !$chair) {
 
 $links = show_sub_links(6);
 print <<<EndMark
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta charset="utf-8">
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="../common/submission.css"/>
+<link rel="stylesheet" type="text/css" href="../common/saving.css"/>
 <style type="text/css">
+h3 { text-align: center; color: blue; }
 tr { vertical-align: top; }
 </style>
-<link rel="stylesheet" type="text/css" href="../common/submission.css"/>
-
-<script type="text/javascript" src="../common/validate.js"></script>
-<script language="Javascript" type="text/javascript">
-<!--
-function checkform( form )
-{
-  var pat = /^\s*$/;
-  // Checking that all the mandatory fields are present
-  st = 0;
-  if (pat.test(form.subId.value)) { st |= 1; }
-  if (pat.test(form.subPwd.value))   { st |= 2; }
-
-  if (st != 0) {
-    alert( "You must specify the submission number and password" );
-    if (st & 1) { form.subId.focus(); }
-    else if (st & 2) { form.subPwd.focus(); }
-    return false;
-  }
-  return true ;
-}
-//-->
-</script>
+<link rel="stylesheet" type="text/css" href="$JQUERY_CSS"> 
+<script src="$JQUERY_URL"></script>
+<script src="$JQUERY_UI_URL"></script>
+<script src="../common/ui.js"></script>
+<script src="../common/authNames.js"></script>
 
 <title>Camera-Ready Revision for $confName</title>
 </head>
@@ -95,109 +78,98 @@ $h1text
 <h3 class=timeleft>$deadline<br/>
 $timeleft</h3>
 
-<form name="cameraready" onsubmit="return checkform(this);" action="act-revise.php" enctype="multipart/form-data" method="post" accept-charset="utf-8">
+<form name="cameraready" action="act-revise.php" enctype="multipart/form-data" method="POST" accept-charset="utf-8">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
 <input type="hidden" name="referer" value="cameraready.php">
 <table cellspacing="6">
-<tbody>
-  <tr>
-    <td style="text-align: right;">
-         <small>(*)</small>&nbsp;Submission&nbsp;ID:</td>
-    <td> <input name="subId" size="4" type="text"
-                value="$subId">
-         The submission number, as returned when the paper was first submitted.
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align: right;"><small>(*)</small> Password:</td>
-    <td><input name="subPwd" size="11" value="$subPwd" type="text">
-        The password that was returned with the original submission.
-    </td>
-  </tr>
-
+<tr><td style="text-align: right;"><small>(*)</small>&nbsp;Submission&nbsp;ID:</td>
+  <td><input name="subId" size="10" type="text" value="$subId">
+    The submission number, as returned when the paper was first submitted.</td>
+</tr><tr>
+  <td style="text-align: right;"><small>(*)</small>&nbsp;Password:</td>
+  <td><input name="subPwd" size="10" value="$subPwd" type="text">
+    The password that was returned with the original submission.</td>
+</tr>
 EndMark;
 
 if (empty($subId)) { // put a button to "Load submission details"
-  print '  <tr>
-    <td></td>
-    <td><input value="Reload Form with Submission Details (Submission-ID and Password must be specified)" type="submit" name="loadDetails">
+  print '<tr>
+  <td></td>
+  <td><input value="Reload Form with Submission Details (Submission-ID and Password must be specified)" type="submit" name="loadDetails">
     (<a href="../documentation/submitter.html#camera" target="documentation" title="this button reloads the revision form with all the submission details filled-in">what\'s this?</a>)
-    </td>
-  </tr>';
+  </td>
+</tr>';
 }
 
 if (defined('IACR')) { // Specify ePrint report (if exists)
-  $ePrintHTML = '<tr>
-    <td style="text-align: right;">ePrint&nbsp;report:</td>
-    <td><input name="eprint" size="10" type="text" value="'.$eprint.'">
-     If this work is available on <a href="http://eprint.iacr.org">ePrint</a>,
-     specify the report number using the format <tt>yyyy/nnn</tt>
-    </td>
-  </tr>';
+  $ePrintHTML = '<tr><td style="text-align: right;">ePrint&nbsp;report:</td>
+  <td><input name="eprint" size="10" type="text" value="'.$eprint.'">
+    If this work is available on <a href="http://eprint.iacr.org">ePrint</a>,
+    specify the report number using the format <tt>yyyy/nnn</tt></td>
+</tr>';
 }
 else $ePrintHTML = '';
 
 print <<<EndMark
-  <tr>
-    <td colspan="2" style="text-align: center;"><hr />
-        <big>Any input below will overwrite existing information;
-             no input means the old content remains intact.</big><br /><br />
-    </td>
-  </tr>
-  $ePrintHTML
-  <tr>
-    <td style="text-align: right;">Number&nbsp;of&nbsp;Pages:</td>
-    <td><input name="nPages" size="3" type="text" value="$nPages">
-     Will be used by the chair to
-     automatically generate the table-of-contents and author index.
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">Title:</td>
-    <td><input name="title" size="90" type="text" value="$title"><br/>
-        The title of your submission</td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">Authors:</td>
-    <td><input name="authors" size="90" type="text" value="$authors"><br/>
-        Separate multiple authors with '<i>and</i>' (e.g., Alice First 
-	<i>and</i> Bob T. Second <i>and</i> C. P. Third). <br />
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">Affiliations:</td>
-        <td><input name="affiliations" size="70" type="text" value="$affiliations">
-  </tr>
-  <tr>
-    <td style="text-align: right;">Contact Email(s):</td>
-    <td><input name="contact" size="70" type="text" value="$contact" onchange="return checkEmailList(this)"><br />
-    <u><b>Make sure that these are valid addresses</b></u>, they will be used for communication with the publisher.<br/><br/>
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">Abstract:</td>
-    <td><textarea name="abstract" rows="15" cols="80">$abstract</textarea><br/>
-        Use only plain ASCII and LaTeX conventions for math, but no HTML tags.
-        <br/><br/>
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">Submission&nbsp;Files: </td>
-    <td><input name="pdf_file" size="70" type="file">
-        <tt><==</tt> PDF file only<br/>
-    <input name="sub_file" size="70" type="file">
-    <tt><==</tt> Archive file<br/>
-    The archive file (tar, tzg, etc.) must include all the necessary files
-    <i>including the PDF file from above</i>.
-    See <a href="cameraInstructions.php">the instructions</a>.<br/><br/>
-    </td>
-  </tr>
-  <tr>
-    <td></td>
-    <td><input value="Submit camera-ready revision" type="submit">
-    </td>
-  </tr>
-</tbody>
+$ePrintHTML
+<tr><td style="text-align: right;"><small>(*)</small>&nbsp;Number&nbsp;of&nbsp;Pages:</td>
+  <td><input name="nPages" size="3" type="text" value="$nPages" class="required"> Will be used by the chair to generate the table-of-contents and author index.</td>
+</tr><tr>
+  <td style="text-align: right;"><small>(*)</small>&nbsp;Submission&nbsp;Title:</td>
+<td><input name="title" size="90" type="text" value="$title" class="required">
+</td></tr><tr>
+<td style="text-align: right;"><small>(*)</small>&nbsp;Contact Email(s):</td>
+<td><input name="contact" size="90" type="text" value="$contact" class="required"><br/>
+  Comma-separated list of email addresses of the form user@domain</td>
+</tr><tr><td colspan="2" style="border-bottom: 1px black solid;"></td></tr>
+<tr>
+<tbody style="border: 4;" id="authorFields"> <!-- Grouping together the author-related fields -->
+  <td style="text-align: right;"><small>(*)</small>&nbsp;<b>Authors:</b><br/>
+  <a href='../documentation/submitter.html#cryptodb' target='_blank'>CryptoDB help</a>&nbsp;</td>
+  <td>List authors in the order they appear on the paper, using names of the form <tt>GivenName M. FamilyName</tt>.
+<ol id="authorList" class="compactList">
+
+EndMark;
+
+foreach ($authors as $i=> $name) {
+  $aff = isset($affiliations[$i])? $affiliations[$i]: '';
+  $authID = isset($authorIDs[$i])? $authorIDs[$i]:    '';
+  if (defined('IACR')) {
+    $idLine ="<br/><input type='checkbox' name='authChk[]' class='authChk' value='on' checked='checked' title='UNcheck if author does not have a record in CryptoDB'>
+  Author has a record in CryptoDB with autor-ID:<input type='text' size='3' name='authID[]' class='authID' value={$authID}>
+  <a href='http://www.iacr.org/cryptodb/data/author.php?authorkey={$authID}' class='authLink' target='_blank' title='Lookup this author in CryptoDB'> Is this the right author?</a>";
+  } else {
+    $idLine = "<input type='hidden' name='authID[]' class='authID' value='$authID'>";
+  }
+  print "  <li class='oneAuthor' style='margin-top:10px;'>
+  Name:<input name='authors[]' size='42' type='text' class='author' value='$name'>,
+  Affiliations:<input name='affiliations[]' size='32' type='text' class='affiliation' value='$aff'>
+  $idLine</li>\n";
+}
+$rel = count($authors);
+if ($subId>0 && !empty($subPwd))
+  $url = "./cameraready.php?subId={$subId}&subPwd={$subPwd}&nAuthors=".($rel+3);
+else 
+  $url = "./cameraready.php?nAuthors=".($rel+3);
+print <<<EndMark
+</ol>
+<a style="float: right;" class="moreAuthors" href="$url" rel="$rel">more authors</a><br/>
+If the list above is not empty, it will replace the curret author list even if these lists have different number of authors.
+</td></tr>
+</tr><tr><td colspan="2" style="border-bottom: 1px black solid;"></td></tr>
+</tbody style="border: 2px;"> <!-- End of group of author-related fields -->
+<tr><td style="text-align: right;"><small>(*)</small>&nbsp;Abstract:</td>
+  <td><textarea name="abstract" rows="15" cols="80" class="required">$abstract</textarea><br/></td>
+</tr><tr>
+<td style="text-align: right;"><small>(*)</small>&nbsp;Submission&nbsp;Files:</td>
+<td><input name="pdf_file" size="70" type="file"><tt><==</tt> PDF file only<br/>
+    <input name="sub_file" size="70" type="file"><tt><==</tt> Archive file<br/>
+   The archive file (tar, tzg, etc.) must include all the necessary files
+   <i>including the PDF file from above</i>.<br/>
+    See <a href="cameraInstructions.php">the instructions</a>.</td>
+</tr><tr>
+<td></td><td><input value="Submit camera-ready revision" type="submit"></td>
+</tr>
 </table>
 </form>
 <hr />

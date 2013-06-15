@@ -43,7 +43,7 @@ $keyWords = htmlspecialchars($submission['keyWords']);
 $format   = htmlspecialchars($submission['format']);
 $watch    = (int) $submission['watch'];
 
-if ($disFlag == 1) { 
+if ($disFlag) { 
 
   // Check for things in the discussion board that the reviewe didn't see yet
   $qry = "SELECT COUNT(*) FROM {$SQLprefix}submissions s, {$SQLprefix}lastPost lp WHERE s.subId=? AND lp.revId=? AND lp.subId=s.subId AND s.lastModified<=lp.lastVisited";
@@ -52,20 +52,22 @@ if ($disFlag == 1) {
   // If there are matches to the query above, it means that there are
   // no new items in the discussoin board. The vars $discussIcon1 and
   // $discussIcon2 are defined in confUtils.php
-  $discussText = ($res->fetchColumn()>0) ? $discussIcon1 : $discussIcon2;
+  $allRead = ($res->fetchColumn()>0);
+  $discussText = $allRead ? $discussIcon1 : $discussIcon2;
 
-  $discussLine = '<span class="Discuss"><a href="discuss.php?subId='.$subId.'" target="_blank">'.$discussText.'</a></span>';
+  $discussLine = "<span class='Discuss'><a href='discuss.php?subId=$subId' target='_blank'>$discussText</a><a href='toggleMarkRead.php?subId=$subId&current=$allRead' class='toggleRead' title='Toggle Read/Unread' ID='toggleRead$subId' rel='$allRead'>&bull;</a></span>";
 
-  $toggleWatch = "<a href=\"toggleWatch.php?subId={$subId}\">\n";
   if ($watch == 1) {
     $src = '../common/openeye.gif'; $alt = 'W';
     $tooltip = "Click to remove from watch list";
   }
   else {
+    $watch = 0; // just making sure
     $src = '../common/shuteye.gif'; $alt = 'X';
     $tooltip = "Click to add to watch list";
   }
-  $toggleWatch .= "  <img src=\"$src\" alt=\"$alt\" title=\"$tooltip\" border=\"0\"></a>&nbsp;";
+  // below is an "old fashioned" use of the rel attribute to keep data
+  $toggleWatch = "<a rel='$watch' href='toggleWatch.php?subId={$subId}&current=$watch'><img src='$src' id='toggleWatch$subId' alt='$alt' title='$tooltip' border='0'></a>&nbsp;";
 }
 else $toggleWatch = $discussLine = '';
 
@@ -86,6 +88,10 @@ print <<<EndMark
   "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head><meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="../common/review.css" />
+<script type="text/javascript" src="{$JQUERY_URL}"></script>
+<script type="text/javascript" src="../common/ui.js"></script>
+<script type="text/javascript" src="toggleImage.js"></script>
 <style type="text/css">
 h1, h2, h3 {text-align: center;}
 div.fixed { font: 14px monospace; width: 90%; }

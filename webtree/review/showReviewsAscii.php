@@ -80,16 +80,18 @@ function ascii_showReviews(&$reviews, $revId)
  ********************************************************************/
 function ascii_showPosts(&$postsArray)
 {
-  if (!is_array($postsArray)) return;
+  if (!is_array($postsArray)) return '';
 
+  $ascii = '';
   foreach($postsArray as $post) {
     $name = htmlspecialchars(wordwrap($post['name']));
     $sbjct = htmlspecialchars(wordwrap($post['subject']));
     $cmnts = htmlspecialchars(wordwrap($post['comments']));
 
     // Print the subject line
-    print "<pre>\n* {$name}: {$sbjct}\n{$cmnts}\n</pre>\n";
+    $ascii .= "<pre>\n* {$name}: {$sbjct}\n{$cmnts}\n</pre>\n";
   }
+  return $ascii;
 }
 
 function ascii_showStatus($status)

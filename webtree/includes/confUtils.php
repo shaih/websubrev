@@ -601,31 +601,18 @@ function parse_format($str)
   return $fmt;
 }
 
-function show_status($status, $scratch = false)
+function show_status($status)
 {
   global $WDicon, $NOicon, $REicon, $MRicon, $DIicon, $MAicon, $ACicon;
-  
-  $scratch_class = "";
-  
-  if($scratch) {
-    $scratch_class = " scratch";
-  }
-  
-  if ($status == 'Withdrawn') {
-    return "<span class='WD $scratch_class'>$WDicon</span>";
-  } else if ($status == 'Reject') {
-    return "<span class='RE $scratch_class'>$REicon</span>";
-  } else if ($status == 'Perhaps Reject') {
-    return "<span class='MR $scratch_class'>$MRicon</span>";
-  } else if ($status == 'Needs Discussion') {
-    return "<span class='DI $scratch_class'>$DIicon</span>";
-  } else if ($status == 'Maybe Accept') {
-    return "<span class='MA $scratch_class'>$MAicon</span>";
-  } else if ($status == 'Accept') {
-    return "<span class='AC $scratch_class'>$ACicon</span>";
-  } else {
-    return "<span class='NO $scratch_class'>$NOicon</span>";
-  }
+  $icons = array('Withdrawn'       => $WDicon,
+		 'None'            => $NOicon,
+		 'Reject'          => $REicon,
+		 'Perhaps Reject'  => $MRicon,
+		 'Needs Discussion'=> $DIicon,
+		 'Maybe Accept'    => $MAicon,
+		 'Accept'          => $ACicon);
+  if (isset($icons[$status])) return $icons[$status];
+  else                        return $NOicon;
 }
 
 function has_pc_author($authors)
@@ -642,10 +629,10 @@ function has_reviewed_paper($revId, $subId)
 {
   global $SQLprefix;
   $res = pdo_query("SELECT COUNT(*) FROM {$SQLprefix}assignments WHERE subId=? AND revId=? AND assign>0", array($subId, $revId));
-  if ($res->fetchColumn() == 0) return false; // was not assigned to review it
+  if ($res->fetchColumn() == 0) return true; // was not assigned to review it
 
   $res = pdo_query("SELECT COUNT(*) FROM {$SQLprefix}reports WHERE subId=? AND revId=?", array($subId ,$revId));
-  return ($res->fetchColumn() > 0);           // uploads a report for it
+  return ($res->fetchColumn() > 0);           // uploaded a report for it
 }
 
 function has_reviewed_anything($revId)
@@ -731,6 +718,29 @@ function numberlist($lst)
     }
   }
   return $s;
+}
+
+function arraysToStrings($first, $second=null, $third=null)
+{
+  $firstList = $secondList = $thirdList = $semi = '';
+  foreach ($first as $i=>$value) {
+    $value = trim($value);
+    if (!empty($value)) {
+      $firstList .= $semi.$value;
+      if (isset($second))
+	$secondList .= $semi.(empty($second[$i])? '': trim($second[$i]));
+      if (isset($third))
+	$thirdList .= $semi.(empty($third[$i])? '': trim($third[$i]));
+      $semi = '; ';
+    }
+  }
+  if (!isset($second) && !isset($third)) return $firstList;
+
+  $ret = array($firstList);
+  $ret[1] = (isset($second))? $secondList : NULL;
+  $ret[2] = (isset($third))?  $thirdList  : NULL;
+
+  return $ret;
 }
 
 // like date(), but returns time in UTC instead of server time

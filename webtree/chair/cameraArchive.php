@@ -30,10 +30,9 @@ $pearAvailable = (($fp=@fopen('Archive/Tar.php', 'r', 1)) && @fclose($fp));
 if ($pearAvailable && !isset($_GET['format'])) {
   $links = show_chr_links();
   print <<<EndMark
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML>
 <html>
 <head><meta charset="utf-8"><title>Create Camera-Ready Archive</title>
-<script type="text/javascript" src="../common/validate.js"></script>
 <script language="Javascript" type="text/javascript">
 <!--
 function checklncs() { // check the radio button for lncs
@@ -66,8 +65,7 @@ be placed in the sub-directory <i>XXXX0000</i>.
 
 <form accept-charset="utf-8" action=cameraArchive.php method=GET>
 <input type=radio name=format value="default" checked> Use the default format<br/>
-<input type=radio name=format value="lncs" id=lncs> Use LNCS format 
-       with volume number <input type=text name=volume size=5 onchange="return checkInt(this,1,99999);" onfocus="return checklncs();"><br/>
+<input type=radio name=format value="lncs" id=lncs> Use LNCS format with volume number <input type=text name=volume size=5 onfocus="return checklncs();"><br/>
 <input type=submit>
 </form>
 <hr/>

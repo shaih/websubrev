@@ -32,17 +32,13 @@ if (is_array($confFormats) && count($confFormats)>0) {
 if (!USE_PRE_REGISTRATION) {
   $ddline = SUBMIT_DEADLINE;
   $submitBtn = 'Submit';
-  $testForFile = 'if (pat.test(form.sub_file.value)) { st |= 16; }';
   $subFileLine =<<<EndMark
-  <tr>
-    <td style="text-align: right;">
-	<small>(*)</small>&nbsp;Submission&nbsp;File: </td>
-    <td><input name="sub_file" size="70" type="file"><br />
-        The submission itself, in one of the supported formats
-	($supportedFormats).
-        <br />
-    </td>
-  </tr>
+<tr><td style="text-align: right;">
+  <small>(*)</small>&nbsp;Submission&nbsp;File:</td>
+  <td><input name="sub_file" size="70" type="file" class="required"><br/>
+    The submission itself, in one of the supported formats ($supportedFormats).
+  <br/></td>
+</tr>
 EndMark;
 } else {
   $ddline = REGISTER_DEADLINE;
@@ -57,12 +53,14 @@ EndMark;
     }
   }
   $submitBtn = 'Register New Submission';
-  $testForFile = $subFileLine = '';
+  $fileReq = $subFileLine = '';
 }
+
+$affRequired= (defined('USE_AFFILIATIONS')&& USE_AFFILIATIONS)? ' required':'';
 
 $checkbox = "";
 $checkbox_text = "";
-if(defined("OPTIN_TEXT")) {
+if (defined("OPTIN_TEXT")) {
   $checkbox = "<input type='checkbox' name='optin' value='1'/>";
   $checkbox_text = OPTIN_TEXT;
 }
@@ -70,48 +68,23 @@ if(defined("OPTIN_TEXT")) {
 $timeleft = show_deadline($ddline);                   // how much time is left
 $subDdline = 'Deadline is '.utcDate('r (T)',$ddline); // when is the deadline
 
-$chairNotice = (PERIOD>PERIOD_SUBMIT || (USE_PRE_REGISTRATION && PERIOD>PERIOD_PREREG))? "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n": '';
+$chairNotice = ((PERIOD>PERIOD_SUBMIT) || (USE_PRE_REGISTRATION && (PERIOD>PERIOD_PREREG)))? "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n": '';
 
 $links = show_sub_links(3);
 
 print <<<EndMark
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta charset="utf-8">
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/submission.css"/>
-
+<link rel="stylesheet" type="text/css" href="../common/saving.css"/>
 <style type="text/css">
 tr { vertical-align: top; }
 </style>
-
-<script type="text/javascript" src="../common/validate.js"></script>
-<script language="Javascript" type="text/javascript">
-<!--
-function checkform( form )
-{
-  var pat = /^\s*$/;
-  // Checking that all the mandatory fields are present
-  var st = 0;
-  if (pat.test(form.title.value))    { st |= 1; }
-  if (pat.test(form.authors.value))  { st |= 2; }
-  if (pat.test(form.contact.value))  { st |= 4; }
-  if (pat.test(form.abstract.value)) { st |= 8; }
-  $testForFile
-
-  if (st != 0) {
-    alert( "You must specify all the fields that are marked with (*)" );
-    if (st & 1) { form.title.focus(); }
-    else if (st & 2) { form.authors.focus(); }
-    else if (st & 4) { form.contact.focus(); }
-    else if (st & 8) { form.abstract.focus(); }
-    else if (st & 16) { form.sub_file.focus(); }
-    return false;
-  }
-  return true ;
-}
-//-->
-</script>
+<link rel="stylesheet" type="text/css" href="$JQUERY_CSS"> 
+<script src="$JQUERY_URL"></script>
+<script src="$JQUERY_UI_URL"></script>
+<script src="../common/ui.js"></script>
+<script src="../common/authNames.js"></script>
 
 <title>New Submission to $confName</title>
 </head>
@@ -124,54 +97,49 @@ $chairNotice
 <h3 class=timeleft>$subDdline<br/>
 $timeleft</h3>
 
-<form name="submit" onsubmit="return checkform(this);" action="act-submit.php" enctype="multipart/form-data" method="post" accept-charset="utf-8">
+<form name="submit" action="act-submit.php" enctype="multipart/form-data" method="post" accept-charset="utf-8">
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
 
 <table cellpadding="6">
-<tbody>
-  <tr><td></td>
-    <td style="color: green; text-align: right">
-     Mandatory fields are marked with a (*)</td>
-  </tr>
-  <tr>
-    <td style="text-align: right;"><small>(*)</small>&nbsp;Submission&nbsp;Title:</td>
-    <td><input name="title" size="90" type="string"><br/>
-        The title of the paper that you are submitting</td>
-  </tr>
-  <tr>
-    <td style="text-align: right;"><small>(*)</small> Authors:</td>
-    <td><input name="authors" size="90" type="string"><br />
-        Separate multiple authors with '<i>and</i>' (e.g., Alice First 
-	<i>and</i> Bob T. Second <i>and</i> C. P. Third). <br />
-    </td>
-  </tr>
+<tr><td></td><td style="color: green; text-align: right">
+    Mandatory fields are marked with a (*)</td>
+</tr><tr>
+<td style="text-align: right;"><small>(*)</small>&nbsp;Submission&nbsp;Title:</td>
+<td><input name="title" size="90" type="text" class="required"><br/>
+    The title of the paper that you are submitting</td>
+</tr><tr>
+<td style="text-align: right;"><small>(*)</small> Contact Email(s):</td>
+<td><input name="contact" size="90" type="text"  class="required"><br/>
+Comma-separated list with <b>at least one valid email address</b> of the form user@domain; for example:<br/>
+<tt>first-author@university.edu, secondAuthor@company.com, third.one@somewhere.org</tt><br/>
+</td>
+</tr><tr>
+<tbody id="authorFields"> <!-- Grouping together the author-related fields -->
+<td style="text-align: right;"><small>(*)</small> Authors:</td>
+<td>List authors in the order they appear on the paper, using names of the form <tt>GivenName M. FamilyName</tt>.
+<ol id="authorList" class="compactList">
+  <li class="oneAuthor">
+  Name:<input name="authors[]" size="42" type="text" class="author required"/>,
+  Affiliations:<input name="affiliations[]" size="32" type="text" class="affiliation{$affRequired}"/>
+  <input type='hidden' name='authID[]' class='authID'/></li>
 
 EndMark;
-if (USE_AFFILIATIONS){
-  print <<<EndMark
-  <tr>
-    <td style="text-align: right;">Affiliations:</td>
-        <td><input name="affiliations" size="70" type="string">
-  </tr>
+$nAuthors = empty($_GET['nAuthors'])? 3: intval(trim($_GET['nAuthors']));
 
-EndMark;
+while (--$nAuthors > 0) { // pre-decrement since we printed one already
+  print '  <li class="oneAuthor">
+  Name:<input name="authors[]" size="42" type="text" class="author"/>,
+  Affiliations:<input name="affiliations[]" size="32" type="text" class="affiliation"/>
+  <input type="hidden" name="authID[]" class="authID"/></li>'."\n";
 }
-
 print <<<EndMark
-  <tr>
-    <td style="text-align: right;"><small>(*)</small> Contact Email(s):</td>
-    <td><input name="contact" size="70" type="string" onchange="return checkEmailList(this)"><br/>
-    Comma-separated list with <b>at least one valid email address</b> of the form user@domain; for example:<br/>
-    <tt>first-author@university.edu, secondAuthor@company.com, third.one@somewhere.org</tt><br/>
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align: right;"><small>(*)</small> Abstract:</td>
-    <td><textarea name="abstract" rows="15" cols="80"></textarea><br />
-        Use only plain ASCII and LaTeX conventions for math, but no HTML tags.
-        <br />
-    </td>
-  </tr>
+</ol>
+<a style="float: right;" class="moreAuthors" href="./submit.php?nAuthors=6" rel="3">more authors</a>
+</td></tr>
+</tbody> <!-- End of group of author-related fields -->
+<tr><td style="text-align: right;"><small>(*)</small> Abstract:</td>
+  <td><textarea name="abstract" rows="15" cols="80" class="required"></textarea><br/>
+</td></tr>
 $subFileLine
 
 EndMark;
@@ -188,27 +156,18 @@ if (is_array($categories) && (count($categories)>1)) {
 }
 
 print <<<EndMark
-<tr>
-    <td style="text-align: right;">Keywords:</td>
-    <td><input name="keywords" size="90" type="string"><br /></td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">Comments to Chair: </td>
-    <td><textarea name="comment" rows="4" cols="80"></textarea><br />
-        This message will only be seen by the program chair(s).
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align: right;">$checkbox</td>
-    <td>$checkbox_text</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td><input value="$submitBtn" type="submit">
-    </td>
-  </tr>
-</tbody>
-</table>
+<tr><td style="text-align: right;">Keywords:</td>
+  <td><input name="keywords" size="90" type="text"><br /></td>
+</tr><tr>
+  <td style="text-align: right;">Comments to Chair: </td>
+  <td><textarea name="comment" rows="4" cols="80"></textarea><br />
+    This message will only be seen by the program chair(s).
+  </td>
+</tr><tr>
+  <td style="text-align: right;">$checkbox</td><td>$checkbox_text</td>
+</tr><tr><td></td>
+  <td><input value="$submitBtn" type="submit"></td>
+</tr></table>
 </form>
 <hr />
 $links

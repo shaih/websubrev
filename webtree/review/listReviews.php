@@ -12,16 +12,39 @@ require 'header.php';  // defines $pcMember=array(id, name, email, ...)
 
 $bigNumber = 1000000;  // some stupid upper bound on the number of posts
 
+function show_rebuttal($rebuttal) 
+{
+  $rebuttal = nl2br(htmlspecialchars($rebuttal));
+  print <<<EndMark
+<div style="width: 90%; margin-left: auto; margin-right: auto; border:1px solid;">
+<b>Author&apos;s Rebuttal</b>
+<p>$rebuttal</p>
+</div>
+EndMark;
+}
+
+function ascii_show_rebuttal($rebuttal) 
+{
+  $rebuttal = htmlspecialchars(wordwrap($rebuttal));
+  print <<<EndMark
+<pre>**Authorss rebuttal:**
+$rebuttal
+___________________________________________________________________________
+</pre>
+EndMark;
+}
 
 if (isset($_GET['format']) && $_GET['format']=='ascii') {
   $subHeader_fnc = 'ascii_subHeader';
   $showReviews_fnc = 'ascii_showReviews';
   $showPosts_fnc = 'ascii_showPosts';
+  $showRebuttal_fnc = 'ascii_show_rebuttal';
 } else {
   $subHeader_fnc = 'subDetailedHeader';
   $showReviews_fnc = isset($_GET['withReviews']) ?
     'show_reviews_with_comments' : 'show_reviews';
   $showPosts_fnc = 'show_posts';
+  $showRebuttal_fnc = 'show_rebuttal';
 }
 
 $revId  = (int) $pcMember[0];
@@ -66,7 +89,7 @@ if (isset($_GET['withReviews'])) { // get also the comments
        r.comments2committee cmnts2PC";
   if ($isChair) $qry .= ",\n       r.comments2chair cmnts2chr";
 }
-$qry .= ",s.contact contact";
+$qry .= ",s.contact contact, s.rebuttal rebuttal";
 
 // Next comes the JOIN conditions (not for the faint of heart)
 //You said it! -AU
@@ -131,6 +154,12 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   //  print "<pre>".print_r($row, true)."</pre>";
 
   if ($row['subId'] != $currentId) { // A new submission record
+    // kludge: if the reviewer cannot discuss this submission,
+    // don't show it at all
+    if ($disFlag==2 && $row['assign']==1 && 
+	!has_reviewed_paper($revId, $row['subId']))
+	continue;
+
     $currentId = $row['subId'];
     $nohtingNew = isset($seenSubs[$currentId]);
     $subs[$currentId] = array('reviews'   => array(),
@@ -141,20 +170,17 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
 			'avg'       => $row['avg'],
 			'wAvg'      => $row['wAvg'],
 			'delta'     => $row['delta'],
-    		'minGrade'  => $row['minGrade'],
-    		'maxGrade'  => $row['maxGrade'],
-    		'flags'     => $row['flags'],
+			'minGrade'  => $row['minGrade'],
+			'maxGrade'  => $row['maxGrade'],
+			'flags'     => $row['flags'],
 			'contact'   => $row['contact'],
 			'hasNew'    => (!$nohtingNew) );
 
+    if (isset($_GET['withReviews']))
+      $subs[$currentId]['rebuttal'] = $row['rebuttal'];
+
     if (isset($_GET['ignoreWatch']) && $row['watch']==1)
       $subs[$currentId]['watch'] = 1;
-
-    // kludge: if the reviewer cannot discuss this submission,
-    // don't show it at all
-    if ($disFlag==2 && $row['assign']==1 && 
-	!has_reviewed_paper($revId, $row['subId']))
-	continue;
 
     // Store the newly found submission in one of the lists
     if (!isset($_GET['ignoreWatch']) && $row['watch']==1)
@@ -213,7 +239,8 @@ if (isset($_GET['withDiscussion'])) { // get also the discussions
 
 // Display results to the user
 if ($isChair) {
-  $chairExtra = '<link rel="stylesheet" type="text/css" href="../common/chair.css"/>';
+  $chairExtra = 
+    '<script type="text/javascript" src="setStatusFromList.js"></script>';
 }
 else $chairExtra = "";
 
@@ -223,9 +250,10 @@ print <<<EndMark
 <html><head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/review.css" />
 <link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
+<link rel="stylesheet" type="text/css" href="../common/saving.css"/>
 <script type="text/javascript" src="{$JQUERY_URL}"></script>
-<script type="text/javascript" src="toggleMarkRead.js"></script>
-<script type="text/javascript" src="setStatusFromList.js"></script>
+<script type="text/javascript" src="../common/ui.js"></script>
+<script type="text/javascript" src="toggleImage.js"></script>
 $chairExtra
 <style type="text/css">
 h1 {text-align: center; }
@@ -256,8 +284,11 @@ if (count($watch)>0) {
   foreach ($watch as $sub) {
     $subHeader_fnc($sub, $revId, true, $i++);
     $showReviews_fnc($sub['reviews'], $revId);
+
+    if (isset($_GET['withReviews']) && !empty($sub['rebuttal']))// show rebuttal
+      $showRebuttal_fnc($sub['rebuttal']);
     if (isset($_GET['withDiscussion']) && isset($sub['posts']) && is_array($sub['posts'])) { 
-      $showPosts_fnc($sub['posts'], $sub['subId'], false, $bigNumber);
+      print $showPosts_fnc($sub['posts'], $sub['subId'], false, $bigNumber);
     }
     $otherTtl = true;
   }
@@ -272,9 +303,11 @@ if (count($others)>0) {
   foreach ($others as $sub) {
     $subHeader_fnc($sub, $revId, true, $i++);
     $showReviews_fnc($sub['reviews'], $revId);
+    if (isset($_GET['withReviews']) && !empty($sub['rebuttal']))// show rebuttal
+      $showRebuttal_fnc($sub['rebuttal']);
     if (isset($_GET['withDiscussion']) 
 	&& isset($sub['posts']) && is_array($sub['posts'])) {
-      $showPosts_fnc($sub['posts'], $sub['subId'], false, $bigNumber);
+      print $showPosts_fnc($sub['posts'], $sub['subId'], false, $bigNumber);
     }
   }
   print '</div>';
