@@ -366,5 +366,37 @@ CREATE TABLE IF NOT EXISTS assignParams (
     PRIMARY KEY (idx)
 );
 
+/* We support attaching tags to submissions for various purposes, the
+ * tags table holds the tags themselves. The currently flag values are:
+ *  lower two bits: stickey state
+ *     0: non-sticky, anyone can remove it from any submission
+ *     1: sticky, only a chair can remove it
+ *     2: sticky, only the one who attached it can remove it
+ *     3: semi-sticky: only a chair or the one who attached it can remove it
+ *  next three bits: visibility
+ *     4: private, only the one who introduced it can see it
+ *     8: chair-only, only the chairs can see it
+ *    16: show-in-lists, display it when showing submission lists
+ */
+CREATE TABLE IF NOT EXISTS tags (
+  name varchar(32) NOT NULL,
+  description varchar(255) DEFAULT '',
+  param varchar(255) DEFAULT '',
+  flags bigint DEFAULT 0,
+  PRIMARY KEY (name)
+);
+
+/* The tagging table keeps the relation between submissions and tags, an
+ * attachment of a tag to a submission can also carry a parameter (e.g,
+ * 'bestPaper' at level 1,2 or 3).
+ */ 
+CREATE TABLE IF NOT EXISTS tagging (
+  tagName varchar(32),
+  subId   smallint,
+  attachedBy smallint,
+  param varchar(255) default '',
+  PRIMARY KEY (tagName,subId)
+);
+
 -- Insert a row for the chair into the committee table
 INSERT INTO committee SET revId=1, revPwd='', name='', email='', canDiscuss=1;
