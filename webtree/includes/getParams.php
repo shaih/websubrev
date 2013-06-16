@@ -8,7 +8,7 @@
 if (!($lines=file('../init/confParams.php'))) die("Cannot read parameters");
 foreach ($lines as $line) {
   $i = strpos($line, '=');           // look for NAME=value
-  if ($i===false || $i==0) continue; // no 'NAME=' found
+  if ($i==0 || substr($line,0,2)=='//') continue;// comment or no 'NAME=' found
   $nm = substr($line,0,$i);
   $vl = rtrim(substr($line,$i+1));
   if ($nm=='MYSQL_HOST'      || $nm=='MYSQL_DB'   || $nm=='MYSQL_USR'

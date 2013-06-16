@@ -16,7 +16,7 @@ h1 {text-align: center;}
 <li><a href="#insall">Installing the software</a>
 <ol type="a">
 <li><a href="#webBased">Web-based installation</a></li>
-<li><a href="#noWebBased">Non-web-based installation</a></li>
+<li><a href="#noWebBased">Other installation methods</a></li>
 </ol></li>
 <li><a href="#customize">First-time customization</a></li>
 <li><a href="#adminPage">The administration page</a></li>
@@ -48,7 +48,7 @@ in your web tree (call it the BASE directory), point your browser at that
 directory and off you go. However, this simple method of installation 
 requires the web-server to be able to write files in the web-tree, 
 which in some cases is considered a security risk. I therefore provide
-also a non-web-based installation method, as explained below.<br/>
+also other installation methods, as explained below.<br/>
 <br/>
 <b>Prerequisites.</b>
 This is a PHP/MySQL software, which means that to use it you must have
@@ -225,8 +225,8 @@ site for the conference (<a href="#customize">see below</a>). At this point
 the web server no longer needs to write to the <tt>"init"</tt> subdirectory,
 so you can change the permissions to make that directory read-only.
 
-<a name="noWebBased"></a><h3>1b. Non-web-based installation</h3>
-An alternative method of installation (in Unix systems) is to change
+<a name="noWebBased"></a><h3>1b. Other installation Methods</h3>
+One alternative method of installation (in Unix systems) is to change
 directory to where you unzipped this software (above the <tt>"webtree"</tt>
 and <tt>"tools"</tt> directories) and to issue the following command from
 the command prompt:
@@ -235,13 +235,33 @@ the command prompt:
 </pre>
 where confname is a short-name for the conference (e.g., <tt>xyz2007</tt>).
 It is recommended that you read the script <tt>"mkNewConf.sh"</tt> before
-running it, and you can optionally modify it to set some default values.<br/>
-<br/>
+running it, and you can optionally modify it to set some default values.
+<p>
 This shell script will ask you for the locations of the BASE and UPLOAD
 directories (and other parameters) and then it will install the software
 in the BASE directory, setting the permissions as needed. The script will
 then print out the username and password that are needed in order to access
-the customization page. 
+the customization page. One limitation of this method is that it does not
+support sharing a database between different conferences, rather it only
+implements creating a new database for each new conference.</p>
+<p>
+Another option is to copy the template parameter file which is provided
+in <tt>subs/confParams.php</tt> into the <tt>init</tt> subdirectory,
+then editing it, filling in all the relevant details, and only then
+accessing the initialization web form as above. When invoked in this
+setting, many of the fields in the initialization form are hidden (since
+the relevant details are already specified in the parameter file), and
+the software just uses the given parameter file instead of trying to
+create it.</p>
+<p>
+Yet another option is to just go through the web-based initialization
+procedure as above without providing the parameter file. The procedure
+will initialize the database and do everything else, but will fail to write
+the parameter file to disk, and instead will output all the details to
+the results web-page. You can then just cut and paste these parameters and
+create the <tt>init/confParams.php</tt> file yourself, and then proceed with
+customization as described next.
+</p>
 
 
 <a name="customize"></a><h2>2. First-time customization</h2>

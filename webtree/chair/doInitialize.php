@@ -12,17 +12,34 @@ $baseDir = getcwd();
 chdir('chair');
 
 $prmsFile = '../init/confParams.php';
-if (file_exists($prmsFile)) { // Already customized
-  exit("<h1>This installation is already initialized</h1>");
+if ($lines=file($prmsFile)) { // file already there
+  $MYSQL_HOST = $MYSQL_DB = $MYSQL_USR = $MYSQL_PWD = $SUBMIT_DIR
+   = $LOG_FILE = $ADMIN_EMAIL = $CONF_SALT = $MYSQL_PREFIX = '';
+  foreach ($lines as $line) {
+    $i = strpos($line, '=');           // look for NAME=value
+    if ($i==0 || substr($line,0,2)=='//') 
+      continue; // comment or no 'NAME=' found
+    $nm = substr($line,0,$i);
+    $vl = rtrim(substr($line,$i+1));
+    if ($nm=='MYSQL_HOST'      || $nm=='MYSQL_DB'   || $nm=='MYSQL_USR'
+	|| $nm=='MYSQL_PWD'    || $nm=='SUBMIT_DIR' || $nm=='LOG_FILE'
+	|| $nm=='ADMIN_EMAIL'  || $nm=='CONF_SALT'  || $nm=='BASE_URL'
+	|| $nm=='MYSQL_PREFIX') {
+      if (empty($vl)) die("<h1>Parameter $nm cannot be empty</h1>");
+      $$nm = $vl;
+    }
+  }
 }
 
 // Some things in confUtils need the BASE_URL constant
-$webServer = trim($_POST['webServer']);
-if (empty($webServer)) $webServer = $_SERVER['HTTP_HOST'];
-$baseURL = $webServer . $_SERVER['PHP_SELF'];             // this file
-$baseURL = substr($baseURL, 0, strrpos($baseURL, '/'));   // the directory
-$baseURL = substr($baseURL, 0, strrpos($baseURL, '/')+1); // parent directory
-define('BASE_URL', $baseURL);
+if (empty($BASE_URL)) {
+  $webServer = trim($_POST['webServer']);
+  if (empty($webServer)) $webServer = $_SERVER['HTTP_HOST'];
+  $BASE_URL = $webServer . $_SERVER['PHP_SELF'];              // this file
+  $BASE_URL = substr($BASE_URL, 0, strrpos($BASE_URL, '/'));  // the directory
+  $BASE_URL = substr($BASE_URL, 0, strrpos($BASE_URL, '/')+1);// parent dir
+}
+define('BASE_URL', $BASE_URL);
 
 require_once('../includes/confConstants.php'); 
 require_once('../includes/confUtils.php'); 
@@ -44,25 +61,32 @@ if ($chair) {
   $chairName  = $chairEmail = '';
 }
 
-$admin = isset($_POST['admin']) ? parse_email($_POST['admin']) : false;
-$adminEmail = $admin ? $admin[1] : '';
-
-if (isset($_POST['localMySQL']) && $_POST['localMySQL']=='yes') {
-  $sqlHost = 'localhost';
-} else {
-  $sqlHost   = trim($_POST['MySQLhost']); // MySQL server as seen by web server
-  if (empty($sqlHost)) $sqlHost = 'localhost';
+if (empty($ADMIN_EMAIL)) {
+  $admin = isset($_POST['admin']) ? parse_email($_POST['admin']) : false;
+  $ADMIN_EMAIL = $admin ? $admin[1] : '';
 }
-$sqlDB       = trim($_POST['confDB']);
+
+if (empty($MYSQL_HOST)) {
+  if (isset($_POST['localMySQL']) && $_POST['localMySQL']=='yes') {
+    $MYSQL_HOST = 'localhost';
+  } else {
+    $MYSQL_HOST= trim($_POST['MySQLhost']);// MySQL server as seen by web server
+    if (empty($MYSQL_HOST)) $MYSQL_HOST = 'localhost';
+  }
+}
+
+if (empty($MYSQL_DB))
+  $MYSQL_DB = makeName(trim($_POST['confDB'])); // make sure its a valid name
 $sqlRoot     = trim($_POST['rootNm']);
 $sqlRootPwd  = trim($_POST['rootPwd']);
-$sqlUsr      = trim($_POST['user']);
-$sqlPwd      = trim($_POST['pwd']);
-$SQLprefix   = trim($_POST['SQLprefix']);
+if (empty($MYSQL_USR))
+  $MYSQL_USR = trim($_POST['user']);
+if (empty($MYSQL_PWD))
+  $MYSQL_PWD = trim($_POST['pwd']);
+if (empty($MYSQL_PREFIX) && !empty($_POST['SQLprefix']))
+  $MYSQL_PREFIX = makeName(trim($_POST['SQLprefix']));
 
-$sqlDB = makeName($sqlDB); // make sure these are valid names
-$SQLprefix = makeName($SQLprefix);
-
+// $_POST['newDB'] should be either 'newDB', 'newTbls', or 'existing'
 if (!empty($_POST['newDB'])) $newDB = trim($_POST['newDB']);
 else {  // this shouldn't happen, try to use sensible defaults
   if (!empty($sqlRoot) && !empty($sqlRootPwd))
@@ -70,23 +94,24 @@ else {  // this shouldn't happen, try to use sensible defaults
   else $newDB = "newTbls";
 }
 
-$subDir      = trim($_POST['subDir']) ;
-if (empty($subDir)) { $subDir = $baseDir.'/subs'; }
-
+if (empty($SUBMIT_DIR)) {
+  $SUBMIT_DIR = trim($_POST['subDir']) ;
+  if (empty($SUBMIT_DIR)) { $SUBMIT_DIR = $baseDir.'/subs'; }
+}
 // replace '\' by '/', remove trailing '/' if needed
-$subDir = str_replace("\\", "/", $subDir);
-$lastChar = substr($subDir, -1);
-if ($lastChar=="/") $subDir = substr($subDir, 0, -1);
+$SUBMIT_DIR = str_replace("\\", "/", $SUBMIT_DIR);
+$lastChar = substr($SUBMIT_DIR, -1);
+if ($lastChar=="/") $SUBMIT_DIR = substr($SUBMIT_DIR, 0, -1);
 
 // Check that the required fileds are specified
 
-if (empty($sqlDB) || empty($chairEmail) || empty($adminEmail)) {
+if (empty($MYSQL_DB) || empty($chairEmail) || empty($ADMIN_EMAIL)) {
   print "<h1>Mandatory fields are missing</h1>\n";
   exit("You must specify a name for the database, and the chair and administrator email addresses\n");
 }
 
 if ((empty($sqlRoot) || empty($sqlRootPwd)) 
-    && (empty($sqlUsr) || empty($sqlPwd))) {
+    && (empty($MYSQL_USR) || empty($MYSQL_PWD))) {
   print "<h1>Cannot create/access MySQL database</h1>\n";
   print "To automatically generate MySQL database, you must specify the MySQL root username and password.<br/>\n";
   exit("Otherwise you must manually create the database and specify the name and password of a user that has access to that database.\n");
@@ -94,87 +119,89 @@ if ((empty($sqlRoot) || empty($sqlRootPwd))
 
 /* We are ready to initialize the installation */
 
-// Create the error log file (also to check that $subDir is writable)
-$logFile = $subDir.'/log'.time();
-define('LOG_FILE', $logFile); // needed for error reporting in some functions
-if (!file_exists($subDir)) mkdir($subDir);
-if (!($fd = fopen(LOG_FILE, 'w'))) {          // Open for write
-  exit("<h1>Cannot create log file $logFile</h1>\n");
+// Create the error log file (also to check that $SUBMIT_DIR is writable)
+if (empty($LOG_FILE))
+  $LOG_FILE = $SUBMIT_DIR.'/log'.time();
+define('LOG_FILE', $LOG_FILE); // needed for error reporting in some functions
+if (!file_exists($SUBMIT_DIR)) mkdir($SUBMIT_DIR);
+if (!($fd = fopen(LOG_FILE, 'w'))) { // Open for write, create if not there
+  exit("<h1>Cannot open/create log file $LOG_FILE</h1>\n");
 }
 fclose($fd);
 error_log(date('Y.m.d-H:i:s ')."Log file created\n", 3, LOG_FILE);
 
 // We generate some randomness for salting the password hashes
-$salt = alphanum_encode(sha1(uniqid($sqlDB.rand()).mt_rand()));
+if (empty($CONF_SALT))
+  $CONF_SALT = alphanum_encode(sha1(uniqid($MYSQL_DB.rand()).mt_rand()));
 
 // If MySQL admin details are specified, use them to create database/user
 if (!empty($sqlRoot) && !empty($sqlRootPwd)) {
 
   // Test that we can actually connect using the root username/pwd
-  $rootDB = new PDO("mysql:host=$sqlHost;charset=utf8", $sqlRoot, $sqlRootPwd,
+  $rootDB = new PDO("mysql:host=$MYSQL_HOST;charset=utf8",$sqlRoot,$sqlRootPwd,
 		    array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 
   // Create the database if needed
   if ($newDB == 'newDB') {
-    $rootDB->query('CREATE DATABASE IF NOT EXISTS '.$sqlDB);
+    $rootDB->query('CREATE DATABASE IF NOT EXISTS '.$MYSQL_DB);
   }
-  $rootDB->query("use $sqlDB");
+  $rootDB->query("use $MYSQL_DB");
 
   if ($newDB == 'newDB' || $newDB == 'newTbls')
-    create_tabels($rootDB,$SQLprefix); // from database.php
+    create_tabels($rootDB,$MYSQL_PREFIX); // from database.php
 
   // Create new user if not specified
-  if (empty($sqlUsr)) $sqlUsr = $sqlDB;
-  if (empty($sqlPwd)) {
-    $sqlPwd = sha1(uniqid(rand()). mt_rand(). $sqlUsr); // returns hex string
-    $sqlPwd = alphanum_encode(substr($sqlPwd, 0, 12));  // "compress" a bit
+  if (empty($MYSQL_USR)) $MYSQL_USR = $MYSQL_DB;
+  if (empty($MYSQL_PWD)) {
+    $MYSQL_PWD= sha1(uniqid(rand()).mt_rand().$MYSQL_USR); // returns hex string
+    $MYSQL_PWD= alphanum_encode(substr($MYSQL_PWD, 0, 12));  // "compress" a bit
   }
-  $host = ($sqlHost=='localhost')? "@'localhost'" : "";
+  $host = ($MYSQL_HOST=='localhost')? "@'localhost'" : "";
   $tbls = array_keys($dbTables);
   foreach ($tbls as $tblName) {
-    $qry = "GRANT SELECT, INSERT, UPDATE, DELETE ON $sqlDB.{$SQLprefix}{$tblName} TO ?{$host} IDENTIFIED BY ?";
-    pdo_query($qry, array($sqlUsr,$sqlPwd),'Cannot GRANT privileges: ',$rootDB);
+    $qry = "GRANT SELECT, INSERT, UPDATE, DELETE ON $MYSQL_DB.{$MYSQL_PREFIX}{$tblName} TO ?{$host} IDENTIFIED BY ?";
+    pdo_query($qry, array($MYSQL_USR,$MYSQL_PWD),'Cannot GRANT privileges: ',$rootDB);
   }
   $rootDB = null; // close the connection
 }
 else { // no admin password, try to use the user name/password if needed
   if ($newDB == 'newDB')
-    exit('<h1>SQL Admin Details Needed to Create New Database</h1>');
+    exit('<h1>SQL Admin Details Needed to Create a New Database</h1>');
 
   if ($newDB == 'newTbls') {
     // Try to connect using the user's credentials
-    $db = new PDO("mysql:host=$sqlHost;dbname=$sqlDB;charset=utf8",
-		  $sqlUsr, $sqlPwd,
+    $db = new PDO("mysql:host=$MYSQL_HOST;dbname=$MYSQL_DB;charset=utf8",
+		  $MYSQL_USR, $MYSQL_PWD,
 		  array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
-    create_tabels($db,$SQLprefix); // from database.php
+    create_tabels($db,$MYSQL_PREFIX); // from database.php
     $db = null;                    // close the connection
   }
 }
 
 // If we got here, then database and all tables were created
-$db = new PDO("mysql:host=$sqlHost;dbname=$sqlDB;charset=utf8",
-	      $sqlUsr, $sqlPwd,
+$db = new PDO("mysql:host=$MYSQL_HOST;dbname=$MYSQL_DB;charset=utf8",
+	      $MYSQL_USR, $MYSQL_PWD,
 	      array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 
 // Create the submission sub-directories
-if (!mkdir("$subDir/scratch", 0775)) { 
-  exit ("<h1>Cannot create scratch directory $subDir/scratch</h1>\n");
+if (!mkdir("$SUBMIT_DIR/scratch", 0775)) { 
+  exit ("<h1>Cannot create scratch directory $SUBMIT_DIR/scratch</h1>\n");
 }
-if (!mkdir("$subDir/backup", 0775)) { 
-  exit ("<h1>Cannot create submission backup directory $subDir/backup</h1>\n");
+if (!mkdir("$SUBMIT_DIR/backup", 0775)) { 
+  exit ("<h1>Cannot create submission backup directory $SUBMIT_DIR/backup</h1>\n");
 }
-if (!mkdir("$subDir/final", 0775)) { 
-  exit ("<h1>Cannot create camera-ready submission directory $subDir/final</h1>\n");
+if (!mkdir("$SUBMIT_DIR/final", 0775)) { 
+  exit ("<h1>Cannot create camera-ready submission directory $SUBMIT_DIR/final</h1>\n");
 }
-if (!mkdir("$subDir/attachments", 0775)) { 
-  exit ("<h1>Cannot create attachments directory $subDir/attachments</h1>\n");
+if (!mkdir("$SUBMIT_DIR/attachments", 0775)) { 
+  exit ("<h1>Cannot create attachments directory $SUBMIT_DIR/attachments</h1>\n");
 }
-copy('../init/.htaccess', $subDir.'/.htaccess');
-copy('../init/index.html', $subDir.'/index.html');
-copy('../init/index.html', $subDir.'/scratch/index.html');
-copy('../init/index.html', $subDir.'/backup/index.html');
-copy('../init/index.html', $subDir.'/final/index.html');
-copy('../init/index.html', $subDir.'/attachments/index.html');
+copy('../init/.htaccess', $SUBMIT_DIR.'/.htaccess');
+copy('../init/index.html', $SUBMIT_DIR.'/index.html');
+copy('../init/index.html', $SUBMIT_DIR.'/scratch/index.html');
+copy('../init/index.html', $SUBMIT_DIR.'/backup/index.html');
+copy('../init/index.html', $SUBMIT_DIR.'/final/index.html');
+copy('../init/index.html', $SUBMIT_DIR.'/attachments/index.html');
 
 // Insert the PC chair into the committee table. Also generates password
 // for the chair and send it by email. Initially, the password is written
@@ -185,45 +212,46 @@ $chrPwd = sha1(uniqid(rand()).mt_rand());           // returns hex string
 $chrPwd = alphanum_encode(substr($chrPwd, 0, 15));  // "compress" a bit
 $chairEmail = strtolower($chairEmail);
 
-$qry = "INSERT INTO {$SQLprefix}committee SET revId=?, revPwd=?, name=?, email=?, canDiscuss=?, flags=?";
+$qry = "INSERT INTO {$MYSQL_PREFIX}committee SET revId=?, revPwd=?, name=?, email=?, canDiscuss=?, flags=?";
 pdo_query($qry, array(1,$chrPwd,$chairName,$chairEmail,1,FLAG_IS_CHAIR),
 	  "Cannot insert program chair to database: ");
 
 // Store database parameters in file
 
-$iacr = empty($_POST['iacr'])? '': ("IACR=".$_POST['iacr']."\n");
-$prmsString = "<?php\n"
+if (!$lines) { // the parameter file is not there yet
+  $prmsString = "<?php\n"
   . "/* Parameters for a new installation: this file is formatted as a PHP\n"
   . " * file to ensure that accessing it directly by mistake does not cause\n"
   . " * the server to send this information to a client.\n"
-  . "MYSQL_HOST=$sqlHost\n"
-  . "MYSQL_DB=$sqlDB\n"
-  . "MYSQL_PREFIX=$SQLprefix\n"
-  . "MYSQL_USR=$sqlUsr\n"
-  . "MYSQL_PWD=$sqlPwd\n"
-  . "SUBMIT_DIR=$subDir\n"
-  . "LOG_FILE=$logFile\n"
-  . "ADMIN_EMAIL=$adminEmail\n"
-  . "CONF_SALT=$salt\n"
-  . "BASE_URL=$baseURL\n".$iacr
+  . "MYSQL_HOST=$MYSQL_HOST\n"
+  . "MYSQL_DB=$MYSQL_DB\n"
+  . "MYSQL_PREFIX=$MYSQL_PREFIX\n"
+  . "MYSQL_USR=$MYSQL_USR\n"
+  . "MYSQL_PWD=$MYSQL_PWD\n"
+  . "SUBMIT_DIR=$SUBMIT_DIR\n"
+  . "LOG_FILE=$LOG_FILE\n"
+  . "ADMIN_EMAIL=$ADMIN_EMAIL\n"
+  . "CONF_SALT=$CONF_SALT\n"
+  . "BASE_URL=$BASE_URL\n"
   . " ********************************************************************/\n"
   . "?>\n";
 
-// Check that you can create the parameter file
+  // Check that you can create the parameter file
 
-if (!($fd = fopen($prmsFile, 'w')) || !fwrite($fd, $prmsString)) {
-  print "<h1>Cannot write into parameters file $prmsFile</h1>\n";
-  print "Parameter file is as follows:\n<pre>\n".htmlspecialchars($prmsString)."\n</pre>\n";
-  print "After creating this file, you need to accees {$baseURL}chair/<br/>\n";
-  print "using username $chairEmail and password $chrPwd";
-  exit();
+  if (!($fd = fopen($prmsFile, 'w')) || !fwrite($fd, $prmsString)) {
+    print "<h1>Cannot write into parameters file $prmsFile</h1>\n";
+    print "Parameter file is as follows:\n<pre>\n".htmlspecialchars($prmsString)."\n</pre>\n";
+    print "After creating this file, you need to accees {$baseURL}chair/<br/>\n";
+    print "using username $chairEmail and password $chrPwd";
+    exit();
+  }
+  fclose($fd);
+  chmod($prmsFile, 0440);
 }
-fclose($fd);
-chmod($prmsFile, 0440);
 
 // Send email to chair and admin with the password for using this site
-$hdr   = "From: $adminEmail";
-$sndTo = "$adminEmail, $chairEmail";
+$hdr   = "From: $ADMIN_EMAIL";
+$sndTo = "$ADMIN_EMAIL, $chairEmail";
 $sbjct = "New submission and review site initialized";
 
 $prot = (isset($_SERVER['HTTPS'])) ? 'https' : 'http';
