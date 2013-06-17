@@ -241,7 +241,7 @@ if (!$lines) { // the parameter file is not there yet
   if (!($fd = fopen($prmsFile, 'w')) || !fwrite($fd, $prmsString)) {
     print "<h1>Cannot write into parameters file $prmsFile</h1>\n";
     print "Parameter file is as follows:\n<pre>\n".htmlspecialchars($prmsString)."\n</pre>\n";
-    print "After creating this file, you need to accees {$baseURL}chair/<br/>\n";
+    print "After creating this file, you need to accees {$BASE_URL}chair/<br/>\n";
     print "using username $chairEmail and password $chrPwd";
     exit();
   }
@@ -255,13 +255,13 @@ $sndTo = "$ADMIN_EMAIL, $chairEmail";
 $sbjct = "New submission and review site initialized";
 
 $prot = (isset($_SERVER['HTTPS'])) ? 'https' : 'http';
-$baseURL = $prot.'://'.$baseURL;
+$BASE_URL = $prot.'://'.$BASE_URL;
 $msg =<<<EndMark
 A new submission and review site was initialized, it now needs to be
 customized for its conference. The administration page is accessible
 from
 
-  {$baseURL}chair/
+  {$BASE_URL}chair/
 
 using username $chairEmail and password $chrPwd
 
