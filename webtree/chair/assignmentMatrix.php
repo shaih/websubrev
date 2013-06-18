@@ -317,6 +317,7 @@ function checkbox($subId, $revId, $name, $cmpt, $isChecked, $pref)
 
   $ttl = "{$subId}/{$name}";
   switch ($isChecked) {
+  case -2:
   case -1:
       return '<span class="'.$cls.'"><img src=../common/xmark.gif title="'.$ttl.' (conflict)" alt="x"></span>';
       // $chk = ' disabled="disabled"'; $ttl .= ' (conflict)'; break;

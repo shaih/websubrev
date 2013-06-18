@@ -77,7 +77,7 @@ if ($voteFlags & VOTE_ON_SUBS) { // voting on submissions
 
   $voteItems = array();
   while ($row=$res->fetch(PDO::FETCH_NUM)) {
-    if ($row[1] < 0 || $row[3]==-1) continue;
+    if ($row[1] < 0 || $row[3]<0) continue;
     $noVotes = false;
     $voteItems[] = $row;
   }

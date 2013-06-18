@@ -10,7 +10,7 @@ require 'header.php';
 require 'parseAssignments.php';
 
 if (isset($_POST["clearAll"])) {
-  pdo_query("UPDATE {$SQLprefix}assignments SET sktchAssgn=0 WHERE sktchAssgn!=-1");
+  pdo_query("UPDATE {$SQLprefix}assignments SET sktchAssgn=0 WHERE sktchAssgn>=0");
 }
 elseif (isset($_POST["reset2visible"])) {
   pdo_query("UPDATE {$SQLprefix}assignments SET sktchAssgn=assign");

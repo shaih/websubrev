@@ -104,7 +104,7 @@ $qry = "SELECT s.subId, s.title, s.wAvg, s.status,
 $res = pdo_query($qry, array($revId,$revId));
 while ($row = $res->fetch(PDO::FETCH_NUM)) {
   list($subId,$title,$wAvg,$status,$pref,$assign,$watch,$revwed) = $row;
-  if ($assign==-1) continue; // conflict
+  if ($assign<0) continue; // conflict
   // Get the submission details
   $subId = (int) $subId;
   $title = htmlspecialchars($title);

@@ -28,7 +28,7 @@ $qry = "SELECT a.assign FROM {$SQLprefix}submissions s
       LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=?
       WHERE s.subId=?";
 $res = pdo_query($qry, array($revId,$subId,$subId));
-if (!($row = $res->fetch(PDO::FETCH_NUM)) || $row[0]==-1) {
+if (!($row = $res->fetch(PDO::FETCH_NUM)) || $row[0]<0) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 
@@ -73,7 +73,7 @@ pdo_query($qry, array($subId,$revId,($pcMember[1].' posted a message')));
 // Send the new post by email to reviewers that have this submission
 // on their watch list and asked to be notified by email of new posts
 
-$qry = "SELECT c.email, c.flags FROM {$SQLprefix}assignments a, {$SQLprefix}committee c WHERE c.revId=a.revId AND a.subId=? AND a.revId!=? AND a.assign!=-1 AND a.watch=1";
+$qry = "SELECT c.email, c.flags FROM {$SQLprefix}assignments a, {$SQLprefix}committee c WHERE c.revId=a.revId AND a.subId=? AND a.revId!=? AND a.assign>=0 AND a.watch=1";
 $res = pdo_query($qry, array($subId,$revId));
 $notify = $comma = '';
 while ($row = $res->fetch(PDO::FETCH_NUM)) {

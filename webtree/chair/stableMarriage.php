@@ -127,15 +127,15 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   $compatible = (int) $row['compatible'];         // -1, 0, or 1
   if ($compatible < -1 || $compatible > 1) $compatible = 0;
 
-  $assign = (int) $row['sktchAssgn'];             // -1, 0, or 1
-  if ($assign < -1 || $assign > 1) $assign = 0;
+  $assign = (int) $row['sktchAssgn'];             // -2,-1, 0, or 1
+  if ($assign < -2 || $assign > 1) $assign = 0;
 
   // record the current assignment
   if (!isset($curAssign[$revId])) $curAssign[$revId] = array();
   $curAssign[$revId][$subId] = $assign;
 
   // record the preferences
-  if ($assign==-1) { // conflict-of-interest: assign lowest possible priority
+  if ($assign<0) { // conflict-of-interest: assign lowest possible priority
     $revPrefs[$revId][$subId] = $subPrefs[$subId][$revId] = -200000;
   } else if (isset($_POST['keepAssignments']) && $assign==1) {
     $revPrefs[$revId][$subId] = $subPrefs[$subId][$revId] = 200000;
@@ -210,13 +210,13 @@ while (!$done) {
 $stmt1 = $db->prepare("UPDATE {$SQLprefix}assignments SET sktchAssgn=? WHERE revId=? AND subId=?");
 $stmt2 = $db->prepare("INSERT INTO {$SQLprefix}assignments SET revId=?, subId=?, sktchAssgn=1");
 foreach ($revs as $revId => $x) foreach ($subs as $subId => $y) {
-  // $aOld is -1, 0, 1 or NULL
+  // $aOld is -2, -1, 0, 1 or NULL
   $aOld = isset($curAssign[$revId][$subId])? $curAssign[$revId][$subId]: NULL;
   $aNew = isset($revMatches[$revId][$subId]) ? 1 : 0;
 
   // do not overwrite conflict-of-interest, and (depending on $_POST)
   // maybe also do not overwrite existing assignments
-  if ($aOld==-1 || (isset($_POST['keepAssignments']) && $aOld==1)) continue;
+  if ($aOld<0 || (isset($_POST['keepAssignments']) && $aOld==1)) continue;
 
   if ($aNew == (int)$aOld) continue;    // nothing to update
 

@@ -53,7 +53,7 @@ if (!empty($_POST['visible'])) {
 
   // Record in the changes log and send email to people who asked for it
 
-  $stmt1 = $db->prepare("SELECT c.email,c.flags FROM {$SQLprefix}assignments a, {$SQLprefix}committee c WHERE c.revId=a.revId AND a.subId=? AND c.revId!=$revId AND a.assign!=-1 AND a.watch=1");
+  $stmt1 = $db->prepare("SELECT c.email,c.flags FROM {$SQLprefix}assignments a, {$SQLprefix}committee c WHERE c.revId=a.revId AND a.subId=? AND c.revId!=$revId AND a.assign>=0 AND a.watch=1");
 
   $stmt2 = $db->prepare("INSERT INTO {$SQLprefix}changeLog (subId,revId,changeType,description,entered) VALUES (?,?,'Status',?,NOW())");
 

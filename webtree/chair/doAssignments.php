@@ -55,7 +55,7 @@ if (isset($_POST["saveAssign"])) { // input from matrix interface
 
     // do not override a conflict
     if (isset($prefs[$subId][$revId][2])
-	&& $prefs[$subId][$revId][2] == -1) $assgn=-1;
+	&& $prefs[$subId][$revId][2]<0) $assgn=$prefs[$subId][$revId][2];
 
     if (isset($prefs[$subId][$revId])) {  // modify existing entry
       if (($prefs[$subId][$revId][2]==$assgn) &&      // nothing changed
@@ -101,7 +101,7 @@ else if (isset($_POST["manualAssign"])) { // input from list interface
       $revName = trim($revName); if (empty($revName)) continue;
       $revId = match_PCM_by_name($revName, $committee);
 
-      if ($revId==-1 || (isset($prefs[$subId][$revId]) && $prefs[$subId][$revId][2]==-1)) continue;
+      if ($revId==-1 || (isset($prefs[$subId][$revId]) && $prefs[$subId][$revId][2]<0)) continue;
       $newAssignment[$subId][$revId]=1;
 
       $list .= $revId . ', ';

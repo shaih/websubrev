@@ -46,7 +46,7 @@ $qry2 = "SELECT gradeId, grade from {$SQLprefix}auxGrades WHERE subId=? and revI
 $res = pdo_query($qry, array($revId,$revId,$subId));
 $auxRes = pdo_query($qry2, array($subId,$revId));
 $row = $res->fetch(PDO::FETCH_ASSOC);
-if (!$row || $row['assign']==-1) {
+if (!$row || $row['assign']<0) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 

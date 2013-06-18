@@ -14,6 +14,7 @@ $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
 $disFlag= (int) $pcMember[3];
 $pcmFlags= (int) $pcMember[5];
+$isChair = is_chair($revId);
 
 // Prepare a list of submissions that the current member reviewed
 $qry = "SELECT subId, flags FROM {$SQLprefix}reports WHERE revId=?";
@@ -23,6 +24,27 @@ while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $subId = (int) $row[0];
   $notDraft = (int) $row[1];
   $reviewed[$subId] = $notDraft;
+}
+
+// Get a list of tags that this reviewer can see
+$tags = array();
+$qry = "SELECT tagName,subId FROM {$SQLprefix}tags WHERE type IN ($revId,0"
+  . ($isChair? ',-1' : '') . ') ORDER BY subId,tagName';
+$res = pdo_query($qry);
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
+  $tag = $row[0];
+  $subId = $row[1];
+  if (!isset($tags[$subId])) $tags[$subId] = array($tag);
+  else                       $tags[$subId][] = $tag;
+}
+
+// Forteh chair: check if submissions have conflicts
+$conflicts = array();
+if ($isChair) {
+  // Check for -1 or -2 assignments (conflict or PC-member paper)
+  $res = pdo_query("SELECT MIN(assign) conflict, subId FROM {$SQLprefix}assignments GROUP BY subId");
+  while ($row = $res->fetch(PDO::FETCH_ASSOC))
+    if (isset($row['conflict'])) $conflicts[$row['subId']]= $row['conflict'];
 }
 
 // Get a list of submissions for which this reviewer already saw all
@@ -55,7 +77,7 @@ if (isset($_GET['optedIn'])) {
 
 $qry ="SELECT s.subId subId, title, authors, abstract, s.format format,
        status, UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
-       a.watch watch, s.avg avg, VAR_POP(r.score) delta, category, AVG(r.confidence) as avgConf, s.flags flags, s.contact contact
+       a.watch watch, s.avg avg, STD(r.score) stdev, category, AVG(r.confidence) as avgConf, s.flags flags, s.contact contact
     FROM {$SQLprefix}submissions s
          LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId
          LEFT JOIN {$SQLprefix}reports r ON r.subId=s.subId ";
@@ -75,10 +97,12 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   }
   $subId = $row['subId'];
   $row['hasNew'] = !isset($seenSubs[$subId]);
+  if (isset($tags[$subId])) $row['tags'] = $tags[$subId];
+  if (isset($conflicts[$subId])) $row['conflict'] = $conflicts[$subId];
   // sanitize for the case of "discuss most"
   if ($disFlag==2 && $row['assign']==1 && !isset($reviewed[$subId])) {
     $row['avg'] = NULL;
-    $row['delta'] = NULL;
+    $row['stdev'] = NULL;
     $row['avgConf'] = NULL;
     $row['lastModif'] = NULL;
     $row['noDiscuss'] = true;
@@ -86,7 +110,7 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   }
   else if ($row['assign']==1 && !isset($_GET['ignoreAssign']))
     $assigned[] = $row;
-  else if (($row['assign']!=-1) && !has_group_conflict($revId, $row['title']))
+  else if (($row['assign']>=0) && !has_group_conflict($revId, $row['title']))
     $others[] = $row; 
 }
 
@@ -101,7 +125,8 @@ $links = show_rev_links(3);
 print <<<EndMark
 <!DOCTYPE HTML>
 <html><head><meta charset="utf-8">
-<link rel="stylesheet" type="text/css" href="../common/review.css" />
+<link rel="stylesheet" type="text/css" href="../common/review.css"/>
+<link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
 <style type="text/css">
 h1 { text-align: center; }
 .fixed { font: 14px monospace; }
@@ -129,14 +154,6 @@ if (isset($_GET['abstract'])) {
 if (isset($_GET['category'])) {
   $flags |= 128;
   $showMore |= 2;
-}
-if (isset($_GET['pcmark'])) {
-  $flags |= 256;
-  $showMore |= 4;
-}
-if (isset($_GET['hvr'])) {
-  $flags |= 512;
-  $showMore |= 8;
 }
 
 $otherName = "";

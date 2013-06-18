@@ -16,7 +16,7 @@ else exit('no submission specified');
 // a conflict with it. 
 $qry = "SELECT a.assign,a.watch FROM {$SQLprefix}submissions s LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId WHERE s.subId=?";
 $row = pdo_query($qry,array($revId,$subId))->fetch(PDO::FETCH_NUM);
-if (!$row || $row[0]==-1) {
+if (!$row || $row[0]<0) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 

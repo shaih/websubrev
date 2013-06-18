@@ -18,7 +18,7 @@ function storeReview($subId, $revId, $subReviewer, $conf, $score, $auxGrades,
   WHERE s.subId=?";
 
   $res = pdo_query($qry, array($revId,$subId));
-  if (!($row = $res->fetch(PDO::FETCH_NUM)) || $row[1]==-1)
+  if (!($row = $res->fetch(PDO::FETCH_NUM)) || $row[1]<0)
     return -3;  // no such submission or reviewer has conflict
 
   if ($watch) { // add the submission to reviewer's watch list

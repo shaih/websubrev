@@ -6,6 +6,7 @@
 .MA { font-family: "bold Verdana"; color: rgb(102,255,0); }
 .AC { font-family: "bold Verdana"; color: rgb(0,136,0); }
 
+tr.submission {white-space: nowrap; } 
 .setWD { background: black; }
 .setNO { background: rgb(192,192,192); }
 .setRE { background: rgb(255,0,0); }
@@ -18,7 +19,7 @@
 .Revise { color: rgb(255,0,0); font-family: "bold Verdana"; }
 .Discuss { color: rgb(0,128,0); font-family: "bold Verdana"; }
 
-.rjust   { text-align: right; white-space: nowrap; }
+.rjust   { text-align: right; }
 .hidden  { display: none; }
 .shown   { display: inline; }
 .lightbg { background-color: rgb(245,245,245); } 
@@ -58,3 +59,8 @@
 ul.noDot {list-style-type: none; margin-left: 0px; }
 
 .toggleRead {font-size: x-large; color: green; text-decoration: none;}
+
+a.tagsLink { color: black; text-decoration: none;}
+.showTags { border:1px solid; background-color: lightgrey;}
+
+span.hiddenTags { background-color: #e0e0e0;}

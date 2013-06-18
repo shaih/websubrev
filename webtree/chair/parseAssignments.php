@@ -15,10 +15,10 @@ function parse_assignment_file($tmpFile)
   }
   if (!($fd=fopen($fName,'r'))) die("Could not open assignment file");
 
-  pdo_query("UPDATE {$SQLprefix}assignments SET sktchAssgn=0 WHERE sktchAssgn!=-1");
+  pdo_query("UPDATE {$SQLprefix}assignments SET sktchAssgn=0 WHERE sktchAssgn>=0");
   $subId = -1;
   $stmt1 = $db->prepare("INSERT IGNORE INTO {$SQLprefix}assignments SET subId=?,revId=?,sktchAssgn=1");
-  $stmt2 = $db->prepare("UPDATE {$SQLprefix}assignments SET sktchAssgn=1 WHERE subId=? AND revId=? AND sktchAssgn!=-1");
+  $stmt2 = $db->prepare("UPDATE {$SQLprefix}assignments SET sktchAssgn=1 WHERE subId=? AND revId=? AND sktchAssgn>=0");
   while (!feof($fd) && ($line=fgets($fd))!==false) { // Read next line
     if (substr($line,0,10)=='Submission') {
       $pos=strpos($line,':',11);

@@ -205,10 +205,10 @@ $dbTables = array(
   // this reviewer is a good reviewer for that submission, and it can be
   // either -1 (not compatible) 0 (default) or 1 (should review this).
   //
-  // The sktchAssgn field can be -1 (conflict), 1 (assigned) or 0 (neither).
+  // The sktchAssgn field can be -2,-1 (conflict), 1 (assigned) or 0 (neither).
   // This is used in the process of assigning submissions to reviewers.
   //
-  // The assign field can be either -1 (conflict), 1 (assigned) or 0 (neither).
+  // The assign field can be either -2,-1 (conflict), 1 (assigned), 0 (neither).
   //
   // The watch field (0/1) is used to let reviewers specify a list of
   // papers that they want to watch during the discussion phase.
@@ -323,7 +323,6 @@ $dbTables = array(
     param varchar(255) DEFAULT '',
     description varchar(255) DEFAULT '',
     PRIMARY KEY (tagName,subId,type),
-    KEY (tagName,subId),
     KEY (subId)"
 );
 

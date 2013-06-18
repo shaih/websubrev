@@ -10,7 +10,7 @@ require 'header.php';
 
 // a basic "node" class to be able to do Depth-First-Search
 class matrixEntry {
-  var $assigned = 0; // -1 is conflict, +1 is assigned, 0 is neither
+  var $assigned = 0; // -2,-1 is conflict, +1 is assigned, 0 is neither
   var $reviewed = false;
   var $posts    = false;
 }
@@ -101,10 +101,11 @@ for PC members.
 <!-- <h2>Review Details</h2> -->
 <span style="vertical-align: bottom;">
 <b>Legend:</b> &nbsp;&nbsp;
-<img src="../common/check4.GIF" alt="(+)" height=20> Assigned,&nbsp;&nbsp; 
+<img src="../common/check4.GIF" alt="(-)" height=20> Assigned,&nbsp;&nbsp; 
 <img src="../common/check2.GIF" alt="(+)" height=20> Reviewed,&nbsp;&nbsp; 
 <img src="../common/check1.GIF" alt="(+)" height=22> Participates in discussion,&nbsp;&nbsp;
-<img src="../common/stop.GIF" alt="(+)" height=16> Conflict
+<img src="../common/stop.GIF" alt="(X)" height=16> Conflict
+<img src="../common/pcm.gif" alt="(XX)" height=16> PC-member paper
 </span>
 <br /><br />
 <table cellspacing=0 cellpadding=0 border=1><tbody>
@@ -141,7 +142,9 @@ foreach ($subArray as $sub) {
       $assgn = $subRevs[$subId][$revId]->assigned;
       $rvewd = $subRevs[$subId][$revId]->reviewed;
       $posts = $subRevs[$subId][$revId]->posts;
-      if ($assgn==-1)   // conflict
+      if ($assgn==-2)   // PC-member paper
+	$entry = '<img src="../common/pcm.gif" alt="(XX)" height=18>';
+      else if ($assgn==-1)   // conflict
 	$entry = '<img src="../common/stop.GIF" alt="(X)" height=18>';
       else {
 	// Compute the symbol to display (check1.GIF through check7.GIF)

@@ -35,7 +35,7 @@ $qry = "SELECT s.subId subId, s.title title,
 $res = pdo_query($qry, array($revId,$subId,$revId,
 			     $subId,$subId,$subId,FLAG_IS_GROUP));
 if (!($submission = $res->fetch(PDO::FETCH_ASSOC))
-    || $submission['assign']==-1) {
+    || $submission['assign']<0) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 

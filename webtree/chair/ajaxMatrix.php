@@ -14,7 +14,7 @@ if (isset($_POST['checkbox'])) { // record changes to a single checkbox
   $assign = (int) $_POST['assign'];
   // update the databse, without overwiting conflicts
   $db->exec("INSERT IGNORE into {$SQLprefix}assignments SET subId=$subId, revId=$revId, sktchAssgn=$assign");
-  $qry = "UPDATE {$SQLprefix}assignments SET sktchAssgn=$assign WHERE subId=$subId AND revId=$revId AND assign!=-1";
+  $qry = "UPDATE {$SQLprefix}assignments SET sktchAssgn=$assign WHERE subId=$subId AND revId=$revId AND assign>=0";
   $db->exec($qry);
   //  error_log(date('Y.m.d-H:i:s ' )."$qry\n",3,LOG_FILE);
   exit(0); // return 0 on success

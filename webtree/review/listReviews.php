@@ -56,6 +56,18 @@ $isChair = is_chair($revId);
 // Check that this reviewer is allowed to discuss submissions
 if ($disFlag != 1 && !has_reviewed_anything($revId)) exit("<h1>$revName cannot discuss submissions yet</h1>");
 
+// Get a list of tags that this reviewer can see
+$tags = array();
+$qry = "SELECT tagName,subId FROM {$SQLprefix}tags WHERE type IN ($revId,0"
+  . ($isChair? ',-1' : '') . ') ORDER BY subId,tagName';
+$res = pdo_query($qry);
+while ($row = $res->fetch(PDO::FETCH_NUM)) {
+  $tag = $row[0];
+  $subId = $row[1];
+  if (!isset($tags[$subId])) $tags[$subId] = array($tag);
+  else                       $tags[$subId][] = $tag;
+}
+
 // Get a list of submissions for which this reviewer already saw all
 // the discussions/reviews. Everything else is considered "new"
 
@@ -149,7 +161,7 @@ $watch = array();
 $others = array();
 $currentId = -1; // make sure that it does not equal $row['subId'] below
 while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
-  if ($row['assign']==-1 || has_group_conflict($revId, $row['title']))
+  if ($row['assign']<0 || has_group_conflict($revId, $row['title']))
     continue;                  // don't show conflict-of-interest subs
   //  print "<pre>".print_r($row, true)."</pre>";
 
@@ -175,6 +187,10 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
 			'flags'     => $row['flags'],
 			'contact'   => $row['contact'],
 			'hasNew'    => (!$nohtingNew) );
+
+    if (isset($tags[$currentId]))
+      $subs[$currentId]['tags'] = $tags[$currentId];
+    else $subs[$currentId]['tags'] = array();
 
     if (isset($_GET['withReviews']))
       $subs[$currentId]['rebuttal'] = $row['rebuttal'];

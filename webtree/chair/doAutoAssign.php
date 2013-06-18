@@ -93,7 +93,7 @@ $nReviewers = count($revs);
 
 // Prepare a 2-dimentional array for reviewer preferences, assignments
 $revPrefs = array();
-$curAssign = array(); // $curAssign[rev][sub] is -1,0 or 1
+$curAssign = array(); // $curAssign[rev][sub] is -2,-1,0 or 1
 foreach ($revs as $revId) {
   $revPrefs[$revId] = array();
   $curAssign[$revId]= array();
@@ -113,8 +113,8 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   if (!in_array($subId,$subs)) continue;
 
   $revId = (int)$row['revId'];
-  $assign = (int) $row['sktchAssgn'];    // -1, 0, or 1
-  if ($assign < -1 || $assign > 1) $assign = 0;
+  $assign = (int) $row['sktchAssgn'];    // -2,-1, 0, or 1
+  if ($assign < -2 || $assign > 1) $assign = 0;
   elseif ($assign==1) {
     $curCoverage[$subId]++;
     if (in_array($revId, $excluded)) $exRevLoad++;
@@ -127,7 +127,7 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   // Use the chair's preference to modify the reviewer's preferences
   if ($compatible<0) $pref-= 2;
   elseif ($compatible>0 && $pref>=3) $pref++;
-  if ($assign==-1) $pref = 0;           // conflict of interests
+  if ($assign<0) $pref = 0;           // conflict of interests
   if ($pref < 0) $pref=0;
   elseif ($pref > 6) $pref = 3;         // pref can be upto 6 (if compatible>0)
 

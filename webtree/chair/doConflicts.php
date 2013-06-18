@@ -9,7 +9,7 @@
 require 'header.php';
 
 // Get current preferences/sketch-assignments.
-// We maintain an invariant that sktchAssgn==-1 iff assign==-1
+// We maintain an invariant that sktchAssgn==-1,-2 iff assign==-1,-2
 
 // Prepare an array of submissions and an array of PC members
 $res = pdo_query("SELECT subId FROM {$SQLprefix}submissions ORDER BY subId");
@@ -27,7 +27,8 @@ while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $committee[$revId] = true;
 }
 
-$qry = "SELECT subId, revId, sktchAssgn FROM {$SQLprefix}assignments ORDER BY revId, subId";
+// read the current blocked submissions from the database
+$qry = "SELECT subId, revId, assign FROM {$SQLprefix}assignments ORDER BY revId, subId";
 $res = pdo_query($qry);
 $current = array();
 while ($row = $res->fetch(PDO::FETCH_NUM)) { 
@@ -36,20 +37,19 @@ while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $current[$revId][$subId] = $assign;
 }
 
-$stmt1 = $db->prepare("INSERT INTO {$SQLprefix}assignments SET subId=?, revId=?, sktchAssgn=-1, assign=-1");
-$stmt2 = $db->prepare("UPDATE {$SQLprefix}assignments SET sktchAssgn=-1, assign=-1 WHERE subId=? AND revId=?");
-foreach ($_POST as $nm => $val) {
-  if (empty($nm) || trim($val) != "on") continue;
-  $nm = explode('_', $nm);
-  if ($nm[0] != "b") continue;
-  $revId = (int) $nm[1];
-  $subId = (int) $nm[2];
-  if ($subId <= 0 || $revId <= 0) continue;
+$stmt1 = $db->prepare("INSERT INTO {$SQLprefix}assignments SET sktchAssgn=?, assign=?, subId=?, revId=?");
+$stmt2 = $db->prepare("UPDATE {$SQLprefix}assignments SET sktchAssgn=?, assign=? WHERE subId=? AND revId=?");
+foreach ($_POST['block'] as $revId => $lst) {
+  if ($revId<=0 || !isset($committee[$revId])) continue;
 
-  if (!isset($current[$revId][$subId]))     // insert new entry
-    $stmt1->execute(array($subId,$revId));
-  else if ($current[$revId][$subId] != -1)  // modify existing entry
-    $stmt2->execute(array($subId,$revId));
+  foreach ($lst as $subId => $assign) {
+    if ($subId<=0 || !isset($subArray[$subId])) continue;
+
+    if (!isset($current[$revId][$subId]))         // insert new entry
+      $stmt1->execute(array($assign,$assign,$subId,$revId));
+    else if ($current[$revId][$subId] != $assign) // modify existing entry
+      $stmt2->execute(array($assign,$assign,$subId,$revId));
+  }
 }
 
 // Remove from database all the submission blocks that are not
@@ -57,7 +57,7 @@ foreach ($_POST as $nm => $val) {
 
 $stmt1 = $db->prepare("UPDATE {$SQLprefix}assignments SET sktchAssgn=0, assign=0 WHERE subId=? AND revId=?");
 foreach ($current as $revId => $pcmList) foreach ($pcmList as $subId => $a) {
-  if ($a==-1 && !isset($_POST["b_{$revId}_{$subId}"]))
+  if ($a<0 && !isset($_POST["block"][$revId][$subId]))
     $stmt1->execute(array($subId,$revId));
 }
 

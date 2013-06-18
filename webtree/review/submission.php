@@ -10,6 +10,7 @@ require 'header.php'; // defines $pcMember=array(id, name, ...)
 $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
 $disFlag= (int) $pcMember[3];
+$isChair = is_chair($revId);
 
 if (isset($_GET['subId'])) { $subId = (int) trim($_GET['subId']); }
 else exit("<h1>No Submission specified</h1>");
@@ -23,7 +24,7 @@ $qry ="SELECT s.title, s.authors, s.abstract, s.category, s.keyWords,
 
 $submission = 
   pdo_query($qry, array($revId,$revId,$subId))->fetch(PDO::FETCH_ASSOC);
-if (!$submission || $submission['assign']==-1) {
+if (!$submission || $submission['assign']<0) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 
@@ -43,7 +44,7 @@ $keyWords = htmlspecialchars($submission['keyWords']);
 $format   = htmlspecialchars($submission['format']);
 $watch    = (int) $submission['watch'];
 
-if ($disFlag) { 
+if ($disFlag) {
 
   // Check for things in the discussion board that the reviewe didn't see yet
   $qry = "SELECT COUNT(*) FROM {$SQLprefix}submissions s, {$SQLprefix}lastPost lp WHERE s.subId=? AND lp.revId=? AND lp.subId=s.subId AND s.lastModified<=lp.lastVisited";
@@ -68,8 +69,16 @@ if ($disFlag) {
   }
   // below is an "old fashioned" use of the rel attribute to keep data
   $toggleWatch = "<a rel='$watch' href='toggleWatch.php?subId={$subId}&current=$watch'><img src='$src' id='toggleWatch$subId' alt='$alt' title='$tooltip' border='0'></a>&nbsp;";
+
+  // get the tags for this submission
+  $qry = "SELECT tagName FROM {$SQLprefix}tags WHERE subId=? AND type IN (?,0";
+  if ($isChair) $qry .= ',-1)';
+  else          $qry .= ')';
+  $tagArray = pdo_query($qry,array($subId,$revId))->fetchAll(PDO::FETCH_NUM);
+  foreach ($tagArray as $i=> $row) $tagArray[$i] = $row[0];
+  $tags = showTags($tagArray, $subId, $isChair); // in revFunctions.php
 }
-else $toggleWatch = $discussLine = '';
+else $toggleWatch = $discussLine = $tags = '';
 
 // The styles are defiend in ../common/review.css, the icons in confUtils.php
 if (isset($submission['revId'])) {// PC member already reviewed this submission
@@ -79,8 +88,6 @@ if (isset($submission['revId'])) {// PC member already reviewed this submission
   $revStyle = "Review";
   $revText = $reviewIcon;
 }
-
-// $pageWidth = 720; body { width : {$pageWidth}px; }
 
 $links = show_rev_links();
 print <<<EndMark
@@ -102,6 +109,7 @@ div.fixed { font: 14px monospace; width: 90%; }
 <body>
 $links
 <hr />
+$tags
 <center>
 <a href="download.php?subId=$subId" title="download"><img src="../common/download.gif" alt="download"
    border=0></a>

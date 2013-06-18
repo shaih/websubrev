@@ -37,7 +37,7 @@ $qry = "SELECT s.subId subId, s.title title, s.rebuttal rebuttal,
   WHERE s.subId=? AND (status!='Withdrawn' OR (s.flags & ".FLAG_IS_GROUP.")) GROUP BY subId";
 $res = pdo_query($qry,array($revId,$subId,$revId,$subId,$subId,$subId));
 if (!($submission = $res->fetch(PDO::FETCH_ASSOC))
-    || $submission['assign']==-1) {
+    || $submission['assign']<0) {
   exit("<h1>Submission does not exist or reviewer has a conflict</h1>");
 }
 
@@ -137,6 +137,12 @@ if (isset($submission['lastSaw'])) {
   $res = pdo_query($qry,array($subId,$lastVisited));
   $changeLog = $res->fetchAll(PDO::FETCH_NUM);
 }
+
+// get the tags for this submission
+$qry = "SELECT tagName FROM {$SQLprefix}tags WHERE subId=? AND type IN (?,0";
+if ($isChair) $qry .= ',-1)';
+else          $qry .= ')';
+$submission['tags'] = pdo_query($qry,array($subId,$revId))->fetchAll(PDO::FETCH_NUM);
 
 // Now we can display the results to the user
 $pageWidth = 725;

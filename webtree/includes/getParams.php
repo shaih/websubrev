@@ -195,8 +195,10 @@ $MRicon = '<img alt="[MR]" title="Status: maybe reject" src="../common/MR.gif" b
 $REicon = '<img alt="[RE]" title="Status: reject" src="../common/RE.gif" border=0>';
 $NOicon = '<img alt="[NO]" title="Status: none" src="../common/NO.gif" border=0>';
 $WDicon = '<img alt="[WD]" title="Status: Withdrawn" src="../common/WD.gif" border=0>';
-$PCicon = '<img alt="[PC]" title="One or more PC\'s is listed as author" src="../common/PC.gif" border=0>';
-$HVRicon = '<img alt="[PC]" title="High Variance Review" src="../common/HVR.gif" border=0>';
+
+$CONFicon = '<img alt="[X]" title="conflict" src="../common/stop.GIF" height=16 border=0>';
+$PCMicon = '<img alt="[PC]" title="PC-member author" src="../common/pcm.gif" height=16 border=0>';
+
 function formatTable($fmtString)
 {
   if (!isset($fmtString)) return NULL;

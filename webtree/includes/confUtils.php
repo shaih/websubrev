@@ -8,7 +8,7 @@
 function show_legend()
 {
   // icons are defined in includes/getParams.php
-  global $WDicon, $NOicon, $REicon, $MRicon, $DIicon, $MAicon, $ACicon, $PCicon, $HVRicon;
+  global $WDicon, $NOicon, $REicon, $MRicon, $DIicon, $MAicon, $ACicon;
   global $reviseIcon, $reviewIcon, $revise2Icon, $discussIcon1, $discussIcon2;
   
   $legend = <<<EndMark
@@ -647,13 +647,6 @@ function has_discussed($revId, $subId)
   global $SQLprefix;
   $res = pdo_query("SELECT COUNT(*) FROM {$SQLprefix}posts WHERE revId=? AND subId=?", array($revId,$subId));
   return ($res->fetchColumn() > 0);
-}
-
-function high_variance_reviews($subId, $thresh = 2.0)
-{
-  global $SQLprefix;
-  $res = pdo_query("SELECT VAR_POP(score) FROM {$SQLprefix}reports WHERE subId=?", array($subId));
-  return ($res->fetchColumn() > $thresh);
 }
 
 // returns true is reviewer has conflict with any of the submissions

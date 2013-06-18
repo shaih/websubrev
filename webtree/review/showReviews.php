@@ -14,9 +14,10 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0, $sh
   $isGroup = $sub['flags'] & FLAG_IS_GROUP;
   $title =  htmlspecialchars($sub['title']);
   $sttus  = show_status($sub['status']);
-  $avg   = isset($sub['avg']) ? round($sub['avg'],1) : '*';
-  $wAvg  = isset($sub['wAvg']) ? round($sub['wAvg'],1) : '*';
-  $delta = isset($sub['delta']) ? ($sub['delta']) : '*'; 
+  $avg   = isset($sub['avg'])?   round($sub['avg'],1) : '*';
+  $wAvg  = isset($sub['wAvg'])?  round($sub['wAvg'],1) : '*';
+  $delta = isset($sub['delta'])? $sub['delta'] : '*';
+  $tags = isset($sub['tags'])?   $sub['tags'] : null;
 
   $markRead = (isset($sub['hasNew']) && $sub['hasNew'])? 0: 1;
   $disText =  $markRead? $discussIcon2 : $discussIcon1;
@@ -45,14 +46,20 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0, $sh
     $extra .= $br.'<img src="../common/smalleye.gif" alt="W" border=0>';
 
   print "<br />\n<div class=\"darkbg\">\n";
+
   // If this is the chair: allow setting the status of this submission
   // and also provide a list of reviewers that have conflict.
   if (is_chair($revId)) {
-    $qry = "SELECT c.name FROM {$SQLprefix}assignments a, {$SQLprefix}committee c WHERE a.subId=? AND a.assign=-1 AND c.revId=a.revId";
+    $qry = "SELECT c.name,a.assign FROM {$SQLprefix}assignments a, {$SQLprefix}committee c WHERE a.subId=? AND a.assign<0 AND c.revId=a.revId";
     $res = pdo_query($qry, array($subId));
     $conflictList = '';
+    $gif = '../common/stop.GIF';
     while ($row = $res->fetch(PDO::FETCH_NUM)) {
       $conflictList .= '<br/>&nbsp;&nbsp;'.$row[0];
+      if ($row[1]==-2) {
+	$gif = '../common/pcm.gif';
+	$conflictList .= '(PCM)';
+      }
     }
     print "<table><tbody><tr><td class='nowrp'>";
     if (!empty($conflictList)) {
@@ -60,7 +67,7 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0, $sh
       print "<a name=\"stts{$subId}"
 	. '" class=tooltips href="#" onclick="return false;" style="z-index:'
 	. "$zIx;\">\n";
-      print '<img alt="X" title="" height=16 src="../common/stop.GIF" border=0/><span>Conflicts:'.$conflictList."</span></a></td><td>\n";
+      print '<img alt="X" title="" height=16 src="'.$gif.'" border=0/><span>Conflicts:'.$conflictList."</span></a></td><td>\n";
     }
     else {
       print "&nbsp;&nbsp;&nbsp;&nbsp;</td><td>\n";
@@ -102,19 +109,14 @@ EndMark;
     </td>
     
     <td id="statCode$subId" class="nowrp" style="text-align: right;">$sttus</td>
-    <td class="stats"><small>$lastModif</small>
-   
-    </td> 
+    <td class="stats"><small>$lastModif</small></td>
+
 EndMark;
   }
-
-  print <<<EndMark
-    </tr>
-    
-    </tbody></table>
-    </div>
-
-EndMark;
+  print "  </tr></tbody></table>\n";
+  if (isset($tags)) 
+    print showTags($tags, $subId, is_chair($revId)); // in revFunctions.php
+  print "</div>\n";
 }
 
 

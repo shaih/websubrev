@@ -299,4 +299,23 @@ EndMark;
   return $html;
 }
 
+function showTags($tags, $subId, $isChair)
+{
+  $tagLine = $semi = '';
+  foreach($tags as $tag) {
+    if (!preg_match('/^[\@\#]?[0-9a-z_\- ]+$/i', $tag)) continue; //invalid
+    if (!$isChair && ($tag[0] == '#')) continue; // not a chair
+    $tagLine .= $semi . $tag;
+    $semi = '; ';
+  }
+  if (empty($tagLine))
+    $tagLine = '<span style="color:#808080;">No tags are defined</span>';
+  return <<<EndMark
+<a href="editTags.php?subId=$subId" title="click to edit tags" class="tagsLink">
+<div class="showTags">
+<img src="../common/tags.gif" alt="Tags:">
+$tagLine
+</div></a>
+EndMark;
+}
 ?>

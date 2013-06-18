@@ -92,7 +92,7 @@ $qry = "SELECT s.subId,s.title,s.authors,s.affiliations,s.abstract,s.category,s.
 $res = pdo_query($qry, array($revId), "Cannot retrieve submission list: ");
 $zIdx = 2000;
 while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
-  if ($row['assign']==-1) continue; // conflict
+  if ($row['assign']<0) continue; // conflict
   // Get the submission details
   $subId = (int) $row['subId'];
   $zIdx--;
@@ -135,7 +135,7 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   </td>\n";
   }
   $bodyHTML .=<<<EndMark
-  <td><a class=tooltips href="submission.php?subId=$subId" target=_blank style="z-index:$zIdx;">&nbsp;<img title="" alt="abs" src="../common/smalleye.gif"/><span>
+  <td><a class="tooltips" href="submission.php?subId=$subId" target="_blank" style="z-index:$zIdx;">&nbsp;<img title="" alt="abs" src="../common/smalleye.gif"/><span>
 <b>$title</b><br/>
 $authors
 $category

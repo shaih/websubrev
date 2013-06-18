@@ -62,6 +62,7 @@ h1, h2 { text-align: center; }
 div.frame { border-style: inset; }
 tr { vertical-align: top; }
 </style>
+<link rel="stylesheet" type="text/css" href="../common/tooltips.css" />
 <title>$confName Review homepage for $revName</title>
 <script type="text/javascript" src="{$JQUERY_URL}"></script>
 <script type="text/javascript" src="../common/ui.js"></script>
@@ -231,6 +232,19 @@ function individual_review($revId)
 function discussion_phase($revId, $extraSpace, $pcmFlags)
 {
   global $discussIcon1, $discussIcon2, $disFlag, $SQLprefix;
+  $isChair = is_chair($revId);
+
+  // Get a list of tags that this reviewer can see
+  $tags = array();
+  $qry = "SELECT tagName,subId FROM {$SQLprefix}tags WHERE type IN ($revId,0"
+    . ($isChair? ',-1' : '') . ') ORDER BY subId,tagName';
+  $res = pdo_query($qry);
+  while ($row = $res->fetch(PDO::FETCH_NUM)) {
+    $tag = $row[0];
+    $subId = $row[1];
+    if (!isset($tags[$subId])) $tags[$subId] = array($tag);
+    else                       $tags[$subId][] = $tag;
+  }
 
   // Get a list of submissions for which this reviewer already saw all
   // the discussions/reviews. Everything else is considered "new"
@@ -248,6 +262,20 @@ function discussion_phase($revId, $extraSpace, $pcmFlags)
     $subId = (int) $row[0];
     $notDraft = (int) $row[1];
     $reviewed[$subId] = $notDraft;
+  }
+
+  // Get some statistics and other information
+  $stdev = array();
+  $res = pdo_query("SELECT STD(score) std, subId FROM {$SQLprefix}reports GROUP BY subId");
+  while ($row = $res->fetch(PDO::FETCH_ASSOC))
+    if (isset($row['std'])) $stdev[$row['subId']] = $row['std'];
+
+  $conflicts = array();
+  if ($isChair) {
+    // Check for -1 or -2 assignments (conflict or PC-member paper)
+    $res = pdo_query("SELECT MIN(assign) conflict, subId FROM {$SQLprefix}assignments GROUP BY subId");
+    while ($row = $res->fetch(PDO::FETCH_ASSOC))
+      if (isset($row['conflict'])) $conflicts[$row['subId']]= $row['conflict'];
   }
 
   // Determine ordering of watch-list submissions
@@ -270,8 +298,7 @@ function discussion_phase($revId, $extraSpace, $pcmFlags)
       UNIX_TIMESTAMP(s.lastModified) lastModif, a.assign assign, 
       a.watch watch, s.wAvg avg, s.flags flags, s.contact
     FROM {$SQLprefix}submissions s, {$SQLprefix}assignments a
-    WHERE (status!='Withdrawn' OR (s.flags & ?)) AND a.revId=? AND a.subId=s.subId AND a.watch=1
-    ORDER BY $order";
+    WHERE (status!='Withdrawn' OR (s.flags & ?)) AND a.revId=? AND a.subId=s.subId AND a.watch=1 AND a.assign>=0 ORDER BY $order";
   $res = pdo_query($qry, array(FLAG_IS_GROUP,$revId));
 
   $needsDiscussion = 0;
@@ -280,6 +307,9 @@ function discussion_phase($revId, $extraSpace, $pcmFlags)
   while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
     $subId = $row['subId'];
     $row['hasNew'] = !isset($seenSubs[$subId]);
+    if (isset($tags[$subId])) $row['tags'] = $tags[$subId];
+    if (isset($stdev[$subId])) $row['stdev'] = $stdev[$subId];
+    if (isset($conflicts[$subId])) $row['conflict'] = $conflicts[$subId];
     if ($row['status']=='Needs Discussion') $needsDiscussion++;
     // sanitize for the case of "discuss most"
     if ($disFlag==2 && $row['assign']==1 && !isset($reviewed[$subId])) {

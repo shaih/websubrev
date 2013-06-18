@@ -49,7 +49,7 @@ if ($voteFlags & VOTE_ON_SUBS) { // voting on submissions
 
   // Don't show submissions where there is a conflict
   $forbidden = array();
-  $qry = "SELECT subId FROM {$SQLprefix}assignments WHERE revId=? and assign=-1";
+  $qry = "SELECT subId FROM {$SQLprefix}assignments WHERE revId=? and assign<0";
   $res = pdo_query($qry, array($revId));
   while ($row=$res->fetch(PDO::FETCH_NUM)) {
     $subId = (int) $row[0];

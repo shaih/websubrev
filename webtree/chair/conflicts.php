@@ -29,9 +29,11 @@ while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $committee[$revId] = $name;
 }
 
+// read the current blocked submissions from the database
 $qry = "SELECT subId, revId, pref, sktchAssgn FROM {$SQLprefix}assignments ORDER BY revId, subId";
 $res = pdo_query($qry);
 $current = array();
+$authorOf = array();
 while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $subId = (int) $row[0];
   $revId = (int) $row[1];
@@ -41,13 +43,13 @@ while ($row = $res->fetch(PDO::FETCH_NUM)) {
 
   if (!isset($current[$revId])) $current[$revId] = array();
 
-  $current[$revId][$subId] = array($pref, $assign);
+  $current[$revId][$subId] = array('assign'=>$assign, 'pref'=>$pref);
 }
 $qry = NULL;
 
 $links = show_chr_links();
 print <<<EndMark
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML>
 <html>
 <head><meta charset="utf-8">
 <style type="text/css">
@@ -59,6 +61,8 @@ h1 {text-align: center;}
     font-weight:bold;
 }
 </style>
+<link rel="stylesheet" type="text/css" href="../common/review.css" />
+
 <title>Blocking Access To Specific Submissions</title>
 </head>
 <body>
@@ -68,25 +72,20 @@ $links
 
 EndMark;
 
-
-// print "<pre>" . print_r($current, true) . "</pre>\n";
-
-// If the chain made some choises on the form, have him/her 
+// If the chair made some choises on the form, have him/her 
 // confirm them before committing them to the database
 if (isset($_POST['blockAccess'])) {
 
   // erase all the assign=-1 from the $current array (to be
   // replaced by whatever is specified in the $_POST array)
   foreach ($current as $revId => $pcmList) {
-    foreach ($pcmList as $subId => $a) if ($a[1]==-1) {
-      $current[$revId][$subId][1] = 0;
+    foreach ($pcmList as $subId => $a) if ($a['assign']<0) {
+      $current[$revId][$subId]['assign'] = 0;
     }
   }
 
-  foreach ($_POST as $nm => $val) {
-    $val = trim($val);
-    if (strncmp($nm, "b", 1) != 0 || empty($val)) continue;
-    $revId = (int) substr($nm, 1);
+  // update the current-assignment array with the chair's choises
+  foreach ($_POST['blocked'] as $revId => $val) {
     if ($revId <= 0 || !isset($committee[$revId])) continue;
 
     $val = explode(',', $val);
@@ -96,11 +95,25 @@ if (isset($_POST['blockAccess'])) {
 
       if (!isset($current[$revId][$subId])) {
 	if (!isset($current[$revId])) { $current[$revId] = array(); } 
-	$current[$revId][$subId] = array(3, -1);
+	$current[$revId][$subId] = array('assign'=>-1, 'pref'=>3);
       }
-      else if ($current[$revId][$subId][1] != -1) {
-	$current[$revId][$subId][1] = -1;
+      else $current[$revId][$subId]['assign'] = -1;
+    }
+  }
+
+  foreach ($_POST['authorOf'] as $revId => $val) {
+    if ($revId <= 0 || !isset($committee[$revId])) continue;
+
+    $val = explode(',', $val);
+    foreach ($val as $subId) {
+      $subId = (int) trim($subId);
+      if ($subId <= 0 || !isset($subArray[$subId])) continue;
+
+      if (!isset($current[$revId][$subId])) {
+	if (!isset($current[$revId])) { $current[$revId] = array(); } 
+	$current[$revId][$subId] = array('assign'=>-2, 'pref'=>3);
       }
+      else $current[$revId][$subId]['assign'] = -2;
     }
   }
 
@@ -110,16 +123,17 @@ if (isset($_POST['blockAccess'])) {
 <h2>Please confirm:
 <input type="submit" class="submitButton" value="Yes, block the submissions below"/></h2>
 <dl>
-
 EndMark;
 
   foreach ($current as $revId => $pcmList) {
     $html = '';
-    foreach ($pcmList as $subId => $a) if ($a[1]==-1) {
+    foreach ($pcmList as $subId => $a) if ($a['assign']<0) {
+      $authorOf = '';
+      if ($a['assign']==-2) $authorOf = "<span style='color: red;'>(author)</span> ";
       list($title, $authors) = $subArray[$subId];
-      $html .= "  <dd>{$subId}. <a href=\"../review/submission.php?subId={$subId}\">{$title}</a>\n";
+      $html .= "  <dd>{$subId}. {$authorOf}<a href='../review/submission.php?subId={$subId}'>{$title}</a>\n";
       $html .= "  <dd>&nbsp;&nbsp;&nbsp;&nbsp;<i>{$authors}</i>\n";
-      $html .= "  <dd><input type=\"hidden\" name=\"b_{$revId}_{$subId}\" value=\"on\">\n";
+      $html .= "  <dd><input type='hidden' name='block[$revId][$subId]' value='".$a['assign']."'>\n";
     }
     if (!empty($html)) {
       $name = $committee[$revId];
@@ -141,28 +155,51 @@ EndMark;
 
 print <<<EndMark
 <h2>Specify blocked submissions</h2>
-For each PC member, put a comma-separated list of submission-IDs
-that this member should NOT have access to. A list of submissions and
-their IDs is found <a href="#sublist">at the bottom of this page</a>.
+<p>For each PC member, put a comma-separated list of submission-IDs that
+this member should NOT have access to. You can optionally also mark a
+PC member as an author of a submission, this has the same effect as
+blocking the reviewer from seeing submission, and in addition mark this 
+submission as a PC-member submission. (This will make it easier for you
+to identify PC-members submissions in the various lists.)</p>
+<p>
+A list of submissions and their IDs is found <a href="#sublist">at the
+bottom of this page</a></p>.
 
 <form accept-charset="utf-8" action="conflicts.php" enctype="multipart/form-data" method="post">
 <table>
 <tbody>
-<tr><th>PC member</th><th>Blocked</th><th>Asked to block</th></tr>
+<tr><th>PC member</th>
+  <th>Maybe&nbsp;author&nbsp;of?&nbsp;</th>
+  <th>Mark&nbsp;author&nbsp;of&nbsp;</th>
+  <th>Other&nbsp;blocked&nbsp;submissions&nbsp;</th>
+  <th>Asked to block</th></tr>
 
 EndMark;
 
+$class = 'darkbg';
+$stmt = $db->prepare("SELECT subId FROM {$SQLprefix}submissions WHERE authors like ?");
 foreach ($committee as $revId => $name) {
-  $sep1 = $sep2 = $asked2block = $blocked = '';
+  $sep1 = $sep2 = $sep3 = $asked2block = $blocked = $authorOf = '';
   if (isset($current[$revId]))
     foreach ($current[$revId] as $subId => $a) {
-    if ($a[0]==0) { $asked2block .= $sep1 . $subId; $sep1 = ', '; }
-    if ($a[1]==-1) { $blocked .= $sep2 . $subId; $sep2 = ', '; }
+    if ($a['pref']==0) { $asked2block .= $sep1 . $subId; $sep1 = ', '; }
+    if ($a['assign']==-1) { $blocked  .= $sep2 . $subId; $sep2 = ', '; }
+    if ($a['assign']==-2) { $authorOf .= $sep3 . $subId; $sep3 = ', '; }
   }
-  print "<tr><td style=\"text-align: right;\">$name:</td>
-  <td><input name=\"b{$revId}\" type=\"text\" size=20 value=\"$blocked\"></td>
+  $maybeAuthor = $sep4 = '';
+  if ($stmt->execute(array($name)))
+    while ($row = $stmt->fetch(PDO::FETCH_NUM)) {
+      $maybeAuthor .= $sep4 . $row[0];
+      $sep4 = ', ';
+    }
+  print "<tr class='$class'><td>$name:</td>
+  <td class='ctr'>$maybeAuthor</td>
+  <td><input name='authorOf[$revId]' size='15' value='$authorOf'/></td>
+  <td><input name='blocked[$revId]' type='text' size='30' value='$blocked'/></td>
   <td>&nbsp;{$asked2block}</td>
 </tr>\n";
+  if ($class=='darkbg') $class = 'lightbg';
+  else                  $class = 'darkbg';
 }
 
 print <<<EndMark

@@ -23,7 +23,7 @@ foreach($_POST['download'] as $id) {
 // Keep only these submissions that do not have conflict
 $qry = "SELECT s.subId, s.format FROM {$SQLprefix}submissions s
    LEFT JOIN {$SQLprefix}assignments a ON a.subId=s.subId
-   WHERE !(a.revId=? AND a.assign = -1) AND s.subId IN("
+   WHERE !(a.revId=? AND a.assign<0) AND s.subId IN("
   .implode(",",$subs).") GROUP BY s.subId";
 
 $res = pdo_query($qry, array($revId));
