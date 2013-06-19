@@ -236,8 +236,10 @@ function discussion_phase($revId, $extraSpace, $pcmFlags)
 
   // Get a list of tags that this reviewer can see
   $tags = array();
-  $qry = "SELECT tagName,subId FROM {$SQLprefix}tags WHERE type IN ($revId,0"
-    . ($isChair? ',-1' : '') . ') ORDER BY subId,tagName';
+  $qry = "SELECT tagName,subId FROM {$SQLprefix}tags WHERE ";
+  if ($isChair) $qry .= "type=$revId OR type<=0";
+  else          $qry .= "type IN ($revId,0)";
+
   $res = pdo_query($qry);
   while ($row = $res->fetch(PDO::FETCH_NUM)) {
     $tag = $row[0];

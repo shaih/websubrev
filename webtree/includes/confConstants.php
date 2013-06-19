@@ -16,6 +16,9 @@ define('FLAG_SSL', 64);
 define('FLAG_REV_ATTACH', 128);
 define('FLAG_REBUTTAL_ON', 256);
 
+//Flags for tags
+define('FLAGS_STICKY_TAG', 1);
+
 //Flags for committee members
 define('FLAGS_EML_MY_REPORT', 0x01000000);
 define('FLAG_EML_WATCH_EVENT', 0x02000000);

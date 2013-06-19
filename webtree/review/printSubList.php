@@ -212,8 +212,8 @@ function tagsBox($tags, $subId, $isChair)
 {
   $tagLine = $semi = '';
   foreach($tags as $tag) {
-    if (!preg_match('/^[\@\#]?[0-9a-z_\- ]+$/i', $tag)) continue; //invalid
-    if (($tag[0] == '#') && (!$isChair)) continue; // not a chair
+    if (!preg_match('/^[\~\$\^]?[0-9a-z_\- ]+$/i', $tag)) continue; //invalid
+    if (($tag[0] == '\$') && (!$isChair)) continue; // not a chair
     $tagLine .= $semi . $tag;
     $semi = '; ';
   }

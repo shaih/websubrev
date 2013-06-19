@@ -58,8 +58,8 @@ if ($disFlag != 1 && !has_reviewed_anything($revId)) exit("<h1>$revName cannot d
 
 // Get a list of tags that this reviewer can see
 $tags = array();
-$qry = "SELECT tagName,subId FROM {$SQLprefix}tags WHERE type IN ($revId,0"
-  . ($isChair? ',-1' : '') . ') ORDER BY subId,tagName';
+$qry = "SELECT tagName,subId FROM {$SQLprefix}tags WHERE type IN ($revId,0) "
+  . ($isChair? 'OR type<=0 ' : '') . 'ORDER BY subId,tagName';
 $res = pdo_query($qry);
 while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $tag = $row[0];

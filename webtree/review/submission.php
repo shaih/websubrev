@@ -71,9 +71,9 @@ if ($disFlag) {
   $toggleWatch = "<a rel='$watch' href='toggleWatch.php?subId={$subId}&current=$watch'><img src='$src' id='toggleWatch$subId' alt='$alt' title='$tooltip' border='0'></a>&nbsp;";
 
   // get the tags for this submission
-  $qry = "SELECT tagName FROM {$SQLprefix}tags WHERE subId=? AND type IN (?,0";
-  if ($isChair) $qry .= ',-1)';
-  else          $qry .= ')';
+  $qry = "SELECT tagName FROM {$SQLprefix}tags WHERE subId=? AND ";
+  if ($isChair) $qry .= '(type=? OR type <=0)';
+  else          $qry .= 'type IN (?,0)';
   $tagArray = pdo_query($qry,array($subId,$revId))->fetchAll(PDO::FETCH_NUM);
   foreach ($tagArray as $i=> $row) $tagArray[$i] = $row[0];
   $tags = showTags($tagArray, $subId, $isChair); // in revFunctions.php

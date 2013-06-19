@@ -139,10 +139,13 @@ if (isset($submission['lastSaw'])) {
 }
 
 // get the tags for this submission
-$qry = "SELECT tagName FROM {$SQLprefix}tags WHERE subId=? AND type IN (?,0";
-if ($isChair) $qry .= ',-1)';
-else          $qry .= ')';
-$submission['tags'] = pdo_query($qry,array($subId,$revId))->fetchAll(PDO::FETCH_NUM);
+$qry = "SELECT tagName FROM {$SQLprefix}tags WHERE subId=? AND ";
+if ($isChair) $qry .= '(type=? OR type<=0)';
+else          $qry .= 'type IN (?,0)';
+
+$tags = pdo_query($qry,array($subId,$revId))->fetchAll(PDO::FETCH_NUM);
+foreach ($tags as $i => $tag) $tags[$i] = $tag[0];
+$submission['tags'] = $tags;
 
 // Now we can display the results to the user
 $pageWidth = 725;
