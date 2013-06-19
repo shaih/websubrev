@@ -69,6 +69,8 @@ if (isset($_GET['onlyAssigned'])) {
   $assignedOnly = "";
 }
 
+if (isset($_GET['onlyDiscussed'])) $flags |= 1024;
+
 $opted_in = "";
 if (isset($_GET['optedIn'])) {
   $opted_in = "AND s.flags & ".FLAG_IS_CHECKED;
@@ -86,9 +88,8 @@ if ($disFlag==1)
 else $qry .= "WHERE (status!='Withdrawn')";
 $qry .= " {$assignedOnly} {$opted_in} GROUP BY subId ORDER BY $order";
 $res = pdo_query($qry, array($revId));
-$assigned = array();
-$others = array();
-$yetOthers = array();
+$specialSubs = array();
+$othersSubs = array();
 while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   if(isset($_GET['onlyDiscussed'])) {
     if (!has_discussed($revId, $row['subId'])){
@@ -98,6 +99,14 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
   $subId = $row['subId'];
   $row['hasNew'] = !isset($seenSubs[$subId]);
   if (isset($tags[$subId])) $row['tags'] = $tags[$subId];
+  else                      $row['tags'] = array();
+
+  // If tags are specified, only keep submissions with these tags
+  if (!empty($_GET['allTags']) && !allTagsExist($row['tags'],$_GET['allTags']))
+    continue; 
+  if (!empty($_GET['someTags'])&&!someTagsExist($row['tags'],$_GET['someTags']))
+    continue;
+
   if (isset($conflicts[$subId])) $row['conflict'] = $conflicts[$subId];
   // sanitize for the case of "discuss most"
   if ($disFlag==2 && $row['assign']==1 && !isset($reviewed[$subId])) {
@@ -106,16 +115,12 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
     $row['avgConf'] = NULL;
     $row['lastModif'] = NULL;
     $row['noDiscuss'] = true;
-    $yetOthers[$subId] = $row;
+    $specialSubs[$subId] = $row;
   }
-  else if ($row['assign']==1 && !isset($_GET['ignoreAssign']))
-    $assigned[] = $row;
   else if (($row['assign']>=0) && !has_group_conflict($revId, $row['title']))
-    $others[] = $row; 
+    $othersSubs[] = $row; 
 }
 
-if (isset($_GET['ignoreAssign'])) $flags |= 32;
-if (isset($_GET['onlyDiscussed'])) $flags |= 1024;
 
 
 
@@ -147,6 +152,9 @@ if ($disFlag) {
   print "Note: You can click on the eye icons on the left to add/remove submissions from your <a href=\"../documentation/reviewer.html#watch\" target=documentation>watch list</a><br/><br/>\n";
 }
 $showMore = 0;
+if (isset($_GET['showTags'])) {
+  $flags |= 32;
+}
 if (isset($_GET['abstract'])) {
   $flags |= 64;
   $showMore |= 1;
@@ -157,28 +165,21 @@ if (isset($_GET['category'])) {
 }
 
 $otherName = "";
-if (count($yetOthers)>0) {
-  ksort($yetOthers);
-  print_sub_list($yetOthers, "Submissions assigned and not reviewed", 
+if (count($specialSubs)>0) {
+  ksort($specialSubs);
+  print_sub_list($specialSubs, "Submissions assigned and not reviewed", 
 		 $reviewed, 0, $showMore, false, $revId);
   print "\n<br />\n";
   $otherName = "Other submissions";
 }
 
-if (count($assigned)>0) {
-  print_sub_list($assigned, "Submissions assigned to $revName", 
-		 $reviewed, $disFlag, $showMore, false, $revId);
-  print "\n<br />\n";
-  $otherName = "Other submissions";
-}
-
-if (count($others)>0) {
-  print_sub_list($others, $otherName, 
+if (count($othersSubs)>0) {
+  print_sub_list($othersSubs, $otherName, 
 		 $reviewed, $disFlag, $showMore, false, $revId);
 }
 
-if ($disFlag && (count($assigned)>0 || count($others)>0))
-     print show_legend(); // defined in confUtils.php
+if ($disFlag && count($othersSubs)>0)
+  print show_legend(); // defined in confUtils.php
 
 print "\n<hr />\n{$links}\n</body>\n</html>\n";
 

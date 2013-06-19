@@ -185,22 +185,22 @@ function listSubmissionsBox($canDiscuss, $flags=0)
   }
   $sttsChk  = ($flags &  8) ? ' checked="checked"' : '';
   $asgnChk  = ($flags & 16) ? ' checked="checked"' : '';
-  $noAsgnChk= ($flags & 32) ? ' checked="checked"' : '';
+  $tagsChk  = ($flags & 32) ? ' checked="checked"' : '';
   $abstChk  = ($flags & 64) ? ' checked="checked"' : '';
   $catChk  = ($flags & 128) ? ' checked="checked"' : '';
   $rvChk   = ($flags & 256) ? ' checked="checked"' : '';
-  $hvrChk   = ($flags & 512) ? ' checked="checked"' : '';
   $disChk   = ($flags & 1024) ? ' checked="checked"' : '';
   $optChk   = ($flags & 2048) ? ' checked="checked"' : '';
   
- if ($canDiscuss) {
-   $stts = '<input type="checkbox" name="sortByStatus"'.$sttsChk.'> Status+';
-   $viewDiscussed = '<input type="checkbox" name="onlyDiscussed"'.$disChk.'> Only submissions I discussed<br/>';
+  if ($canDiscuss) {
+    $stts = '<input type="checkbox" name="sortByStatus"'.$sttsChk.'> Status+';
+    $viewDiscussed = '<input type="checkbox" name="onlyDiscussed"'.$disChk.'> Only submissions I discussed<br/>';
+    $search= "Search tags:<input name='allTags' placeholder='tag1; tag2; ...'>";
+    $showTags = "<input type='checkbox' name='showTags'{$tagsChk}>Show with tags<br/>";
   } else { 
     $stts = '&nbsp;';
-    $viewDiscussed = '';
+    $viewDiscussed = $search = $showTags = '';
   }
-
   $viewChecked = "";
   $highVar = "";
   if(defined("OPTIN_TEXT") && is_chair($revId)) {
@@ -237,14 +237,16 @@ EndMark;
 
 EndMark;
   }
+
   $html .=<<<EndMark
   <tr><td colspan=2>
   <input type="checkbox" name="onlyAssigned"{$asgnChk}> Only submissions assigned to me<br/>
   $viewDiscussed
   $viewChecked
-  <input type="checkbox" name="ignoreAssign"{$noAsgnChk}> Show all submissions in one list<br/>
+  $search  
 </td></tr>
 <tr><td colspan=2><hr/>
+   $showTags
    <input type="checkbox" name="abstract"{$abstChk}>Show with abstracts<br/>
    <input type="checkbox" name="category"{$catChk}>Show with category<br/>
    $highVar

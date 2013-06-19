@@ -812,6 +812,26 @@ function readfile_chunked($filename)
   return $status;
 }
 
+// check that all the tags in the list are also in the array
+function allTagsExist($tagArray, $tagList)
+{
+  foreach (explode(';',$tagList) as $tag) {
+    $tag = trim($tag);
+    if (!in_array($tag, $tagArray)) return false;
+  }
+  return true;
+}
+
+// check that at least one tag in the list is also in the array
+function someTagsExist($tagArray, $tagList)
+{
+  foreach (explode(';',$tagList) as $tag) {
+    $tag = trim($tag);
+    if (in_array($tag, $tagArray)) return true;
+  }
+  return false;
+}
+
 //Chair utilities
 function is_chair($revId) {
   global $CHAIR_IDS;

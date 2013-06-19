@@ -46,7 +46,7 @@ EndMark;
     $fmt = htmlspecialchars($sb['format']); 
     $conflict = '';
     if (!empty($sb['conflict']) && $sb['conflict']<0)
-	$conflict = ($sb['conflict']==-2)? $PCMicon : $CONFicon;
+      $conflict = (($sb['conflict']==-2)? $PCMicon : $CONFicon).' ';
 
 /*  // kluggy integration with Boneh's system for sending questions to authors
     $sharedKey='abcXYZ123';
@@ -108,11 +108,20 @@ EndMark;
       }
       else $toggleText = '';
 
-      if (isset($sb['tags']))
+      if (!empty($sb['tags']))
         $tagsBox = tagsBox($sb['tags'], $subId, $isChair);
-      else $tagsBox = '<span>click to add tags</span>';
+      else $tagsBox = '<span style="color: gray;">click to add tags</span>';
+
+      if (isset($_GET['showTags'])) {
+	$tagsIcon = '';
+	$tagsLine = "<tr><td colspan='5'></td><td colspan='4'><a target='_blank' href='editTags.php?subId={$subId}' class='tagsLink lightbg'>$tagsBox</a></td></tr>\n";
+      } else {
+	$tagsIcon = "<td><a target='_blank' class='tagsIcon tooltips' href='editTags.php?subId={$subId}' style='z-index: $zIdx;'><img alt='tags' src='../common/tags.gif' height='10'/>$tagsBox</a></td>";
+	$tagsLine = '';
+      }
+
       print <<<EndMark
-   <tr class="submission">$index<td><a target="_blank" class="tagsIcon tooltips" href="editTags.php?subId={$subId}" style="z-index: $zIdx;"><img alt="tags" src="../common/tags.gif" height="10"/>$tagsBox</a></td>
+<tr class="submission">$index
    <td><a rel='$watch' href='toggleWatch.php?subId={$subId}&current={$watch}'><img src='$eyeSrc' id='toggleWatch$subId' alt='$alt' title='$watchTooltip' border='0'></a></td> 
 
 EndMark;
@@ -123,8 +132,12 @@ EndMark;
   <td><span class="$revStyle"><a href="review.php?subId=$subId" target="_blank">$revText</a></span>
 
 EndMark;
+     $title = "<td style='width: 99%;'>$title</td>";
    }
-   else print "  <td></td><td>";
+   else {
+     print "  <td></td><td>";
+     $title = "<td style='width: 99%;'><a href='submission.php?subId=$subId'>$title</a></td>";
+   }
 
    print <<<EndMark
 <span class="Discuss"><a target="_blank" href="discuss.php?subId=$subId#start{$subId}">$disText</a>\n$toggleText</span></td>
@@ -133,35 +146,29 @@ EndMark;
 	<img height="14" src="../common/email.gif" alt="eml" border=0></a></td>
 -->
   <td style="text-align: right;"><b>$subId.</b></td>
-  <td style="width: 99%;">
-EndMark;
-
-    if(!$isGroup)
-      print "<a href='submission.php?subId=$subId'>$title</a></td>";
-    else print "$title</td>";
-
-    print <<<EndMark
+  $tagsIcon
+  $title
   $catgry
-  <td><small>$lastMod</small></td><td>$status</td><td>$avg{$conflict}</td>
+  <td><small>$lastMod</small></td><td>$status</td><td>{$conflict}$avg</td>
 </tr>
-
+$tagsLine
 EndMark;
-    }      // end if ($disFlag)
-    /********************************************************************/
-    else { // disFlag is off
-      print <<<EndMark
+ } // end if ($disFlag)
+ /********************************************************************/
+ else { // disFlag is off
+   print <<<EndMark
 <tr class="submission" data-subId="$subId">$index
   <td></td><td>
 EndMark;
 
-      if(!$isGroup) {
-	print <<<EndMark
+   if(!$isGroup) {
+     print <<<EndMark
    <input type="checkbox" class="download" title="Select to download" name="download[]" value="$subId" /></td>
   <td><span class=$revStyle><a href="review.php?subId=$subId" target="_blank">$revText</a></span>
     
 EndMark;
-      }
-      print <<<EndMark
+   }
+   print <<<EndMark
 <!--
   </td><td><a target=_blank href="$emlURL" title="ask a question by email">
       <img height="14" src="../common/email.gif" alt="eml" border=0></a>
@@ -170,27 +177,27 @@ EndMark;
   <td style="width: 99%;">
 EndMark;
 
-      if(!$isGroup)
-	print "<a href='submission.php?subId=$subId'>$title</a></td>";
-      else print "$title $pcAuthor</td>";
-      print "{$catgry}\n</tr>\n";
-    }       // end of disFlag = 0
-    /********************************************************************/
+   if(!$isGroup)
+     print "<a href='submission.php?subId=$subId'>$title</a></td>";
+   else print "$title $pcAuthor</td>";
+   print "{$catgry}\n</tr>\n";
+ }       // end of disFlag = 0
+ /********************************************************************/
 
-    $abs = '';
-    if ($showAbst) { // show abstracts too
-      if (!ANONYMOUS && isset($authors)) 
-	$abs .= "    <tr><td></td><td></td><td></td><td></td><td colspan=3><i>$authors</i></td></tr>\n";
-      if (isset($abstract)) {
-	$abs .='    <tr><td></td><td></td><td></td><td></td><td colspan=3 class="fixed"><b>Abstract: </b>'
-	  . nl2br($abstract). "<br /><br /></span></td></tr>\n";
-      }
-    }
-    print $abs;
-    $zIdx--;
-  } // end of loop over submissions
+ $abs = '';
+ if ($showAbst) { // show abstracts too
+   if (!ANONYMOUS && isset($authors)) 
+     $abs .= "    <tr><td></td><td></td><td></td><td></td><td colspan=3><i>$authors</i></td></tr>\n";
+   if (isset($abstract)) {
+     $abs .='    <tr><td></td><td></td><td></td><td></td><td colspan=3 class="fixed"><b>Abstract: </b>'
+       . nl2br($abstract). "<br /><br /></span></td></tr>\n";
+   }
+ }
+ print $abs;
+ $zIdx--;
+} // end of loop over submissions
 
-  print <<<EndMark
+print <<<EndMark
 </tbody></table>
 <div>
 <button class="download-btn" type="button">Download Selected</button>
