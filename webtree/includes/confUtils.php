@@ -152,7 +152,8 @@ function my_send_mail($sendTo, $subject, $msg,
   }
   else // no attachments, just a single part
     $hdr .= $emlCRLF.$type;
- 
+
+  $subject= "=?UTF-8?Q?".imap_8bit($subject)."?=";
   if ($xParam && !empty($chrEml) && !ini_get('safe_mode'))
     $success = mail($sendTo, $subject, $msg, $hdr, "-f $chrEml");
   else
@@ -810,6 +811,18 @@ function readfile_chunked($filename)
     return $cnt; // return num. bytes delivered like readfile() does.
   }
   return $status;
+}
+
+function tagLine($tags, $subId, $isChair)
+{
+  $tagLine = $semi = '';
+  foreach($tags as $tag) {
+    if (!preg_match('/^[\~\$\^]?[0-9a-z_\- ]+$/i', $tag)) continue; //invalid
+    if (($tag[0] == '\$') && (!$isChair)) continue; // not a chair
+    $tagLine .= $semi . $tag;
+    $semi = '; ';
+  }
+  return $tagLine;
 }
 
 // check that all the tags in the list are also in the array

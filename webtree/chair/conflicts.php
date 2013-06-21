@@ -158,9 +158,10 @@ print <<<EndMark
 <p>For each PC member, put a comma-separated list of submission-IDs that
 this member should NOT have access to. You can optionally also mark a
 PC member as an author of a submission, this has the same effect as
-blocking the reviewer from seeing submission, and in addition mark this 
-submission as a PC-member submission. (This will make it easier for you
-to identify PC-members submissions in the various lists.)</p>
+blocking the reviewer from seeing that submission, and in addition marks
+the submission as a PC-authored submission. (Marking PC members as authors
+will make it easier for you to identify PC-authored submissions in the various
+lists.)</p>
 <p>
 A list of submissions and their IDs is found <a href="#sublist">at the
 bottom of this page</a></p>.
@@ -187,7 +188,7 @@ foreach ($committee as $revId => $name) {
     if ($a['assign']==-2) { $authorOf .= $sep3 . $subId; $sep3 = ', '; }
   }
   $maybeAuthor = $sep4 = '';
-  if ($stmt->execute(array($name)))
+  if ($stmt->execute(array("%$name%")))
     while ($row = $stmt->fetch(PDO::FETCH_NUM)) {
       $maybeAuthor .= $sep4 . $row[0];
       $sep4 = ', ';

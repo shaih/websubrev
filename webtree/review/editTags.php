@@ -43,15 +43,15 @@ print <<<EndMark
 </head>
 <body>
 $notice
-<h1>Edit Tags for sumssion $subId</h1>
+<h1>Edit Tags for submssion $subId</h1>
 <h2>$title</h2>
-  <p>Tags are case-insensitive, so for example "Apple" and "apple" are treated as the same tag. A tag must consists only of alphanumeric, dash, and underscore characters (matching the regular expression <tt>[a-zA-Z0-9\-_]+</tt>).
+<p>Tags must consist only of alphanumeric, dash, and underscore characters (matching the regular expression <tt>[a-zA-Z0-9\-_]+</tt>). They are case-insensitive, so for example "Apple" and "apple" are treated as the same tag.
 </p>
   <p>Tags are "public" by default, so they are visible to everyone and everyone can add and remove them. (Note that removing a public tag will remove it from everyone&#39;s view.) You can set a private tag by preceding it with a tilde (the character '<b><tt>~</tt></b>'), making it visible only to you and no one else.
 $chairOnly
 There are also public "sticky" tags, which are preceded by '<b><tt>^</tt></b>', that are visible to everyone but can only be added or removed by the chair(s).
 </p>
-<p>All these variations are considered different tags, and a single submission can have any combination of them. For example it can have a public tag "Apple", another sticky public tag "^Apple", $chrOnly3 and several private tags "~Apple" for selevral different PC members.
+<p>All these variations are considered different tags, and a single submission can have any combination of them. For example it can have a public tag "Apple", another sticky public tag "^Apple", $chrOnly3 and several private tags "~Apple" for several different PC members.
 </p>
 <form accept-charset="utf-8" action="doEditTags.php" method="POST" enctype="multipart/form-data">
 <input type="hidden" name="subId" value="$subId"/>

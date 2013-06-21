@@ -108,15 +108,16 @@ EndMark;
       }
       else $toggleText = '';
 
-      if (!empty($sb['tags']))
-        $tagsBox = tagsBox($sb['tags'], $subId, $isChair);
-      else $tagsBox = '<span style="color: gray;">click to add tags</span>';
+      $tags = '';
+      if (!empty($sb['tags'])) $tags = tagLine($sb['tags'],$subId,$isChair);
+      if (!empty($tags)) $tags = "<span>$tags</span>";
+      else $tags = '<span style="color: gray;">click to add tags</span>';
 
       if (isset($_GET['showTags'])) {
 	$tagsIcon = '';
-	$tagsLine = "<tr><td colspan='5'></td><td colspan='4'><a target='_blank' href='editTags.php?subId={$subId}' class='tagsLink lightbg'>$tagsBox</a></td></tr>\n";
+	$tagsLine = "<tr><td colspan='5'></td><td colspan='4'><a target='_blank' href='editTags.php?subId={$subId}' class='tagsLink lightbg'>$tags</a></td></tr>\n";
       } else {
-	$tagsIcon = "<td><a target='_blank' class='tagsIcon tooltips' href='editTags.php?subId={$subId}' style='z-index: $zIdx;'><img alt='tags' src='../common/tags.gif' height='10'/>$tagsBox</a></td>";
+	$tagsIcon = "<td><a target='_blank' class='tagsIcon tooltips' href='editTags.php?subId={$subId}' style='z-index: $zIdx;'><img alt='tags' src='../common/tags.gif' height='10'/>$tags</a></td>";
 	$tagsLine = '';
       }
 
@@ -132,11 +133,11 @@ EndMark;
   <td><span class="$revStyle"><a href="review.php?subId=$subId" target="_blank">$revText</a></span>
 
 EndMark;
-     $title = "<td style='width: 99%;'>$title</td>";
+     $title = "<td style='width: 99%;'><a href='submission.php?subId=$subId'>$title</a></td>";
    }
    else {
      print "  <td></td><td>";
-     $title = "<td style='width: 99%;'><a href='submission.php?subId=$subId'>$title</a></td>";
+     $title = "<td style='width: 99%;'>$title</td>";
    }
 
    print <<<EndMark
@@ -217,8 +218,8 @@ function tagsBox($tags, $subId, $isChair)
     $tagLine .= $semi . $tag;
     $semi = '; ';
   }
-  if (empty($tagLine)) $tagLine = '<span>click to add tags</span>';
-
+  if (empty($tagLine))
+       return '<span style="color: gray;">click to add tags</span>';
   else return "<span>$tagLine</span>";
 }
 ?>

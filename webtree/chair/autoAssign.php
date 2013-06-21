@@ -39,6 +39,14 @@ if ($row = $res->fetch(PDO::FETCH_ASSOC)) {
     $startFromScratch='checked="on"';
     $startFromCurrent = '';
   }
+} else {
+  // Guess that the special submissions are the PC-authored papers
+  $conflicts = array();
+  // Check for -1 or -2 assignments (conflict or PC-member paper)
+  $res = pdo_query("SELECT MIN(assign), subId FROM {$SQLprefix}assignments GROUP BY subId");
+  while ($row = $res->fetch(PDO::FETCH_NUM))
+    if (isset($row[0]) && $row[0]<=-2) $conflicts[] = $row[1];
+  $specialSubs = implode(',',$conflicts);
 }
 
 $links = show_chr_links(0,array('assignments.php','Assignments'));

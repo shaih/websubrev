@@ -303,21 +303,23 @@ EndMark;
 
 function showTags($tags, $subId, $isChair)
 {
-  $tagLine = $semi = '';
-  foreach($tags as $tag) {
-    if (!preg_match('/^[\~\$\^]?[0-9a-z_\- ]+$/i', $tag)) continue; //invalid
-    if (!$isChair && ($tag[0] == '$')) continue; // not a chair
-    $tagLine .= $semi . $tag;
-    $semi = '; ';
-  }
-  if (empty($tagLine))
-    $tagLine = '<span style="color:#808080;">Click to add tags</span>';
+  $tags = tagLine($tags, $subId, $isChair);
+  if (empty($tags))
+    $tagLine = "<span class='tags' style='color: gray;'>Click to add tags</span>";
+  else
+    $tagLine = "<span class='tags' style='color: black;'>$tags</span>";
+
   return <<<EndMark
-<a href="editTags.php?subId=$subId" title="click to edit tags" class="tagsLink">
 <div class="showTags">
-<img src="../common/tags.gif" alt="Tags:">
-$tagLine
-</div></a>
+  <a href="editTags.php?subId=$subId" title="click to edit tags" class="tagsLink"><div ID='showTags{$subId}'><img src="../common/tags.gif" alt="Tags:"> $tagLine</div></a>
+  <form accept-charset="utf-8" action="doEditTags.php" method="POST" enctype="multipart/form-data" class="tagsForm hidden">
+  <input type='hidden' name='subId' value='$subId'/>
+  <table style='width: 99%;'><tr class='nowrp'>
+  <td style='width: 95%;'><input name='tags' style='width: 100%;' type='text' value='$tags'/></td>
+  <td><input type='submit' value='Save'/><button>Cancel</button></td>
+  <td><a class='noHandle' href="../documentation/reviewer.html#tags" target='_bllank'>what&#39;s this?</a></td></tr></table>
+</form>
+</div>
 EndMark;
 }
 ?>

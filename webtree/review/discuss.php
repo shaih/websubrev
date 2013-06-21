@@ -197,6 +197,8 @@ function expandcollapse (postid) {
   return false;
 }
 </script>
+<script type="text/javascript" src="../common/ui.js"></script>
+<script type="text/javascript" src="toggleImage.js"></script>
 </head>
 <body>
 $links

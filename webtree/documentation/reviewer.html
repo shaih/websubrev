@@ -28,6 +28,7 @@ h1 {text-align: center;}
 <li><a href="#boards">Discussion boards</a></li>
 <li><a href="#watch">Your watch-list</a></li>
 <li><a href="#votes">Program-committee votes</a></li>
+<li><a href="#tags">Working with tags</a></li>
 </ol></li>
 <li><a href="#final">Later access to the site</a></li>
 </ol>
@@ -226,7 +227,6 @@ from the watch-list page, and instead have them listed in the same
 order that you specify for the submission-list page. 
 
 <a name="votes"></a><h3>3c. Program-committee votes</h3>
-
 The chair may ask you to vote on various topics during the program-committee
 work (e.g., which papers to move from status "Discuss" to "Maybe accept",
 or who should be the invited speakers at the conference). When the chair
@@ -236,6 +236,17 @@ page where you can find further instructions and cast your vote. When the
 chair closes the vote, it can make the tally visible to PC members, in
 which case you will see a link on the review homepage to "See results of
 completed votes".
+
+<a name="tags"></a><h3>3d. Working with tags</h3>
+<p>You have the ability to associate tags with submissions and then search for submissions based on their tags. For example you can mark submissions as "interesting" or "controversial" and then search to get only these submissions that are marked by both tags. Tags must consist only of alphanumeric, dash, and underscore characters (matching the regular expression <tt>[a-zA-Z0-9\-_]+</tt>). They are case-insensitive, so for example "Apple" and "apple" are treated as the same tag.
+</p>
+<p>Tags are "public" by default, so they are visible to everyone and everyone can add and remove them. (Note that removing a public tag will remove it from everyone&#39;s view.) You can set a private tag by preceding it with a tilde (the character '<b><tt>~</tt></b>'), making it visible only to you and no one else.
+The chair(s) can set a chair-only tag by preceding it with the special character \'<b><tt>$</tt></b>\', making it visible only to the PC chair(s), rather than all the reviewers.
+There are also public "sticky" tags, which are preceded by '<b><tt>^</tt></b>', that are visible to everyone but can only be added or removed by the chair(s).
+</p>
+<p>All these variations are considered different tags, and a single submission can have any combination of them. For example it can have a public tag "Apple", another sticky public tag "^Apple", a chair-only tag "&#36;Apple", and several private tags "~Apple" for several different PC members.
+</p>
+
 
 <a name="final"></a><h2>4. Later access to the site</h2>
 The chair can keep the review site up also after all the decisions were

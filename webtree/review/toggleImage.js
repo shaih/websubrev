@@ -71,18 +71,65 @@ function toggleWatch(eyeObj)
   ajaxToggle(parent, $(eyeObj), openEye, shutEye, 'toggleWatch.php', subId);
 }
 
+function submitTags(e)
+{
+  var tagsDiv = $(this).parent();
+  var postData= $(this).serialize()+'&ajax=true';//tell server we're using ajax
+  var inputTags = $(this.tags);
+  var spanTags = $(this).siblings('a').children('div').children('span');
+  clickableNote('Saving');   // display a 'Saving' box until the call returns
+  $.post(this.action, postData, function(data) { // callback on success
+      $(".notice").remove(); // remove the 'Saving' box
+      inputTags.val(data);   // data is just the new list of tags
+
+      if (!data) { // data is empty
+	spanTags.css('color', 'gray');
+	data = 'Click to add tags';
+      } else {
+	spanTags.css('color', 'black');	
+      }
+      spanTags.html(data);
+      toggleTags(tagsDiv); // hide the form, show the gray box
+  });
+  e.preventDefault(); 
+}
+
+function toggleTags(tagsDiv)
+{
+  var link = tagsDiv.children('a');
+  var form = tagsDiv.children('form');
+  if (form.is(':hidden')) {
+    form.show();
+    link.hide();
+    form.get(0).tags.focus(); // children('input:text').focus();
+  } else {
+    form.hide();
+    link.show();
+  }
+}
+
 // Add a click handler for the entire document
 $(document).click(function(e) {
     var whoClicked = e.target;
+    if ($(whoClicked).is('.noHandle')) return true; // do not handle
 
     // handle toggle elements
     if (whoClicked.id.substring(0,10)=='toggleRead') {
       toggleMarkRead(whoClicked); // handle the toggle
       e.preventDefault();         // do not navigate away from this page
     }
-    // handle toggle elements
     else if (whoClicked.id.substring(0,11)=='toggleWatch') {
       toggleWatch(whoClicked); // handle the toggle
       e.preventDefault();      // do not navigate away from this page
     }
+    else if ($(whoClicked).closest('div.showTags').length>0) {
+      if (whoClicked.nodeName!='INPUT') {
+        toggleTags($(whoClicked).closest('div.showTags'));
+        e.preventDefault();      // do not navigate away from this page
+      }
+    }
 }); // end of click handler
+
+$(document).ready(function() {
+  $('form.tagsForm').submit(submitTags);
+});

@@ -38,7 +38,7 @@ while ($row = $res->fetch(PDO::FETCH_NUM)) {
   else                       $tags[$subId][] = $tag;
 }
 
-// Forteh chair: check if submissions have conflicts
+// For the chair: check if submissions have conflicts
 $conflicts = array();
 if ($isChair) {
   // Check for -1 or -2 assignments (conflict or PC-member paper)

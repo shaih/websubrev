@@ -27,6 +27,7 @@ if (isset($_POST['tags'])) {
                 // non-chair PC members cannot remove sticky tags
   pdo_query($qry, array($subId,$revId));
 
+  $tagsLine = $semi = '';
   foreach($tags as $tag) {
     $tag = trim($tag);
     if (empty($tag)) continue;
@@ -42,9 +43,22 @@ if (isset($_POST['tags'])) {
     } else {              // public tag
       $stmt->execute(array($tag,0,0));
     }
+    $tagsLine .= $semi . $tag;
+    $semi = '; ';
   }
 }
 
-return_to_caller('editTags.php','save=Okay');
-exit();
+if (isset($_POST['ajax'])) {
+  $qry = "SELECT tagName FROM {$SQLprefix}tags WHERE subId=? AND ";
+  if ($isChair) $qry .= '(type=? OR type<=0)';
+  else          $qry .= 'type IN (?,0)';
+  $qry .= ' ORDER BY tagName';
+  $res = pdo_query($qry,array($subId,$revId));
+  $tags = array();
+  while ($t = $res->fetchColumn()) $tags[] = $t;
+  $tags = implode('; ', $tags);
+  header("Cache-Control: no-cache");
+  exit($tags);
+}
+else return_to_caller('editTags.php','save=Okay');
 ?>
