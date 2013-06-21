@@ -155,6 +155,7 @@ if (is_array($categories) && (count($categories)>1)) {
   print "      </select>\n    </td>\n  </tr>\n";
 }
 
+$anonText = ANONYMOUS? 'is anonymous and that it ': '';
 print <<<EndMark
 <tr><td style="text-align: right;">Keywords:</td>
   <td><input name="keywords" size="90" type="text"><br /></td>
@@ -165,6 +166,8 @@ print <<<EndMark
   </td>
 </tr><tr>
   <td style="text-align: right;">$checkbox</td><td>$checkbox_text</td>
+</tr><tr>
+  <td style="text-align: right;">Format:</td><td>Sign your name below to confirm that this submission {$anonText}adheres to the formatting requirements in the call-for-papers <input name="formality" class="required"/></td>
 </tr><tr><td></td>
   <td><input value="$submitBtn" type="submit"></td>
 </tr></table>

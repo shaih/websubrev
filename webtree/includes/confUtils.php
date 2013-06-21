@@ -153,7 +153,6 @@ function my_send_mail($sendTo, $subject, $msg,
   else // no attachments, just a single part
     $hdr .= $emlCRLF.$type;
 
-  $subject= "=?UTF-8?Q?".imap_8bit($subject)."?=";
   if ($xParam && !empty($chrEml) && !ini_get('safe_mode'))
     $success = mail($sendTo, $subject, $msg, $hdr, "-f $chrEml");
   else
