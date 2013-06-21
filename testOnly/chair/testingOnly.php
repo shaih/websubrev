@@ -67,7 +67,7 @@ natural class of functionalities.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=2, 
   title='Logcrypt: Forward Security and Public Verification for Secure Audit Logs',
-  authors='Jason E. Holt and Kent E. Seamons',
+  authors='Jason E. Holt; Kent E. Seamons',
   abstract='Logcrypt provides strong cryptographic assurances that data stored by
 a logging facility before a system compromise cannot be modified after
 the compromise without detection.  We build on prior work by showing
@@ -93,7 +93,7 @@ title='Cryptanalysis of Hiji-bij-bij (HBB)',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=4,
 title='Benes and Butterfly schemes revisited',
-  authors='Jacques Patarin and Audrey Montreuil',
+  authors='Jacques Patarin; Audrey Montreuil',
   abstract='In~\\cite{AV96}, W. Aiello and R. Venkatesan have shown how to
 construct pseudo-random functions of \$2n\$ bits \$\\rightarrow 2n\$
 bits from pseudo-random functions of \$n\$ bits \$\\rightarrow n\$
@@ -132,7 +132,7 @@ title='A sufficient condition for key-privacy',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=6,
 title='A Metric on the Set of Elliptic Curves over \${\\mathbf F}_p\$.',
-  authors='Pradeep Kumar Mishra and Kishan Chand Gupta',
+  authors='Pradeep Kumar Mishra; Kishan Chand Gupta',
   abstract='Elliptic Curves over finite field have found application in many areas including cryptography. In the current article we define a metric on the set of elliptic curves defined over a prime field \${\\mathbf F}_p, p>3\$.
 ',
   category='foundations',
@@ -153,7 +153,7 @@ title='The Misuse of RC4 in Microsoft Word and Excel',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=8,
 title='Comments on \"Distributed Symmetric Key Management for Mobile Ad hoc Networks\" from INFOCOM 2004',
-  authors='J. Wu and R. Wei',
+  authors='J. Wu; R. Wei',
   abstract='In IEEE INFOCOM 2004, Chan proposed a distributed key management
 scheme for mobile ad hoc networks, and deduced the condition under
 which the key sets distributed to the network nodes can form a
@@ -179,7 +179,7 @@ distributions in ad hoc networks.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=10,
 title='Update on SHA-1',
-  authors='Vincent Rijmen and Elisabeth Oswald',
+  authors='Vincent Rijmen; Elisabeth Oswald',
   abstract='We report on the experiments we performed in order to assess the
 security of SHA-1 against the attack by Chabaud and Joux. We present some ideas for optimizations of the attack and some properties of the message expansion routine.
 Finally, we show that for a reduced version of SHA-1, with 53
@@ -194,7 +194,7 @@ than \$2^{80}\$ operations.',
 
 "INSERT INTO {$SQLprefix}submissions SET  subId=11,
   title='An Improved Elegant Method to Re-initialize Hash Chains',
-  authors='Yuanchao Zhao and Daoben Li',
+  authors='Yuanchao Zhao; Daoben Li',
   abstract='Hash chains are widely used in various cryptographic systems such as electronic micropayments and one-time passwords etc. However, hash chains suffer from the limitation that they have a finite number of links which when used up requires the system to re-initialize new hash chains. So system design has to reduce the overhead when hash chains are re-initialized. Recently, Vipul Goyal proposed an elegant one-time-signature-based method to re-initialize hash chains, in this efficient method an infinite number of finite length hash chains can be tied together so that hash chains can be securely re-initialized in a non-repudiable manner. Vipul Goyal¡¯s method is improved in this paper to reach a little more efficient method, which, more importantly, is a natural extension of the concept of conventional hash chains.',
   category='foundations',
   keyWords='hash chains',
@@ -204,7 +204,7 @@ than \$2^{80}\$ operations.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=12,
 title='Efficient Certificateless Public Key Encryption',
-  authors='Zhaohui Cheng and Richard Comley',
+  authors='Zhaohui Cheng; Richard Comley',
   abstract='In [3] Al-Riyami and Paterson introduced the notion of \"Certificateless Public Key Cryptography\" and presented an instantiation. In this paper, we revisit the formulation of certificateless public key encryption and construct a more efficient scheme and then extend it to an authenticated
 encryption.',
   category='public-key cryptography',
@@ -239,7 +239,7 @@ i.e. in linear time.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=15,
 title='Hierarchical Identity Based Encryption with Constant Size Ciphertext',
-  authors='Dan Boneh and Xavier Boyen and Eu-Jin Goh',
+  authors='Dan Boneh; Xavier Boyen; Eu-Jin Goh',
   abstract='We present a Hierarchical Identity Based Encryption (HIBE) system
 where the ciphertext consists of just three group elements and decryption
 requires only two bilinear map computations, 
@@ -297,7 +297,7 @@ developments concludes the survey.
 
 "INSERT INTO {$SQLprefix}submissions SET subId=18,
 title='Collusion Resistant Broadcast Encryption With Short Ciphertexts and Private Keys',
-  authors='Dan Boneh and Craig Gentry  and Brent Waters',
+  authors='Dan Boneh; Craig Gentry ; Brent Waters',
   abstract='We describe two new public key broadcast encryption systems for
 stateless receivers.  Both systems are fully secure against any number
 of colluders. In our first construction both ciphertexts and private
@@ -328,7 +328,7 @@ title='The Full Abstraction of the UC Framework',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=20,
 title='(De)Compositions of Cryptographic Schemes and their Applications to Protocols',
-  authors='R. Janvier and Y. Lakhnech and L. Mazare',
+  authors='R. Janvier; Y. Lakhnech; L. Mazare',
   abstract='The main result of this paper is that the Dolev-Yao model is a safe abstraction of the computational model for security protocols including those that combine asymmetric and symmetric encryption, signature and hashing. Moreover, message forwarding and private key transmission are allowed. To our knowledge this is the first result that deals with hash functions and the combination of these cryptographic primitives. 
 
 A key step towards this result is a general definition of correction of cryptographic primitives, that unifies well known correctness criteria such as IND-CPA, IND-CCA, unforgeability etc.... and a theorem that allows to reduce the correctness of a composition of two cryptographic schemes to the correctness of each one.',
@@ -341,7 +341,7 @@ A key step towards this result is a general definition of correction of cryptogr
 
 "INSERT INTO {$SQLprefix}submissions SET subId=21,
 title='Partial Hiding in Public-Key Cryptography',
-  authors='Eabhnat N\'{\\i} Fhloinn and Michael Purser',
+  authors='Eabhnat N\'{\\i} Fhloinn; Michael Purser',
   abstract='This paper explores the idea of partially exposing sections of the private key in public-key cryptosystems whose security is based on the intractability of factorising large integers.
 It is proposed to allow significant portions of the private key to be publicly available, reducing the amount of data which must be securely hidden.
 The \"secret\" data could be XORed with an individual\'s biometric reading in order to maintain a high level of security, and we suggest using iris templates for this purpose.
@@ -354,7 +354,7 @@ Finally, we propose an implementation of this system for RSA, and consider the p
 
 "INSERT INTO {$SQLprefix}submissions SET subId=22,
 title='An Improved and Efficient Countermeasure against Power Analysis Attacks',
-  authors='ChangKyun Kim and JaeCheol Ha and SangJae Moon and Sung-Ming Yen and Wei-Chih Lien and  Sung-Hyun Kim',
+  authors='ChangKyun Kim; JaeCheol Ha; SangJae Moon; Sung-Ming Yen; Wei-Chih Lien;  Sung-Hyun Kim',
   abstract='Recently new types of differential power analysis attacks (DPA)
 against elliptic curve cryptosystems (ECC) and RSA systems have been
 introduced. Most existing countermeasures against classical DPA
@@ -400,7 +400,7 @@ Publication Info. SCIS 2005 (The 2005 Symposium on Cryptography and Information 
 
 "INSERT INTO {$SQLprefix}submissions SET subId=24,
 title='On the Diffie-Hellman problem over \$GL_{n}\$',
-  authors='A. A. Kalele and V. R. Sule',
+  authors='A. A. Kalele; V. R. Sule',
   abstract='This paper considers the Diffie-Hellman problem (DHP) over the
 matrix group \$\\gln\$ over finite fields and shows that for matrices
 \$A\$ and exponents \$k\$, \$l\$ satisfying certain conditions called
@@ -427,7 +427,7 @@ developed on the basis of this analysis.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=25,
 title='Analysis of Affinely Equivalent Boolean Functions',
-  authors='Meng Qing-shu and Yang min and Zhang Huan-guo and Liu Yu-zhen',
+  authors='Meng Qing-shu; Yang min; Zhang Huan-guo; Liu Yu-zhen',
   abstract='By walsh
 transform, autocorrelation function, decomposition, derivation and
 modification of truth table, some new invariants are obtained.
@@ -470,7 +470,7 @@ including AES, (keyed) SHA-1, IDEA, and RC6.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=27,
 title='Tag-KEM/DEM: A New Framework for Hybrid Encryption',
-  authors='Masayuki ABE and Rosario Gennaro and Kaoru Kurosawa',
+  authors='Masayuki ABE; Rosario Gennaro; Kaoru Kurosawa',
   abstract='This paper presents a novel framework for generic construction of hybrid encryption schemes which produces more efficient schemes than before.  A known framework introduced by Shoup combines a key encapsulation mechanism (KEM) and a data encryption mechanism (DEM). While it is believed that both of the components must be secure against chosen ciphertext attacks, Kurosawa and Desmedt showed a particular example of KEM that might not be CCA but can be securely combined with CCA DEM yielding more efficient hybrid encryption scheme.  There are also many efficient hybrid encryption schemes in various settings that do not fit to the framework.  These facts serve as motivation to seek another framework that yields more efficient schemes.
 
 In addition to the potential efficiency of the resulting schemes, our
@@ -485,7 +485,7 @@ that do not fit to the previous framework.  This could result in finding improve
 
 "INSERT INTO {$SQLprefix}submissions SET subId=28,
 title='Improved Proxy Re-Encryption Schemes with Applications to Secure Distributed Storage',
-  authors='Giuseppe Ateniese and Kevin Fu and Matthew Green and Susan Hohenberger',
+  authors='Giuseppe Ateniese; Kevin Fu; Matthew Green; Susan Hohenberger',
   abstract='In 1998, Blaze, Bleumer, and Strauss (BBS) proposed an application called
 atomic proxy re-encryption, in which a semi-trusted proxy
 converts a ciphertext for Alice into a ciphertext for Bob without 
@@ -505,7 +505,7 @@ that proxy re-encryption can work effectively in practice.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=29,
 title='A model and architecture for pseudo-random generation with applications to /dev/random',
-  authors='Boaz Barak and Shai Halevi',
+  authors='Boaz Barak; Shai Halevi',
   abstract='We present a formal model and a simple architecture for robust pseudorandom generation that ensures resilience in the face of an
 observer with partial knowledge/control of the generator\'s entropy source. Our model and architecture have the following properties:
 
@@ -535,7 +535,7 @@ We also discuss the applicability of our architecture for applications such as /
 
 "INSERT INTO {$SQLprefix}submissions SET subId=30,
 title='Weak keys of pairing based Diffie Hellman schemes on elliptic curves',
-  authors='A. A. Kalele and V. R. Sule',
+  authors='A. A. Kalele; V. R. Sule',
   abstract='This paper develops a cryptanalysis of the pairing based Diffie
 Hellman (DH) key exchange schemes an instance of which is the
 triparty single round key exchange proposed in \\cite{joux}. The
@@ -563,7 +563,7 @@ of selection.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=31,
 title='The Vector Decomposition Problem for Elliptic and Hyperelliptic Curves',
-  authors='Iwan Duursma and Negar Kiyavash',
+  authors='Iwan Duursma; Negar Kiyavash',
   abstract='The group of m-torsion points on an elliptic curve, for a prime
 number m, forms a two-dimensional vector space. It was suggested
 and proven by Yoshida that under certain conditions the vector
@@ -584,7 +584,7 @@ suitable for the VDP.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=32, 
   title='On the Notion of Statistical Security in Simulatability Definitions',
-  authors='Dennis Hofheinz and Dominique Unruh',
+  authors='Dennis Hofheinz; Dominique Unruh',
   abstract='  We investigate the definition of statistical security (i.e.,
   security against unbounded adversaries) in the framework of reactive
   simulatability. This framework allows to formulate and analyze
@@ -615,7 +615,7 @@ suitable for the VDP.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=33,
 title='A Flexible Framework for Secret Handshakes',
-  authors='Gene Tsudik and Shouhuai Xu',
+  authors='Gene Tsudik; Shouhuai Xu',
   abstract='In the society increasingly concerned with the erosion of privacy,
 privacy-preserving techniques are becoming very important.
 Secret handshakes offer anonymous and unobservable authentication 
@@ -684,7 +684,7 @@ security reduction in the discrete-log setting.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=35,
 title='Concurrent Composition of Secure Protocols in the Timing Model',
-  authors='Yael Kalai and Yehuda Lindell and Manoj Prabhakaran',
+  authors='Yael Kalai; Yehuda Lindell; Manoj Prabhakaran',
   abstract='In the setting of secure multiparty computation, a set of mutually
 distrustful parties wish to securely compute some joint function
 of their inputs. In the stand-alone case, it has been shown that
@@ -719,7 +719,7 @@ in the timing model.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=36,
 title='Improving Secure Server Performance by Re-balancing SSL/TLS Handshakes',
-  authors='Claude Castelluccia and Einar Mykletun and Gene Tsudik',
+  authors='Claude Castelluccia; Einar Mykletun; Gene Tsudik',
   abstract='Much of today\'s distributed computing takes place in a client/server model.
 Despite advances in fault tolerance -- in particular, replication and load
 distribution -- server overload remains to be
@@ -749,7 +749,7 @@ meet-in-the-middle attack proposed in private communication with David Wagner.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=37,
 title='Distinguishing Stream Ciphers with Convolutional Filters',
-  authors='Joan Daemen and Gilles Van Assche',
+  authors='Joan Daemen; Gilles Van Assche',
   abstract='This paper presents a new type of distinguisher for the shrinking generator and the alternating-step generator with known feedback polynomial and for the multiplexor generator. For the former the distinguisher is more efficient than existing ones and for the latter it results in a complete breakdown of security. The distinguisher is conceptually very simple and lends itself to theoretical analysis leading to reliable predictions of its probability of success.
 ',
   category='secret-key cryptography',
@@ -760,7 +760,7 @@ title='Distinguishing Stream Ciphers with Convolutional Filters',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=38,
 title='Unfairness of a protocol for certified delivery',
-  authors='Juan M. Estevez-Tapiador and Almudena Alcaide',
+  authors='Juan M. Estevez-Tapiador; Almudena Alcaide',
   abstract='Recently, Nenadi\'c \\emph{et al.} (2004) proposed the RSA-CEGD
 protocol for certified delivery of e-goods. This is a relatively
 complex scheme based on verifiable and recoverable encrypted
@@ -776,7 +776,7 @@ and also pointing out some other weaknesses.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=39,
 title='On the Security of a Group Signature Scheme with Strong Separability',
-  authors='Lihua Liu and Zhengjun Cao',
+  authors='Lihua Liu; Zhengjun Cao',
   abstract='A group signature scheme allows a
       group member of a given group to sign messages on behalf of
       the group in an anonymous and unlinkable fashion. In case of
@@ -798,7 +798,7 @@ title='On the Security of a Group Signature Scheme with Strong Separability',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=40,
   title='Polyhedrons over Finite Abelian Groups and Their Cryptographic Applications',
-  authors='Logachev~O.A. and Salnikov~A.A. and Yaschenko~V.V.',
+  authors='Logachev~O.A.; Salnikov~A.A.; Yaschenko~V.V.',
   abstract='We are using the group-theory methods for justification of
 algebraic method in cryptanalysis. The obtained results are using
 for investigation of  Boolean functions cryptographic properties.',
@@ -810,7 +810,7 @@ for investigation of  Boolean functions cryptographic properties.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=41,
 title='An Efficient Solution to The Millionaires Problem Based on Homomorphic Encryption',
-  authors='Hsiao-Ying Lin and Wen-Guey Tzeng',
+  authors='Hsiao-Ying Lin; Wen-Guey Tzeng',
   abstract='We proposed a two-round protocol for solving the
  Millionaires Problem in the setting of semi-honest
  parties.
@@ -846,7 +846,7 @@ In particular, we refine the affine classification of cubic bent functions of 8 
 
 "INSERT INTO {$SQLprefix}submissions SET subId=43,
 title='Choosing Parameter Sets for NTRUEncrypt with NAEP and SVES-3',
-  authors='Nick Howgrave-Graham and Joseph H. Silverman and William Whyte',
+  authors='Nick Howgrave-Graham; Joseph H. Silverman; William Whyte',
   abstract='We present, for the first time, an algorithm to choose parameter sets for NTRUEncrypt that give a desired level of security.
 
 Note: This is an expanded version of a paper presented at CT-RSA 2005.',
@@ -858,7 +858,7 @@ Note: This is an expanded version of a paper presented at CT-RSA 2005.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=44,
 title='New Approaches for Deniable Authentication',
-  authors='Mario Di Raimondo and Rosario Gennaro',
+  authors='Mario Di Raimondo; Rosario Gennaro',
   abstract='Deniable Authentication protocols allow a Sender to authenticate a
 message for a Receiver, in a way that the Receiver cannot convince
 a third party that such authentication (or any authentication) ever
@@ -887,7 +887,7 @@ protocols are forward deniable.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=45,
 title='Cryptanalysis of an anonymous wireless authentication and conference key distribution scheme',
-  authors='Qiang Tang and Chris J. Mitchell',
+  authors='Qiang Tang; Chris J. Mitchell',
   abstract='In this paper we analyse an anonymous wireless authentication and
 conference key distribution scheme which is also designed to
 provide mobile participants with user identification privacy
@@ -904,7 +904,7 @@ number of security vulnerabilities.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=46,
 title='Cryptanalysis of two identification schemes based on an ID-based cryptosystem',
-  authors='Qiang Tang and Chris J. Mitchell',
+  authors='Qiang Tang; Chris J. Mitchell',
   abstract='Two identification schemes based on the Maurer-Yacobi ID-based
 cryptosystem are analysed and shown to suffer from serious
 security problems.',
@@ -959,7 +959,7 @@ even or not.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=50,
 title='Picking Virtual Pockets using Relay Attacks on Contactless Smartcard Systems',
-  authors='Ziv Kfir and Avishai Wool',
+  authors='Ziv Kfir; Avishai Wool',
   abstract='A contactless smartcard is a smartcard that can communicate with other
 devices without any physical connection, using Radio-Frequency
 Identifier (RFID) technology. Contactless smartcards are becoming
@@ -989,7 +989,7 @@ victim, and low cost of the attack system.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=51,
   title='An Approach Towards Rebalanced RSA-CRT with Short Public Exponent',
-  authors='Hung-Min Sun and Mu-En Wu',
+  authors='Hung-Min Sun; Mu-En Wu',
   abstract='Based on the Chinese Remainder Theorem (CRT), Quisquater and Couvreur proposed an RSA variant, RSA-CRT, to speedup RSA decryption. According to RSA-CRT, Wiener suggested another RSA variant, Rebalanced RSA-CRT, to further speedup RSA-CRT decryption by shifting decryption cost to encryption cost. However, such an approach will make RSA encryption very time-consuming because the public exponent e in Rebalanced RSA-CRT will be of the same order of magnitude as £p(N). In this paper we study the following problem: does there exist any secure variant of Rebalanced RSA-CRT, whose public exponent e is much shorter than £p(N)? We solve this problem by designing a variant of Rebalanced RSA-CRT with d_{p} and d_{q} of 198 bits. This variant has the public exponent e=2^511+1 such that its encryption is about 3 times faster than that of the original Rebalanced RSA-CRT.',
   category='public-key cryptography',
   whenSubmitted='2005-22 Feb',
@@ -998,7 +998,7 @@ victim, and low cost of the attack system.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=52,
   title='Comment on cryptanalysis of Tseng et al. authenticated encryption schemes',
-  authors='Yi-Hwa Chen and Jinn-Ke Jan',
+  authors='Yi-Hwa Chen; Jinn-Ke Jan',
   abstract='Recently, Xie and Yu proposed a forgery attack on the Tseng et al¡¦s authenticated encryption schemes and showed that their schemes are not secure in two cases: the specified verifier substitutes his secret key, or the signer generates the signature with these schemes for two or more specified verifiers. In addition, Xie and Yu made a small modification for the Tseng et al¡¦s schemes and claimed that the modified schemes can satisfy the security requirement. However, we show that the modified schemes are still insecure.',
   category='public-key cryptography',
   keyWords='Cryptography, Authenticated encryption, Message linkage, Self-certificated public key',
@@ -1020,7 +1020,7 @@ victim, and low cost of the attack system.',
 
 "INSERT INTO {$SQLprefix}submissions SET subId=54, 
   title='Key Derivation and Randomness Extraction',
-  authors='Olivier Chevassut and Pierre-Alain Fouque and Pierrick Gaudry and David Pointcheval',
+  authors='Olivier Chevassut; Pierre-Alain Fouque; Pierrick Gaudry; David Pointcheval',
   abstract='Key derivation refers to the process by which an agreed upon large
 random number, often named master secret, is used to derive keys to
 encrypt and authenticate data. Practitioners and standardization 
