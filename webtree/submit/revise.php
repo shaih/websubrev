@@ -218,7 +218,7 @@ print <<<EndMark
 </tr><tr>
   <td style="text-align: right;">$checkbox</td><td>$checkbox_text</td>
 </tr><tr>
-  <td style="text-align: right;">Format:</td><td>Sign your name below to confirm that this submission {$anonText}adheres to the formatting requirements in the call-for-papers <input name="formality" class="required"/></td>
+  <td style="text-align: right;">Format:</td><td>Sign your name below to confirm that this submission {$anonText}adheres to the formatting requirements in the call-for-papers (including page limits) <input name="formality" class="required"/></td>
 </tr><tr>
   <td></td><td><input value="{$submit}Revise Submission" type="submit" name="reviseSub"></td>
 </tr>
