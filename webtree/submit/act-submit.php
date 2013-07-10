@@ -136,9 +136,10 @@ if (!empty($sbFileName)) {
 // Insert the new submission to the database 
 
 /* Get next subId for insertion */
-$qry2 = "SELECT 1+MAX(GREATEST(subId,100)) FROM {$SQLprefix}submissions WHERE subId<9000";
+$qry2 = "SELECT MAX(subId) FROM {$SQLprefix}submissions WHERE subId<9000";
 
-$prms[0] = pdo_query($qry2)->fetchColumn();
+$prms[0] = 1+pdo_query($qry2)->fetchColumn();
+if ($prms[0] <= 100) $prms[0] = 101;
 pdo_query($qry, $prms, "Cannot insert submission details to database: ");
 $subId = $prms[0];
 
