@@ -6,6 +6,7 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
 $needsAuthentication=true;
+$preReview=true;
 require 'header.php';
 
 // If the guidelines file exists, send it to the client
