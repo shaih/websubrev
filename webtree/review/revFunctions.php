@@ -317,7 +317,7 @@ function showTags($tags, $subId, $isChair)
   <table style='width: 99%;'><tr class='nowrp'>
   <td style='width: 95%;'><input name='tags' style='width: 100%;' type='text' value='$tags'/></td>
   <td><input type='submit' value='Save'/><button>Cancel</button></td>
-  <td><a class='noHandle' href="../documentation/reviewer.html#tags" target='_bllank'>what&#39;s this?</a></td></tr></table>
+  <td><a class='noHandle' href="../documentation/reviewer.html#tags" target='_blank'>what&#39;s this?</a></td></tr></table>
 </form>
 </div>
 EndMark;
