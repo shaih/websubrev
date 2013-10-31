@@ -32,7 +32,7 @@ EndMark;
 
 // Prepare an array of submissions
 
-$orders = array('subId','category','format');
+$orders = array('subId','category','format','status');
 $subOrder = isset($_GET['subOrder']) ? trim($_GET['subOrder']) : 'subId';
 if (!in_array($subOrder,$orders)) $subOrder = 'subId';
 
