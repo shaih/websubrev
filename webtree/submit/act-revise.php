@@ -233,7 +233,7 @@ if (PERIOD>=PERIOD_CAMERA) {
     move_uploaded_file($tmpFile, $pdfFileName);
   }
 
-  if (!empty($eprint)) {
+  if (!empty($eprint) || $nPages>0) {
     $qry = "UPDATE {$SQLprefix}acceptedPapers SET nPages=?, eprint=? WHERE subId=?";
     pdo_query($qry, array($nPages,$eprint,$subId),
 	      "Cannot update ePrint information for submission $subId: ");
