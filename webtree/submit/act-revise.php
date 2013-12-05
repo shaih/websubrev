@@ -233,10 +233,15 @@ if (PERIOD>=PERIOD_CAMERA) {
     move_uploaded_file($tmpFile, $pdfFileName);
   }
 
-  if (!empty($eprint) || $nPages>0) {
-    $qry = "UPDATE {$SQLprefix}acceptedPapers SET nPages=?, eprint=? WHERE subId=?";
-    pdo_query($qry, array($nPages,$eprint,$subId),
+  if (!empty($eprint)) {
+    $qry = "UPDATE {$SQLprefix}acceptedPapers SET eprint=? WHERE subId=?";
+    pdo_query($qry, array($eprint,$subId),
 	      "Cannot update ePrint information for submission $subId: ");
+  }
+  if ($nPages>0) {
+    $qry = "UPDATE {$SQLprefix}acceptedPapers SET nPages=? WHERE subId=?";
+    pdo_query($qry, array($nPages,$subId),
+	      "Cannot update #-of-pages information for submission $subId: ");
   }
 }
 
