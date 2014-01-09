@@ -8,6 +8,10 @@
 $needsAuthentication = true; // Just a precaution
 require 'header.php';
 
+//print "<pre>\n";
+//print_r($_POST);
+//exit("</pre>");
+
 if (PERIOD==PERIOD_FINAL) exit("<h1>The Site is Closed</h1>");
 
 // Manage access to the review cite
@@ -24,45 +28,61 @@ if (isset($_POST['reviewSite'])) {
   // Compare PC member details from the databse with the details from
   // the _POST array, and update the database whenever these differ
   $members = $_POST['members'];
+  $auxIDs = $_POST['auxID']; // points to IDs in some auxiliary system
 
   if (is_array($members)) { 
 
-    $res = pdo_query("SELECT revId,revPwd,name,email,flags FROM {$SQLprefix}committee ORDER BY revId");
-    while ($row = $res->fetch(PDO::FETCH_NUM)) {
-      $revId = (int) $row[0];
+    $res = pdo_query("SELECT revId,revPwd,name,email,flags,authorID FROM {$SQLprefix}committee ORDER BY revId");
+    while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
+      $revId = (int) $row['revId'];
       $m = $members[$revId]; // $m = array(name, email, reset-flag, isChair)
       if (isset($m)) {
 	$nm = isset($m[0]) ? trim($m[0]) : NULL;
 	$eml = isset($m[1]) ? strtolower(trim($m[1])) : NULL;
 	$reset = isset($m[2]);
 	$isChair = isset($m[3])? FLAG_IS_CHAIR: 0;
-	$oldPw = $row[1];
-	$oldNm = $row[2];
-	if ($isChair) $flags = FLAG_IS_CHAIR | (int) $row[4];
-	else          $flags = (~FLAG_IS_CHAIR) & (int) $row[4];
-	$oldEml= strtolower($row[3]);
-	if ($nm!=$oldNm || $eml!=$oldEml || $reset || $flags!=$row[4]) {
-	  update_committee_member($nm, $eml, $revId,
-				  $oldPw, $oldNm, $oldEml, $reset, $flags);
+	$oldPw = $row['revPwd'];
+	$oldNm = $row['name'];
+	if ($isChair) $flags = FLAG_IS_CHAIR | (int) $row['flags'];
+	else          $flags = (~FLAG_IS_CHAIR) & (int) $row['flags'];
+	$oldEml= strtolower($row['email']);
+	$authID = $row['authorID']; // points to ID in some auxiliary system
+	if (!empty($auxIDs[$revId])) {
+	  $authID = intval($auxIDs[$revId]);
+	}
+	if ($nm!=$oldNm || $eml!=$oldEml || $reset 
+	    || $flags!=$row['flags'] || $authID != $row['authorID']) {
+	  update_committee_member($nm, $eml, $revId, $oldPw, $oldNm,
+				  $oldEml, $reset, $flags, $authID);
 	}
       }
     }
   }
-  $mmbrs2add = isset($_POST['mmbrs2add']) ?
-                                  explode(';', $_POST['mmbrs2add']) : NULL;
-  if (is_array($mmbrs2add)) foreach ($mmbrs2add as $m) {
-    if ($m = parse_email($m))
-      update_committee_member($m[0], $m[1]);
-  }
+
+  if (is_array($_POST['newMembers'])) // Add new memebers
+    foreach ($_POST['newMembers'] as $i => $name) {
+      $name = trim($name);
+      if (empty($name)) continue;
+      $email = trim($_POST['newEmail'][$i]);
+      if (empty($email)) continue;
+      $isChair = empty($_POST['newChair'][$i])? 0: FLAG_IS_CHAIR;
+      $authID = empty($_POST['newMemberID'][$i])? 
+	0: intval($_POST['newMemberID'][$i]);
+      update_committee_member($name, $email,
+			      /*$revId=*/ false, /*$revPwd=*/NULL,
+			      /*$oldName=*/NULL, /*$oldEml=*/NULL,
+			      /*$reset=*/ false, /*$flags=*/$isChair,
+			      $authID);
+    }
 } // if (isset($_POST['reviewSite']))
 
-header("Location: index.php");
+header("Location: managePCmembership.php");
 exit();
 
 function update_committee_member($name, $email,
 				 $revId=false, $revPwd=NULL,
 				 $oldName=NULL, $oldEml=NULL,
-				 $reset=false, $flags=0)
+				 $reset=false, $flags=0, $authID=0)
 {
   global $SQLprefix;
 
@@ -81,8 +101,8 @@ function update_committee_member($name, $email,
     $pwd = alphanum_encode(substr($pwd, 0, 15));   // "compress" a bit
     $pw = sha1(CONF_SALT. $email . $pwd);
     
-    $qry = "INSERT INTO {$SQLprefix}committee SET name=?,email=?,revPwd=?,flags=?";
-    pdo_query($qry, $array($name,$email,$pw,$flags),
+    $qry = "INSERT INTO {$SQLprefix}committee SET name=?,email=?,revPwd=?,flags=?,authorID=?";
+    pdo_query($qry, array($name,$email,$pw,$flags,$authID),
 	      "Cannot add PC member $name <$email>: ");
     email_password($email, $pwd);
     return;
@@ -114,10 +134,11 @@ function update_committee_member($name, $email,
     $prms[] = $email;
     $comma = ",";
   }
-  $canDiscuss = ($flags & FLAG_IS_CHAIR)? 1: 0;  
+  $canDiscuss = ($flags & FLAG_IS_CHAIR)? 1: 0;
 
-  $qry = "UPDATE {$SQLprefix}committee SET $updates{$comma} flags=?, canDiscuss=$canDiscuss WHERE revId=?";
+  $qry = "UPDATE {$SQLprefix}committee SET $updates{$comma} flags=?, authorID=?, canDiscuss=$canDiscuss WHERE revId=?";
   $prms[] = $flags;
+  $prms[] = $authID;
   $prms[] = $revId;
   pdo_query($qry, $prms, "Cannot update PC member $name <$email>: ");
   if ($reset) email_password($email, $pwd, $flags & FLAG_IS_CHAIR);

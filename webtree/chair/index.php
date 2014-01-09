@@ -225,7 +225,7 @@ $hdr
 <ul>
 $editInstructions
 <li><a href="listSubmissions.php">List of accepted submissions</a></li>
-<li><a href="emailAuthors.php">Send email to authors of accepted papers</a>
+<li><a href="emailAuthors.php">Send email to authors</a>
 </li>
 <li><a href="invitedTalks.php">Add an invited talk to the program</a></li>
 <li><a href="cameraArchive.php">Create one tar file with all the camera-ready files</a></li>

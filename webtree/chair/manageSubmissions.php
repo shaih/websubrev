@@ -53,6 +53,11 @@ $links
 </tr>
 EndMark;
 
+$cmrDeadlineHTML = '<tr><td style="text-align: right;">Camera&nbsp;ready&nbsp;Deadline:</td>
+  <td><input name=cameraDeadline size=90 type=text value="'.$cmrDeadline.'"><br/>
+  Remember that <b>the software does not enforce the deadlines automatically.</b>
+</td></tr>';
+
 if (PERIOD<=PERIOD_SUBMIT) {
   print <<<EndMark
 <tr><td style="text-align: right;">Pre-registraion&nbsp;Deadline:</td>
@@ -72,10 +77,7 @@ EndMark;
   $chkaff = USE_AFFILIATIONS ? 'checked="checked"' : '';
   $chkanon = ANONYMOUS ? 'checked="checked"' : '';
   print <<<EndMark
-<tr><td style="text-align: right;">Camera&nbsp;ready&nbsp;Deadline:</td>
-  <td><input name=cameraDeadline size=90 type=text value="$cmrDeadline"><br/>
-  Remember that <b>the software does not enforce the deadlines automatically.</b>
-</td></tr>
+$cmrDeadlineHTML
 <tr><td style="text-align: right;">Categories:</td>
   <td><textarea name=categories rows=3 cols=70>$cats</textarea><br/>
     A semi-colon-separated list of categories for the submissions
@@ -118,6 +120,8 @@ EndMark;
       Name2(ext2, MIME2)...</tt>"</td>
 </tr>
 EndMark;
+} else { // camera-ready submissions, can only modify the deadline
+  print $cmrDeadlineHTML;
 }
 print <<<EndMark
 <tr><td colspan=2 style="text-align: center;"> 

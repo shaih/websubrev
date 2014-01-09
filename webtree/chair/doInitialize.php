@@ -252,18 +252,44 @@ if (!$lines) { // the parameter file is not there yet
 // Send email to chair and admin with the password for using this site
 $hdr   = "From: $ADMIN_EMAIL";
 $sndTo = "$ADMIN_EMAIL, $chairEmail";
-$sbjct = "New submission and review site initialized";
+$sbjct = "Submission/review site for $MYSQL_PREFIX is up";
 
 $prot = (isset($_SERVER['HTTPS'])) ? 'https' : 'http';
 $BASE_URL = $prot.'://'.$BASE_URL;
 $msg =<<<EndMark
-A new submission and review site was initialized, it now needs to be
-customized for its conference. The administration page is accessible
-from
+The new submission and review site was initialized, it now needs to be
+customized for its conference. To complete the installation, you need
+to access the web-page at
+
+  {$BASE_URL}chair/customize.php
+
+To access that page use username $chairEmail and password $chrPwd
+
+On that page you need to provide various details such as the conference
+name, various deadlines, etc. Everything that you enter there can later
+be modified from the chair interface. Once you finished "customizing"
+it, the site will be open to submissions from the URL
+
+  {$BASE_URL}submit/
+
+and you could administer it from
 
   {$BASE_URL}chair/
 
-using username $chairEmail and password $chrPwd
+There is a demo site for this software where you could see how most of
+the pages look like, so you can get a preview of "what would happen
+when I press this button". The demo is available at
+
+ http://people.csail.mit.edu/shaih/websubrev/demo/0.63/
+
+That site is "interactive" in the sense that pressing any button or
+link should take you to the page that you would see if this was a real
+live system. (But of course the choices and data that you enter will
+be ignored since it is not really a live system.)
+
+Please direct any question to websubrev@iacr.org
+
+Good luck with your conference.
 
 EndMark;
 mail($sndTo, $sbjct, $msg, $hdr);

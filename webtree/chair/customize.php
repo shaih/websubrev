@@ -54,9 +54,9 @@ conference name, deadlines, what formats are acceptable for submissions, etc.
 All the conference parameters that you specify here can be changed later from
 the administration page.<br/>
 <br/>
-This form has four sections, corresponding to <a href="#conference">the
-conference</a>, <a href="#submissions">submissions</a>, <a href="#committee">
-program committee</a>, and <a href="#review">reviews</a>.
+This form has three sections, corresponding to <a href="#conference">the
+conference</a>, <a href="#submissions">submissions</a>, 
+and <a href="#review">reviews</a>.
 <br/>
 <form accept-charset="utf-8" name="customize" action="confirmCustomize.php{$urlParams}" enctype="multipart/form-data" method="POST">
 
@@ -152,8 +152,9 @@ program committee</a>, and <a href="#review">reviews</a>.
     &nbsp; MIME-type:<input name="format3mime" size="15" type="text">
   </td>
 </tr>
-<tr><td colspan="2" class=rjust><hr /></td></tr>
 <!-- ================= The Program Committee =================== -->
+<tr><td colspan="2" class=rjust><input type='hidden' name='chair' value='$chrEml'><hr /></td></tr>
+<!-- ================= this is commented out =================== --
 <tr><td class=rjust><big><b><a NAME="committee">Program&nbsp;Committee:</a></b></big></td><td>Specify the email addresses of the program commitee. Each address should be in the format "Name &lt;email-address&gt;". The names that you enter here will be displayed on the reports and discussion boards.</td>
 </tr>
 <tr><td class=rjust>{$star}<a href="../documentation/chair.html#PCemail" target="documentation" title="click for more help">Chair&nbsp;Email(s):</a></td>
@@ -162,12 +163,14 @@ program committee</a>, and <a href="#review">reviews</a>.
      program chairs. A separate PC-chair account is created for each address.
 </td></tr>
 <tr><td class=rjust><a href="../documentation/chair.html#PCemail" target="documentation" title="click for more help">Program&nbsp;Committee:</a></td>
-  <td><textarea name="committee" rows=15 cols=70>Shaquille O'Neal &lt;shaq@MiamiHeat.nba.com&gt;;
+  <td><textarea name="committee" rows=15 cols=70>Shaquille O&prime;Neal &lt;shaq@MiamiHeat.nba.com&gt;;
 Larry J. Bird &lt;the-bird@old-timers.org&gt;;
 Jordan, Michael &lt;Air-Jordan@nike.com&gt;</textarea><br/>
     A <i><b>semi-colon-separated</b></i> list of email addresses of the program committee members.</td>
 </tr>
 <tr><td colspan=2 class=rjust><hr /></td></tr>
+  -- ============== end of commented out section ================ -->
+
 <!-- ================= Reviews =================== -->
 <tr><td class=rjust><big><b><a NAME="review">Reviews:</a></b></big></td>
   <td>(the default options below should work just fine for most cases)</td>

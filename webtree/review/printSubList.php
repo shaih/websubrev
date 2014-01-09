@@ -115,7 +115,9 @@ EndMark;
 
       if (isset($_GET['showTags'])) {
 	$tagsIcon = '';
-	$tagsLine = "<tr><td colspan='5'></td><td colspan='4'><a target='_blank' href='editTags.php?subId={$subId}' class='tagsLink lightbg'>$tags</a></td></tr>\n";
+	$tagsLine = "<tr><td colspan='4'></td><td colspan='5'>"
+		. showTags($sb['tags'], $subId, $isChair)
+		. "</td></tr>\n";
       } else {
 	$tagsIcon = "<td><a target='_blank' class='tagsIcon tooltips' href='editTags.php?subId={$subId}' style='z-index: $zIdx;'><img alt='tags' src='../common/tags.gif' height='10'/>$tags</a></td>";
 	$tagsLine = '';

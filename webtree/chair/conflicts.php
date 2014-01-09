@@ -173,7 +173,9 @@ bottom of this page</a></p>.
   <th>Maybe&nbsp;author&nbsp;of?&nbsp;</th>
   <th>Mark&nbsp;author&nbsp;of&nbsp;</th>
   <th>Other&nbsp;blocked&nbsp;submissions&nbsp;</th>
-  <th>Asked to block</th></tr>
+  <th>Asked to block <span style='color: red;'>
+      These are NOT blocked autmatically!
+      To block them, copy #s to left columns and submit.</span></th></tr>
 
 EndMark;
 

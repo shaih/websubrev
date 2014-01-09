@@ -8,7 +8,7 @@
 $needsAuthentication = true; // Just a precaution
 require 'header.php';
 
-if (PERIOD > SUBMIT_PERIOD) { exit("<h1>Review Site is Closed</h1>"); }
+if (PERIOD > PERIOD_SUBMIT) { exit("<h1>Review Site is Closed</h1>"); }
 
 $maxGrade = MAX_GRADE;
 

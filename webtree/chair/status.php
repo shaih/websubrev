@@ -135,7 +135,8 @@ EndMark;
 $qry = "SELECT subId,title,status,scratchStatus FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER BY subId";
 $res = pdo_query($qry);
 $subArray = $res->fetchAll(PDO::FETCH_ASSOC);
-$maxSubId = end($subArray)['subId'];
+$maxSubId = end($subArray);
+$maxSubId = $maxSubId['subId'];
 reset($subArray);
 
 foreach($subArray as $sb) {

@@ -164,6 +164,7 @@ $dbTables = array(
     canDiscuss tinyint(1) NOT NULL DEFAULT 0, 
     threaded tinyint(1) NOT NULL DEFAULT 1, 
     flags int NOT NULL DEFAULT 0,
+    authorID smallint NOT NULL DEFAULT 0,
     PRIMARY KEY (revId),
     KEY pw (revPwd(2))",
 

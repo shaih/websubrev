@@ -11,13 +11,20 @@ require 'header.php';
 if (defined('CAMERA_PERIOD')) { exit("<h1>Review Site is Closed</h1>"); }
 
 // Store the committee details in an array
-$qry = "SELECT revId, revPwd, name, email, flags FROM {$SQLprefix}committee ORDER BY revId";
-$cmmtee = pdo_query($qry)->fetchAll(PDO::FETCH_NUM);
+$qry = "SELECT revId,revPwd,name,email,flags,authorID FROM {$SQLprefix}committee ORDER BY revId";
+$cmmtee = pdo_query($qry)->fetchAll(PDO::FETCH_ASSOC);
+
+$nNewMembers = 10;
+if (!empty($_GET['nNew']) && $_GET['nNew']>0)
+  $nNewMembers = intval($_GET['nNew']);
 
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head><meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="$JQUERY_CSS"> 
+<script src="$JQUERY_URL"></script>
+<script src="$JQUERY_UI_URL"></script>
 <script language="Javascript" type="text/javascript">
 <!--
 function checkEmail( fld )
@@ -32,8 +39,10 @@ function checkEmail( fld )
   }
   return true ;
 }
+var numToAdd=10; // global variable, how many authors to add per click
 //-->
 </script>
+<script src="../common/authNames.js"></script>
 <style type="text/css">
 h1 { text-align: center; }
 .lightbg { background-color: rgb(235, 235, 235); } 
@@ -60,33 +69,31 @@ review area of this site. To login to the site, a member must provide
 his/her email-address and a password. <i>Please go over this list and
 correct any errors</i>. Note the following:
 <ul>
-<li> Make sure that the names are formatted the way you want them to
-  appear on the reports and discussion boards. (E.g., you may prefer the
-  format "First M. Last" or "Last, First M.", or whatever.)<br />
-  <br /></li>
+<li> Make sure that the names are specified in the format "First M. Last".<br/>
+</li>
   
-<li> You can add members by putting a <b>semi-colon-separated</b>
-  list of new members in the text area at the bottom of the page.
-  The list must be of the form "<tt>Name1 &lt;email-address1&gt;; Name2 
-  &lt;email-address&gt;; ...</tt>"  Make sure that the names are formatted
-  the way you want them (and that <i>they do not include semi-colons</i>).
-  <br /><br /></li>
+<li> You can add members using the list at the bottom of this form.<br/>
+</li>
 
-<li> You can remove PC members by checking the <i>"Remove"</i> check-box.<br />
-  <br /></li>
+<li> You can remove PC members by checking the <i>"Remove"</i> check-box.<br/>
+</li>
 
 <li> You can reset the passwords of PC members by checking the <i>"Reset 
   Password"</i> checkbox. Also, changing the email address of a member
-  automatically resets his/her password.<br /><br /></li>
-
-<li>When you submit this form, an email message will be sent to any PC member
-  whose password was reset, informing him/her of the new password. The chair(s)
-  will be CCed on all these emails.</li>
+  automatically resets his/her password.
+<br/></li>
 </ul>
+
+<p>
+When you submit this form, an email message will be sent to any PC member
+  whose password was reset, informing him/her of the new password. The chair(s)
+  will be CCed on all these emails.
+</p>
 
 <form accept-charset="utf-8" action=doManagePCmembership.php enctype="multipart/form-data" method=post>
 
 <input name="reviewSite" value="on" type="hidden">
+<p><input value="Update Access to Review Site" type="submit"></p>
 <table cellpadding="3" cellspacing="0"><tbody>
 <tr class="darkbg">
   <th colspan="5" style="text-align: center;"><big>Program Comittee</big></th>
@@ -100,42 +107,43 @@ correct any errors</i>. Note the following:
 </tr>
 EndMark;
 
-$bgs = array("class=\"lightbg\"", "class=\"darkbg\"");
+$bgs = array('class="lightbg"', 'class="darkbg"');
 $parity=1;
 $firstChair = true;
 foreach($cmmtee as $m) {
-  $revId = $m[0];
-  if (empty($m[1])) {  // Empty password, force reset
+  $revId = $m['revId'];
+  if (empty($m['revPwd'])) {  // Empty password, force reset
     $chk='checked="checked"';
   }
   else { $chk = ''; }
-  $m[2] = htmlspecialchars($m[2]);
-  $m[3] = htmlspecialchars($m[3]);
+  $m['name'] = htmlspecialchars($m['name']);
+  $m['email'] = htmlspecialchars($m['email']);
   print "<tr ".$bgs[$parity].">\n";
-  if ($m[4] & FLAG_IS_CHAIR) {
+  if ($m['flags'] & FLAG_IS_CHAIR) {
     $chairChk = 'checked="checked"';
     $rmGrayed = ' disabled="disabled"';
   } else {
     $chairChk = $rmGrayed = '';
   }
-  if ($firstChair && ($m[4] & FLAG_IS_CHAIR)) { // cannot uncheck the 1st chair
+  if ($firstChair &&($m['flags']&FLAG_IS_CHAIR)){ // cannot uncheck the 1st chair
       print '  <td style="text-align: center;">YES
       <input name="members['.$revId.'][3]" type="hidden" value="on"></td>'."\n";
       $firstChair = false;
   }
   else print '  <td style="text-align: center;">
-      <input id="pcm'.$revId.'isChair" name="members['.$revId.'][3]" type="checkbox" title="check to make '.$m[2].' a PC-chair" '.$chairChk."></td>\n";
+      <input id="pcm'.$revId.'isChair" name="members['.$revId.'][3]" type="checkbox" title="check to make '.$m['name'].' a PC chair" '.$chairChk."></td>\n";
   print <<<EndMark
   <td><input name="members[$revId][0]" size="30" type="text"
-       value="$m[2]" style="width: 100%;">
+       value="{$m['name']}" style="width: 100%;" class="author">
+      <input type='hidden' class='authID' value="{$m['authorID']}" name='auxID[$revId]'>
   </td>
   <td><input name="members[$revId][1]" size="35" type="text"
-       value="$m[3]" onchange="return checkEmail(this)" style="width: 100%;">
+       value="{$m['email']}" onchange="return checkEmail(this)" style="width: 100%;">
   </td>
   <td style="text-align: center;">
       <input id="pcm{$revId}pwdReset" name="members[$revId][2]" type="checkbox" $chk/></td>
   <td style="text-align: center;"><img alt="(X)" width=12 src="../common/stop.GIF">
-      <input id="pcm{$revId}remove" title="Check to remove $m[2] from the committee" name="mmbrs2remove[$revId]" type="checkbox" $rmGrayed>
+      <input id="pcm{$revId}remove" title="Check to remove {$m['name']} from the committee" name="mmbrs2remove[$revId]" type="checkbox" $rmGrayed>
   </td>
 </tr>
 
@@ -144,20 +152,26 @@ EndMark;
 }
 
 print <<<EndMark
-<tr $bgs[$parity]>
-  <td style="text-align: center;">New<br />Members:</td>
-  <td colspan="4"><textarea name="mmbrs2add" style="width: 100%"></textarea>
-      A <i><b>semi-colon-separated</b></i> list of email addresses:
-      "<tt>Name1 &lt;email1&gt;; Name2 &lt;email2&gt;;...</tt>" 
-  </td>
-</tr>
-<!-- ================= The Submit Button =================== -->
-<tr><td colspan="5">&nbsp;</td></tr>
-<tr><td colspan="5" style="text-align: center;">
-        <input value="Grant Access to Review Site" type="submit">
-    </td>
-</tr>
 </tbody></table>
+<h2>Add New Program-Commitee Members</h2>
+<ol class="authorList compactList">
+EndMark;
+
+for ($i=0; $i<$nNewMembers; $i++) {
+print <<<EndMark
+<li class="oneAuthor">
+  Chair? <input name="newChair[]" type="checkbox" title="Check to mark this member as a PC Chair"/>
+  Name:<input name="newMembers[]" size="40" type="text" class="author"/>,
+  Email:<input name="newEmail[]" size="50" type="text" class="email" onchange="return checkEmail(this)"/>
+  <input type='hidden' name='newMemberID[]' class='authID'/>
+</li>
+EndMark;
+}
+$nNewMembers += 10;
+print <<<EndMark
+</ol>
+<a class="moreAuthors" href="./managePCmembership.php?nNew=$nNewMembers" rel="$nNewMembers">more PC members</a>
+<p><input value="Grant Access to Review Site" type="submit"></p>
 </form>
 <hr/>
 $links
