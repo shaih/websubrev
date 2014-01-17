@@ -224,7 +224,7 @@ EndMark;
   uasort($papers, "cmpOrder"); // sort by order
   $curPage = 1;
   foreach ($papers as $subId => $ppr) if ($ppr['pOrder']>0) {
-    $ltxFile .= "\\setcounter{page}{$curPage}\n";
+    $ltxFile .= "\\setcounter{page}{".$curPage."}\n";
     $curPage += $ppr['nPages'];
     $ltxFile .= "\\title{".$ppr['title']."}\n";
     $ltxFile .= "\\author{".str_replace(';', ' \and ', $ppr['authors'])."}\n";
