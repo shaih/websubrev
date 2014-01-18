@@ -7,7 +7,7 @@
  */
 //exit("<pre>".print_r($_POST,true)."</pre>");
 require 'header.php'; // brings in the contacts file and utils file
-$confName = CONF_SHORT . ' ' . CONF_YEAR;
+$confName = CONF_SHORT . '_' . CONF_YEAR;
 
 // Check that mandatory subId and subPwd are specified
 $subId = (int) trim($_POST['subId']);
