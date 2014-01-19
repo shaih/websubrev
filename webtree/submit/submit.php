@@ -116,7 +116,7 @@ Comma-separated list with <b>at least one valid email address</b> of the form us
 </tr><tr>
 <tbody id="authorFields"> <!-- Grouping together the author-related fields -->
 <td style="text-align: right;"><small>(*)</small> Authors:</td>
-<td>List authors in the order they appear on the paper, using names of the form <tt>GivenName M. FamilyName</tt>.
+<td>List <b style="color: red;">one author per line</b>, in the order they appear on the paper, using names of the form <tt>GivenName M. FamilyName</tt>.
 <ol class="authorList compactList">
   <li class="oneAuthor">
   Name:<input name="authors[]" size="42" type="text" class="author required"/>,
@@ -124,7 +124,7 @@ Comma-separated list with <b>at least one valid email address</b> of the form us
   <input type='hidden' name='authID[]' class='authID'/></li>
 
 EndMark;
-$nAuthors = empty($_GET['nAuthors'])? 3: intval(trim($_GET['nAuthors']));
+$nAuthors = empty($_GET['nAuthors'])? 5: intval(trim($_GET['nAuthors']));
 
 while (--$nAuthors > 0) { // pre-decrement since we printed one already
   print '  <li class="oneAuthor">
