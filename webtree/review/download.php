@@ -48,7 +48,7 @@ else if ($fmt=='odp') $mimeType = 'application/vnd.oasis.opendocument.presentati
 if (isset($_GET['attachment'])) {
   $fileName = SUBMIT_DIR."/attachments/$fileName";
 } else if (isset($_GET['final'])
-	   && (PERIOD>=PERIOD_CAMERA) && ($pcMember[0]==CHAIR_ID)) {
+	   && (PERIOD>=PERIOD_CAMERA) && is_chair($pcMember[0])) {
   $fileName = SUBMIT_DIR."/final/$subId.$fmt";
 } else {
   $fileName = SUBMIT_DIR."/$subId.$fmt";
