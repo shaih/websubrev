@@ -67,6 +67,7 @@ if ($subId > 0 && !empty($subPwd)) {
     $optin = $flags & FLAG_IS_CHECKED;
   }
 }
+else $subId=$subPwd='';
 
 $affRequired= (defined('USE_AFFILIATIONS')&& USE_AFFILIATIONS)? ' required':'';
 

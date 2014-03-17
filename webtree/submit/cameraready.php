@@ -31,6 +31,8 @@ if (!empty($subId) && !empty($subPwd)) {
     exit("<h1>Non-Existent Accepted Submission</h1>\n"
 	 . "No accepted submission with ID $subId and password $subPwd found");
   }
+  $subId = (int) $subId;
+  $urlPrms = "?subId=$subId&subPwd=$subPwd";
   $subPwd = htmlspecialchars($subPwd);
   $title = htmlspecialchars($row[0]);
   $authors  = explode('; ',htmlspecialchars($row[1]));
@@ -42,8 +44,8 @@ if (!empty($subId) && !empty($subPwd)) {
   $eprint =  htmlspecialchars($row[7]);
   $authorIDs     = explode('; ',htmlspecialchars($row[8]));
   if ($nPages <= 0) $nPages = '';
-  $urlPrms = "?subId=$subId&subPwd=$subPwd";
 }
+else $subId=$subPwd='';
 
 // If authors need to submit a copyright file but didn't, ask them to
 $file = SUBMIT_DIR."/final/copyright.html";

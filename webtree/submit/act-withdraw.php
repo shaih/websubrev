@@ -21,6 +21,7 @@ if (defined('CAMERA_PERIOD')) {
 // Read fields, stripping spurious white-spaces
 $subId = (int)$_POST['subId'];
 $subPwd = trim($_POST['subPwd']);
+$htmlPwd = htmlspecialchars($subPwd);
 
 // Check that mandatory subID and subPwd are specified
 if (empty($subId) || empty($subPwd))
@@ -32,7 +33,7 @@ $qry = "SELECT title, authors, contact FROM {$SQLprefix}submissions WHERE subId=
 $res=pdo_query($qry, array($subId,$subPwd));
 $row=$res->fetch(PDO::FETCH_NUM)
   or exit("<h1>Withdrawal Failed</h1>
-           No submission with ID $subId and password $subPwd was found.");
+           No submission with ID $subId and password $htmlPwd was found.");
 
 $ttl = $row[0];
 $athr = $row[1];

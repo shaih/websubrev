@@ -11,6 +11,9 @@ $confName = CONF_SHORT . ' ' . CONF_YEAR;
 $subId = isset($_GET['subId']) ? trim($_GET['subId']) : '';
 $subPwd = isset($_GET['subPwd']) ? trim($_GET['subPwd']) : '';
 
+$subId = htmlspecialchars($subId);
+$subPwd = htmlspecialchars($subPwd);
+
 if (defined('CAMERA_PERIOD')) {
   $chair = false;
   if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))

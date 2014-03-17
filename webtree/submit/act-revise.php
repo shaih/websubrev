@@ -231,6 +231,27 @@ if (PERIOD>=PERIOD_CAMERA) {
       $pdfFileName = SUBMIT_DIR."/$subId.pdf";
     if (file_exists($pdfFileName)) unlink($pdfFileName);
     move_uploaded_file($tmpFile, $pdfFileName);
+
+    // Stamp file if this is an IACR event
+    if (!empty($IACRdir) && HAVE_ZEND_PDF) { try {
+	require_once 'Zend/Pdf.php';
+	$font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_TIMES);
+	$pdf = Zend_Pdf::load($pdfFileName);
+	$pdfPage = $pdf->pages[0];
+	$pdfPage->setFont($font, 9);
+
+	$line1 = "© IACR ".date('Y').". This article is the final version submitted by the author(s) to the IACR and";
+	$line2 = "to Springer-Verlag on ".date('F j, Y').". The version published by Springer-Verlag is available";
+	$line3 = "from http://link.springer.com/bookseries/558.";
+
+	$pdfPage->drawText($line1, 40, 50, 'UTF-8');
+	$pdfPage->drawText($line2, 40, 34, 'UTF-8');
+	$pdfPage->drawText($line3, 40, 18, 'UTF-8');
+
+	// Save document to same file (just appending new data)
+	$pdf->save($pdfFile, true);
+      } catch(Exception $e) {} // do nothing on failure
+    }
   }
 
   if (!empty($eprint)) {

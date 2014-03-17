@@ -23,6 +23,7 @@ if ($subId > 0 && !empty($subPwd)) {
   $qry = "SELECT title, authors FROM {$SQLprefix}submissions WHERE subId=? AND subPwd=? AND status='Accept'";
   $res=pdo_query($qry, array($subId,$subPwd));
   if ($row=$res->fetch(PDO::FETCH_NUM)) {
+    $subId = (int) $subId;
     $subPwd = htmlspecialchars($subPwd);
     $title = htmlspecialchars($row[0]);
     $authors  = htmlspecialchars($row[1]);
@@ -30,6 +31,8 @@ if ($subId > 0 && !empty($subPwd)) {
   }
   else $subId = $subPwd = '';
 }
+else $subId = $subPwd = '';
+
 $substitutions = array
   ('[$title]' => $title,
    '[$confName]' => $confName,
