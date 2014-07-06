@@ -50,7 +50,7 @@ function checkform(e) // jquery function, e is the onsubmit event
       var frstAuth = authList.first().find('input.author');
       var frstName = frstAuth.val();
       // check if the first author name contains a list
-      if (frstName.indexOf(' and ')>=0 || frstName.indexOf(';')>=0) {
+      if (frstName.indexOf(' and ')>=0 || frstName.indexOf(';')>=0 || frstName.indexOf(',')>=0) {
 	frstAuth.focus();
 	var conf = confirm('First author-name appears to be a list, are you sure you have one author-name per line?');
 	if (conf != true) e.preventDefault();

@@ -293,5 +293,10 @@ Good luck with your conference.
 
 EndMark;
 mail($sndTo, $sbjct, $msg, $hdr);
+
+if (file_exists($SUBMIT_DIR.'/copyright.html')) {
+  rename($SUBMIT_DIR.'/copyright.html', $SUBMIT_DIR.'/final/copyright.html');
+}
+
 header("Location: customize.php?username=$chairEmail&password=$chrPwd");
 ?>
