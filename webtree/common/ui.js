@@ -28,6 +28,10 @@ function savingNote(text)
 function checkform(e) // jquery function, e is the onsubmit event
 {
   var errors = 0;
+  if (typeof noCheck !== 'undefined' && noCheck) { // avoid check
+    noCheck=false;
+    return true;
+  }
   $(".notice").remove();
   $(this).find('.required').map(function() { // check required fields
     if( !$(this).val() ) {

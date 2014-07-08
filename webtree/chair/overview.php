@@ -40,6 +40,7 @@ while ($row = $res->fetch(PDO::FETCH_NUM)) {
   list($subId, $revId, $nPosts) = $row; 
   if ($nPosts==0) continue; // no posts
   if (!isset($subRevs[$subId])) $subRevs[$subId] = array();
+  if (!isset($subRevs[$subId][$revId])) $subRevs[$subId][$revId] = new matrixEntry();
   $subRevs[$subId][$revId]->posts = true;
 }
 
