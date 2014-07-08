@@ -5,7 +5,8 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-  $needsAuthentication=true;
+$needsAuthentication=true;
+
 require 'header.php'; // defines $pcMember=array(id, name, ...)
 $revId  = (int) $pcMember[0];
 $revName= htmlspecialchars($pcMember[1]);
@@ -16,7 +17,7 @@ if (isset($_GET['subId'])) { $subId = (int) trim($_GET['subId']); }
 else exit("<h1>No Submission specified</h1>");
 
 $qry ="SELECT s.title, s.authors, s.abstract, s.category, s.keyWords,
-       s.format, a.assign, a.watch, r.revId, s.affiliations
+       s.format, a.assign, a.watch, r.revId, s.affiliations, s.format
     FROM {$SQLprefix}submissions s
        LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId
        LEFT JOIN {$SQLprefix}reports r ON r.revId=? AND r.subId=s.subId
@@ -89,6 +90,23 @@ if (isset($submission['revId'])) {// PC member already reviewed this submission
   $revText = $reviewIcon;
 }
 
+// If allowing multiple uploaded versions, show a list
+$versions = '';
+$fmt = empty($submission['format'])? '' : ".".$submission['format'];
+$ver = 1;
+while (true) {
+  $fullName = SUBMIT_DIR."/".$subId."-".$ver.$fmt;
+  if (file_exists($fullName)) {
+    $versions .= "<li><a href=\"download.php?subId={$subId}&ver={$ver}\">"
+      . date("F d Y, H:i:s (T)", filemtime($fullName)). "</a></li>\n";
+    $ver++;
+  }
+  else break;
+}
+if (!empty($versions)) {
+  $versions = "<b>Older Versions (since the deadline):</b><ol>\n".$versions."</ol><hr/>\n";
+}
+
 $links = show_rev_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -135,6 +153,7 @@ $discussLine
 $toggleWatch
 </center>
 <hr />
+$versions
 $links
 </body>
 </html>

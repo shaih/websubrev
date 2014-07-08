@@ -14,7 +14,9 @@ define('FLAG_EML_HDR_X_MAILER', 16);
 define('FLAG_EML_EXTRA_PRM', 32);
 define('FLAG_SSL', 64);
 define('FLAG_REV_ATTACH', 128);
-define('FLAG_REBUTTAL_ON', 256);
+define('FLAG_REBUTTAL_ON', 0x100);
+define('FLAG_REVISE_AFTER_DEADLINE', 0x200);
+define('FLAG_SEND_POSTS_BY_EMAIL', 0x400);
 
 //Flags for tags
 define('FLAGS_STICKY_TAG', 1);

@@ -5,7 +5,9 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-//exit("<pre>".print_r($_POST,true)."</pre>");
+//if (defined('REVISE_AFTER_DEADLINE') && REVISE_AFTER_DEADLINE)
+//  $bypassAuth = true; // allow access to this script even after the deadline
+
 require 'header.php'; // brings in the contacts file and utils file
 $confName = CONF_SHORT . '_' . CONF_YEAR;
 
@@ -184,17 +186,33 @@ else { // Hmm.. nothing has changed, why are we here?
 // If a new file is specified, copy old submission file for backup
 // and rename new submission file to $subId.$fileFormat
 if (!empty($sbFileName)) {
-  $oldName = $subId . (empty($oldFrmt) ? "" : ".$oldFrmt");
+  $directory = (PERIOD>=PERIOD_CAMERA) ? SUBMIT_DIR."/final" : SUBMIT_DIR;
+
+  if (!empty($oldFrmt)) $oldFrmt = ".".$oldFrmt;
+  $oldName = $subId . $oldFrmt;
+  $old2rename = SUBMIT_DIR."/backup/$oldName";
+
   $newName = $subId . (empty($fileFormat) ? "" : ".$fileFormat");
+
+  // If allowing multiple uploaded versions, determine the backup name
+  if (PERIOD==PERIOD_REVIEW && 
+      defined('REVISE_AFTER_DEADLINE') && REVISE_AFTER_DEADLINE) {
+    $ver = 1;
+    while (true) {
+      $oldFullName = $directory."/".$subId."-".$ver.$oldFrmt;
+      if (file_exists($oldFullName)) $ver++;
+      else {
+	$old2rename = $oldFullName;
+	break;
+      }
+    }
+  }
 
   // Save a backup copy of the old file and store the new one
 
-  if (file_exists(SUBMIT_DIR."/backup/$oldName"))
-    unlink(SUBMIT_DIR."/backup/$oldName");  // just in case
-
-  $directory = (PERIOD>=PERIOD_CAMERA) ? SUBMIT_DIR."/final" : SUBMIT_DIR;
+  if (file_exists($old2rename)) unlink($old2rename);  // just in case
   if (file_exists("$directory/$oldName"))
-    rename("$directory/$oldName", SUBMIT_DIR."/backup/$oldName");
+    rename("$directory/$oldName", $old2rename);
 
   if ($newName!=$oldName && file_exists("$directory/$newName"))
     unlink("$directory/$newName");

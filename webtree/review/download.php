@@ -25,6 +25,11 @@ if (isset($_GET['all_in_one'])) {
 }
 $fmt = strtolower($fmt);
 
+if (isset($_GET['ver']) && $_GET['ver']>0)
+  $ver = "-".((int)$_GET['ver']);
+else
+  $ver = "";
+
 // Find the MIME type of this format
 $mimeType = NULL;
 if (is_array($confFormats) && isset($confFormats[$fmt]))
@@ -48,17 +53,17 @@ else if ($fmt=='odp') $mimeType = 'application/vnd.oasis.opendocument.presentati
 if (isset($_GET['attachment'])) {
   $fileName = SUBMIT_DIR."/attachments/$fileName";
 } else if (isset($_GET['final'])
-	   && (PERIOD>=PERIOD_CAMERA) && is_chair($pcMember[0])) {
+	   && (PERIOD>=PERIOD_CAMERA) && ($pcMember[0]==CHAIR_ID)) {
   $fileName = SUBMIT_DIR."/final/$subId.$fmt";
 } else {
-  $fileName = SUBMIT_DIR."/$subId.$fmt";
+  $fileName = SUBMIT_DIR."/$subId{$ver}.$fmt";
 }
 if (!file_exists($fileName)) {
   exit("<h1>File not found</h1>");
 }
 
 if (!empty($mimeType))  header("Content-Type: $mimeType");
-header("Content-Disposition: inline; filename=\"$subId.$fmt\"");
+header("Content-Disposition: inline; filename=\"$subId{$ver}.$fmt\"");
 header('Content-Transfer-Encoding: binary');
 header('Content-Length: ' . filesize($fileName));
 ob_clean();

@@ -5,6 +5,9 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
+//if (defined('REVISE_AFTER_DEADLINE') && REVISE_AFTER_DEADLINE)
+//  $bypassAuth = true; // allow access to this script even after the deadline
+
 require 'header.php'; // brings in the constants and utils files
 
 // Camera-ready revisions are now done from cameraready.php
@@ -13,7 +16,7 @@ if (PERIOD>=PERIOD_CAMERA) { // redirect to camera-ready interface
   exit();
 }
 
-$chairNotice = (PERIOD>PERIOD_SUBMIT)? "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n": '';
+$chairNotice = (PERIOD>PERIOD_SUBMIT && !isset($bypassAuth))? "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n": '';
 
 if (USE_PRE_REGISTRATION) { // if pre-registration is required
   $submit = 'Submit/';
@@ -125,18 +128,18 @@ $timeleft</h3>
 <input type="hidden" name="referer" value="revise.php">
 <table cellspacing="6">
 <tr><td style="text-align: right;"><small>(*)</small>&nbsp;Submission&nbsp;ID:</td>
-  <td><input name="subId" size="4" type="text" value="$subId">
+  <td><input name="subId" size="4" type="text" value="$subId" class="required">
     The submission-ID, as returned when the paper was first $submitted.</td>
 </tr><tr>
   <td style="text-align: right;"><small>(*)</small> Password:</td>
-  <td><input name="subPwd" size="11" value="$subPwd" type="text">
+  <td><input name="subPwd" size="11" value="$subPwd" type="text" class="required">
     The password that was returned with the original $submission.</td>
 </tr>
 EndMark;
 
 if (empty($subId) || empty($subPwd)) {// put button to Load submission details
   print '<tr>
-  <td></td><td><input value="Reload Form with Submission Details (Submission-ID and Password must be specified)" type="submit" name="loadDetails">
+  <td></td><td><input value="Reload Form with Submission Details (Submission-ID and Password must be specified)" type="submit" name="loadDetails" onclick="return (noCheck=true);"
     (<a href="../documentation/submitter.html#revise" target="documentation" title="this button reloads the revision form with all the submission details filled-in">what\'s this?</a>)</td>
 </tr>';
 }

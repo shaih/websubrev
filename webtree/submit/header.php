@@ -32,7 +32,7 @@ if (isset($allow_rebuttal) && $allow_rebuttal) { // Check that rebuttal is open
   }
 }
 else { // For anything other than rebuttal, check that it is allowed
-  if (PERIOD>PERIOD_SUBMIT && PERIOD!=PERIOD_CAMERA && !isset($downloadOnly)) {   // only the chair
+  if (PERIOD>PERIOD_SUBMIT && PERIOD!=PERIOD_CAMERA && !isset($bypassAuth)) {   // only the chair
     if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
       $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
 			      $_SERVER['PHP_AUTH_PW'], chair_ids());

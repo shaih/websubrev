@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-$downloadOnly = true; // allow access to this script even after the deadline
+$bypassAuth = true; // allow access to this script even after the deadline
 if(isset($_GET['attachment']))
   $allow_rebuttal = true;
 

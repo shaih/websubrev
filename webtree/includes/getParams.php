@@ -119,6 +119,8 @@ define('EML_CRLF', (($confFlags & FLAG_EML_HDR_CRLF)?"\n":"\r\n"));
 define('EML_X_MAILER', (($confFlags & FLAG_EML_HDR_X_MAILER)?true:false));
 define('EML_EXTRA_PRM', (($confFlags & FLAG_EML_EXTRA_PRM)?true:false));
 if ($confFlags & FLAG_SSL) define('HTTPS_ON', true);
+define('REVISE_AFTER_DEADLINE', (($confFlags & FLAG_REVISE_AFTER_DEADLINE)?true:false));
+define('SEND_POSTS_BY_EMAIL', (($confFlags & FLAG_SEND_POSTS_BY_EMAIL)?true:false));
 
 define('EML_SENDER', (isset($row['emlSender'])?$row['emlSender']:NULL));
 define('TIME_SHIFT', intval($row['timeShift']));
