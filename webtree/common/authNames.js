@@ -47,23 +47,35 @@ function changeID()
 function moreAuthors(e)
 {
   e.preventDefault();
+  var n2add = 1; // how many authors to add
+  if (typeof(e.data.n2add) != 'undefined') n2add = parseInt(e.data.n2add);
+
   var nAuthors = parseInt(this.rel,10);  // how many authors we have so far
   // find the last author
   var lastAuthor = $(this).prev('.authorList').children('li:last-child');
   // alert(lastAuthor.prop("nodeName"));
-  var newAuthor = lastAuthor.clone(false); // add another author
-  newAuthor.children().removeClass('required error'); // not required nor error
-  newAuthor.find('.author').autocomplete(autoComParams); // set autocomplete
-  newAuthor.find('input,hidden').val(''); // remove input values
-  newAuthor.insertAfter(lastAuthor); // finally place it after the last one
-
-  this.rel = nAuthors +1;  // update the link
-  setLastURLparam($(this),nAuthors+4);
+  for (var i=0; i<n2add; i++) {
+    var newAuthor = lastAuthor.clone(false); // add another author
+    newAuthor.children().removeClass('required error');// not required nor error
+    newAuthor.find('input,hidden').val(''); // remove input values
+    newAuthor.find('.ui-helper-hidden-accessible').remove();// remove helper if exists
+    newAuthor.find('.author').autocomplete(autoComParams); // set autocomplete
+    newAuthor.insertAfter(lastAuthor); // finally place it after the last one
+    lastAuthor = newAuthor;
+  }
+  nAuthors += n2add
+  this.rel = nAuthors;
+  setLastURLparam($(this),nAuthors+n2add); // update the link
 }
 
 function setHandlers($)
 {
-  $('.moreAuthors').click(moreAuthors);     // add more authors
+  var nToAdd = 1; // how many fields to add when clicking the more-authors link
+  if (typeof(numToAdd) != 'undefined') {
+      nToAdd = numToAdd; // if this was defined externally, then use it
+  }
+
+  $('.moreAuthors').click({'n2add':nToAdd},moreAuthors); // add more authors
   $('.author').autocomplete(autoComParams); // autocomplete author names
   $('.authID').change(changeID);            // update link with authID param
 }
