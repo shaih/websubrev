@@ -27,6 +27,9 @@ while($subs = $res->fetch(PDO::FETCH_ASSOC)) {
     $auth = ' ('.htmlspecialchars($subs['authors']).')';
   $options .="<option value='".$subs['subId']."'>".$subs['subId'].'. '.$subs['title'].$auth." </option>";
 }
+$prot = (defined('HTTPS_ON')||isset($_SERVER['HTTPS']))? 'https' : 'http';
+$guidelineURL = "$prot://".BASE_URL."review/guidelines.php";
+
 $links = show_rev_links(2);
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
@@ -67,7 +70,10 @@ Comma separated list of subreviewer emails, e.g. <tt>person1@university.edu, per
 </td></tr>
 </tbody></table>
 
-Email body:<br> <textarea cols='80' rows ='10' name="emailBody"></textarea>
+Email body:<br> <textarea cols='80' rows ='10' name="emailBody">
+The review guidelines are available at
+  $guidelineURL
+</textarea>
 
 
 <h4>Select submission to attach to the email.</h4>
