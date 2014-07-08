@@ -132,6 +132,15 @@ function manage_reviews($period)
       $qry = "SELECT COUNT(*) FROM {$SQLprefix}submissions WHERE status!='Withdrawn' AND format IS NULL";
       if (pdo_query($qry)->fetchColumn()>0) $purgeLink = '<a href="purgeNonSubmissions.php">Purge submissions that did not upload a submission file</a><br/>';
     }
+
+    // Check if there are email-to-authors that needs approval
+    $approveEmails = '';
+    if (defined('SEND_POSTS_BY_EMAIL') && SEND_POSTS_BY_EMAIL) {
+      $qry = "SELECT COUNT(*) FROM {$SQLprefix}misc WHERE type=1";
+      if (pdo_query($qry)->fetchColumn()>0) 
+	$approveEmails = '<a href="approveEmails.php">Approve email messages to authors</a><br/>';
+    }
+
 print <<<EndMark
 <h3><span style="background-color: red;">Review Site is Active</span></h3>
 <dl>
@@ -161,7 +170,7 @@ print <<<EndMark
 <dd><a href="rebuttal.php">Open/close Rebuttal</a>
     (<b>deadline is not enforced automatically</b>)</dd>
 <dd><a href="sendComments.php">Generate comments letters...</a></dd>
-<dd><br/></dd>
+<dd>$approveEmails<br/></dd>
 
 <dt><strong>Wrap-up</strong>
 <dd><a href="../review/listReviews.php?ignoreWatch=on&amp;withReviews=on&amp;withDiscussion=on&amp;format=ascii" target="_blank">A full list of all the reviews and discussions (text)</a>

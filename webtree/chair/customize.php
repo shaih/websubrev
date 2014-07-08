@@ -202,6 +202,20 @@ Jordan, Michael &lt;Air-Jordan@nike.com&gt;</textarea><br/>
   format <tt>Name(max-val)</tt>.<br/><b>Do not add</b> <tt>Confidence(X)</tt>
   above, a field <tt>Confidence(3)</tt> is hard-wired in the software.</td>
 </tr>
+<tr>
+  <td class=rjust>See&nbsp;all&nbsp;revisions:</td>
+  <td><input name="lateRevisions" type="checkbox">
+    If checked, reviewers can see all the versions that were uploaded after
+    the deadline.<br/>Otherwise only the latest version is visible to reviewers.
+</tr>
+<tr>
+  <td class=rjust>External&nbsp;communications:</td>
+  <td><input name="sendPostByEmail" type="checkbox">
+    Check to give reviewers a link for sending discussion items to authors
+    and sub-reviewers.<br/>
+    (Communication with authors is moderated by the chair, emails to
+     sub-reviewers are send directly.)
+</tr>
 <tr><td colspan="2" class=rjust><hr /></td></tr>
 <!-- ================= The Submit Button =================== -->
 <tr><td colspan="2" class=ctr><input value="   Submit   " type="submit"></td>

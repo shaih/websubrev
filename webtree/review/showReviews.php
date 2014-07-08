@@ -291,6 +291,7 @@ EndMark;
 function show_posts($postsArray, $subId, $threaded=true, 
 		    $lastSaw=0, $pageWidth=720, $closeLast=true)
 {
+  global $isChair;
   // exit("<pre>".print_r($postsArray, true)."</pre>");
   if (!is_array($postsArray)) return '';
 
@@ -354,6 +355,9 @@ function show_posts($postsArray, $subId, $threaded=true,
       $editPostLink = ' <a target=_blank href="editPost.php?postId='.$post['postId'].'"><small>[Edit] </small></a>';
     }
     else $editPostLink = '';
+    if (($isChair || $post['mine']) && SEND_POSTS_BY_EMAIL)
+      $sendByEmail = ' <a target="_blank" href="sendPost.php?pid='.$pid.'"><img height="14" src="../common/mail_replayall.png" title="Send this comment by email" alt="[eml]" border="1"></a>';
+    else $sendByEmail = "";
     $cmnts = trim($post['comments']);
     $cmnts = (empty($cmnts)) ? '<br/>'
       : nl2br(htmlspecialchars($cmnts)).'<br/><br/>';
@@ -369,7 +373,7 @@ function show_posts($postsArray, $subId, $threaded=true,
 $nameWhen $reply
 </div>
 $startHere<a name="p$pid"> </a>
-&#8722;&nbsp;<span class="sbjct">$sbjct</span>$editPostLink
+&#8722;&nbsp;<span class="sbjct">$sbjct</span>{$sendByEmail}{$editPostLink}
 
 <div style="position: relative; left: 12px; top:6px;">
 $cmnts

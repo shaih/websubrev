@@ -315,16 +315,33 @@ $dbTables = array(
     startFrom enum('scratch','current','file') NOT NULL default 'current',
     PRIMARY KEY (idx)",
 
-  // We support attaching tags to submissions for various purposes.
+  // We support attaching tags to submissions for various purposes. The type
+  // field is either the reviewer-ID for a private tag, zero for a public tag,
+  // or -1 for a chair-only tag
   'tags' =>
-   "tagName varchar(32),
+   "tagName varchar(128),
     subId smallint,
     type  smallint,
     flags bigint DEFAULT 0,
     param varchar(255) DEFAULT '',
     description varchar(255) DEFAULT '',
     PRIMARY KEY (tagName,subId,type),
-    KEY (subId)"
+    KEY (subId)",
+
+  // A catch-all table for storing "other things" in the database.
+  // The defined type field values are:
+  //   1 - messages to be sent by email to authors upon chair approval
+  //   2 - messages awaiting reply from authors
+  //   3 - messages awaiting reply from sub-reviewers
+  'misc' =>
+   "id smallint NOT NULL auto_increment,
+    subId smallint,
+    revId smallint,
+    type smallint,
+    numdata int,
+    textdata text,
+    PRIMARY KEY (id),
+    KEY (type,numdata)"
 );
 
 function create_tabels($db, $prefix='')

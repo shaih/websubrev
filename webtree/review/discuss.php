@@ -104,9 +104,11 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
 // to zero and is later set by the logic in make_post_array().)
 
 $qry = "SELECT 0 AS depth, postId, parentId, subject, comments, 
-  UNIX_TIMESTAMP(whenEntered) whenEntered, pc.name name, (pst.revId=?) mine
+  UNIX_TIMESTAMP(whenEntered) whenEntered,
+  pc.name name, (pst.revId=?) mine, pst.revId revId
   FROM {$SQLprefix}posts pst, {$SQLprefix}committee pc
-  WHERE pst.subId=? AND pc.revId=pst.revId ORDER BY whenEntered";
+  WHERE pst.subId=? AND pc.revId=pst.revId AND (subject IS NOT NULL OR comments IS NOT NULL)
+  ORDER BY whenEntered";
 $res = pdo_query($qry,array($revId,$subId));
 $posts = array();
 if ($threaded) make_post_array($res, $posts);

@@ -58,6 +58,14 @@ if (($maxGrade < 2) || ($maxGrade > 9)) { $maxGrade =6; }
 
 $crList = isset($_POST['criteria']) ? explode(';', $_POST['criteria']) : NULL;
 
+$lateRevisions = isset($_POST['lateRevisions']) ?
+  'PC members see all late revisions' :
+  'PC members see only latest versions';
+
+$sendPosts = isset($_POST['sendPostByEmail']) ?
+  'PC members have links for external communications':
+  'PC members do not have links for external communications';
+
 // Check that the required fileds are specified
 
 if (empty($longName)|| empty($shortName)|| empty($confYear) || empty($chairs)) {
@@ -281,6 +289,8 @@ print <<<EndMark
 <tr><td colspan="2">$anonymous</td></tr>
 <tr><td colspan="2">$revPrefs</td></tr>
 <tr><td colspan="2">$revAttach</td></tr>
+<tr><td colspan="2">$lateRevisions</td></tr>
+<tr><td colspan="2">$sendPosts</td></tr>
 <tr><td class=rjust>Overall&nbsp;Score:</td><td><b>From 1 to $maxGrade</b></td>
 </tr>
 <tr><td class=rjust>Confidence&nbsp;Level:</td><td><b>From 1 to 3</b></td>
@@ -368,6 +378,12 @@ if (isset($_POST['revPrefs'])) {
 }
 if (isset($_POST['revAttach'])) {
   print "<input name=\"revAttach\" type=\"hidden\" value=\"on\">\n";
+}
+if (isset($_POST['lateRevisions'])) {
+  print "<input name=\"lateRevisions\" type=\"hidden\" value=\"on\">\n";
+}
+if (isset($_POST['sendPostByEmail'])) {
+  print "<input name=\"sendPostByEmail\" type=\"hidden\" value=\"on\">\n";
 }
 
 print "<input name=\"maxGrade\" type=\"hidden\" value=\"$maxGrade\">\n";

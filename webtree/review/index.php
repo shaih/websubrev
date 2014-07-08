@@ -66,7 +66,7 @@ tr { vertical-align: top; }
 <title>$confName Review homepage for $revName</title>
 <script type="text/javascript" src="{$JQUERY_URL}"></script>
 <script type="text/javascript" src="../common/ui.js"></script>
-<script type="text/javascript" src="toggleImage.js"></script>
+<script type="text/javascript" src="toggleMarkRead.js"></script>
 </head>
 <body>
 $message
@@ -182,6 +182,9 @@ function show_message()
 {
   if (isset($_GET['newPwd']) && $_GET['newPwd']=='ok') {
     return '<div style="text-align: center; color: red;">Password successfully changed</div>';
+  }
+  if (isset($_GET['sentMsg'])) {
+    return '<div style="text-align: center; color: red;">Message sent or stored</div>';
   }
 
   return '';
