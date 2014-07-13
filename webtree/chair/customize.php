@@ -203,13 +203,13 @@ Jordan, Michael &lt;Air-Jordan@nike.com&gt;</textarea><br/>
   above, a field <tt>Confidence(3)</tt> is hard-wired in the software.</td>
 </tr>
 <tr>
-  <td class=rjust>See&nbsp;all&nbsp;revisions:</td>
+  <td class=rjust><a href="../documentation/chair.html#LateRevisions" target="documentation" title="click for more help">See&nbsp;all&nbsp;revisions:</a></td>
   <td><input name="lateRevisions" type="checkbox">
     If checked, reviewers can see all the versions that were uploaded after
     the deadline.<br/>Otherwise only the latest version is visible to reviewers.
 </tr>
 <tr>
-  <td class=rjust>External&nbsp;communications:</td>
+  <td class=rjust><a href="../documentation/chair.html#sendPostByEmail" target="documentation" title="click for more help">External&nbsp;communications:</a></td>
   <td><input name="sendPostByEmail" type="checkbox">
     Check to give reviewers a link for sending discussion items to authors
     and sub-reviewers.<br/>
