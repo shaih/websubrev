@@ -10,6 +10,7 @@ require 'header.php';
 
 if (isset($_POST['tweakSettings'])) {
   $timeShift = isset($_POST['timeShift'])? intval($_POST['timeShift']): 0;
+  $newFlags = CONF_FLAGS;
 
   if (isset($_POST['emlCrlf']) && $_POST['emlCrlf']==1) // use LF
     $newFlags |= FLAG_EML_HDR_CRLF;
