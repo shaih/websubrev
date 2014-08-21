@@ -44,7 +44,7 @@ elseif ($type==2) { // get email address from database
   $sendTo = pdo_query($qry)->fetchColumn();
 }
 
-if (!$isChair) $revId = chair_ids()[0];
+if (!$isChair) $revId = $CHAIR_IDS[0];
 $qry = "INSERT INTO {$SQLprefix}misc (subId,revId,type,numdata) VALUES ($subId,$revId,$type,$pid)";
 if (!isset($db)) $db = pdo_connect();
 $db->exec($qry);
