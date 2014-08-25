@@ -196,6 +196,19 @@ If the list above is not empty, it will replace the curret author list even if t
 
 EndMark;
 
+if (CONF_FLAGS & FLAG_AUX_MATERIAL) {
+  print <<<EndMark
+<tr><td style="text-align: right;">
+  Supporing&nbsp;Material:</td>
+  <td><input name="auxMaterial" size="70" type="file"><br/>
+      Auxilieary supporting material (code, data, proofs, etc.).
+      (<a target="_blank" href="../documentation/submitter.html#submit">what&prime;s this?</a>)
+  <br/></td>
+</tr>
+
+EndMark;
+}
+
 if (is_array($categories) && (count($categories)>1)) {
   $select = empty($category) ? 'selected="selected" ' : '';
   print '  <tr>

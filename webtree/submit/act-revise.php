@@ -48,6 +48,12 @@ if (isset($_FILES['sub_file'])) {
 }
 else $fileSize = $tmpFile = $sbFileName = NULL;
 
+if (isset($_FILES['auxMaterial'])) {
+  $auxFileType = file_extension($_FILES['auxMaterial']['name']);
+  $auxTmpFile = $_FILES['auxMaterial']['tmp_name'];
+}
+else $auxFileType = NULL;
+
 // convert arrays to semi-colon separated lists
 list($author,$affiliations,$authIDs) = arraysToStrings($author,$affiliations,$authIDs);
 
@@ -84,6 +90,7 @@ if ((PERIOD>=PERIOD_CAMERA) && $row['status']!='Accept') {
 $oldStatus= $row['status'];
 $oldCntct = $row['contact'];
 $oldFrmt = $row['format'];
+$oldAux = $row['auxMaterial'];
 
 /***** User input vaildated. Next prepare the MySQL query *****/
 
@@ -168,6 +175,11 @@ if (!empty($sbFileName)) {
   }
 }
 
+if (isset($auxFileType)) {
+  $updts .= "auxMaterial=?,";
+  $prms[] = $auxFileType;
+}
+
 // If anything changed, insert changes into the database
 if (!empty($updts) || isset($_POST['reinstate'])) {
   if ((PERIOD<=PERIOD_SUBMIT) || isset($_POST['reinstate']) || $oldStatus=='Withdrawn')
@@ -226,6 +238,18 @@ if (!empty($sbFileName)) {
   if (PERIOD<PERIOD_CAMERA) { // mark new file as needing a stamp
     $qry = "UPDATE {$SQLprefix}submissions SET flags=(flags|".SUBMISSION_NEEDS_STAMP.") WHERE subId=?";
     pdo_query($qry, array($subId),"Cannot mark file as needing a stamp: ");
+  }
+}
+
+// Store auxiliary file if uploaded
+if (isset($auxFileType)) {
+  $auxFileName = SUBMIT_DIR."/{$subId}.aux.{$auxFileType}";
+  $auxOldFile = SUBMIT_DIR."/{$subId}.aux.{$oldAux}";
+  $auxBackFile = SUBMIT_DIR."/backup/{$subId}.aux.{$oldAux}";
+  if (file_exists($auxBackFile)) unlink($auxBackFile);  // just in case
+  rename($auxOldFile, $auxBackFile);
+  if (!move_uploaded_file($auxTmpFile, $auxFileName)) {
+    error_log(date('Ymd-His: ')."move_uploaded_file($auxTmpFile, $auxFileName) failed\n", 3, LOG_FILE);
   }
 }
 

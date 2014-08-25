@@ -6,6 +6,7 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
 
+//Flags for parameters
 define('FLAG_PCPREFS', 1);
 define('FLAG_ANON_SUBS', 2);
 define('FLAG_AFFILIATIONS', 4);
@@ -17,6 +18,7 @@ define('FLAG_REV_ATTACH', 128);
 define('FLAG_REBUTTAL_ON', 0x100);
 define('FLAG_REVISE_AFTER_DEADLINE', 0x200);
 define('FLAG_SEND_POSTS_BY_EMAIL', 0x400);
+define('FLAG_AUX_MATERIAL', 0x800);
 
 //Flags for tags
 define('FLAGS_STICKY_TAG', 1);
@@ -34,7 +36,7 @@ define('PERIOD_REVIEW', 3);
 define('PERIOD_CAMERA', 4);
 define('PERIOD_FINAL', 5);
 
-
+// Flags for voting
 define('FLAG_VOTE_ON_SUBS', 1);
 define('FLAG_VOTE_ON_ALL', 2);
 define('FLAG_VOTE_ON_RE', 4);
@@ -57,7 +59,7 @@ define('VOTE_ON_AC', 128);
 
 define('REPORT_NOT_DRAFT', 1);
 
-//Flag for submissions
+//Flags for submissions
 define('SUBMISSION_NEEDS_STAMP', 1);
 define('FLAG_IS_GROUP', 2);
 define('FLAG_IS_CHECKED', 4);
@@ -65,6 +67,7 @@ define('FLAG_CONSENT_SLIDES', 8);
 define('FLAG_CONSENT_VIDEO', 16);
 define('FLAG_CONSENT_OTHER', 32);
 define('FLAG_PCM_SUBMISSION', 64);
+define('FLAG_UPLOADED_FINAL', 128);
 
 /*
 //Kept as reference for colors

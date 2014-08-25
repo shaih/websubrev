@@ -41,6 +41,12 @@ if (isset($_FILES['sub_file'])) {
 }
 else $sbFileName = NULL;
 
+if (isset($_FILES['auxMaterial'])) {
+  $auxFileType = file_extension($_FILES['auxMaterial']['name']);
+  $auxTmpFile = $_FILES['auxMaterial']['tmp_name'];
+}
+else $auxFileType = NULL;
+
 // convert arrays to semi-colon separated lists
 list($author,$affiliations,$authIDs) = arraysToStrings($author,$affiliations,$authIDs);
 
@@ -103,6 +109,10 @@ if (!empty($comment)) {
 if (isset($fileFormat)) {
   $qry .= "format=?,";
   $prms[] = $fileFormat;
+}
+if (isset($auxFileType)) {
+  $qry .= "auxMaterial=?,";
+  $prms[] = $auxFileType;
 }
 if (isset($optin)) {
   $qry .= "flags=?,";
@@ -167,6 +177,13 @@ if (!empty($sbFileName)) {
     $qry = "UPDATE {$SQLprefix}submissions SET flags=(flags|?) WHERE subId=?";
     pdo_query($qry, array(SUBMISSION_NEEDS_STAMP,$subId),
 	     "Cannot mark file as needing a stamp: ");
+  }
+}
+// Store supported material as  $subId.aux.$fileFormat
+if (isset($auxFileType)) {
+  $auxFileName = SUBMIT_DIR."/{$subId}.aux.{$auxFileType}";
+  if (!move_uploaded_file($auxTmpFile, $auxFileName)) {
+    error_log(date('Ymd-His: ')."move_uploaded_file($auxTmpFile, $auxFileName) failed\n", 3, LOG_FILE);
   }
 }
 

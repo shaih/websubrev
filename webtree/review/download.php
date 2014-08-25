@@ -17,11 +17,11 @@ if (isset($_GET['all_in_one'])) {
   $fmt = file_extension($fileName);
 } else {
   $subId = (int) $_GET['subId'];
-  $qry = "SELECT format FROM {$SQLprefix}submissions WHERE subId=?";
+  $qry= "SELECT format, auxMaterial FROM {$SQLprefix}submissions WHERE subId=?";
   $res = pdo_query($qry, array($subId));
   $row = $res->fetch(PDO::FETCH_NUM)
     or die("<h1>Submission not found</h1>");
-  $fmt = $row[0];
+  $fmt = isset($_GET['aux'])? $row[1] : $row[0];
 }
 $fmt = strtolower($fmt);
 
@@ -29,6 +29,20 @@ if (isset($_GET['ver']) && $_GET['ver']>0)
   $ver = "-".((int)$_GET['ver']);
 else
   $ver = "";
+
+if (isset($_GET['attachment'])) {
+  $fileName = SUBMIT_DIR."/attachments/$fileName";
+} else if (isset($_GET['final'])
+	   && (PERIOD>=PERIOD_CAMERA) && is_chair($pcMember[0])) {
+  $fileName = SUBMIT_DIR."/final/$subId.$fmt";
+} else if (isset($_GET['aux'])) {
+  $fileName = SUBMIT_DIR."/$subId.aux.$fmt";
+} else {
+  $fileName = SUBMIT_DIR."/$subId{$ver}.$fmt";
+}
+if (!file_exists($fileName)) {
+  exit("<h1>File not found</h1>");
+}
 
 // Find the MIME type of this format
 $mimeType = NULL;
@@ -48,19 +62,6 @@ else if ($fmt=='html' || $fmt=='htm') $mimeType = 'text/html';
 else if ($fmt=='tex' || $fmt=='latex') $mimeType = 'application/x-tex';
 else if ($fmt=='odt') $mimeType = 'application/vnd.oasis.opendocument.text';
 else if ($fmt=='odp') $mimeType = 'application/vnd.oasis.opendocument.presentation';
-
-
-if (isset($_GET['attachment'])) {
-  $fileName = SUBMIT_DIR."/attachments/$fileName";
-} else if (isset($_GET['final'])
-	   && (PERIOD>=PERIOD_CAMERA) && is_chair($pcMember[0])) {
-  $fileName = SUBMIT_DIR."/final/$subId.$fmt";
-} else {
-  $fileName = SUBMIT_DIR."/$subId{$ver}.$fmt";
-}
-if (!file_exists($fileName)) {
-  exit("<h1>File not found</h1>");
-}
 
 if (!empty($mimeType))  header("Content-Type: $mimeType");
 header("Content-Disposition: inline; filename=\"$subId{$ver}.$fmt\"");

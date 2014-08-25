@@ -41,6 +41,10 @@ $f3mime = isset($_POST['format3mime']) ? trim($_POST['format3mime']): NULL;
 $chairs = isset($_POST['chair'])     ? explode(';',$_POST['chair']) : NULL;
 $cmte   = isset($_POST['committee']) ? explode(';',$_POST['committee']): NULL;
 
+$auxMaterial = isset($_POST['auxMaterial']) ?
+  'Authors can upload separate file for supported material' :
+  'Authors <b>cannot</b> upload separate file for supported material';
+
 $checktext = isset($_POST['checktext']) ? $_POST['checktext'] : "";
 
 $anonymous = isset($_POST['anonymous']) ?
@@ -261,6 +265,9 @@ else {
   print "  <td colspan=\"3\"><b>No Formats Recorded</b></td></tr>\n";
 }
 print <<<EndMark
+<tr><td style="text-align:right;">Auxiliary Material:</td>
+    <td>$auxMaterial</td>
+</tr>
 </tbody></table>
 
 <h2>Program Committee:</h2>     
@@ -384,6 +391,9 @@ if (isset($_POST['lateRevisions'])) {
 }
 if (isset($_POST['sendPostByEmail'])) {
   print "<input name=\"sendPostByEmail\" type=\"hidden\" value=\"on\">\n";
+}
+if (isset($_POST['auxMaterial'])) {
+  print "<input name=\"auxMaterial\" type=\"hidden\" value=\"on\">\n";
 }
 
 print "<input name=\"maxGrade\" type=\"hidden\" value=\"$maxGrade\">\n";

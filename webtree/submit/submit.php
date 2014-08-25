@@ -39,7 +39,20 @@ if (!USE_PRE_REGISTRATION) {
     The submission itself, in one of the supported formats ($supportedFormats).
   <br/></td>
 </tr>
+
 EndMark;
+  if (CONF_FLAGS & FLAG_AUX_MATERIAL) {
+    $subFileLine .=<<<EndMark
+<tr><td style="text-align: right;">
+  Supporing&nbsp;Material:</td>
+  <td><input name="auxMaterial" size="70" type="file"><br/>
+      Auxilieary supporting material (such code, data, proofs, etc.).
+      (<a target="_blank" href="../documentation/submitter.html#submit">what&prime;s this?</a>)
+  <br/></td>
+</tr>
+
+EndMark;
+  }
 } else {
   $ddline = REGISTER_DEADLINE;
   if (PERIOD>PERIOD_PREREG) {

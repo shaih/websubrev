@@ -57,9 +57,9 @@ if (count($committee) > 500) die("Cannot handle committees larger than 500");
 /* We are ready to start customizing the installation */
 
 $flags = CONF_FLAGS;
-$flags &= ~(FLAG_PCPREFS | FLAG_ANON_SUBS
-	    | FLAG_AFFILIATIONS | FLAG_SSL | FLAG_REV_ATTACH
-	    | FLAG_REVISE_AFTER_DEADLINE | FLAG_SEND_POSTS_BY_EMAIL);
+$flags &= ~(FLAG_PCPREFS | FLAG_ANON_SUBS | FLAG_AFFILIATIONS
+            | FLAG_SSL | FLAG_REV_ATTACH | FLAG_REVISE_AFTER_DEADLINE
+            | FLAG_SEND_POSTS_BY_EMAIL | FLAG_AUX_MATERIAL);
 if (isset($_POST['revPrefs']))  $flags |= FLAG_PCPREFS;
 if (isset($_POST['revAttach'])) $flags |= FLAG_REV_ATTACH;
 if (isset($_POST['anonymous'])) $flags |= FLAG_ANON_SUBS;
@@ -67,6 +67,7 @@ if (isset($_POST['affiliations'])) $flags |= FLAG_AFFILIATIONS;
 if (isset($_SERVER['HTTPS']))   $flags |= FLAG_SSL;
 if (isset($_POST['lateRevisions'])) $flags |= FLAG_REVISE_AFTER_DEADLINE;
 if (isset($_POST['sendPostByEmail'])) $flags |= FLAG_SEND_POSTS_BY_EMAIL;
+if (isset($_POST['auxMaterial'])) $flags |= FLAG_AUX_MATERIAL;
 
 $sc = $confFormats = '';
 for ($i=0; $i<$nFrmts; $i++) {

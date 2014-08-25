@@ -40,7 +40,7 @@ $condition = defined('CAMERA_PERIOD') ? "status='Accept'"
                                       : "status!='Withdrawn'";
 
 $qry = "SELECT subId, title, authors, affiliations, contact, abstract, 
-     category, keyWords, comments2chair, format, subPwd, status
+     category, keyWords, comments2chair, format, auxMaterial, subPwd, status
   FROM {$SQLprefix}submissions WHERE {$condition} ORDER BY $subOrder";
 $res = pdo_query($qry);
 $subArray = $res->fetchAll(PDO::FETCH_ASSOC);
@@ -87,8 +87,14 @@ foreach($subArray as $sb) {
     $isFinal = '';
   }
   $reviewTime = defined('REVIEW_PERIOD') ? REVIEW_PERIOD : false;
-  if (!$reviewTime && file_exists($downld))
-       $downld = '<a href="../review/download.php?subId='.$subId.$isFinal.'" title="download"><img src="../common/download.gif" alt="download" border=0></a>';
+  if (!$reviewTime && file_exists($downld)) {
+    $downld = '<a href="../review/download.php?subId='.$subId.$isFinal.'" title="download"><img src="../common/download.gif" alt="download" border=0></a>';
+    if (!$isFinal && isset($sb['auxMaterial'])) {
+      $aux = SUBMIT_DIR."/$subId.aux.".$sb['auxMaterial'];
+      if (file_exists($aux))
+	$downld .= '<a href="../review/download.php?subId='.$subId.'&amp;aux=yes" title="download supporting material"><img src="../common/auxi.gif" alt="Aux" border=0></a>';
+    }
+  }
   else $downld = '';
 
   if ($countByCat) {

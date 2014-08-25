@@ -16,8 +16,8 @@ $isChair = is_chair($revId);
 if (isset($_GET['subId'])) { $subId = (int) trim($_GET['subId']); }
 else exit("<h1>No Submission specified</h1>");
 
-$qry ="SELECT s.title, s.authors, s.abstract, s.category, s.keyWords,
-       s.format, a.assign, a.watch, r.revId, s.affiliations, s.format
+$qry ="SELECT s.title, s.authors, s.abstract, s.category, s.keyWords, s.format,
+    s.auxMaterial, a.assign, a.watch, r.revId, s.affiliations
     FROM {$SQLprefix}submissions s
        LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId
        LEFT JOIN {$SQLprefix}reports r ON r.revId=? AND r.subId=s.subId
@@ -42,8 +42,13 @@ $abstract = nl2br(htmlspecialchars($submission['abstract']));
 $category = htmlspecialchars($submission['category']);
 if (empty($category)) $category = '*';
 $keyWords = htmlspecialchars($submission['keyWords']);
-$format   = htmlspecialchars($submission['format']);
+$auxMaterial = $submission['auxMaterial'];
 $watch    = (int) $submission['watch'];
+
+$downLoad = '<a href="download.php?subId='.$subId.'" title="download"><img src="../common/download.gif" alt="download" border=0></a>';
+if (!empty($auxMaterial)) {
+  $downLoad .= '<a href="download.php?subId='.$subId.'&aux=yes" title="Auxiliary Material"><img src="../common/auxi.gif" alt="Aux" border=0></a>';
+}
 
 if ($disFlag) {
 
@@ -129,8 +134,7 @@ $links
 <hr />
 $tags
 <center>
-<a href="download.php?subId=$subId" title="download"><img src="../common/download.gif" alt="download"
-   border=0></a>
+$downLoad
 $discussLine
 <span class="$revStyle"><a href="review.php?subId=$subId" target="_blank">$revText</a></span>&nbsp;
 $toggleWatch
@@ -146,13 +150,12 @@ $authors
 
 <br /><br />
 <center>
-<a href="download.php?subId=$subId" title="download"><img src="../common/download.gif" alt="download"
-   border=0></a>
+$downLoad
 $discussLine
 <span class="$revStyle"><a href="review.php?subId=$subId" target="_blank">$revText</a></span>&nbsp;
 $toggleWatch
 </center>
-<hr />
+<hr/>
 $versions
 $links
 </body>

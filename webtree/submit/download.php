@@ -19,14 +19,16 @@ if ($subId<=0 || empty($subPwd)) {
 
 $view_reviews = false;
 
-$qry= "SELECT format, nPages FROM {$SQLprefix}submissions s
+$qry= "SELECT format, nPages, auxMaterial FROM {$SQLprefix}submissions s
   LEFT JOIN {$SQLprefix}acceptedPapers a ON a.subId=s.subId
   WHERE s.subId=? AND s.subPwd=?";
 $res = pdo_query($qry, array($subId,$subPwd));
 $row = $res->fetch(PDO::FETCH_NUM)
   or die("<h1>Wrong Submission-ID or password</h1>");
-$fmt = strtolower($row[0]);
 $finalVersion = isset($row[1]);
+$fmt = isset($_GET['aux'])? $row[2] : $row[0];
+$fmt = strtolower($fmt);
+
 
 // Find the MIME type of this format
 $mimeType = NULL;
@@ -49,8 +51,9 @@ else if ($fmt=='odp') $mimeType = 'application/vnd.oasis.opendocument.presentati
 
 if ((PERIOD>=PERIOD_CAMERA) && $finalVersion) {
   $fileName = SUBMIT_DIR."/final/$subId.$fmt";
-}
-else {
+} else if (isset($_GET['aux'])) {
+  $fileName = SUBMIT_DIR."/$subId.aux.$fmt";
+} else {
   $fileName = SUBMIT_DIR."/$subId.$fmt";
 }
 

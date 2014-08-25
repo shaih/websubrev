@@ -21,7 +21,7 @@ foreach($_POST['download'] as $id) {
 }
 
 // Keep only these submissions that do not have conflict
-$qry = "SELECT s.subId, s.format FROM {$SQLprefix}submissions s
+$qry = "SELECT s.subId, s.format, s.auxMaterial FROM {$SQLprefix}submissions s
    LEFT JOIN {$SQLprefix}assignments a ON a.subId=s.subId
    WHERE !(a.revId=? AND a.assign<0) AND s.subId IN("
   .implode(",",$subs).") GROUP BY s.subId";
@@ -32,6 +32,9 @@ $res = pdo_query($qry, array($revId));
 $files = array();
 while($row = $res->fetch(PDO::FETCH_ASSOC)) {
   $fileName = $row['subId'].".".$row['format'];
+  if(file_exists(SUBMIT_DIR."/$fileName"))
+    $files[] = $fileName;
+  $fileName = $row['subId'].".aux.".$row['auxMaterial'];
   if(file_exists(SUBMIT_DIR."/$fileName"))
     $files[] = $fileName;
 }

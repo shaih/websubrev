@@ -95,6 +95,7 @@ $dbTables = array(
     keyWords varchar(255),
     comments2chair text,
     format varchar(32),
+    auxMaterial varchar(32),
     subPwd varchar(32) BINARY,
     status enum('Accept','Maybe Accept','Needs Discussion','None',
                 'Perhaps Reject','Reject','Withdrawn') NOT NULL DEFAULT 'None',

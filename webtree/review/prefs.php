@@ -86,7 +86,7 @@ $bodyHTML =<<<EndMark
 EndMark;
 
 $prefCount = array(0, 0, 0, 0, 0, 0);
-$qry = "SELECT s.subId,s.title,s.authors,s.affiliations,s.abstract,s.category,s.keyWords,a.pref,a.assign
+$qry = "SELECT s.subId,s.title,s.authors,s.affiliations,s.abstract,s.category,s.keyWords,s.auxMaterial,a.pref,a.assign
   FROM {$SQLprefix}submissions s LEFT JOIN {$SQLprefix}assignments a ON a.revId=? AND a.subId=s.subId
   WHERE s.status!='Withdrawn' ORDER BY s.subId";
 $res = pdo_query($qry, array($revId), "Cannot retrieve submission list: ");
@@ -124,8 +124,13 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
     $pref = 3;
     $cls = '';
   }
+  if (isset($row['auxMaterial'])) {
+    $aux = "<a href=\"download.php?subId=$subId&amp;aux=yes\" title=\"Download supporting material\"><img src=\"../common/auxi.gif\" alt=\"Aux\" border=0></a>";
+  }
+  else $aux = '';
+
   $prefCount[$pref]++;
-  $bodyHTML .= "<tr><td><a href=\"download.php?subId=$subId\" title=\"download\"><img src=\"../common/download.gif\" alt=\"download\" border=0></a></td><td $cls>$pref</td>\n";
+  $bodyHTML .= "<tr><td><a href=\"download.php?subId=$subId\" title=\"download\"><img src=\"../common/download.gif\" alt=\"download\" border=0></a>{$aux}</td><td $cls>$pref</td>\n";
 
   for ($i=0; $i<6; $i++) {
     $cls = $classes[$i];

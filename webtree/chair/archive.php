@@ -137,7 +137,7 @@ function PEARmkTar()
   // Notice: the database query must be called BEFORE the chdir command
   // for its error reporting to work
 
-  $qry = "SELECT subId, format FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER by subId";
+  $qry = "SELECT subId, format, auxMaterial FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER by subId";
   $res = pdo_query($qry);
 
   chdir(SUBMIT_DIR);
@@ -158,6 +158,12 @@ function PEARmkTar()
 		3, LOG_FILE);
       return NULL;
     }
+    $subName = $row[0].'.aux.'.$row[2];
+    if (!($tar_object->addModify($subName, "submissions"))) {
+      error_log(date('Y.m.d-H:i:s ')."Cannot add $subName to tar file",
+		3, LOG_FILE);
+      return NULL;
+    }
   }
   return $tarFileName;
 }
@@ -165,12 +171,13 @@ function PEARmkTar()
 function SYSmkTar()
 {
   global $SQLprefix;
-  $qry = "SELECT subId, format FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER by subId";
+  $qry = "SELECT subId, format, auxMaterial FROM {$SQLprefix}submissions WHERE status!='Withdrawn' ORDER by subId";
   $res = pdo_query($qry);
 
   $submissions = '';
   while ($row = $res->fetch(PDO::FETCH_NUM)) {
-    $submissions .= $row[0].'.'.$row[1].' ';
+    $submissions .= $row[0].'.'.$row[1].' '
+                  . $row[0].'.aux.'.$row[2].' ';
   }
   if (empty($submissions)) return NULL;
 

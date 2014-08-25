@@ -152,6 +152,12 @@ and <a href="#review">reviews</a>.
     &nbsp; MIME-type:<input name="format3mime" size="15" type="text">
   </td>
 </tr>
+<tr>
+  <td class=rjust>Auxiliary&nbsp;Material:</td>
+  <td><input name="auxMaterial" type="checkbox">
+    Check to allow authors to upload "supporting material", in addition to the submission file.
+    (<a target="_blank" href="../documentation/submitter.html#submit">what&prime;s this?</a>)
+</tr>
 <!-- ================= The Program Committee =================== -->
 <tr><td colspan="2" class=rjust><input type='hidden' name='chair' value='$chrEml'><hr /></td></tr>
 <!-- ================= this is commented out =================== --

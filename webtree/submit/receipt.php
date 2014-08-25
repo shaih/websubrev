@@ -5,8 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
-//if (defined('REVISE_AFTER_DEADLINE') && REVISE_AFTER_DEADLINE)
-//  $bypassAuth = true; // allow access to this script even after the deadline
+$bypassAuth = true; // allow access to this script even after the deadline
 require 'header.php'; // brings in the contacts file and utils file
 $adminEmail = ADMIN_EMAIL;
 
@@ -45,6 +44,7 @@ $cat = htmlspecialchars($row['category']);
 $kwrd = htmlspecialchars($row['keyWords']);
 $cmnt = nl2br(htmlspecialchars($row['comments2chair']));
 $frmt = htmlspecialchars($row['format']);
+$aux =  htmlspecialchars($row['auxMaterial']);
 $unsupFormat = (substr($row['format'], -12) == '.unsupported');
 $status = $row['status'];
 $sbmtd = (int) $row['sbmtd'];
@@ -147,6 +147,13 @@ if (!empty($frmt)) {
 EndMark;
 } 
 else $subFileLine = "<b>No file uploaded yet</b>";
+
+if (isset($aux)) { 
+  $subFileLine .=<<<EndMark
+    , Supporting material: <a href="download.php?subId=$subId&amp;subPwd=$subPwd&amp;aux=yes">$aux</a> (click to download)
+EndMark;
+} 
+
 print <<<EndMark
     <tr>
       <td style="text-align: right;">File format:</td>
