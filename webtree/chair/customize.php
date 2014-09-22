@@ -220,7 +220,7 @@ Jordan, Michael &lt;Air-Jordan@nike.com&gt;</textarea><br/>
     Check to give reviewers a link for sending discussion items to authors
     and sub-reviewers.<br/>
     (Communication with authors is moderated by the chair, emails to
-     sub-reviewers are send directly.)
+     sub-reviewers are sent directly.)
 </tr>
 <tr><td colspan="2" class=rjust><hr /></td></tr>
 <!-- ================= The Submit Button =================== -->
