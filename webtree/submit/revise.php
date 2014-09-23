@@ -201,7 +201,7 @@ if (CONF_FLAGS & FLAG_AUX_MATERIAL) {
 <tr><td style="text-align: right;">
   Supporing&nbsp;Material:</td>
   <td><input name="auxMaterial" size="70" type="file"><br/>
-      Auxilieary supporting material (code, data, proofs, etc.).
+      Auxiliary supporting material (code, data, proofs, etc.).
       (<a target="_blank" href="../documentation/submitter.html#submit">what&prime;s this?</a>)
   <br/></td>
 </tr>
