@@ -70,7 +70,8 @@ if (!file_exists($fileName)) {
 }
 
 if (isset($mimeType))  header("Content-Type: $mimeType");
-header("Content-Disposition: inline; filename=\"$subId.$fmt\"");
+$name = isset($_GET['aux'])? "$subId.aux.$fmt" : "$subId.$fmt";
+header("Content-Disposition: inline; filename=\"$name\"");
 
 /* If you cannot download large files, try replacing the call to
  * readfile by readfile_chunked. Namely, use the line:
