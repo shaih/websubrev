@@ -32,7 +32,7 @@ EndMark;
 if (isset($_GET['mid'])) {
   $mid = (int) $_GET['mid'];
 
-  $qry = "SELECT pst.subject, pst.comments, ms.textdata
+  $qry = "SELECT pst.subject, pst.comments, ms.subId, ms.textdata
     FROM {$SQLprefix}misc ms, {$SQLprefix}posts pst
     WHERE ms.id=$mid AND ms.type=1 AND pst.postId=ms.numdata";
   $record = pdo_query($qry)->fetch(PDO::FETCH_ASSOC);
@@ -43,6 +43,7 @@ if (isset($_GET['mid'])) {
     exit("Message rejected\n<hr/>{$links}\n</body></html>");
   }
 
+  $subId = (int) $record['subId'];
   $pos = strpos($record['textdata'], ';;'); // 1st ';' in text
   $emlSbjct = substr($record['textdata'], 0, $pos);
   $msg = substr($record['textdata'], $pos+2);
@@ -54,8 +55,11 @@ if (isset($_GET['mid'])) {
     ."Note that *you can only respond once*, the above link will be invalidated\n"
     ."after you submit your response.";
 
+  $qry = "SELECT contact FROM {$SQLprefix}submissions WHERE subId=$subId";
+  $sendTo = pdo_query($qry)->fetchColumn();
+
   if (isset($_GET['approveMsg'])) {
-    my_send_mail(chair_emails(), $emlSbjct, $msg, array(), "Send comments externally.");
+    my_send_mail($sendTo, $emlSbjct, $msg, chair_emails(), "Send comments externally.");
     pdo_query("UPDATE IGNORE {$SQLprefix}misc SET type=2 WHERE id=$mid");    
     exit("Message sent\n<hr/>{$links}\n</body></html>");
   }
