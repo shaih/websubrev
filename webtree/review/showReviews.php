@@ -19,7 +19,7 @@ function subDetailedHeader($sub, $revId=0, $showDiscussButton=true, $rank=0, $sh
   $delta = isset($sub['delta'])? $sub['delta'] : '*';
   $tags = isset($sub['tags'])?   $sub['tags'] : null;
 
-  $markRead = (isset($sub['hasNew']) && $sub['hasNew'])? 0: 1;
+  $markRead = (isset($sub['hasNew']) && $sub['hasNew'])? 1: 0;
   $disText =  $markRead? $discussIcon2 : $discussIcon1;
   $toggleText = "<a href='toggleMarkRead.php?subId=$subId&current=$markRead' class='toggleRead' title='Toggle Read/Unread' ID='toggleRead$subId' rel='$markRead'>&bull;</a>";
 

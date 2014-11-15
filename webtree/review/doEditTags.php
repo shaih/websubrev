@@ -23,7 +23,7 @@ if (isset($_POST['tags'])) {
   // remove all tags, then insert only the ones in the input field
   $qry = "DELETE FROM {$SQLprefix}tags WHERE subId=? AND ";
   if ($isChair) $qry .= '(type=? OR type<=0)';
-  else          $qry .= 'type IN (?,0) AND ~(flags &'.FLAGS_STICKY_TAG.')';
+  else          $qry .= 'type IN (?,0) AND NOT (flags &'.FLAGS_STICKY_TAG.')';
                 // non-chair PC members cannot remove sticky tags
   pdo_query($qry, array($subId,$revId));
 

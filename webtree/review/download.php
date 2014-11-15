@@ -30,6 +30,7 @@ if (isset($_GET['ver']) && $_GET['ver']>0)
 else
   $ver = "";
 
+$aux = '';
 if (isset($_GET['attachment'])) {
   $fileName = SUBMIT_DIR."/attachments/$fileName";
 } else if (isset($_GET['final'])
@@ -37,6 +38,7 @@ if (isset($_GET['attachment'])) {
   $fileName = SUBMIT_DIR."/final/$subId.$fmt";
 } else if (isset($_GET['aux'])) {
   $fileName = SUBMIT_DIR."/$subId.aux.$fmt";
+  $aux = '.aux';
 } else {
   $fileName = SUBMIT_DIR."/$subId{$ver}.$fmt";
 }
@@ -64,7 +66,7 @@ else if ($fmt=='odt') $mimeType = 'application/vnd.oasis.opendocument.text';
 else if ($fmt=='odp') $mimeType = 'application/vnd.oasis.opendocument.presentation';
 
 if (!empty($mimeType))  header("Content-Type: $mimeType");
-header("Content-Disposition: inline; filename=\"$subId{$ver}.$fmt\"");
+header("Content-Disposition: inline; filename=\"$subId{$ver}{$aux}.$fmt\"");
 header('Content-Transfer-Encoding: binary');
 header('Content-Length: ' . filesize($fileName));
 ob_clean();

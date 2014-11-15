@@ -59,7 +59,7 @@ $msg
 <p>Use this form to send email to potential external reviewers, asking them
 to review submissions to the conference. The submission file itself will
 be attached to the email. If you specify more than one email address
-below, the same email will  besent to all of them.
+below, the same email will be sent to all of them.
 </p>
 
 <form accept-charset="utf-8" name="subreviewer" action="doAssignSubreviewers.php" method="post">
