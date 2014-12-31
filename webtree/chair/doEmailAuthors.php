@@ -52,10 +52,11 @@ else if ($emailTo=="these") { // send only to certain submissions
 }
 
 $qry = "SELECT s.subId, subPwd, title, authors, contact,
-  comments2authors, confidence, score, attachment
+  comments2authors, confidence, score, attachment,
+  SHA1(CONCAT('".CONF_SALT."',s.subId,r.revId)) alias
   FROM {$SQLprefix}submissions s LEFT JOIN {$SQLprefix}reports r USING(subId)
   WHERE $cond
-  ORDER by s.subId, SHA1(CONCAT('".CONF_SALT."',s.subId,r.revId))";
+  ORDER by s.subId, alias";
 
 $res = pdo_query($qry);
 

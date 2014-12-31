@@ -81,8 +81,8 @@ list($order, $heading,$flags) = order_clause();
 
 // The default order is by number, and we also use the same to break
 // ties in other ordering
-if (empty($order)) { $order = 'subId, r.revId'; $heading='number';}
-else               { $order .= ', subId, r.revId'; }
+if (empty($order)) { $order = 'subId'; $heading='number';}
+else               { $order .= ', subId'; }
 
 // prepare the query: first get the submission details
 $qry = "SELECT s.subId subId, s.title title, 
@@ -101,7 +101,7 @@ if (isset($_GET['withReviews'])) { // get also the comments
        r.comments2committee cmnts2PC";
   if ($isChair) $qry .= ",\n       r.comments2chair cmnts2chr";
 }
-$qry .= ",s.contact contact, s.rebuttal rebuttal";
+$qry .= ",s.contact contact, s.rebuttal rebuttal,SHA1(CONCAT('".CONF_SALT."',s.subId,r.revId)) alias";
 
 // Next comes the JOIN conditions (not for the faint of heart)
 //You said it! -AU
@@ -119,7 +119,7 @@ if (isset($_GET['watchOnly'])) {
 if (isset($_GET['ignoreWatch'])) {
   $flags |= 32;
 }
-$qry .= "  GROUP BY subId, revId ORDER BY $order";
+$qry .= "  GROUP BY subId, revId ORDER BY $order,alias";
 $res = pdo_query($qry, array($revId));
 
 // Get also the auxiliary grades
@@ -216,8 +216,9 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
 		    'modified'    => $row['modified'],
 		    'conf'        => $row['conf'],
 		    'score'       => $row['score'],
-    		'avgScore'    => $avgGrades[$rId]['avgScore'],
-    		'avgConf'     => $avgGrades[$rId]['avgConf']);
+		    'avgScore'    => $avgGrades[$rId]['avgScore'],
+		    'avgConf'     => $avgGrades[$rId]['avgConf'],
+		    'alias'       => $row['alias']);
     for ($i=0; $i<count($criteria); $i++) {
       $review["grade_{$i}"] = $auxGrades[$sId][$rId][$i];
       $review["avgGrade_{$i}"] = $avgAuxGrades[$rId][$i];

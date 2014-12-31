@@ -49,9 +49,6 @@ if(has_group_conflict($revId, $submission['title'])) {
 
 // Get the reviews for this subsmission
 
-$grades = "r.confidence conf, r.score score";
-$chrCmnts = $isChair ? "r.comments2chair cmnts2chr, " : "";
-
 // store the auxiliary grades in a more convenient array
 $qry2 = "SELECT revId, gradeId, grade FROM {$SQLprefix}auxGrades WHERE subId=?";
 $auxRes = pdo_query($qry2,array($subId));
@@ -81,11 +78,13 @@ while ($row = $aux2Res->fetch(PDO::FETCH_ASSOC)) {
 }
 
 // store reports for this submission in an array
+$chrCmnts = $isChair ? "r.comments2chair cmnts2chr, " : "";
 $qry = "SELECT r.subId subId, r.revId revId, c.name PCmember,
  r.subReviewer subReviewer, r.confidence conf, r.score score,
  r.comments2authors cmnts2athr, r.comments2committee cmnts2PC, $chrCmnts
- UNIX_TIMESTAMP(r.lastModified) modified, r.attachment
- FROM {$SQLprefix}reports r, {$SQLprefix}committee c WHERE r.revId=c.revId AND r.subId=? GROUP BY revId ORDER BY modified";
+ UNIX_TIMESTAMP(r.lastModified) modified, r.attachment,
+ SHA1(CONCAT('".CONF_SALT."',r.subId,r.revId)) alias
+ FROM {$SQLprefix}reports r, {$SQLprefix}committee c WHERE r.revId=c.revId AND r.subId=? GROUP BY revId ORDER BY alias";
 $res = pdo_query($qry,array($subId));
 $reports = array();
 while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
