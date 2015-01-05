@@ -76,12 +76,21 @@ EndMark;
   }
   $chkaff = USE_AFFILIATIONS ? 'checked="checked"' : '';
   $chkanon = ANONYMOUS ? 'checked="checked"' : '';
+  $optIn = OPTIN_TEXT;
   print <<<EndMark
 $cmrDeadlineHTML
 <tr><td style="text-align: right;">Categories:</td>
   <td><textarea name=categories rows=3 cols=70>$cats</textarea><br/>
     A semi-colon-separated list of categories for the submissions
     (empty list to forgo categories.)</td>
+</tr>
+<tr><td  style="text-align: right;">Opt In Text:</td>
+  <td><textarea name="checktext" rows="3" cols="70">$optIn</textarea><br/>
+    This text will be presented with a check box to the user when they 
+    submit a paper. <br />You will then be able to see who opts in from the review
+    section of the site. <br />Use this for something like eligibility for an
+    award. If this is blank, no checkbox will be shown.
+  </td>
 </tr>
 <tr><td style="text-align: right;">Require&nbsp;Affiliations:</td>
   <td><input name=affiliations type=checkbox $chkaff>

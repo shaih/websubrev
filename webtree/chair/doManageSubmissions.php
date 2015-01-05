@@ -83,6 +83,9 @@ if (!empty($x)) {
   $categories = NULL;
 }
 
+$checktext = isset($_POST['checktext']) ? $_POST['checktext'] : "";
+if ($checktext != OPTIN_TEXT) $changeParams=true;
+
 if (isset($_POST['formats'])) {
 
   // This contrived logic is because it is more intuitive
@@ -153,6 +156,9 @@ if ($changeParams) {
     $prms[] = $catString;
   }
   else $qry .= ",categories=NULL";
+
+  $qry .= ",optIn=?";
+  $prms[] = $checktext;
 
   //  exit("$qry<pre>".print_r($prms,true)."</pre>");
   pdo_query($qry, $prms, "Cannot UPDATE conference parameters: ");
