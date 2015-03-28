@@ -100,7 +100,13 @@ if (empty($subId)) { // put a button to "Load submission details"
   <td><input value="Reload Form with Submission Details (Submission-ID and Password must be specified)" type="submit" name="loadDetails">
     (<a href="../documentation/submitter.html#camera" target="documentation" title="this button reloads the revision form with all the submission details filled-in">what\'s this?</a>)
   </td>
-</tr>';
+</tr>
+</table>
+</form>
+<hr />'.$links.'
+</body>
+</html>';
+  exit();
 }
 
 if (defined('IACR')) { // Specify ePrint report (if exists)
