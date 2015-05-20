@@ -170,10 +170,10 @@ function sendEmail2Sub($subId, $sb, $subject, $text)
     if (is_array($cmnts) && count($cmnts)>0)
       $text = str_replace('<$comments>', implode("\n\n========================================================================\n\n", $cmnts), $text);
     else $text = str_replace('<$comments>', "\nNo Reviewer Comments\n", $text);
-    my_send_mail($contact, $subject, $text, chair_emails(), $errMsg, $sb[5]);
+    my_send_mail($contact, $subject, $text, CHAIR_EMAIL, $errMsg, $sb[5]);
   }
   else // send without comments or attachments
-    my_send_mail($contact, $subject, $text, chair_emails(), $errMsg);
+    my_send_mail($contact, $subject, $text, CHAIR_EMAIL, $errMsg);
 }
 
 ?>
