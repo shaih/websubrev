@@ -45,11 +45,12 @@ if (isset($_POST['emilReview'])) {
 		    $_POST['comments2authors'], $_POST['comments2PC'],
 		    $_POST['comments2chair'], $_POST['comments2self'], 
 		    $saveDraft, $attachment);
-  $flags = $pcmFlags | 0x01000000;  
+  $flags = $pcmFlags | FLAGS_EML_MY_REPORT;
 }
-else $flags = $pcmFlags & 0xfeffffff;  
+else $flags = $pcmFlags & (~FLAGS_EML_MY_REPORT);
 
-if ($flags != $pcmFlags) {
+// update the "send reviews by email" flag
+if (($flags != $pcmFlags) && !$notMine) {
   pdo_query("UPDATE {$SQLprefix}committee SET flags=? WHERE revId=?", array($flags,$revId));
 }
 
