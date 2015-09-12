@@ -15,7 +15,7 @@ if (($subId = (int) $_POST['subId']) <= 0)
   exit("Submission must be specified");
 
 if (isset($_POST['tags'])) {
-  $tags = explode('; ',$_POST['tags']);
+  $tags = explode(';',$_POST['tags']);
 
   $qry = "INSERT IGNORE INTO {$SQLprefix}tags (tagName,subId,type,flags) VALUES (?,$subId,?,?)";
   $stmt = $db->prepare($qry);
