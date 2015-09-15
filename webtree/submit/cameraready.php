@@ -6,6 +6,7 @@
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
 require 'header.php'; // brings in the constants file and utils file
+include_once '../includes/ePrint.php';
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 if (PERIOD<PERIOD_CAMERA)
@@ -54,6 +55,28 @@ if (file_exists($file) && empty($copyright) && !$chair) {
   exit();
 }
 
+if (defined('IACR')) { // Specify ePrint report (if exists)
+  $guessHTML = '';
+  if (empty($eprint) || !empty($title)) { // try to search ePrint for title
+    if (function_exists('search_ePrint'))
+      $eprint=search_ePrint($title);
+    if (!empty($eprint)) { // found something, tell user that it's a guess
+      $eprintURL = "http://eprint.iacr.org/$eprint";
+      $guessHTML ="<br/><b style='color:red'>Found ePrint report with this
+        title, please check that this is the right report by clicking</b>
+        <a target='_blank' href='$eprintURL'>$eprintURL<a/>";
+    }
+  }
+  $ePrintHTML = '<tr><td style="text-align: right;">ePrint&nbsp;report:</td>
+  <td><input name="eprint" ID="ePrint" size="10" type="text" value="'
+    .$eprint.'">
+    If this work is available on <a href="http://eprint.iacr.org">ePrint</a>,
+    specify the report number using the format <tt>yyyy/nnn</tt>'.
+    "\n $guessHTML</td>\n</tr>";
+  $onSubmit = "onsubmit='return check_ePrint();'";
+}
+else $ePrintHTML = $onSubmit = '';
+
 $links = show_sub_links(6);
 print <<<EndMark
 <!DOCTYPE HTML>
@@ -69,7 +92,16 @@ tr { vertical-align: top; }
 <script src="$JQUERY_UI_URL"></script>
 <script src="../common/ui.js"></script>
 <script src="../common/authNames.js"></script>
-
+<script>
+function check_ePrint() {
+  var fld = document.getElementById("ePrint");
+  if (fld && fld.value=="") {
+    return confirm("no ePrint report specified, a new report with the camera-ready file will be posted to ePrint!");
+  } else {
+    return true;
+  }
+}
+</script>
 <title>Camera-Ready Revision for $confName</title>
 </head>
 <body>
@@ -80,7 +112,7 @@ $h1text
 <h3 class=timeleft>$deadline<br/>
 $timeleft</h3>
 
-<form name="cameraready" action="act-revise.php" enctype="multipart/form-data" method="POST" accept-charset="utf-8">
+<form name="cameraready" action="act-revise.php" enctype="multipart/form-data" method="POST" accept-charset="utf-8" $onSubmit>
 <input type="hidden" name="MAX_FILE_SIZE" value="20000000">
 <input type="hidden" name="referer" value="cameraready.php">
 <table cellspacing="6">
@@ -108,15 +140,6 @@ if (empty($subId)) { // put a button to "Load submission details"
 </html>';
   exit();
 }
-
-if (defined('IACR')) { // Specify ePrint report (if exists)
-  $ePrintHTML = '<tr><td style="text-align: right;">ePrint&nbsp;report:</td>
-  <td><input name="eprint" size="10" type="text" value="'.$eprint.'">
-    If this work is available on <a href="http://eprint.iacr.org">ePrint</a>,
-    specify the report number using the format <tt>yyyy/nnn</tt></td>
-</tr>';
-}
-else $ePrintHTML = '';
 
 print <<<EndMark
 $ePrintHTML

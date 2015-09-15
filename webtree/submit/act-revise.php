@@ -9,6 +9,8 @@
 //  $bypassAuth = true; // allow access to this script even after the deadline
 
 require 'header.php'; // brings in the contacts file and utils file
+include_once '../includes/ePrint.php';
+
 $confName = CONF_SHORT . '_' . CONF_YEAR;
 
 // Check that mandatory subId and subPwd are specified
@@ -78,7 +80,7 @@ if (!empty($sbFileName)) {
 
 // Test that there exists a submission with this subId/subPwd
 
-$qry = "SELECT title, authors, affiliations, contact, abstract, category, keyWords, comments2chair, format, status, authorIDs FROM {$SQLprefix}submissions WHERE subId=? AND subPwd=?";
+$qry = "SELECT title, authors, affiliations, contact, abstract, category, keyWords, comments2chair, format, status, auxMaterial, authorIDs FROM {$SQLprefix}submissions WHERE subId=? AND subPwd=?";
 $res=pdo_query($qry,array($subId, $subPwd));
 $row= $res->fetch(PDO::FETCH_ASSOC)
   or exit("<h1>Revision Failed</h1>
@@ -273,7 +275,7 @@ if (PERIOD>=PERIOD_CAMERA) {
       $pdfFileName = SUBMIT_DIR."/$subId.pdf";
     if (file_exists($pdfFileName)) unlink($pdfFileName);
     move_uploaded_file($tmpFile, $pdfFileName);
-    }
+  }
 
   if (!empty($eprint)) {
     $qry = "UPDATE {$SQLprefix}acceptedPapers SET eprint=? WHERE subId=?";
@@ -293,5 +295,14 @@ if (PERIOD>=PERIOD_CAMERA) {
 email_submission_details($oldCntct, 2, $subId, $subPwd, $title, $author,
       $contact, $abstract, $category, $keywords, $comment, $fileFormat,
       $fileSize);
+
+// Push to ePrint if needed
+if (PERIOD>=PERIOD_CAMERA && empty($eprint) 
+    && !empty($IACRdir) && isset($_FILES['pdf_file'])) {
+  if (function_exists('post2eprint'))
+    post2eprint($subId, $title, $author, $contact,
+		$abstract, $keywords, $pdfFileName);
+}
+
 header("Location: receipt.php?subId={$subId}&subPwd={$subPwd}");
 ?>
