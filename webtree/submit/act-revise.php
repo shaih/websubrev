@@ -297,8 +297,8 @@ email_submission_details($oldCntct, 2, $subId, $subPwd, $title, $author,
       $fileSize);
 
 // Push to ePrint if needed
-if (PERIOD>=PERIOD_CAMERA && empty($eprint) 
-    && !empty($IACRdir) && isset($_FILES['pdf_file'])) {
+if (PERIOD>=PERIOD_CAMERA && empty($eprint) && !empty($IACRdir)
+    && isset($_FILES['pdf_file']) && $_FILES['pdf_file']['size']>0) {
   if (function_exists('post2eprint'))
     post2eprint($subId, $title, $author, $contact,
 		$abstract, $keywords, $pdfFileName);

@@ -95,7 +95,8 @@ tr { vertical-align: top; }
 <script>
 function check_ePrint() {
   var fld = document.getElementById("ePrint");
-  if (fld && fld.value=="") {
+  var pdf = document.getElementById("PDFfile");
+  if (fld && fld.value=="" &&  pdf.value) {
     return confirm("no ePrint report specified, a new report with the camera-ready file will be posted to ePrint!");
   } else {
     return true;
@@ -198,7 +199,7 @@ If the list above is not empty, it will replace the curret author list even if t
   <td><textarea name="abstract" rows="15" cols="80" class="required">$abstract</textarea><br/></td>
 </tr><tr>
 <td style="text-align: right;"><small>(*)</small>&nbsp;Submission&nbsp;Files:</td>
-<td><input name="pdf_file" size="70" type="file"><tt><==</tt> PDF file only<br/>
+<td><input name="pdf_file" ID="PDFfile" size="70" type="file"><tt><==</tt> PDF file only<br/>
     <input name="sub_file" size="70" type="file"><tt><==</tt> Archive file<br/>
    The archive file (tar, tzg, etc.) must include all the necessary files
    <i>including the PDF file from above</i>.<br/>
