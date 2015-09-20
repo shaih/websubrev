@@ -228,6 +228,7 @@ function show_reviews_with_comments(&$reviews, $revId)
     $cmnt2chr  = isset($rev['cmnts2chr'])? htmlspecialchars($rev['cmnts2chr']):'';
     $score = isset($rev['score']) ? ((int) $rev['score']) : '*';
     $conf =  isset($rev['conf']) ? ((int) $rev['conf']) : '*';
+    $feedback  = isset($rev['feedback'])? htmlspecialchars($rev['feedback']):'';
 
     $PCmember = htmlspecialchars($rev['PCmember']);
     $subRev = isset($rev['subReviewer']) ?
@@ -277,6 +278,10 @@ EndMark;
       $reviewsShown = true;
       print "\n<br/><b>Comments to Authors:</b>\n";
       print '<div class="fixed">'.nl2br($cmnt2athr).$attachment.'</div>';
+      if (is_chair($revId) && !empty($feedback)) { // show feedback to chair
+	print "\n<br/><b>Author's Feedback:</b>\n";
+	print '<div class="fixed">'.nl2br($feedback).'</div>';
+      }
     }
     if ($reviewsShown) print "<br/>\n";
     else print "\n";

@@ -228,6 +228,10 @@ function manage_final_version($period)
     $uploadTOC = $cryptoDB = '';
   }
 
+  $feedback = '';
+  if (!empty(FEEDBACK_DEADLINE)) {
+    $feedback = '<li><a href="showFeedback.php">See Authors\' Feedback on the Reviews</a></li>';
+  }
   print <<<EndMark
 $hdr
 
@@ -240,6 +244,7 @@ $editInstructions
 <li><a href="cameraArchive.php">Create one tar file with all the camera-ready files</a></li>
 $allSubFile
 <li><a href="makeTOC.php">Generate a LaTeX file with TOC and author index</a></li>
+$feedback
 $uploadTOC
 $cryptoDB
 </ul>

@@ -121,7 +121,7 @@ $timeleft</h3>
 <td><input name="title" size="90" type="text" class="required"><br/>
     The title of the paper that you are submitting</td>
 </tr><tr>
-<td style="text-align: right;"><small>(*)</small> Contact Email(s):</td>
+<td style="text-align: right;"><small>(*)</small>&nbsp;Contact&nbsp;Email(s):</td>
 <td><input name="contact" size="90" type="text"  class="required"><br/>
 Comma-separated list with <b>at least one valid email address</b> of the form user@domain; for example:<br/>
 <tt>first-author@university.edu, secondAuthor@company.com, third.one@somewhere.org</tt><br/>

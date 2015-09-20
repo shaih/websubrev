@@ -82,7 +82,7 @@ $chrCmnts = $isChair ? "r.comments2chair cmnts2chr, " : "";
 $qry = "SELECT r.subId subId, r.revId revId, c.name PCmember,
  r.subReviewer subReviewer, r.confidence conf, r.score score,
  r.comments2authors cmnts2athr, r.comments2committee cmnts2PC, $chrCmnts
- UNIX_TIMESTAMP(r.lastModified) modified, r.attachment,
+ UNIX_TIMESTAMP(r.lastModified) modified, r.attachment, r.feedback,
  SHA1(CONCAT('".CONF_SALT."',r.subId,r.revId)) alias
  FROM {$SQLprefix}reports r, {$SQLprefix}committee c WHERE r.revId=c.revId AND r.subId=? GROUP BY revId ORDER BY alias";
 $res = pdo_query($qry,array($subId));

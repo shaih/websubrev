@@ -216,7 +216,7 @@ Jordan, Michael &lt;Air-Jordan@nike.com&gt;</textarea><br/>
 </tr>
 <tr>
   <td class=rjust><a href="../documentation/chair.html#sendPostByEmail" target="documentation" title="click for more help">External&nbsp;communications:</a></td>
-  <td><input name="sendPostByEmail" type="checkbox">
+  <td><input name="sendPostByEmail" type="checkbox" checked="checked">
     Check to give reviewers a link for sending discussion items to authors
     and sub-reviewers.<br/>
     (Communication with authors is moderated by the chair, emails to

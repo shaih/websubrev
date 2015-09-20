@@ -54,6 +54,7 @@ $prms = 'version smallint(3) NOT NULL auto_increment,
     rebDeadline  int(11),
     maxRebuttal  smallint,
     optIn        text,
+    fdbkDeadline int DEFAULT NULL,
     PRIMARY KEY (version)';
 
 // The reports table(s)
@@ -68,6 +69,7 @@ $reports = "subId smallint(5) NOT NULL,
     comments2committee text,
     comments2chair text,
     comments2self text,
+    feedback text,
     attachment text,
     whenEntered datetime NOT NULL";
 

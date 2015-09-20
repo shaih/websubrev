@@ -23,6 +23,7 @@ if (is_array($criteria) && count($criteria)>0) {
 }
 $revPrefs = (CONF_FLAGS & FLAG_PCPREFS) ? 'checked="checked"' : '';
 $revAttach= (CONF_FLAGS & FLAG_REV_ATTACH) ? 'checked="checked"' : '';
+$auxComm  = (CONF_FLAGS & FLAG_SEND_POSTS_BY_EMAIL) ? 'checked="checked"' : '';
 
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -76,10 +77,10 @@ $links
 </center>
 
 <h2>Are you sure you want to close the submission site?</h2>
-Click on "Close Submissions and Activate Review Site" at the bottom of the
-page to move into the review period. Once the review site is activated, you
-can give PC members access to it by following the link "Manage PC membership"
-on the administration page.<br/>
+Click on "Close Submissions and Activate Review Site" at the bottom of
+the page to move into the review period. You can give PC members access
+to the review site by following the link "Manage PC membership" on the
+administration page.<br/>
 <br/>
 On this page you can also modify some of the review parameters such as
 the range of grades, etc. These parameters cannot be modified after the
@@ -106,6 +107,14 @@ review site is activated.<br/>
   <input name="revPrefsFlag" value="on" type="hidden"></td>
 </tr>
 <tr class="darkbg">
+  <td class=rjust><a href="../documentation/chair.html#sendPostByEmail" target="documentation" title="click for more help">External&nbsp;communications:</a></td>
+  <td><input name="auxComm" type="checkbox" $auxComm>
+    Check to give reviewers a link for sending discussion items to authors
+    and sub-reviewers.<br/>
+    (Communication with authors is moderated by the chair, emails to
+     sub-reviewers are sent directly.)
+</tr>
+<tr class="lightbg">
   <td style="text-align: center;">Grades:</td>
   <td colspan="4">1 through
       <input name="maxGrade" value="$maxGrade" type="text"
@@ -113,7 +122,7 @@ review site is activated.<br/>
       (max-grade must be in the range [2..9])
   </td>
 </tr>
-<tr class="lightbg" style="vertical-align: top;">
+<tr class="darkbg" style="vertical-align: top;">
   <td style="text-align: center">Other Evaluation Criteria:</td>
   <td><textarea name="criteria" style="width: 100%">$crList</textarea>
       A <i><b>semi-colon-separated</b></i> list of criteria, each in the format

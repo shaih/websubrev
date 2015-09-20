@@ -88,13 +88,23 @@ Only submissions with the IDs specified below:</br>
 </li>
 </ul>
 <p><input type="submit" value="Send email">
-<input name="withGrades" type="checkbox" value="true">
-Check to include score and confidence in the email sent to the authors
+<br/><input name="withGrades" type="checkbox" value="true">
+Check to include score and confidence in the email sent to the authors<br/>
+EndMark;
+
+if (!active_rebuttal()) print <<<EndMark
+
+<input name="allowFeedback" type="checkbox" value="true">
+Check to let authors provide feedback on the reviews. 
+  <b><span style="color:red">This is NOT MEANT FOR REBUTTAL!!</span> This option should only be used for the final reviews, after all the decisions are made</b>, see <a href="../documentation/chair.html#feedback">documentation</a>.
+
+EndMark;
+print <<<EndMark
 </p>
 </form>
 <hr/>
 $links
-EndMark;
-?>
 </body>
 </html>
+EndMark;
+?>

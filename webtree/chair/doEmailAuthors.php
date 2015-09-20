@@ -36,6 +36,15 @@ if (isset($_POST['saveText_ACC']) || isset($_POST['saveText_REJ'])) {
 // Handle the special case where you only save the text, not send it
 if (isset($_POST['saveOnly'])) return_to_caller('notifications.php');
 
+if ($_POST['allowFeedback']) {
+  if (empty(FEEDBACK_DEADLINE)) {// Set feedback deadline to one month from now
+    $fdbkddln = time() + (31*24*60*60); // 31 days; 24 hours; 60 mins; 60 secs
+    $qry = "UPDATE {$SQLprefix}parameters SET fdbkDeadline=? WHERE version=?";
+    pdo_query($qry, array($fdbkddln,PARAMS_VERSION));
+  }
+  else $fdbkddln=FEEDBACK_DEADLINE;
+}
+
 // To whom should we send this email
 $emailTo = isset($_POST["emailTo"])? trim($_POST["emailTo"]) : '';
 $cond = "false";
@@ -167,9 +176,18 @@ function sendEmail2Sub($subId, $sb, $subject, $text)
   $withComments = (strpos($text, '<$comments>')!== false);
   if ($withComments) { // embed comments, attachments in email text
     $cmnts = $sb[4];
-    if (is_array($cmnts) && count($cmnts)>0)
+    if (is_array($cmnts) && count($cmnts)>0) {
       $text = str_replace('<$comments>', implode("\n\n========================================================================\n\n", $cmnts), $text);
-    else $text = str_replace('<$comments>', "\nNo Reviewer Comments\n", $text);
+      if ($_POST['allowFeedback']) {
+	global $fdbkddln;
+	$prot = (defined('HTTPS_ON')||isset($_SERVER['HTTPS']))?'https':'http';
+	$url = "$prot://".BASE_URL."submit/feedback.php";
+	$fdbkddln = utcDate('r (T)',$fdbkddln);
+	$text .= "\n========================================================================\n\nYou can optionally provide feedback on the reviews above from the URL\n\n  ".$url."\n\nThe deadline for providing feedback is {$fdbkddln}.\n";
+      }
+    } else {
+      $text = str_replace('<$comments>', "\nNo Reviewer Comments\n", $text);
+    }
     my_send_mail($contact, $subject, $text, CHAIR_EMAIL, $errMsg, $sb[5]);
   }
   else // send without comments or attachments

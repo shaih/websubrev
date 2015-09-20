@@ -18,21 +18,18 @@ $php_errormsg = ''; // just so we don't get notices when it is not defined.
 $chair = false;
 $submission = false;
 
-if (isset($allow_rebuttal) && $allow_rebuttal) { // Check that rebuttal is open
-  if(!active_rebuttal())                         // and authenticate submission
-    exit("<h1>Rebuttal not active</h1>");
-  
+if ((isset($allow_rebuttal) && active_rebuttal())
+     || (isset($finalFeedback) && active_feedback())) {
   if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
     $submission = auth_author($_SERVER['PHP_AUTH_USER'],
                               $_SERVER['PHP_AUTH_PW']);
   if ($submission === false) {
     header("WWW-Authenticate: Basic realm=\"$confShortName\"");
     header("HTTP/1.0 401 Unauthorized");
-    exit("<h1>Authentication Error</h1><h2>Invalid Submission Id or Password given</h2>.");
+    exit("<h1>Authentication Error</h1><h2>Invalid Submission-ID or Password given</h2>.");
   }
-}
-else { // For anything other than rebuttal, check that it is allowed
-  if (PERIOD>PERIOD_SUBMIT && PERIOD!=PERIOD_CAMERA && !isset($bypassAuth)) {   // only the chair
+} else { // For anything other than rebuttal/feedback, check that it is allowed
+  if (PERIOD>PERIOD_SUBMIT && PERIOD!=PERIOD_CAMERA && !isset($bypassAuth)) { // only the chair
     if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']))
       $chair = auth_PC_member($_SERVER['PHP_AUTH_USER'],
 			      $_SERVER['PHP_AUTH_PW'], chair_ids());
