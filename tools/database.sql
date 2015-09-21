@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS parameters (
     rebDeadline int(11),
     maxRebuttal smallint,
     optIn text,
+    fdbkDeadline int DEFAULT NULL,
     PRIMARY KEY (version)
 );
 
@@ -81,6 +82,7 @@ CREATE TABLE IF NOT EXISTS paramsBckp (
     rebDeadline int(11),
     maxRebuttal smallint,
     optIn text,
+    fdbkDeadline int DEFAULT NULL,
     PRIMARY KEY (version)
 );
 
@@ -106,13 +108,10 @@ CREATE TABLE IF NOT EXISTS submissions (
     format varchar(32),
     auxMaterial varchar(32),
     subPwd varchar(32) BINARY,
-    status enum('Accept',
-                'Maybe Accept',
-                'Needs Discussion',
-                'None',
-                'Perhaps Reject',
-                'Reject',
-                'Withdrawn') NOT NULL DEFAULT 'None',
+    status enum('Accept', 'Maybe Accept', 'Needs Discussion', 'None',
+                'Perhaps Reject', 'Reject', 'Withdrawn') NOT NULL DEFAULT 'None',
+    scratchStatus enum('Accept','Maybe Accept','Needs Discussion','None',
+                'Perhaps Reject', 'Reject', 'Withdrawn') NOT NULL DEFAULT 'None',
     whenSubmitted datetime NOT NULL,
     lastModified timestamp,
     flags int NOT NULL DEFAULT 0,
@@ -120,13 +119,6 @@ CREATE TABLE IF NOT EXISTS submissions (
     wAvg float,
     minGrade tinyint(1),
     maxGrade tinyint(1),
-    scratchStatus enum('Accept',	 
-                'Maybe Accept',
-                'Needs Discussion',
-                'None',
-                'Perhaps Reject',
-                'Reject',
-                'Withdrawn') NOT NULL DEFAULT 'None',
     rebuttal text DEFAULT NULL,
     authorIDs text DEFAULT NULL,
     PRIMARY KEY (subId),
@@ -185,6 +177,7 @@ CREATE TABLE IF NOT EXISTS committee (
     canDiscuss tinyint(1) NOT NULL DEFAULT 0, 
     threaded tinyint(1) NOT NULL DEFAULT 1, 
     flags int NOT NULL DEFAULT 0,
+    authorID smallint NOT NULL DEFAULT 0,
     PRIMARY KEY (revId),
     KEY pw (revPwd(2))
 );
@@ -201,6 +194,7 @@ CREATE TABLE IF NOT EXISTS reports (
     comments2committee text,
     comments2chair text,
     comments2self text,
+    feedback text,
     attachment text,
     whenEntered datetime NOT NULL,";
     lastModified datetime NOT NULL,
@@ -219,6 +213,7 @@ CREATE TABLE IF NOT EXISTS reportBckp (
     comments2committee text,
     comments2chair text,
     comments2self text,
+    feedback text,
     attachment text,
     whenEntered datetime NOT NULL,
     version smallint(3) NOT NULL DEFAULT 0,

@@ -37,7 +37,7 @@ if (isset($_POST['saveText_ACC']) || isset($_POST['saveText_REJ'])) {
 if (isset($_POST['saveOnly'])) return_to_caller('notifications.php');
 
 if ($_POST['allowFeedback']) {
-  if (empty(FEEDBACK_DEADLINE)) {// Set feedback deadline to one month from now
+  if (is_null(FEEDBACK_DEADLINE)) {// Set feedback deadline to one month from now
     $fdbkddln = time() + (31*24*60*60); // 31 days; 24 hours; 60 mins; 60 secs
     $qry = "UPDATE {$SQLprefix}parameters SET fdbkDeadline=? WHERE version=?";
     pdo_query($qry, array($fdbkddln,PARAMS_VERSION));

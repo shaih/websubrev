@@ -106,7 +106,9 @@ if (isset($row['maxRebuttal'])) {
   define("MAX_REBUTTAL", $row["maxRebuttal"]);
 }
 
-define("FEEDBACK_DEADLINE", $row['fdbkDeadline']); // could be NULL
+if (isset($row['fdbkDeadline']))
+  define("FEEDBACK_DEADLINE", $row['fdbkDeadline']); // could be NULL
+else define("FEEDBACK_DEADLINE", NULL);
 
 if (!empty($row['optIn'])) {
   define("OPTIN_TEXT", $row['optIn']);

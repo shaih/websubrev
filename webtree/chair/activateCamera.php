@@ -64,7 +64,7 @@ and '>' characters and the dollar-sign.)
 <form accept-charset="utf-8" name="cameraReady" action="doEmailAuthors.php"
   enctype="multipart/form-data" method="post">
 <input type="hidden" name="emailTo" value="AC">
-Subject: <input type=text name="subject" size=75 value="Final-version submission site for $cName now open">
+Subject: <input type=text name="subject" size=75 value="Final-version submission site for $cName now open"><br/>
 <textarea cols=80 rows=15 name="message">The site for uploading the camera-ready papers for $cName is now open at
 
   ${baseURL}submit/

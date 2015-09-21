@@ -221,9 +221,12 @@ function active_rebuttal()
   return (defined('REBUTTAL_FLAG') && REBUTTAL_FLAG);
 }
 
+// feedback deadline is defined, and did not pass yet
 function active_feedback()
-{ // feedback deadline is defined, and did not pass yet
-  return (!empty(FEEDBACK_DEADLINE) && FEEDBACK_DEADLINE > time());
+{
+  return (defined("FEEDBACK_DEADLINE")
+          && !is_null(FEEDBACK_DEADLINE)
+          && FEEDBACK_DEADLINE > time());
 }
 
 function my_addslashes($str, $cnnct=NULL)

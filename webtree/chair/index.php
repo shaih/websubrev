@@ -229,7 +229,7 @@ function manage_final_version($period)
   }
 
   $feedback = '';
-  if (!empty(FEEDBACK_DEADLINE)) {
+  if (!is_null(FEEDBACK_DEADLINE)) {
     $feedback = '<li><a href="showFeedback.php">See Authors\' Feedback on the Reviews</a></li>';
   }
   print <<<EndMark
