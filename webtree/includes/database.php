@@ -69,7 +69,6 @@ $reports = "subId smallint(5) NOT NULL,
     comments2committee text,
     comments2chair text,
     comments2self text,
-    feedback text,
     attachment text,
     whenEntered datetime NOT NULL";
 
@@ -174,6 +173,7 @@ $dbTables = array(
   // The main table for reports
   'reports' =>
    "$reports,
+    feedback text,
     lastModified datetime NOT NULL,
     PRIMARY KEY (subId, revId)",
 
