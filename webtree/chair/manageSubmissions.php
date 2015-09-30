@@ -76,6 +76,7 @@ EndMark;
   }
   $chkaff = USE_AFFILIATIONS ? 'checked="checked"' : '';
   $chkanon = ANONYMOUS ? 'checked="checked"' : '';
+  $chkAux = (CONF_FLAGS & FLAG_AUX_MATERIAL)? 'checked="checked"' : '';
   $optIn = OPTIN_TEXT;
   print <<<EndMark
 $cmrDeadlineHTML
@@ -101,7 +102,14 @@ $cmrDeadlineHTML
       Check to hide author names from the reviewers.
       <input name=subFlags type=hidden value=on></td>
 </tr>
-
+<tr><td style="text-align: right;">Auxiliary&nbsp;Material:</td>
+  <td><input name="auxMaterial" type=checkbox $chkAux>
+  Check to allow authors to upload "supporting material", in addition to the
+  submission file.
+  (<a target="_blank" href="../documentation/submitter.html#submit">what&prime;s
+  this?</a>)</td>
+</tr>
+      
 EndMark;
 
   if (is_array($confFormats)) {

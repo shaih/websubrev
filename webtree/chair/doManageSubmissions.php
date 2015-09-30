@@ -109,22 +109,26 @@ if (isset($_POST['formats'])) {
   }
 }
 
+$oldAuxFlag = ((CONF_FLAGS & FLAG_AUX_MATERIAL)? true : false);
 if (isset($_POST['subFlags'])) {
   $anonymous = isset($_POST['anonymous']);
   $affiliations = isset($_POST['affiliations']);
-  if (USE_AFFILIATIONS!=$affiliations || ANONYMOUS!=$anonymous) 
+  $auxMaterial  = isset($_POST['auxMaterial']);
+  if (USE_AFFILIATIONS!=$affiliations || ANONYMOUS!=$anonymous || $oldAuxFlag!=$auxMaterial) 
     $changeParams = true;
 } else {
   $affiliations = USE_AFFILIATIONS;
   $anonymous = ANONYMOUS;
+  $auxMaterial = $oldAuxFlag;
 }
 
 if ($changeParams) {
   if (empty($confURL)) $confURL = '.';
 
-  $flags = CONF_FLAGS & ~(FLAG_ANON_SUBS | FLAG_AFFILIATIONS);
+  $flags = CONF_FLAGS & ~(FLAG_ANON_SUBS | FLAG_AFFILIATIONS | FLAG_AUX_MATERIAL);
   if ($anonymous)      $flags |= FLAG_ANON_SUBS;
   if ($affiliations)   $flags |= FLAG_AFFILIATIONS;
+  if ($auxMaterial)    $flags |= FLAG_AUX_MATERIAL;
 
   $qry = "UPDATE {$SQLprefix}parameters SET longName=?,shortName=?,confYear=?,confURL=?,subDeadline=?,cmrDeadline=?,flags=?,period=?";
   $prms = array($longName,$shortName,$confYear,$confURL,$subDeadline,$cmrDeadline,$flags,$period);
