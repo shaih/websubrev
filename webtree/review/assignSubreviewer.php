@@ -30,7 +30,7 @@ while($subs = $res->fetch(PDO::FETCH_ASSOC)) {
 $prot = (defined('HTTPS_ON')||isset($_SERVER['HTTPS']))? 'https' : 'http';
 $guidelineURL = "$prot://".BASE_URL."review/guidelines.php";
 
-$links = show_rev_links(2);
+$links = show_rev_links();
 print <<<EndMark
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML Transitional 4.01//EN"
   "http://www.w3.org/TR/html4/loose.dtd">
