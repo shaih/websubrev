@@ -185,7 +185,7 @@ if ($disFlag && count($othersSubs)>0)
 print "\n<hr />\n{$links}\n</body>\n</html>\n";
 
 if (isset($_GET['listBox'])) { // remember the flags for next time
-  $pcmFlags &= 0xfffff000;
+  $pcmFlags &= 0xfffcff00;
   $pcmFlags |= $flags;
   pdo_query("UPDATE {$SQLprefix}committee SET flags=? WHERE revId=?",
 	    array($pcmFlags,$revId));
