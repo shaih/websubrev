@@ -32,6 +32,10 @@ if ($type==3)
 else
   $yourName = '<input type="hidden" name="yourName" value="Authors">';
 
+if (ANONYMOUS)
+  $anonText = 'Please ensure that your reply does not violate the anonymity rules.';
+else $anonText = '';
+
 $links = show_sub_links();
 print <<<EndMark
 <!DOCTYPE html>
@@ -58,7 +62,8 @@ $links
 <textarea cols="80" rows="15" name="rply2cmnt">
 </textarea>
 $yourName
-<p>Note that <b>you will not be able to modify your reply</b> after submitting this form, so take care to finalize it before submitting.</p>
+<p>$anonText
+Note that <b>you will not be able to modify your reply</b> after submitting this form, so take care to finalize it before submitting.</p>
 <input type="submit" value="Submit Reply">
 </form>
 <hr/>
