@@ -69,12 +69,13 @@ if (isset($_GET['onlyAssigned'])) {
   $assignedOnly = "";
 }
 
-if (isset($_GET['onlyDiscussed'])) $flags |= 1024;
+if (isset($_GET['onlyDiscussed'])) $flags |= 0x10000;
+  // only submissions that I discussed
 
 $opted_in = "";
 if (isset($_GET['optedIn'])) {
   $opted_in = "AND s.flags & ".FLAG_IS_CHECKED;
-  $flags |= 2048;
+  $flags |= 0x20000; // only opt-in submissions
 }
 
 $qry ="SELECT s.subId subId, title, authors, abstract, s.format format,

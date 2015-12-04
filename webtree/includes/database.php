@@ -151,6 +151,9 @@ $dbTables = array(
    *    32 - Display all reviews in one list, ignoring watch list designation
    *    64 - Show with reviews
    *   128 - Show with discussions
+   * Third byte: more chckbox flags for submission/review lists
+   *     1 - Submission list: only submissions that I discussed
+   *     2 - Submission list: only opt-in submissions (only used for the chair)
    * Fourth byte:
    *     1 - Send uploaded reviews back to reviewer by email
    *     2 - Send email when reviews/posts are made to submission on watch list

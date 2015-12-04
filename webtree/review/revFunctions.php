@@ -188,10 +188,11 @@ function listSubmissionsBox($canDiscuss, $flags=0)
   $tagsChk  = ($flags & 32) ? ' checked="checked"' : '';
   $abstChk  = ($flags & 64) ? ' checked="checked"' : '';
   $catChk  = ($flags & 128) ? ' checked="checked"' : '';
-  $rvChk   = ($flags & 256) ? ' checked="checked"' : '';
-  $disChk   = ($flags & 1024) ? ' checked="checked"' : '';
-  $optChk   = ($flags & 2048) ? ' checked="checked"' : '';
-  
+  $disChk  = ($flags & 0x10000) ? ' checked="checked"' : '';
+             // only submissions that I discussed
+  $optChk   = ($flags & 0x20000) ? ' checked="checked"' : '';
+             // only opt-in submissions
+
   if ($canDiscuss) {
     $stts = '<input type="checkbox" name="sortByStatus"'.$sttsChk.'> Status+';
     $viewDiscussed = '<input type="checkbox" name="onlyDiscussed"'.$disChk.'> Only submissions I discussed<br/>';
