@@ -77,7 +77,7 @@ EndMark;
   $chkaff = USE_AFFILIATIONS ? 'checked="checked"' : '';
   $chkanon = ANONYMOUS ? 'checked="checked"' : '';
   $chkAux = (CONF_FLAGS & FLAG_AUX_MATERIAL)? 'checked="checked"' : '';
-  $optIn = OPTIN_TEXT;
+  $optIn = defined("OPTIN_TEXT")? OPTIN_TEXT: '';
   print <<<EndMark
 $cmrDeadlineHTML
 <tr><td style="text-align: right;">Categories:</td>

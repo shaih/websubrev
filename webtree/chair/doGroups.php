@@ -24,6 +24,7 @@ function arrayOfIDs($list)
   return $ids;
 }
 
+
 // Modify or delete existing groups
 if (isset($_POST['EditGroups'])) {
   $success = '';
@@ -49,7 +50,7 @@ if (isset($_POST['EditGroups'])) {
       $newIDlist = arrayOfIDs($_POST[$subId]);
       $delta1 = array_diff($IDlist, $newIDlist);
       $delta2 = array_diff($newIDlist, $IDlist);
-      if (!empty($delta1) || !empty($delta12)) { // lists are different
+      if (!empty($delta1) || !empty($delta2)) { // lists are different
 	if (count($newIDlist)>1) {
 	  $newIDlist = implode(",", $newIDlist);
 	  $stmtUpdt->execute(array($newIDlist, $subId));
