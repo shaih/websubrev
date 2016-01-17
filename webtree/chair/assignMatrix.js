@@ -125,9 +125,9 @@ function updateColumn(revId)
     }
     var src;
     if (happy == null)  src = '../common/empty.gif';
-    else if (happy>=80) src = '../common/laugh.gif';
-    else if (happy>=65) src = '../common/ok.gif';
-    else if (happy>=50) src = '../common/sad.gif';
+    else if (happy>85) src = '../common/laugh.gif';
+    else if (happy>75) src = '../common/ok.gif';
+    else if (happy>65) src = '../common/sad.gif';
     else                src = '../common/angry.gif';
     for (i=0; i<2; i++) {
         var smily = document.getElementById('smily'+revId+'_'+i);
