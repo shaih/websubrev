@@ -112,6 +112,21 @@ if (!empty($versions)) {
   $versions = "<b>Older Versions (since the deadline):</b><ol>\n".$versions."</ol><hr/>\n";
 }
 
+// Show all the conflicts that the authors specified
+$conflictLine = '';
+if ($isChair) {
+  $qry = "SELECT a.authConflict, c.name FROM {$SQLprefix}assignments a, {$SQLprefix}committee c WHERE a.subId=$subId AND a.authConflict>'' AND c.revId=a.revId";
+  $res = pdo_query($qry);
+  while ($row = $res->fetch(PDO::FETCH_NUM)) {
+    if (!empty(trim($row[0]))) // check again for non-emptyness
+      $conflictLine .= "<li>{$row[1]}: {$row[0]}</li>\n";
+  }
+}
+if (!empty($conflictLine)) {
+  $conflictLine = "<h4>Author-specified conflicts:</h4>\n<ul>$conflictLine</ul>\n";
+}
+
+
 $links = show_rev_links();
 print <<<EndMark
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -144,11 +159,13 @@ $authors
 
 <b>Abstract:</b>
 <div class="fixed">$abstract</div>
-<br />
+<br/>
 
 <b>Category/KeyWords:</b> $category / $keyWords
 
-<br /><br />
+<br/>
+$conflictLine
+<br/>
 <center>
 $downLoad
 $discussLine

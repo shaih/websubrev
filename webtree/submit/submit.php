@@ -169,6 +169,7 @@ if (is_array($categories) && (count($categories)>1)) {
 }
 
 $anonText = ANONYMOUS? 'is anonymous and that it ': '';
+$confHome = '<a href="'.CONF_HOME.'" target="_blank">'.CONF_SHORT.' '.CONF_YEAR.' site</a>';
 print <<<EndMark
 <tr><td style="text-align: right;">Keywords:</td>
   <td><input name="keywords" size="90" type="text"><br /></td>
@@ -181,10 +182,26 @@ print <<<EndMark
   <td style="text-align: right;">$checkbox</td><td>$checkbox_text</td>
 </tr><tr>
   <td style="text-align: right;">Format:</td><td>Sign your name below to confirm that this submission {$anonText}adheres to the formatting requirements in the call-for-papers (including page limits) <input name="formality" class="required"/></td>
-</tr><tr><td></td>
-  <td><input value="$submitBtn" type="submit"></td>
-</tr></table>
-</form>
+</tr><tr><td></td><td><input value="$submitBtn" type="submit">
+EndMark;
+
+if (CONF_FLAGS & FLAG_AUTH_CONFLICT) { print <<<EndMark
+</td></tr>
+<tr><td style="text-align: right;"><input type='checkbox' name='noConflicts' value='1'></td>
+  <td><b>No Conflicts:</b>
+  Check if this submission has <b>NO CONFLICTS</b> with any
+  of the PC members.</br>
+  If unchecked, you will be able to specify the conflicts on the next page.
+  See the $confHome
+  for the conflict-of-interest rules and the list of PC members.
+</td>
+EndMark;
+} else {
+  print "<input type='hidden' name='noConflicts' value='1'></td>";
+}
+
+print <<<EndMark
+</tr></table></form>
 <hr />
 $links
 </body>

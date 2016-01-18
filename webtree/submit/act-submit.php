@@ -194,5 +194,9 @@ $filesize = isset($_FILES['sub_file']['size'])?
 email_submission_details($contact, 1, $subId, $subPwd, $title, $author, 
       $contact, $abstract, $category, $keywords, $comment, $fileFormat,
       $filesize);
-header("Location: receipt.php?subId=$subId&subPwd=$subPwd");
+if (!empty($_POST['noConflicts'])) {
+  header("Location: receipt.php?subId=$subId&subPwd=$subPwd");
+} else {
+  header("Location: specifyConflicts.php?subId=$subId&subPwd=$subPwd");
+}
 ?>

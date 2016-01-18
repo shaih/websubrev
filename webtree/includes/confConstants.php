@@ -19,6 +19,7 @@ define('FLAG_REBUTTAL_ON', 0x100);
 define('FLAG_REVISE_AFTER_DEADLINE', 0x200);
 define('FLAG_SEND_POSTS_BY_EMAIL', 0x400);
 define('FLAG_AUX_MATERIAL', 0x800);
+define('FLAG_AUTH_CONFLICT', 0x1000);
 
 //Flags for tags
 define('FLAGS_STICKY_TAG', 1);

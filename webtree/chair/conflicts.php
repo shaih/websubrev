@@ -30,7 +30,7 @@ while ($row = $res->fetch(PDO::FETCH_NUM)) {
 }
 
 // read the current blocked submissions from the database
-$qry = "SELECT subId, revId, pref, sktchAssgn FROM {$SQLprefix}assignments ORDER BY revId, subId";
+$qry = "SELECT subId, revId, pref, authConflict, sktchAssgn FROM {$SQLprefix}assignments ORDER BY revId, subId";
 $res = pdo_query($qry);
 $current = array();
 $authorOf = array();
@@ -38,12 +38,13 @@ while ($row = $res->fetch(PDO::FETCH_NUM)) {
   $subId = (int) $row[0];
   $revId = (int) $row[1];
   $pref = (int) $row[2];
-  $assign = (int) $row[3];
+  $authConflict = $row[3];
+  $assign = (int) $row[4];
   if (!isset($committee[$revId]) || !isset($subArray[$subId])) continue;
 
   if (!isset($current[$revId])) $current[$revId] = array();
 
-  $current[$revId][$subId] = array('assign'=>$assign, 'pref'=>$pref);
+  $current[$revId][$subId] = array('assign'=>$assign, 'pref'=>$pref, 'authConflict'=>$authConflict);
 }
 $qry = NULL;
 
@@ -167,27 +168,40 @@ A list of submissions and their IDs is found <a href="#sublist">at the
 bottom of this page</a></p>.
 
 <form accept-charset="utf-8" action="conflicts.php" enctype="multipart/form-data" method="post">
+<center>
+<span style='color: red;'>
+<b>Submissions that reviewers or authors asked to block are NOT blocked
+by default.<br/>To block them, copy their numbers to the columns on the
+left and then submit.</b>
+</span>
+</center>
 <table>
 <tbody>
 <tr><th>PC member</th>
-  <th>Maybe&nbsp;author&nbsp;of?&nbsp;</th>
-  <th>Mark&nbsp;author&nbsp;of&nbsp;</th>
-  <th>Other&nbsp;blocked&nbsp;submissions&nbsp;</th>
-  <th>Asked to block <span style='color: red;'>
-      These are NOT blocked autmatically!
-      To block them, copy #s to left columns and submit.</span></th></tr>
+  <th>Maybe author&nbsp;of?&nbsp;</th>
+  <th>Marked as<br/>author&nbsp;</th>
+  <th>Other blocked<br/>submissions&nbsp;</th>
+  <th>Reviewer asked to block<br/>
+      <span style='color: red;'>NOT blocked autmatically!</span></th>
+  <th>Authors asked to block<br/>
+      <span style='color: red;'>NOT blocked autmatically!</span></th>
+</tr>
 
 EndMark;
 
 $class = 'darkbg';
 $stmt = $db->prepare("SELECT subId FROM {$SQLprefix}submissions WHERE authors like ?");
 foreach ($committee as $revId => $name) {
-  $sep1 = $sep2 = $sep3 = $asked2block = $blocked = $authorOf = '';
+  $sep1 = $sep2 = $sep3 = $sep4 = $asked2block = $authAsked = $blocked = $authorOf = '';
   if (isset($current[$revId]))
     foreach ($current[$revId] as $subId => $a) {
     if ($a['pref']==0) { $asked2block .= $sep1 . $subId; $sep1 = ', '; }
     if ($a['assign']==-1) { $blocked  .= $sep2 . $subId; $sep2 = ', '; }
     if ($a['assign']==-2) { $authorOf .= $sep3 . $subId; $sep3 = ', '; }
+    if (!empty($a['authConflict'])) {
+        $authAsked.= $sep4 . "<a href='../review/submission.php?subId=$subId' target='_blank' data-toggle='tooltip' title='{$a['authConflict']}'>$subId</a>";
+        $sep4 = ', ';
+    }
   }
   $maybeAuthor = $sep4 = '';
   if ($stmt->execute(array("%$name%")))
@@ -197,19 +211,24 @@ foreach ($committee as $revId => $name) {
     }
   print "<tr class='$class'><td>$name:</td>
   <td class='ctr'>$maybeAuthor</td>
-  <td><input name='authorOf[$revId]' size='15' value='$authorOf'/></td>
-  <td><input name='blocked[$revId]' type='text' size='30' value='$blocked'/></td>
+  <td><input name='authorOf[$revId]' size='10' value='$authorOf'/></td>
+  <td><input name='blocked[$revId]' type='text' size='16' value='$blocked'/></td>
   <td>&nbsp;{$asked2block}</td>
+  <td>&nbsp;{$authAsked}</td>
 </tr>\n";
   if ($class=='darkbg') $class = 'lightbg';
   else                  $class = 'darkbg';
 }
 
 print <<<EndMark
+<tr><td colspan=5></td>
+  <td>Hover over subId to see<br/>reason for conflict request</td>
+</tr>
 </tbody></table>
 <input type="submit" value="Block Access to Submissions">
 <input type="hidden" name="blockAccess" value="on">
 </form>
+<hr/>
 
 <h2><a name="sublist">Submission list</a></h2>
 <dl>

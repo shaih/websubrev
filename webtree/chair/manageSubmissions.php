@@ -77,6 +77,7 @@ EndMark;
   $chkaff = USE_AFFILIATIONS ? 'checked="checked"' : '';
   $chkanon = ANONYMOUS ? 'checked="checked"' : '';
   $chkAux = (CONF_FLAGS & FLAG_AUX_MATERIAL)? 'checked="checked"' : '';
+  $chkAuthConf = (CONF_FLAGS & FLAG_AUTH_CONFLICT)? 'checked="checked"' : '';
   $optIn = defined("OPTIN_TEXT")? OPTIN_TEXT: '';
   print <<<EndMark
 $cmrDeadlineHTML
@@ -108,6 +109,11 @@ $cmrDeadlineHTML
   submission file.
   (<a target="_blank" href="../documentation/submitter.html#submit">what&prime;s
   this?</a>)</td>
+</tr>
+<tr>
+  <td class=rjust>Author-declared&nbsp;Conflicts:</td>
+  <td><input name="authConflict" type="checkbox" $chkAuthConf>
+    Check to allow authors to specify conflict-of-interest between PC members and their submission (<a target="_blank" href="../documentation/submitter.html#submit">what&prime;s this?</a>)
 </tr>
       
 EndMark;

@@ -224,6 +224,11 @@ if (is_array($categories) && (count($categories)>1)) {
 }
 
 $anonText = ANONYMOUS? 'is anonymous and that it ': '';
+if (CONF_FLAGS & FLAG_AUTH_CONFLICT) {
+    $authorConflictLine = '<tr><td></td><td>You can use the following link to <a href="specifyConflicts.php?subId='.$subId.'&amp;subPwd='.$subPwd.'" target="_blank">revise your conflict-of-interest declarations</a>.</td></tr>';
+}
+else $authorConflictLine = '';
+
 print <<<EndMark
 <tr>
   <td style="text-align: right;">Keywords:</td>
@@ -239,6 +244,7 @@ print <<<EndMark
 </tr><tr>
   <td></td><td><input value="{$submit}Revise Submission" type="submit" name="reviseSub"></td>
 </tr>
+$authorConflictLine
 </table>
 </form>
 <hr />

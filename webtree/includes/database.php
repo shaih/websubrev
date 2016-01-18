@@ -208,7 +208,12 @@ $dbTables = array(
   // The pref column is the reviewer's preferences, ranging from 0 
   // (conflict) and 1 (don't want to review) through 5 (want to review). 
   //
-  // the compatible field is the extent to which the chair thinks that
+  // The authConflict field is for recording a conflict from the author side,
+  // any non-empty value means a conflict, and the authors can optionally
+  // specify the reason why they feel that this PC member has a conflict
+  // with their paper.
+  //
+  // The compatible field is the extent to which the chair thinks that
   // this reviewer is a good reviewer for that submission, and it can be
   // either -1 (not compatible) 0 (default) or 1 (should review this).
   //
@@ -221,8 +226,9 @@ $dbTables = array(
   // papers that they want to watch during the discussion phase.
   'assignments' =>
    "subId smallint(5) NOT NULL,
-    revId smallint(3) NOT NULL, 
-    pref tinyint(1) NOT NULL DEFAULT 3, 
+    revId smallint(3) NOT NULL,
+    pref tinyint(1) NOT NULL DEFAULT 3,
+    authConflict text default NULL,
     compatible tinyint(1) NOT NULL DEFAULT 0,
     sktchAssgn tinyint(1) NOT NULL DEFAULT 0,
     assign tinyint(1) NOT NULL DEFAULT 0,
@@ -359,3 +365,4 @@ function create_tabels($db, $prefix='')
   }
 }
 ?>
+// ALTER TABLE `test2015assignments` ADD `authConflict` TEXT NULL DEFAULT NULL AFTER `pref`;

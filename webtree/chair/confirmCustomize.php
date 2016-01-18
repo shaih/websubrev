@@ -45,6 +45,10 @@ $auxMaterial = isset($_POST['auxMaterial']) ?
   'Authors can upload separate file for supported material' :
   'Authors <b>cannot</b> upload separate file for supported material';
 
+$authConflict = isset($_POST['authConflict']) ?
+  'Authors can specify conflicts of interest' :
+  'Authors <b>cannot</b> specify conflicts of interest';
+
 $checktext = isset($_POST['checktext']) ? $_POST['checktext'] : "";
 
 $anonymous = isset($_POST['anonymous']) ?
@@ -268,6 +272,9 @@ print <<<EndMark
 <tr><td style="text-align:right;">Auxiliary Material:</td>
     <td>$auxMaterial</td>
 </tr>
+<tr><td style="text-align:right;">Author-specified Conflicts:</td>
+    <td>$authConflict</td>
+</tr>
 </tbody></table>
 
 <h2>Program Committee:</h2>     
@@ -394,6 +401,9 @@ if (isset($_POST['sendPostByEmail'])) {
 }
 if (isset($_POST['auxMaterial'])) {
   print "<input name=\"auxMaterial\" type=\"hidden\" value=\"on\">\n";
+}
+if (isset($_POST['authConflict'])) {
+  print "<input name=\"authConflict\" type=\"hidden\" value=\"on\">\n";
 }
 
 print "<input name=\"maxGrade\" type=\"hidden\" value=\"$maxGrade\">\n";

@@ -110,25 +110,31 @@ if (isset($_POST['formats'])) {
 }
 
 $oldAuxFlag = ((CONF_FLAGS & FLAG_AUX_MATERIAL)? true : false);
+$oldAuthConf= ((CONF_FLAGS & FLAG_AUTH_CONFLICT)? true : false);
+
 if (isset($_POST['subFlags'])) {
   $anonymous = isset($_POST['anonymous']);
   $affiliations = isset($_POST['affiliations']);
   $auxMaterial  = isset($_POST['auxMaterial']);
-  if (USE_AFFILIATIONS!=$affiliations || ANONYMOUS!=$anonymous || $oldAuxFlag!=$auxMaterial) 
+  $authConf     = isset($_POST['authConflict']);
+  if (USE_AFFILIATIONS!=$affiliations || ANONYMOUS!=$anonymous
+      || $oldAuxFlag!=$auxMaterial || $oldAuthConf!=$authConf)
     $changeParams = true;
 } else {
   $affiliations = USE_AFFILIATIONS;
   $anonymous = ANONYMOUS;
   $auxMaterial = $oldAuxFlag;
+  $authConf = $oldAuthConf;
 }
 
 if ($changeParams) {
   if (empty($confURL)) $confURL = '.';
 
-  $flags = CONF_FLAGS & ~(FLAG_ANON_SUBS | FLAG_AFFILIATIONS | FLAG_AUX_MATERIAL);
+  $flags = CONF_FLAGS & ~(FLAG_ANON_SUBS | FLAG_AFFILIATIONS | FLAG_AUX_MATERIAL | FLAG_AUTH_CONFLICT);
   if ($anonymous)      $flags |= FLAG_ANON_SUBS;
   if ($affiliations)   $flags |= FLAG_AFFILIATIONS;
   if ($auxMaterial)    $flags |= FLAG_AUX_MATERIAL;
+  if ($authConf)       $flags |= FLAG_AUTH_CONFLICT;
 
   $qry = "UPDATE {$SQLprefix}parameters SET longName=?,shortName=?,confYear=?,confURL=?,subDeadline=?,cmrDeadline=?,flags=?,period=?";
   $prms = array($longName,$shortName,$confYear,$confURL,$subDeadline,$cmrDeadline,$flags,$period);

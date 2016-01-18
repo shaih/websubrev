@@ -158,6 +158,11 @@ and <a href="#review">reviews</a>.
     Check to allow authors to upload "supporting material", in addition to the submission file.
     (<a target="_blank" href="../documentation/submitter.html#submit">what&prime;s this?</a>)
 </tr>
+<tr>
+  <td class=rjust>Author-declared&nbsp;Conflicts:</td>
+  <td><input name="authConflict" type="checkbox">
+    Check to allow authors to specify conflict-of-interest between PC members and their submission (<a target="_blank" href="../documentation/submitter.html#submit">what&prime;s this?</a>)
+</tr>
 <!-- ================= The Program Committee =================== -->
 <tr><td colspan="2" class=rjust><input type='hidden' name='chair' value='$chrEml'><hr /></td></tr>
 <!-- ================= this is commented out =================== --
