@@ -19,11 +19,11 @@ if (isset($_POST['updateWatchList'])) {
       if ($subId>0) $watchSubs[] = $subId;
     }
     $vals = '('
-      .implode(",$revId,3,0,0,0,1),(", $watchSubs).",$revId,3,0,0,0,1)";
+      .implode(",$revId),(", $watchSubs).",$revId)";
     $watchList = implode(', ', $watchSubs);
 
     // Insert records to the database (existing records will not be affected)
-    $qry = "INSERT IGNORE INTO {$SQLprefix}assignments VALUES{$vals}";
+    $qry = "INSERT IGNORE INTO {$SQLprefix}assignments (subId,revId) VALUES{$vals}";
     pdo_query($qry);
 
     // Update existing recors: first set watch=1 for records in the list,
