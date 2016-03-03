@@ -95,7 +95,7 @@ EndMark;
 if (!defined('REVIEW_PERIOD') || REVIEW_PERIOD!=true) {
   print "An email confirmation was sent to the contact address below. If you do not receive the confirmation email soon, please contact the chair. ";
 }
-if (CONF_FLAGS & FLAG_AUTH_CONFLICT)
+if ((PERIOD<PERIOD_CAMERA) &&(CONF_FLAGS & FLAG_AUTH_CONFLICT))
   $authorConflictLine = 'You can use the following link to <a href="specifyConflicts.php?subId='.$subId.'&amp;subPwd='.$subPwd.'" target="_blank">revise your conflict-of-interest declarations</a>.';
 else $authorConflictLine = '';
 
