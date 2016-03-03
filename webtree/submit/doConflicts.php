@@ -20,7 +20,7 @@ $row= $res->fetch(PDO::FETCH_NUM)
 // Record conflicts
 // read the current blocked submissions from the database
 $qry = "SELECT revId,authConflict FROM {$SQLprefix}assignments WHERE subId=$subId";
-$res = pdo_query($qry, array($_GET['subPwd']));
+$res = pdo_query($qry);
 
 // First get old conflicts (if any), then overwrite with new ones
 $oldConflicts = array();
