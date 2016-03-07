@@ -114,7 +114,7 @@ pdo_query($qry, $prms, "Cannot set conference parameters: ");
 pdo_query("DELETE FROM {$SQLprefix}committee"); // start from scratch
 
 if (!empty($_GET['password']))      // set pwd for 1st chair
-  $pwd = my_addslashes($_GET['password']);
+  $pwd = $_GET['password'];
 else {
   $pwd = sha1(uniqid(rand()).mt_rand());        // returns hex string
   $pwd = alphanum_encode(substr($pwd, 0, 15));  // "compress" a bit
