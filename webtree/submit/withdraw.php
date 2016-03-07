@@ -31,7 +31,7 @@ $subDdline = 'Deadline is '
 
 $chairNotice = '';
 if (PERIOD>PERIOD_SUBMIT)
-  $chairNotice = "<b>Notice: only the PC chair can use this page after the deadline.</b><br/>\n";
+  $chairNotice = "<b>Notice: only the PC chair can withdraw submissions after the deadline, <span style=\"color:red;\">and AUTHORS WILL NOT BE NOTIFIED of the withdrawal!</span></b><br/>\n";
 
 $links = show_sub_links(5);
 print <<<EndMark

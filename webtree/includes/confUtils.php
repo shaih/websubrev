@@ -329,9 +329,12 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
   if (defined('REVIEW_PERIOD') && REVIEW_PERIOD==true) {
     $sndto = chair_emails();
     $cc = array();
+    $msg = "This email WAS NOT SENT TO THE AUTHORS, only to the chair(s)!\n\n";
   }
-  else 
+  else {
     $cc = chair_emails();
+    $msg = '';
+  }
   
   if ($status < 0)  // if an error occured, send also to the administrator
     array_push($cc, ADMIN_EMAIL);
@@ -349,7 +352,7 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
     break;
   }
 
-  $msg = "The submissions details are as follows:\n";
+  $msg .= "The submissions details are as follows:\n";
   if (!empty($fileFormat) && substr($fileFormat, -12)=='.unsupported') {
     $msg .= "UNSUPPORTED FORMAT: \t{$fileFormat}\n";
   }

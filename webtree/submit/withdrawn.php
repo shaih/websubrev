@@ -21,7 +21,12 @@ if (defined('CAMERA_PERIOD')) {
 
 $confName = CONF_SHORT . ' ' . CONF_YEAR;
 $subId = (int) trim($_GET['subId']);
-$subPwd = my_addslashes(trim($_GET['subPwd']));
+$subPwd = $_GET['subPwd'];
+
+if (defined('REVIEW_PERIOD') && REVIEW_PERIOD===true) {
+  $noNotify = ', <span style="color:red">but AUTHORS WERE NOT NOTIFIED!</span>';
+}
+else $noNotify = '.';
 
 $links = show_sub_links(); 
 print <<<EndMark
@@ -42,7 +47,7 @@ $links
 <hr />
 <h1>Withdrawal Confirmation</h1>
 
-<b>Your submission to $confName has been withdrawn.</b>
+<b>Submission $subId to $confName has been withdrawn{$noNotify}</b>
 <br/>
 <br/>
 An email confirmation was sent to the contact address below. If you do not
@@ -85,6 +90,9 @@ $ttl = htmlspecialchars($row['title']);
 $athr = htmlspecialchars($row['authors']);
 $affl = htmlspecialchars($row['affiliations']);
 $cntct = htmlspecialchars($row['contact']);
+if (defined('REVIEW_PERIOD') && REVIEW_PERIOD===true) {
+  $cntct .= ' (BUT WITHDRAWAL EMAIL WAS SENT ONLY TO CHAIR)';
+}
 $abs = nl2br(htmlspecialchars($row['abstract']));
 $cat = htmlspecialchars($row['category']);
 $kwrd = htmlspecialchars($row['keyWords']);
@@ -129,9 +137,6 @@ if (USE_AFFILIATIONS) {
       <td style="text-align: right;">Affiliations:</td>
       <td>'.$affl."</td>
     </tr>\n";
-}
-if (defined('REVIEW_PERIOD') && REVIEW_PERIOD===true) {
-  $cntct .= ' (BUT WITHDRAWAL EMAIL WAS SENT ONLY TO CHAIR)';
 }
 print <<<EndMark
     <tr>

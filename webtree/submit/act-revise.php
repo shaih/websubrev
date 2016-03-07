@@ -15,7 +15,7 @@ $confName = CONF_SHORT . '_' . CONF_YEAR;
 
 // Check that mandatory subId and subPwd are specified
 $subId = (int) trim($_POST['subId']);
-$subPwd = my_addslashes(trim($_POST['subPwd']));
+$subPwd = $_POST['subPwd'];
 if (empty($subId) || empty($subPwd))
   exit("<h1>Revision Failed</h1>Missing submission-ID or password.");
 
