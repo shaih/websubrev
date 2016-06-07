@@ -128,6 +128,7 @@ CREATE TABLE IF NOT EXISTS submissions (
 CREATE TABLE IF NOT EXISTS acceptedPapers (
     subId smallint(5) NOT NULL,
     nPages smallint(3),
+    volume smallint DEFAULT 0 NOT NULL,
     pOrder smallint(3) DEFAULT 0 NOT NULL,
     copyright text,
     copyrightTime datetime DEFAULT NULL,

@@ -12,10 +12,11 @@ if (PERIOD < PERIOD_REVIEW) die("<h1>Too early to produce TOC</h1>");
 
 $cName = CONF_SHORT.' '.CONF_YEAR;
 
-$qry = "SELECT s.subId subId, title, authors, nPages, pOrder
+$qry = "SELECT s.subId subId, title, authors, nPages, volume, pOrder
     FROM {$SQLprefix}submissions s
          LEFT JOIN {$SQLprefix}acceptedPapers ac USING(subId)
-    WHERE status='Accept' ORDER BY IF(ac.pOrder>0, ac.pOrder, 9999), subId";
+    WHERE status='Accept' ORDER BY
+       IF(ac.volume>0,ac.volume,9999), IF(ac.pOrder>0,ac.pOrder,9999), subId";
 $papers = pdo_query($qry)->fetchAll(PDO::FETCH_ASSOC);
 
 $links = show_chr_links();
@@ -40,15 +41,18 @@ tables can be used also for other LaTeX styles.<br/>
 <br/>
 For each accepted paper you should specify the number of pages and its
 order in the proceedings (e.g., 1&nbsp;for the first paper in the proceedings,
-2&nbsp; for the second paper, etc.). Leave the order field blank for papers
-that will not appear in the proceedings (such as merged papers, etc).
-You can also correct the titles and author list of papers (for example
-to add LaTeX accent commands for European characters).<br/>
+2&nbsp; for the second paper, etc.). Optionally you can also specify the
+volume number for each paper, this will make the page-numbering reset to 1
+at the beginning of every volume.
+Leave the order field blank for papers that will not appear in the
+proceedings (such as merged papers, etc).  You can also correct the
+titles and author list of papers (for example to add LaTeX accent
+commands for European characters).<br/>
 <br/>
 
 <form accept-charset="utf-8" action="doMakeTOC.php"  enctype="multipart/form-data" method="post">
 <table cellspacing=3><tbody>
-<tr><th>subId</th><th>nPages</th><th>order</th>
+<tr><th>subId</th><th>nPages</th><th>volume</th><th>order</th>
   <th>title &amp; authors (separate authors by semi-colon)</th>
 </tr>
 
@@ -60,12 +64,15 @@ foreach ($papers as $p) {
   $title = htmlspecialchars(trim($p["title"]));
   $authors = trim($p["authors"]);
   $authors = htmlspecialchars(str_replace(" and ", "; ", $authors));
+  $volume = (int) trim($p["volume"]);
+  if ($volume==0) $volume = '';
   $pOrder = (int) trim($p["pOrder"]);
-  if ($pOrder==0) $pOrder = NULL;
+  if ($pOrder==0) $pOrder = '';
   $nPages = htmlspecialchars(trim($p["nPages"]));
   print <<<EndMark
 <tr><td style="text-align: right;">$subId. </td>
   <td><input name="nPages[$subId]" type="text" value="$nPages" size=3></td>
+  <td><input name="volume[$subId]" type="text" value="$volume" size=3></td>
   <td><input name="pOrder[$subId]" type="text" value="$pOrder" size=3></td>
   <td><input name="title[$subId]" type="text" value="$title" size=80></br>
       <input name="authors[$subId]" type="text" value="$authors" size=80><br/>

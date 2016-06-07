@@ -5,7 +5,7 @@
  * Common Public License (CPL) v1.0. See the terms in the file LICENSE.txt
  * in this package or at http://www.opensource.org/licenses/cpl1.0.php
  */
- $needsAuthentication = true; 
+$needsAuthentication = true; 
 require 'header.php';
 
 $cName = CONF_SHORT.' '.CONF_YEAR;
@@ -16,6 +16,12 @@ if (PERIOD<PERIOD_REVIEW) die("<h1>Too early to produce TOC</h1>");
 if (isset($_POST['makeTOC'])) {
   // read user input
   $papers = array();
+  foreach ($_POST['volume'] as $subId => $vol) {
+    $subId = (int) $subId;
+    if (isset($papers[$subId]) && !is_array($papers[$subId])) // check that this subId has a record
+      $papers[$subId] = array();
+    $papers[$subId]['volume'] = (int) trim($vol);
+  }
   foreach ($_POST['pOrder'] as $subId => $ord) {
     $subId = (int) $subId;
     if (isset($papers[$subId]) && !is_array($papers[$subId])) // check that this subId has a record
@@ -33,8 +39,7 @@ if (isset($_POST['makeTOC'])) {
     if (!is_array($papers[$subId])) // check that this subId has a record
       $papers[$subId] = array();
     $papers[$subId]['title'] = $ttl;
-  }
-  
+  }  
   foreach ($_POST['authors'] as $subId => $athr) {
     $subId = (int) $subId;
     if (!is_array($papers[$subId])) // check that this subId has a record
@@ -45,13 +50,17 @@ if (isset($_POST['makeTOC'])) {
   // Update database with the given user input
   foreach ($papers as $subId => $ppr) {
     
-    if (isset($papers[$subId]['nPages']) || isset($papers[$subId]['pOrder'])) {
+    if (isset($papers[$subId]['nPages'])
+        || isset($papers[$subId]['volume']) || isset($papers[$subId]['pOrder'])) {
       $updates = $sep = '';
       if (isset($papers[$subId]['nPages'])) {
-	$updates = "nPages=".$papers[$subId]['nPages']; $sep = ',';
+        $updates = "nPages=".$papers[$subId]['nPages']; $sep = ',';
+      }
+      if (isset($papers[$subId]['volume'])) {
+        $updates .= "{$sep}volume=".$papers[$subId]['volume']; $sep = ',';
       }
       if (isset($papers[$subId]['pOrder'])) {
-	$updates .= "{$sep}pOrder=".$papers[$subId]['pOrder']; $sep = ',';
+        $updates .= "{$sep}pOrder=".$papers[$subId]['pOrder']; $sep = ',';
       }
       pdo_query("UPDATE {$SQLprefix}acceptedPapers SET $updates WHERE subId=$subId");
     }
@@ -222,8 +231,22 @@ EndMark;
 
   // print the list of PC members in the formt "Name & Affiliation \\"
   uasort($papers, "cmpOrder"); // sort by order
+
+  //  exit('<pre>'.print_r($papers, true).'</pre>');
+
+  $curVol = -1;
   $curPage = 1;
   foreach ($papers as $subId => $ppr) if ($ppr['pOrder']>0) {
+    if ($ppr['volume'] != $curVol) {
+      $curVol = $ppr['volume'];
+      $curPage = 1;
+      $ltxFile .= <<<EndMark
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%                     Volume $curVol                             %%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+EndMark;
+    }
     $ltxFile .= "\\setcounter{page}{".$curPage."}\n";
     $curPage += $ppr['nPages'];
     $ltxFile .= "\\title{".$ppr['title']."}\n";
@@ -261,7 +284,9 @@ exit();
 
 function cmpOrder($a, $b)
 {
-  return $a['pOrder'] - $b['pOrder'];
+    $volDiff = $a['volume'] - $b['volume'];
+    if ($volDiff!=0) return $volDiff;
+    else return $a['pOrder'] - $b['pOrder'];
 }
 
 function lastNameFirst($name)
