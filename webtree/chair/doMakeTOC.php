@@ -13,15 +13,8 @@ $cNameLowCase = strtolower(CONF_SHORT.CONF_YEAR);
 $cFullName = CONF_NAME;
 if (PERIOD<PERIOD_REVIEW) die("<h1>Too early to produce TOC</h1>");
 
-if (isset($_POST['makeTOC'])) {
-  // read user input
+if (isset($_POST['makeTOC'])) { // read user input
   $papers = array();
-  foreach ($_POST['volume'] as $subId => $vol) {
-    $subId = (int) $subId;
-    if (isset($papers[$subId]) && !is_array($papers[$subId])) // check that this subId has a record
-      $papers[$subId] = array();
-    $papers[$subId]['volume'] = (int) trim($vol);
-  }
   foreach ($_POST['pOrder'] as $subId => $ord) {
     $subId = (int) $subId;
     if (isset($papers[$subId]) && !is_array($papers[$subId])) // check that this subId has a record
@@ -46,18 +39,29 @@ if (isset($_POST['makeTOC'])) {
       $papers[$subId] = array();
     $papers[$subId]['authors'] = $athr;
   }
+
+  // Compute the partition to volumes
+  uasort($papers, "cmpOrder"); // sort by order
+  $vol = 0;
+  foreach ($papers  as $subId => $ppr) {
+    if (empty($_POST['pOrder'][$subId])) {
+      $papers[$subId]['volume'] = -1;
+        continue;
+    }
+    if (!empty($_POST['volFst'][$subId])) // beginning of new volume
+        $vol++;
+    if ($vol<1) $vol=1; // Always start from 1 (or more)
+    $papers[$subId]['volume'] = $vol;
+  }
+  // exit('<pre>'.print_r($papers, true).'</pre>');
   
   // Update database with the given user input
   foreach ($papers as $subId => $ppr) {
     
-    if (isset($papers[$subId]['nPages'])
-        || isset($papers[$subId]['volume']) || isset($papers[$subId]['pOrder'])) {
+    if (isset($papers[$subId]['nPages']) || isset($papers[$subId]['pOrder'])) {
       $updates = $sep = '';
       if (isset($papers[$subId]['nPages'])) {
         $updates = "nPages=".$papers[$subId]['nPages']; $sep = ',';
-      }
-      if (isset($papers[$subId]['volume'])) {
-        $updates .= "{$sep}volume=".$papers[$subId]['volume']; $sep = ',';
       }
       if (isset($papers[$subId]['pOrder'])) {
         $updates .= "{$sep}pOrder=".$papers[$subId]['pOrder']; $sep = ',';
@@ -229,12 +233,8 @@ EndMark;
 
 EndMark;
 
-  // print the list of PC members in the formt "Name & Affiliation \\"
-  uasort($papers, "cmpOrder"); // sort by order
-
-  //  exit('<pre>'.print_r($papers, true).'</pre>');
-
-  $curVol = -1;
+  // print title/authors/page-number of submissions
+  $curVol = 0;
   $curPage = 1;
   foreach ($papers as $subId => $ppr) if ($ppr['pOrder']>0) {
     if ($ppr['volume'] != $curVol) {
@@ -284,9 +284,7 @@ exit();
 
 function cmpOrder($a, $b)
 {
-    $volDiff = $a['volume'] - $b['volume'];
-    if ($volDiff!=0) return $volDiff;
-    else return $a['pOrder'] - $b['pOrder'];
+  return $a['pOrder'] - $b['pOrder'];
 }
 
 function lastNameFirst($name)
