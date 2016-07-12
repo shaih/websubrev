@@ -29,7 +29,7 @@ if(isset($_POST['rebuttal'])) {
   }
 }
 
-$rebuttalBox = nl2br($rebuttal);
+$rebuttalBox = nl2br(htmlspecialchars($rebuttal));
 if (!empty($rebuttal)) {
   $rebuttalBox =<<<EndMark
 <h4>Current rebuttal text:</h4>
@@ -50,7 +50,7 @@ $res = pdo_query($qry, array($submission['subId']));
 $comments = array();
 while($row = $res->fetch(PDO::FETCH_ASSOC)) {
   $row['comments2authors'] 
-    = str_replace("\n", "<br/>\n", $row['comments2authors']);
+    = str_replace("\n", "<br/>\n", htmlspecialchars($row['comments2authors']));
   $comments[] = $row;
 }
 
