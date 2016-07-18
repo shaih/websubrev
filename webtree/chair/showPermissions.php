@@ -19,7 +19,7 @@ print <<<EndMark
 <style type="text/css">
   td.yes {color:green;}
   td.no {color:red;}
-<style>
+</style>
 </head>
 
 <body>
