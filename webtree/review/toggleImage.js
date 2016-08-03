@@ -84,7 +84,7 @@ function submitTags(e)
 
       if (!data) { // data is empty
 	spanTags.css('color', 'gray');
-	data = 'Click to add tags';
+	data = 'Click to add tags: tag1; tag2; ...';
       } else {
 	spanTags.css('color', 'black');	
       }

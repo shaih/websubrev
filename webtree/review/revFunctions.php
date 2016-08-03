@@ -196,7 +196,7 @@ function listSubmissionsBox($canDiscuss, $flags=0)
   if ($canDiscuss) {
     $stts = '<input type="checkbox" name="sortByStatus"'.$sttsChk.'> Status+';
     $viewDiscussed = '<input type="checkbox" name="onlyDiscussed"'.$disChk.'> Only submissions I discussed<br/>';
-    $search= "Search tags:<input name='allTags' placeholder='tag1; tag2; ...'>";
+    $search= "Search <a href='../documentation/reviewer.html#tags' target='_blank'>tags</a>:<input name='allTags' placeholder='tag1; -tag2; ...'>";
     $showTags = "<input type='checkbox' name='showTags'{$tagsChk}>Show with tags<br/>";
   } else { 
     $stts = '&nbsp;';
@@ -306,7 +306,7 @@ function showTags($tags, $subId, $isChair)
 {
   $tags = tagLine($tags, $subId, $isChair);
   if (empty($tags))
-    $tagLine = "<span class='tags' style='color: gray;'>Click to add tags</span>";
+    $tagLine = "<span class='tags' style='color: gray;'>Click to add tags: tag1; tag2;...</span>";
   else
     $tagLine = "<span class='tags' style='color: black;'>$tags</span>";
 

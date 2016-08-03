@@ -827,7 +827,7 @@ function tagLine($tags, $subId, $isChair)
 {
   $tagLine = $semi = '';
   foreach($tags as $tag) {
-    if (!preg_match('/^[\~\$\^]?[0-9a-z_\- ]+$/i', $tag)) continue; //invalid
+    if (!preg_match('/^[-]*[\~\$\^]?[0-9a-z_\- ]+$/i', $tag)) continue; //invalid
     if (($tag[0] == '\$') && (!$isChair)) continue; // not a chair
     $tagLine .= $semi . $tag;
     $semi = '; ';
@@ -840,7 +840,11 @@ function allTagsExist($tagArray, $tagList)
 {
   foreach (explode(';',$tagList) as $tag) {
     $tag = trim($tag);
-    if (!in_array($tag, $tagArray)) return false;
+    if ($tag[0]=='-') { // negative tag, it must not exist
+      if (in_array(substr($tag,1), $tagArray)) return false;
+    } else {            // positive tag, it must exist
+      if (!in_array($tag, $tagArray)) return false;
+    }
   }
   return true;
 }
@@ -850,7 +854,11 @@ function someTagsExist($tagArray, $tagList)
 {
   foreach (explode(';',$tagList) as $tag) {
     $tag = trim($tag);
-    if (in_array($tag, $tagArray)) return true;
+    if ($tag[0]=='-') { // negative tag, it should not exist
+      if (!in_array(substr($tag,1), $tagArray)) return true;
+    } else {            // positive tag, it should exist
+      if (in_array($tag, $tagArray)) return true;
+    }
   }
   return false;
 }

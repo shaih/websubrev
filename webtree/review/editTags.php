@@ -53,6 +53,8 @@ There are also public "sticky" tags, which are preceded by '<b><tt>^</tt></b>', 
 </p>
 <p>All these variations are considered different tags, and a single submission can have any combination of them. For example it can have a public tag "Apple", another sticky public tag "^Apple", $chrOnly3 and several private tags "~Apple" for several different PC members.
 </p>
+<p>When searching by tags, preceeding a tag by a minus sign '-' means that the submissions should NOT have that tag. So for example searching for "apple; -~orange" would return all the submissions that have the public tag 'apple' but not the private tag '~orange'.
+</p>
 <form accept-charset="utf-8" action="doEditTags.php" method="POST" enctype="multipart/form-data">
 <input type="hidden" name="subId" value="$subId"/>
 <textarea style="width: 90%;" name="tags">$tags
