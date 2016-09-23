@@ -323,7 +323,8 @@ function make_link($linkto, $text, $notLink=false)
 function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL, 
 	                          $athr = NULL, $cntct = NULL, $abs = NULL,
 				  $cat = NULL, $kwrd = NULL, $cmnt = NULL,
-				  $fileFormat = NULL, $fileSize=NULL)
+				  $fileFormat = NULL, $fileSize=NULL,
+                                  $eprint=NULL)
 {
   // During review process, don't send email to authors, only to chair
   if (defined('REVIEW_PERIOD') && REVIEW_PERIOD==true) {
@@ -371,6 +372,14 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
       $msg.="$prot://".BASE_URL."submit/download.php?subId=$sid&subPwd=$pwd\n\n";
     }
   }
+ 
+  if (!empty($eprint) && substr($eprint,0,4)=="xxxx") { // auto-pushed to eprint
+    $msg .= "Your 1st camera-ready upload was also auto-uploaded to the ePrint\n";
+    $msg .= "archive as submission $eprint. Note that revising your camera-ready\n";
+    $msg .= "version DOES NOT UPDATE the ePrint submission!! You need to update the\n";
+    $msg .= "ePrint subimssion separately with the latest version of your paper.\n\n";
+  }
+
   if (!empty($ttl))  { $msg .= "Title:    \t{$ttl}\n"; }
   if (!empty($athr)) { $msg .= "Authors:  \t{$athr}\n"; }
   if (!empty($cntct)){ $msg .= "Contact:  \t{$cntct}\n"; }
@@ -379,17 +388,16 @@ function email_submission_details($sndto, $status, $sid, $pwd, $ttl = NULL,
   if (!empty($cmnt)) { $msg .= "Comments: \t{$cmnt}\n"; }
   if (!empty($abs))  { $msg .= "\nAbstract:\n" .wordwrap($abs, 78) ."\n"; }
 
-
   $chairSbjct = $sbjct;
   if (!empty($cmnt))
     $chairSbjct .= " (comments to chair included)";
 
-  //Send to author if 
+  // if this is not the review period, send to both authors and chairs
   if (!(defined('REVIEW_PERIOD') && REVIEW_PERIOD==true)) {
     my_send_mail($sndto, $sbjct, $msg, array(), "receipt to $sndto");
     my_send_mail($cc, $chairSbjct, $msg, array(), "receipt to $sndto");
   }
-  else {
+  else { // send only to chairs during the review period
     my_send_mail($sndto, $chairSbjct, $msg, array(), "receipt to $sndto");
   }
 }

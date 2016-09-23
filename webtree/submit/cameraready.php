@@ -57,7 +57,7 @@ if (file_exists($file) && empty($copyright) && !$chair) {
 
 if (defined('IACR')) { // Specify ePrint report (if exists)
   $guessHTML = '';
-  if (empty($eprint) || !empty($title)) { // try to search ePrint for title
+  if (empty($eprint) && !empty($title)) { // try to search ePrint for title
     if (function_exists('search_ePrint'))
       $eprint=search_ePrint($title);
     if (!empty($eprint)) { // found something, tell user that it's a guess
@@ -67,6 +67,7 @@ if (defined('IACR')) { // Specify ePrint report (if exists)
         <a target='_blank' href='$eprintURL'>$eprintURL<a/>";
     }
   }
+
   $ePrintHTML = '<tr><td style="text-align: right;">ePrint&nbsp;report:</td>
   <td><input name="eprint" ID="ePrint" size="10" type="text" value="'
     .$eprint.'">

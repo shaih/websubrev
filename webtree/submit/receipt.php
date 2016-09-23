@@ -52,6 +52,7 @@ $sbmtd = $sbmtd ? utcDate('Y-m-j H:i:s (T)', $sbmtd) : '';
 $rvsd = (int) $row['revised'];
 $rvsd = $rvsd ? utcDate('Y-m-j H:i:s (T)', $rvsd) : '';
 $needsStamp = ($row['flags'] & SUBMISSION_NEEDS_STAMP);
+$eprint = '';
 
 $checked = ($row['flags'] & FLAG_IS_CHECKED) ? "Yes" : "No";
 
@@ -61,11 +62,17 @@ if (defined("OPTIN_TEXT")) {
   $checkedtext = OPTIN_TEXT;
 }
 
-if (defined('CAMERA_PERIOD') && $status=='Accept') {
+if (defined('CAMERA_PERIOD') && $status=='Accept') { // camera-ready
   $subRev = 'camera-ready revision';
   $where2go = "the <a href=\"cameraready.php?subId=$subId&amp;subPwd=$subPwd\">
 Camera-ready revision</a> page";
-} else {
+
+  if (defined('IACR')) {
+    $qry = "SELECT * FROM {$SQLprefix}acceptedPapers WHERE subId=?";
+    $accptd = pdo_query($qry, array($subId))->fetch();
+    $eprint = $accptd['eprint'];
+  }
+} else { // initial submission
   $subRev = 'submission/revision';
   $where2go = "the <a href=\"revise.php?subId=$subId&amp;subPwd=$subPwd\">
 Revision</a> or the <a href=\"withdraw.php?subId=$subId&amp;subPwd=$subPwd\">
@@ -79,6 +86,10 @@ else
 
 if ($unsupFormat) {
   print "<b style=\"color: red\">WARNING: Although we received your submission, it was flagged as having an unsupported format ($frmt). Please check with the program chair(s).</b>";
+}
+
+if (!empty($eprint) && substr($eprint,0,4)=="xxxx") {
+  print "<blockquote>\nYour 1st camera-ready upload was also auto-uploaded to the ePrint archive as submission $eprint. Note that <b>revising your camera-ready version DOES NOT UPDATE the ePrint submission!!</b> You need to update the ePrint subimssion separately with the latest version of your paper.</blockquote>\n\n";
 }
 
 print <<<EndMark

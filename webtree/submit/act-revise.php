@@ -257,6 +257,7 @@ if (isset($auxFileType)) {
 
 // If submitting camera-ready file: record extra information
 if (PERIOD>=PERIOD_CAMERA) {
+
   if (isset($_FILES['pdf_file'])) { // store also the PDF separately, if given
     $pdfFileName = trim($_FILES['pdf_file']['name']);
     $tmpFile = $_FILES['pdf_file']['tmp_name'];
@@ -277,11 +278,21 @@ if (PERIOD>=PERIOD_CAMERA) {
     move_uploaded_file($tmpFile, $pdfFileName);
   }
 
+  // Push to ePrint if needed
+  if (empty($eprint) && !empty($IACRdir)
+      && isset($_FILES['pdf_file']) && $_FILES['pdf_file']['size']>0) {
+    if (function_exists('post2eprint')) {
+      $eprint = post2eprint($subId, $title, $author, $contact,
+                              $abstract, $keywords, $pdfFileName);
+    }
+  }
+
   if (!empty($eprint)) {
     $qry = "UPDATE {$SQLprefix}acceptedPapers SET eprint=? WHERE subId=?";
     pdo_query($qry, array($eprint,$subId),
 	      "Cannot update ePrint information for submission $subId: ");
   }
+
   if ($nPages>0) {
     $qry = "UPDATE {$SQLprefix}acceptedPapers SET nPages=? WHERE subId=?";
     pdo_query($qry, array($nPages,$subId),
@@ -294,15 +305,7 @@ if (PERIOD>=PERIOD_CAMERA) {
 
 email_submission_details($oldCntct, 2, $subId, $subPwd, $title, $author,
       $contact, $abstract, $category, $keywords, $comment, $fileFormat,
-      $fileSize);
-
-// Push to ePrint if needed
-if (PERIOD>=PERIOD_CAMERA && empty($eprint) && !empty($IACRdir)
-    && isset($_FILES['pdf_file']) && $_FILES['pdf_file']['size']>0) {
-  if (function_exists('post2eprint'))
-    post2eprint($subId, $title, $author, $contact,
-		$abstract, $keywords, $pdfFileName);
-}
+      $fileSize, $eprint);
 
 header("Location: receipt.php?subId={$subId}&subPwd={$subPwd}");
 ?>
