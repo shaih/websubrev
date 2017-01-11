@@ -60,6 +60,8 @@ function moreAuthors(e)
     newAuthor.find('input,hidden').val(''); // remove input values
     newAuthor.find('.ui-helper-hidden-accessible').remove();// remove helper if exists
     newAuthor.find('.author').autocomplete(autoComParams); // set autocomplete
+    newAuthor.find('.authLink').hide();         // hide link
+    newAuthor.find('.authID').change(changeID); // update link with authID param
     newAuthor.insertAfter(lastAuthor); // finally place it after the last one
     lastAuthor = newAuthor;
   }

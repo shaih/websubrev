@@ -176,7 +176,7 @@ for ($i=0; $i<$nAuthors; $i++) {
     $shown = !empty($authID)? "shown" : "hidden";
     $idLine ="<br/><input type='checkbox' name='authChk[]' class='authChk' value='on' title='UNcheck if author does not have a record in CryptoDB'{$chk}>
   Author has a record in CryptoDB with autor-ID:<input type='text' size='3' name='authID[]' class='authID' value={$authID}>
-  <a href='http://www.iacr.org/cryptodb/data/author.php?authorkey={$authID}' class='authLink $shown' target='_blank' title='Lookup this author in CryptoDB'> Is this the right author?</a>";
+  <a href='https://www.iacr.org/cryptodb/data/author.php?authorkey={$authID}' class='authLink $shown' target='_blank' title='Lookup this author in CryptoDB'> Is this the right author?</a>";
   } else {
     $idLine = "<input type='hidden' name='authID[]' class='authID' value='$authID'>";
   }
