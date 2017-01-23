@@ -192,7 +192,7 @@ while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
       $subs[$currentId]['tags'] = $tags[$currentId];
     else $subs[$currentId]['tags'] = array();
 
-    if (isset($_GET['withReviews']))
+    if (isset($_GET['withReviews']) && ($row['flags']&FLAG_FINAL_REBUTTAL))
       $subs[$currentId]['rebuttal'] = $row['rebuttal'];
 
     if (isset($_GET['ignoreWatch']) && $row['watch']==1)

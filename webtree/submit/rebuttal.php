@@ -16,14 +16,25 @@ $rebDeadline = defined('REBUTTAL_DEADLINE') ?
   ('Rebuttal is open until '. date('r', REBUTTAL_DEADLINE)) : "";
 $rebuttal = $submission["rebuttal"];
 
+$qry = "SELECT flags FROM {$SQLprefix}submissions WHERE subId=?";
+$res = pdo_query($qry, array($submission['subId']));
+$flags = $res->fetchColumn();
+
+if ($flags & FLAG_FINAL_REBUTTAL) {  // If rebuttal already "finalized" then exit
+  exit("<h1>Rebuttal was finalized and can no longer be modified</h1>");
+}
+if (isset($_POST['finalize'])) {     // mark rebttal as final
+  $flags |= FLAG_FINAL_REBUTTAL;
+}
+
 if(isset($_POST['rebuttal'])) {
   $rebuttal = trim($_POST['rebuttal']);
   if (($len=strlen($_POST['rebuttal'])) > $max_rebuttal+100) {
     exit("Rebuttal is too long ($len characters), only $max_rebuttal characters are allowed.");
   }
   else {
-    pdo_query("UPDATE {$SQLprefix}submissions SET rebuttal=? WHERE subId=?",
-	      array($rebuttal, $submission["subId"]));
+    pdo_query("UPDATE {$SQLprefix}submissions SET rebuttal=?, flags=? WHERE subId=?",
+	      array($rebuttal, $flags, $submission["subId"]));
     header("Location: rebuttal.php");
     exit();
   }
@@ -93,7 +104,8 @@ Dear Author:
   You are not required to respond, if you feel the reviews are accurate and the reviewers have not asked any questions, then you should not respond. If you do respond, conciseness and clarity will be highly appreciated and most effective.
 <b>Your response must not be more than $max_rebuttal characters long.</b></p>
 
-<p>During the rebuttal period you can enter and continually edit your responses, only the latest edit will be visible to the reviewers at any time. Please note that the review site is active, and while we generally try to keep the reviews unchanged during this period, sometimes they may still change.</p>
+<p>During the rebuttal period you can enter and continually edit your responses, but the reviewers will not be able to see your rebuttal until you check the box for "Finalize my rebuttal". <b>Once you submitted a rebuttal with that box checked, you will lose access to this page and will not be able to modify your rebuttal anymore!</b>
+Please note that the review site is active, and while we generally try to keep the reviews unchanged during this period, sometimes they may still change.</p>
 
 <p>Please keep in mind that the main purpose of this process is to help the program committee improve the quality and accuracy of the reviewing and decision process, by having you point out potential omissions and mistakes (both conceptual and technical) in the reviews. A secondary purpose is to give you early feedback on their submission, thus allowing you more time to improve your work.</p>
 
@@ -115,6 +127,7 @@ $comments
   <textarea name="rebuttal" rows="10" cols="80">$rebuttal</textarea> 
   <br />
   <input type="submit" value="Save">
+  <input type="checkbox" name="finalize"> Finalize my rebuttal. (You will not be able to modify it anymore!)
 </form>
 <hr />
 </body>

@@ -69,6 +69,7 @@ define('FLAG_CONSENT_VIDEO', 16);
 define('FLAG_CONSENT_OTHER', 32);
 define('FLAG_PCM_SUBMISSION', 64);
 define('FLAG_UPLOADED_FINAL', 128);
+define('FLAG_FINAL_REBUTTAL', 256);
 
 /*
 //Kept as reference for colors

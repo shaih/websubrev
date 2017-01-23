@@ -266,7 +266,8 @@ EndMark;
 }
 print "</div>\n<hr size=4 noshade=noshade/>\n";
 
-$rebuttal = trim($submission['rebuttal']);
+$rebuttal = ($submission['flags'] & FLAG_FINAL_REBUTTAL) ?
+            trim($submission['rebuttal']) : '';
 if (!empty($rebuttal)) {
   $rebuttal = nl2br(htmlspecialchars($rebuttal));
   print <<<EndMark
