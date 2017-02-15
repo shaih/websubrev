@@ -34,7 +34,7 @@ Contact(s) must be a list of email addresses in the format user@domain.");
 
 /*** User input vaildated. Next insert the new submission to the database ***/
 
-$subId = 1+ pdo_query("SELECT MAX(subId) FROM {$SQLprefix}submissions WHERE status!='Withdrawn'")->fetchColumn();
+$subId = 1+ pdo_query("SELECT MAX(subId) FROM {$SQLprefix}submissions")->fetchColumn();
 
 $qry = "INSERT INTO {$SQLprefix}submissions (subId,title,authors,contact,affiliations,format,subPwd,status,whenSubmitted) VALUES (?,?,?,?,?,'',?,'Accept',NOW())";
 
