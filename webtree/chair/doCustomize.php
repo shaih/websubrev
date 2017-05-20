@@ -158,6 +158,8 @@ $prot = (isset($_SERVER['HTTPS'])) ? 'https' : 'http';
 $baseURL = $prot.'://'.BASE_URL;
 $passwd = $chrPwd;
 $msg =<<<EndMark
+Attention: this email contains your new password.
+
 The submission and review site for $shortName $confYear is customized
 and ready for use. The start page for submitting papers is:
 
