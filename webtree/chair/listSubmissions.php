@@ -62,6 +62,13 @@ if ($countByCat) {
 }
 else print "<h1>$cName $title</h1>\n";
 
+if (PERIOD==PERIOD_FINAL) {
+  print <<<EndMark
+   <h3><a href="doAcceptedJson.php">Download JSON of accepted
+        papers for website and program creation.</a></h3>
+EndMark;
+}
+
 $lastCat = 'zzz@zzz';
 foreach($subArray as $sb) {
   $subId = (int) $sb['subId'];
