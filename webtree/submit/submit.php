@@ -44,7 +44,7 @@ EndMark;
   if (CONF_FLAGS & FLAG_AUX_MATERIAL) {
     $subFileLine .=<<<EndMark
 <tr><td style="text-align: right;">
-  Supporing&nbsp;Material:</td>
+  Supporting&nbsp;Material:</td>
   <td><input name="auxMaterial" size="70" type="file"><br/>
       Auxiliary supporting material (code, data, proofs, etc.).
       (<a target="_blank" href="../documentation/submitter.html#submit">what&prime;s this?</a>)
