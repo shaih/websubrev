@@ -240,6 +240,7 @@ EndMark;
     if ($ppr['volume'] != $curVol) {
       $curVol = $ppr['volume'];
       $curPage = 1;
+      $nPages = 0;
       $ltxFile .= <<<EndMark
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%                     Volume $curVol                             %%%%
@@ -247,8 +248,12 @@ EndMark;
 
 EndMark;
     }
-    $ltxFile .= "\\setcounter{page}{".$curPage."}\n";
-    $curPage += $ppr['nPages'];
+    if ($curPage==1)
+      $ltxFile .= "\\setcounter{page}{".$curPage."}\n";
+    else
+      $ltxFile .= "\\addtocounter{page}{".$nPages."}\n";
+    $nPages = $ppr['nPages'];
+    $curPage += $nPages;
     $ltxFile .= "\\title{".$ppr['title']."}\n";
     $ltxFile .= "\\author{".str_replace(';', ' \and ', $ppr['authors'])."}\n";
     $authors = explode(';', $ppr['authors']);
