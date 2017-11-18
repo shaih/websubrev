@@ -7,7 +7,7 @@
  */
 $needsAuthentication = true; 
 require 'header.php';
-if (PERIOD<PERIOD_FINAL) die("<h1>Too early to produce accepted papers list</h1>");
+if (PERIOD<PERIOD_CAMERA) die("<h1>Too early to produce accepted papers list</h1>");
 
 header("Content-Type: application/json");
 header("Content-Disposition: inline; filename=papers.json");

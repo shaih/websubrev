@@ -62,7 +62,7 @@ if ($countByCat) {
 }
 else print "<h1>$cName $title</h1>\n";
 
-if (PERIOD==PERIOD_FINAL) {
+if (PERIOD>=PERIOD_CAMERA) {
   print <<<EndMark
    <h3><a href="doAcceptedJson.php">Download JSON of accepted
         papers for website and program creation.</a></h3>
