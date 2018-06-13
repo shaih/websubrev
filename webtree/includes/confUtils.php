@@ -229,44 +229,6 @@ function active_feedback()
           && FEEDBACK_DEADLINE > time());
 }
 
-function my_addslashes($str, $cnnct=NULL)
-{
-  if (!isset($cnnct))
-      $cnnct=mysql_connect(MYSQL_HOST, MYSQL_USR, MYSQL_PWD);
-  return mysql_real_escape_string($str, $cnnct);
-}
-
-function db_connect($host=MYSQL_HOST,
-		    $usr=MYSQL_USR, $pwd=MYSQL_PWD, $db=MYSQL_DB)
-{
-  if (!($cnnct=mysql_connect($host, $usr, $pwd))) {
-    error_log(date('Y.m.d-H:i:s ').mysql_error()."\n", 3, LOG_FILE);
-    exit("<h1>Cannot connect to MySQL server</h1>\n" .
-	 "mysql_connect($host, $usr, $pwd)<br />". mysql_error());
-  }
-  if (isset($db) && !mysql_select_db($db, $cnnct)) {
-    error_log(date('Y.m.d-H:i:s ').mysql_error()."\n", 3, LOG_FILE);
-    exit("<h1>Cannot select database $db</h1>\n" . mysql_error());
-  }
-  mysql_query("SET NAMES utf8", $cnnct); // explicitly tell MySQL to speak utf8
-
-  return $cnnct;
-}
-
-function db_query($qry, $cnnct, $desc='')
-{
-  $php_errormsg = ''; // avoid notices in case it isn't defined 
-  $res=mysql_query($qry, $cnnct);
-  if ($res===false) {
-    error_log(date('Y.m.d-H:i:s ')
-      .mysql_errno().'-'.mysql_error()." $php_errormsg\n", 3, LOG_FILE);
-    exit("<h1>Query Failed</h1>\n{$desc}"
-	 . "Query: <pre>". htmlspecialchars($qry) . "</pre>\nError: "
-	 . htmlspecialchars(mysql_error())
-	 . " " . htmlspecialchars($php_errormsg));
-  }
-  return $res;
-}
 
 function pdo_connect()
 {
