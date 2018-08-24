@@ -1,8 +1,12 @@
-WebSubRev v0.63 (beta): Web-software for Conference Submission and Review
+WebSubRev v0.64 (beta): Web-software for Conference Submission and Review
 
   Written by Shai Halevi <shaih@alum.mit.edu> from IBM Research
   Distributed under the Common Public License (CPL v1.0)
   See http://www.opensource.org/licenses/cpl1.0.php
+
+
+NOTE: The description below was last updated sometime in 2009.
+      While most of it is still valid, some could be badly out of date.
 
 
 Installing the software:
