@@ -104,7 +104,7 @@ function my_send_mail($sendTo, $subject, $msg,
   else if (empty($chrEml))
    $hdr = "From: ".ini_get('sendmail_from');
   else if (defined('CONF_SHORT') && defined ('CONF_YEAR'))
-    $hdr = "From: ".CONF_SHORT.CONF_YEAR." Chair <$chrEml>";
+   $hdr = "From: ".CONF_SHORT." ".CONF_YEAR." Chair <$chrEml>";
   else
     $hdr = "From: $chrEml";
   
