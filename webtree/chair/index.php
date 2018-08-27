@@ -220,12 +220,11 @@ function manage_final_version($period)
     $hdr = '<h3>Final Submission Site is Closed</h3>';
     $closeIt = $editInstructions = '';
     $uploadTOC = '<li><a href="uploadPreface.php">Upload Preface/TOC/Author-index to the server</a></li>';
-    $cryptoDB = (defined('IACR'))? '<li><a href="cryptoDB.php">Upload '.CONF_SHORT.' '.CONF_YEAR.' to CryptoDB</a></li>' : '';
   } else {
     $hdr = '<h3><span style="background-color: red;">Final Submission Site is Active</span></h3>' . "\nDeadline is <big>$cmrDdline</big> <a href=\"manageSubmissions.php\">change it</a>";
     $editInstructions = '<li><a href="guidelines.php?what=camera">Edit camera-ready instructions</a></li>';
     $closeIt = '<a href="closeSite.php">Close Final Submission Site</a> (<b>deadline is not enforced automatically</b>)';
-    $uploadTOC = $cryptoDB = '';
+    $uploadTOC = '';
   }
 
   $feedback = '';
@@ -246,7 +245,6 @@ $allSubFile
 <li><a href="makeTOC.php">Generate a LaTeX file with TOC and author index</a></li>
 $feedback
 $uploadTOC
-$cryptoDB
 </ul>
 $closeIt
 EndMark;
