@@ -9,7 +9,6 @@ $needsAuthentication = true;
 require 'header.php';
 require '../includes/EdmondsKarp.php';
 require 'parseAssignments.php';
-$cnnct = db_connect();
 
 if (!isset($_POST['specialSubs']))  $_POST['specialSubs'] = '';
 if (!isset($_POST['cListExclude'])) $_POST['cListExclude'] = '';
