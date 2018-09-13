@@ -31,7 +31,9 @@ $links
 $succ
 <h1>Set Rebuttal Parameters</h1>
 <form accept-charset="utf-8" action="doRebuttal.php" enctype="multipart/form-data" method="post">
-  <p>Once the rebuttal is active, authors will be able to make a single rebuttal to comments made by reviewers (until you close it). As usual, the deadline you enter here is only for informational purposes, <b>the software does not enforce it automatically.</b></p>
+  <p>Once the rebuttal is active, authors will be able to make a single rebuttal to comments made by reviewers (until you close it). As usual, the deadline you enter here is only for informational purposes, <b>the software does not enforce it automatically.</b>
+When you send the reviewers' comments to the authors, make sure to include in the email also the <a target="_blank" href="../submit/rebuttal.php">link to the rebuttal page</a>.
+</p>
   <label>Rebuttal Deadline:</label>
   <input type="text" name="rebDeadline" size="40" value="{$rebDeadline}"/>
   <tt>&lt;== Format dates like 2013-05-15 18:20 EDT</tt>

@@ -54,8 +54,17 @@ Below please find the reviewer comments on your paper
 
   "&lt;&#36;title&gt;"
 
-That was submitted to $cName Thank you again for submitting
+That was submitted to $cName. Thank you again for submitting
 your work to $cName.
+
+EndMark;
+
+if (active_rebuttal()) {
+  $prot = (defined('HTTPS_ON') || isset($_SERVER['HTTPS']))? 'https' : 'http';
+  $baseURL = $prot.'://'.BASE_URL;
+   print "\nYou can submit your rebuttal off of the URL\n  {$baseURL}submit/rebuttal.php\n";
+}
+print <<<EndMark
 
 Sincerely,
 
