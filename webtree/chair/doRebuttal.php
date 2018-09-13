@@ -27,7 +27,6 @@ $qry = "UPDATE {$SQLprefix}parameters SET rebDeadline=?, maxRebuttal=?, $flags";
 pdo_query($qry, array($rebDeadline,$maxRebuttal,FLAG_REBUTTAL_ON));
 
 $qry = "UPDATE {$SQLprefix}submissions SET $flags";
-exit($qry);
 pdo_query($qry, array(FLAG_FINAL_REBUTTAL));
 
 header("Location: rebuttal.php?success=true");
