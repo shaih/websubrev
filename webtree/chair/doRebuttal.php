@@ -18,16 +18,24 @@ $maxRebuttal = defined('MAX_REBUTTAL') ? MAX_REBUTTAL : "";
 $newMaxRebuttal = isset($_POST['maxRebuttal'])? (int) $_POST['maxRebuttal']: 0;
 if ($newMaxRebuttal>0) $maxRebuttal=$newMaxRebuttal;
 
-if (!empty($_POST['rebuttalOn']))
-  $flags = "flags=(flags | ?)";
-else
-  $flags = "flags=(flags & ~?)";
+if (!empty($_POST['rebuttalOn'])) {
+  $pFlags = "flags=(flags | ".FLAG_REBUTTAL_ON.")";
+  $sFlags = "flags=(flags & ~".FLAG_FINAL_REBUTTAL.")";
+} else if (!empty($_POST['rebuttalOff'])) {
+  $pFlags = "flags=(flags & ~".FLAG_REBUTTAL_ON.")";
+  $sFlags = "flags=(flags | ".FLAG_FINAL_REBUTTAL.")";
+}
+else {
+  $pFlags = $sFlags = "";
+}
 
-$qry = "UPDATE {$SQLprefix}parameters SET rebDeadline=?, maxRebuttal=?, $flags";
-pdo_query($qry, array($rebDeadline,$maxRebuttal,FLAG_REBUTTAL_ON));
+$qry = "UPDATE {$SQLprefix}parameters SET rebDeadline=?, maxRebuttal=?, $pFlags";
+pdo_query($qry, array($rebDeadline,$maxRebuttal));
 
-$qry = "UPDATE {$SQLprefix}submissions SET $flags";
-pdo_query($qry, array(FLAG_FINAL_REBUTTAL));
+if (!empty($sFlags)) {
+  $qry = "UPDATE {$SQLprefix}submissions SET $sFlags";
+  pdo_query($qry);
+}
 
 header("Location: rebuttal.php?success=true");
 ?>

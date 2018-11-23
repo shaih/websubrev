@@ -10,11 +10,9 @@ require 'header.php';
 $rebDeadline = defined('REBUTTAL_DEADLINE') ? date('Y-n-j G:i e', REBUTTAL_DEADLINE) : "";
 $maxRebuttal = defined('MAX_REBUTTAL') ? MAX_REBUTTAL : 3000;
 if (active_rebuttal()) {
-  $rebuttalOn = '';
-  $rebuttalOff = '<input type="submit" value="Close Rebuttal Now"/>';
+  $subButton = '<input type="submit" name="rebuttalOff" value="Close Rebuttal Now"/>';
 } else {
-  $rebuttalOn = '<input type="submit" name="rebuttalOn" value="Activate Rebuttal"/>';
-  $rebuttalOff = ' or <input type="submit" value="Only Store Parameter"/>';
+  $subButton = '<input type="submit" name="rebuttalOn" value="Activate Rebuttal"/> or <input type="submit" value="Only Store Parameter"/>';
 }
 $succ = isset($_GET['success'])? 
   '<h2>You have successfully updated the rebuttal data</h2>' : '';
@@ -40,8 +38,7 @@ When you send the reviewers' comments to the authors, make sure to include in th
   <br />
   <label>Number of Characters Allowed in Rebuttal:</label>
   <input type="text" name="maxRebuttal" value="{$maxRebuttal}"/><br/>
-  $rebuttalOn
-  $rebuttalOff
+  $subButton
 </form>
 <hr />
 $links
