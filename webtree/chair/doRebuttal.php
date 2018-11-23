@@ -19,17 +19,17 @@ $newMaxRebuttal = isset($_POST['maxRebuttal'])? (int) $_POST['maxRebuttal']: 0;
 if ($newMaxRebuttal>0) $maxRebuttal=$newMaxRebuttal;
 
 if (!empty($_POST['rebuttalOn'])) {
-  $pFlags = "flags=(flags | ".FLAG_REBUTTAL_ON.")";
+  $pFlags = ", flags=(flags | ".FLAG_REBUTTAL_ON.")";
   $sFlags = "flags=(flags & ~".FLAG_FINAL_REBUTTAL.")";
 } else if (!empty($_POST['rebuttalOff'])) {
-  $pFlags = "flags=(flags & ~".FLAG_REBUTTAL_ON.")";
+  $pFlags = ", flags=(flags & ~".FLAG_REBUTTAL_ON.")";
   $sFlags = "flags=(flags | ".FLAG_FINAL_REBUTTAL.")";
 }
 else {
   $pFlags = $sFlags = "";
 }
 
-$qry = "UPDATE {$SQLprefix}parameters SET rebDeadline=?, maxRebuttal=?, $pFlags";
+$qry = "UPDATE {$SQLprefix}parameters SET rebDeadline=?, maxRebuttal=?{$pFlags}";
 pdo_query($qry, array($rebDeadline,$maxRebuttal));
 
 if (!empty($sFlags)) {
