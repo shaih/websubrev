@@ -92,7 +92,7 @@ function stampSubmission($subId, $format)
       // Downgrade PDF and try again
       try {
         // Downgrade to PDF 1.4 with ghostscript
-        $ret=exec("gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dBATCH -dNOPAUSE -sOutputFile=$tmpPDF $subFile", $output_lines, $return_var);
+        $ret=exec("gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPrinted=false -dBATCH -dSAFER -dNOPAUSE -sOutputFile=$tmpPDF $subFile", $output_lines, $return_var);
         if ($return_var==0) {
           // Stamp the PDF
           stampPDF($tmpPDF, $stampString);
