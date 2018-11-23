@@ -102,7 +102,7 @@ $dbTables = array(
                 'Perhaps Reject','Reject','Withdrawn') NOT NULL DEFAULT 'None',
     scratchStatus enum('Accept','Maybe Accept','Needs Discussion','None',
                 'Perhaps Reject','Reject','Withdrawn') NOT NULL DEFAULT 'None',
-    whenSubmitted datetime NOT NULL,
+    whenSubmitted datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     lastModified timestamp,
     flags int NOT NULL DEFAULT 0,
     avg float,

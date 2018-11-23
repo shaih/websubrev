@@ -62,6 +62,7 @@ function stampSubmission($subId, $format)
 
   $subFile = "{$subId}.{$format}";
   $tmpFile = "scratch/{$subId}.ps";
+  $tmpPDF  = "scratch/{$subId}.pdf";
   $tmpStmp = "scratch/{$subId}.stamped.ps";
 
   $return_var = 0;
@@ -73,7 +74,7 @@ function stampSubmission($subId, $format)
   // Backup the "unstamped" file
   if (!createBackup($subFile, $subId, $format, "backup")) {
 	// We won't risk stamping if backup failed!
-	error_log("Backup failed for $subId; leaving unstamped!");
+	error_log(date('Y.m.d-H:i:s ')."Backup failed for $subId; leaving unstamped!", 3, LOG_FILE);
 	return cleanExit(1,$saveDir);
   }
 
@@ -84,12 +85,28 @@ function stampSubmission($subId, $format)
       // Stamp the PDF
       stampPDF($subFile, $stampString);
 
+      error_log(date('Y.m.d-H:i:s ')."Zend PDF stamp succeded for $subId\n", 3, LOG_FILE);
       return cleanExit(0,$saveDir);
     } catch(Exception $e) {
       // Stamping failed (probably due to unsupported PDF version)
-      // Fall back to previous stamping method
-
-      //error_log("Zend PDF stamp failed for $subId: ".$e);
+      // Downgrade PDF and try again
+      try {
+        // Downgrade to PDF 1.4 with ghostscript
+        $ret=exec("gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dBATCH -dNOPAUSE -sOutputFile=$tmpPDF $subFile", $output_lines, $return_var);
+        if ($return_var==0) {
+          // Stamp the PDF
+          stampPDF($tmpPDF, $stampString);
+          rename($tmpPDF,$subFile);
+          error_log(date('Y.m.d-H:i:s ')."Zend PDF stamp succeded (after GS convert) for $subId\n", 3, LOG_FILE);
+          return cleanExit(0,$saveDir);
+        } else {
+            error_log(date('Y.m.d-H:i:s ')."Ghostscript PDF downgrade failed for $subId ($ret,$return_var)\n", 3, LOG_FILE);
+        }
+      } catch(Exception $e) {
+        // Stamping failed again
+        // Fall back to previous stamping method
+        error_log(date('Y.m.d-H:i:s ')."Zend PDF stamp failed for $subId: ".$e."\n", 3, LOG_FILE);
+      }
     }
   }
 

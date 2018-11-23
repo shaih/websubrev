@@ -177,6 +177,7 @@ else { // no admin password, try to use the user name/password if needed
     $db = null;                    // close the connection
   }
 }
+error_log(date('Y.m.d-H:i:s ')."Database created\n", 3, LOG_FILE);
 
 // If we got here, then database and all tables were created
 $db = new PDO("mysql:host=$MYSQL_HOST;dbname=$MYSQL_DB;charset=utf8",

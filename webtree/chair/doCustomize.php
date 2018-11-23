@@ -20,7 +20,12 @@ $confURL     = trim($_POST['confURL'])  ;
 if (empty($confURL)) $confURL = '.';
 
 $regDeadline = trim($_POST['regDeadline']);
-$firstPeriod = empty($regDeadline)? PERIOD_SUBMIT : PERIOD_PREREG;
+if (empty($regDeadline)) {
+  $regDeadline = 0;
+  $firstPeriod = PERIOD_SUBMIT;
+}
+else
+  $firstPeriod = PERIOD_PREREG;
 
 $subDeadline = trim($_POST['subDeadline']);
 $cameraDeadline= trim($_POST['cameraDeadline']);
