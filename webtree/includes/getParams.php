@@ -14,15 +14,17 @@ foreach ($lines as $line) {
   if ($nm=='MYSQL_HOST'      || $nm=='MYSQL_DB'   || $nm=='MYSQL_USR'
       || $nm=='MYSQL_PWD'    || $nm=='SUBMIT_DIR' || $nm=='LOG_FILE'
       || $nm=='ADMIN_EMAIL'  || $nm=='CONF_SALT'  || $nm=='BASE_URL'
-      || $nm=='MYSQL_PREFIX' || $nm=='IACR') {
+      || $nm=='MYSQL_PREFIX' || $nm=='IACR'       || $nm=='JQUERY_BASE') {
     if (empty($vl)) die("<h1>Parameter $nm cannot be empty</h1>");
     define($nm, $vl);
   }
 }
-
-$JQUERY_URL   = "//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js";
-$JQUERY_UI_URL= "//ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js";
-$JQUERY_CSS   = "//ajax.googleapis.com/ajax/libs/jqueryui/1/themes/redmond/jquery-ui.css";
+if (!defined('JQUERY_BASE')) {
+  define('JQUERY_BASE', 'https://code.jquery.com');
+}
+$JQUERY_URL   = JQUERY_BASE."/jquery.min.js";
+$JQUERY_UI_URL= JQUERY_BASE."/ui/1.12.1/jquery-ui.min.js";
+$JQUERY_CSS   = JQUERY_BASE."/ui/1.12.1/themes/redmond/jquery-ui.css";
 
 $db = null;  // a global variable holding the database connection
 
