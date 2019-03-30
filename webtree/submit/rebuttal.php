@@ -90,6 +90,13 @@ print <<<EndMark
 <head><meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="../common/submission.css"/>
   <title>Author Rebuttal $confName </title>
+  <script>
+  function countLetter() {
+      var textArea=document.getElementById("rebuttalText");
+      var count = textArea.value.length;
+      return confirm("Rebuttal length: "+count+" characters. Are you sure you want to save and finalize?");
+  }
+  </script>
 </head>
 
 <body>
@@ -104,7 +111,7 @@ Dear Author:
   You are not required to respond, if you feel the reviews are accurate and the reviewers have not asked any questions, then you should not respond. If you do respond, conciseness and clarity will be highly appreciated and most effective.
 <b>Your response must not be more than $max_rebuttal characters long.</b></p>
 
-<p>During the rebuttal period you can enter and continually edit your responses, but the reviewers will not be able to see your rebuttal until you check the box for "Finalize my rebuttal". <b>Once you submitted a rebuttal with that box checked, you will lose access to this page and will not be able to modify your rebuttal anymore!</b>
+<p>During the rebuttal period you can enter and continually edit your responses, but the reviewers will not be able to see your rebuttal until you press the button for "Save and Finalize". <b>Once you press that button, you will lose access to this page and will not be able to modify your rebuttal anymore!</b>
 Please note that the review site is active, and while we generally try to keep the reviews unchanged during this period, sometimes they may still change.</p>
 
 <p>Please keep in mind that the main purpose of this process is to help the program committee improve the quality and accuracy of the reviewing and decision process, by having you point out potential omissions and mistakes (both conceptual and technical) in the reviews. A secondary purpose is to give you early feedback on their submission, thus allowing you more time to improve your work.</p>
@@ -124,10 +131,12 @@ $comments
 <form action="rebuttal.php" enctype="multipart/form-data" method="post" accept-charset="utf-8">
   $warnings
   <label>Rebuttal To Comments: ($max_rebuttal character limit)</label><br/>
-  <textarea name="rebuttal" rows="10" cols="80">$rebuttal</textarea> 
+  <textarea name="rebuttal" id="rebuttalText" rows="10" cols="80">$rebuttal</textarea>
   <br />
-  <input type="submit" value="Save">
-  <input type="checkbox" name="finalize"> Finalize my rebuttal. (You will not be able to modify it anymore!)
+  <input type="submit" value="Save Draft">
+<br/>
+Once you hit "Save and Finalize", the text will be saved and you will not be able to modify it anymore!
+  <input type="submit" name="finalize" value="Save and Finalize" onclick="return countLetter();">
 </form>
 <hr />
 </body>
