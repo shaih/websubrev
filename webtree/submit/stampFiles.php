@@ -85,7 +85,6 @@ function stampSubmission($subId, $format)
       // Stamp the PDF
       stampPDF($subFile, $stampString);
 
-      error_log(date('Y.m.d-H:i:s ')."Zend PDF stamp succeded for $subId\n", 3, LOG_FILE);
       return cleanExit(0,$saveDir);
     } catch(Exception $e) {
       // Stamping failed (probably due to unsupported PDF version)
@@ -97,7 +96,6 @@ function stampSubmission($subId, $format)
           // Stamp the PDF
           stampPDF($tmpPDF, $stampString);
           rename($tmpPDF,$subFile);
-          error_log(date('Y.m.d-H:i:s ')."Zend PDF stamp succeded (after GS convert) for $subId\n", 3, LOG_FILE);
           return cleanExit(0,$saveDir);
         } else {
             error_log(date('Y.m.d-H:i:s ')."Ghostscript PDF downgrade failed for $subId ($ret,$return_var)\n", 3, LOG_FILE);
