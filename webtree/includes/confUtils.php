@@ -70,12 +70,13 @@ function my_display_mail($sendTo, $subject, $msg,
 
 // The $attachments parameter is an array of (path,filename) pairs,
 // $msg is assumed to be a text-message (in utf-8 encoding)
-function my_send_mail($sendTo, $subject, $msg,
-		      $cc=array(), $errMsg='', $attachments=NULL,
-                      $from=NULL)
+function my_send_mail($sendTo, $subject, $msg, $cc=array(),
+                      $errMsg='', $attachments=NULL, $from=NULL)
 {
-  // return my_display_mail($sendTo,$subject,$msg,$cc,$errMsg,$attachments,$from);
-  // return true;
+  $msg = wordwrap($msg); // make sure no long lines in text
+
+  // return my_display_mail($sendTo,$subject,$msg,$cc,$errMsg,
+  //                        $attachments,$from);
 
   // Support sending to multiple e-mails, all but the first address
   // will be included in the CC field
@@ -99,14 +100,14 @@ function my_send_mail($sendTo, $subject, $msg,
   $xMailer= defined('EML_X_MAILER') ? EML_X_MAILER : false;
   $xParam = defined('EML_EXTRA_PRM')? EML_EXTRA_PRM: false;
   
-  if($from)
+  if ($from)
     $hdr = "From: ".$from;
   else if (empty($chrEml))
-   $hdr = "From: ".ini_get('sendmail_from');
+    $hdr = "From: ".ini_get('sendmail_from');
   else if (defined('CONF_SHORT') && defined ('CONF_YEAR'))
-   $hdr = "From: ".CONF_SHORT." ".CONF_YEAR." Chair <$chrEml>";
+    $hdr = "From: ".CONF_SHORT." ".CONF_YEAR." Chair <$chrEml>";
   else
-    $hdr = "From: $chrEml";
+     $hdr = "From: $chrEml";
   
   if (!empty($cc)) {
     if(!is_array($cc)) {
