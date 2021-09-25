@@ -166,7 +166,7 @@ and <a href="#review">reviews</a>.
 <!-- ================= The Program Committee =================== -->
 <tr><td colspan="2" class=rjust><input type='hidden' name='chair' value='$chrEml'><hr /></td></tr>
 <!-- ================= this is commented out =================== --
-<tr><td class=rjust><big><b><a NAME="committee">Program&nbsp;Committee:</a></b></big></td><td>Specify the email addresses of the program commitee. Each address should be in the format "Name &lt;email-address&gt;". The names that you enter here will be displayed on the reports and discussion boards.</td>
+<tr><td class=rjust><big><b><a NAME="committee">Program&nbsp;Committee:</a></b></big></td><td>Specify the email addresses of the program committee. Each address should be in the format "Name &lt;email-address&gt;". The names that you enter here will be displayed on the reports and discussion boards.</td>
 </tr>
 <tr><td class=rjust>{$star}<a href="../documentation/chair.html#PCemail" target="documentation" title="click for more help">Chair&nbsp;Email(s):</a></td>
   <td><textarea name="chair" rows=5 cols=70 class="required">$chrEml</textarea><br/>

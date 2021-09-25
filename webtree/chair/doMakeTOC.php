@@ -194,7 +194,7 @@ Name and Affiliation
 Name and Affiliation
 
 
-\\bigskip\\textbf{\\large Program Commitee}
+\\bigskip\\textbf{\\large Program Committee}
 
 \\smallskip\\begin{tabular}{@{}p{4.2cm}@{}p{7.2cm}@{}}
 
